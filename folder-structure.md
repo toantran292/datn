@@ -1,139 +1,119 @@
 ```
 datn/
-├─ fe/                                        # Frontend (tất cả UI/SDK nằm tại đây)
-│  ├─ apps/                                   # Standalone apps
-│  │  ├─ chat-app/                            # Standalone Chat (imports chat-core-ui)
-│  │  ├─ meet-app/                            # Standalone Meet (imports meet-core-ui)
-│  │  └─ pm-app/                              # Standalone PM (imports pm-core-ui; embeds chat/meet)
-│  ├─ unified/                                # Unified TeamSpace (integrated UI)
-│  │  ├─ modules/
-│  │  │  ├─ pm/                               # PM integrated shell (uses pm-core-ui)
-│  │  │  ├─ chat-embed/                       # Slim shell around chat-core-ui
-│  │  │  └─ meet-embed/                       # Slim shell around meet-core-ui
-│  │  └─ middleware/tenant.ts                 # Resolve <tenant> from subdomain
-│  ├─ packages/                               # Core UI & shared FE libs
-│  │  ├─ design-system/                       # tokens, themes, base components
-│  │  ├─ chat-core-ui/
-│  │  │  ├─ headless/                         # hooks: useChannel, useMessages, useTyping…
-│  │  │  ├─ components/                       # headless + minimal UI (overridable)
-│  │  │  └─ adapters/                         # http/ws clients (OpenAPI-generated)
-│  │  ├─ meet-core-ui/
-│  │  │  ├─ headless/                         # useRoom, useParticipants, useMediaControl…
-│  │  │  ├─ components/
-│  │  │  └─ adapters/                         # signaling/SFU SDK wrappers
-│  │  ├─ pm-core-ui/
-│  │  │  ├─ headless/                         # useBoard, useTask, useSprint…
-│  │  │  └─ components/
-│  │  ├─ api-clients/                         # OpenAPI-generated REST/WS clients (TS)
-│  │  ├─ auth-client/                         # OIDC (Keycloak) helpers (browser)
-│  │  └─ utils/                               # logger, telemetry, date, formatters
-│  └─ sdks/                                   # Optional: external embeddable bundles
-│     ├─ chat-widget/                         # Build MF/Web Component from chat-core-ui
-│     └─ meet-widget/                         # Meet widget (iframe/WebRTC wrapper)
+├─ services/
+│  ├─ gateway/                                 # API Gateway (entrypoint)
+│  │  ├─ app/                                  # gateway code (Nest/Go/…)
+│  │  ├─ charts/uts-gateway/                   # Helm chart for gateway
+│  │  ├─ configs/                              # route map, rate-limit, auth policy
+│  │  ├─ tests/
+│  │  └─ Dockerfile
+│  │
+│  ├─ identity/                                # Foundation: Identity & Verification
+│  │  ├─ app/                                  # adapter to Keycloak or custom service
+│  │  ├─ realm/                                # realm-as-code, themes, scripts
+│  │  ├─ charts/uts-identity/
+│  │  ├─ contracts/                            # OpenAPI/Events specific to this service (if any)
+│  │  ├─ tests/
+│  │  └─ Dockerfile
+│  │
+│  ├─ billing/
+│  │  ├─ app/                                  # domain, application, interfaces (CQRS)
+│  │  ├─ jobs/                                 # usage aggregator, invoicer…
+│  │  ├─ charts/uts-billing/
+│  │  ├─ contracts/                            # openapi/events billing.*
+│  │  ├─ tests/
+│  │  └─ Dockerfile
+│  │
+│  ├─ file/                                    # Foundation: File & Media
+│  │  ├─ app/
+│  │  ├─ charts/uts-file/
+│  │  ├─ contracts/
+│  │  ├─ tests/
+│  │  └─ Dockerfile
+│  │
+│  ├─ notify/                                  # Foundation: Notification + WS hub
+│  │  ├─ app/                                  # http + ws + workers (email/push)
+│  │  ├─ charts/uts-notify/
+│  │  ├─ contracts/
+│  │  ├─ tests/
+│  │  └─ Dockerfile
+│  │
+│  ├─ search/                                  # Foundation: Unified Search
+│  │  ├─ app/                                  # indexers, query, context-provider
+│  │  ├─ charts/uts-search/
+│  │  ├─ contracts/
+│  │  ├─ tests/
+│  │  └─ Dockerfile
+│  │
+│  ├─ chat/                                    # Product team: Chat
+│  │  ├─ api/                                  # backend service (Nest/Go/…)
+│  │  ├─ ui/                                   # frontend module/app (standalone or embedded)
+│  │  ├─ sdk/                                  # client sdk (ts) + ws adapters
+│  │  ├─ workers/                              # consumers, outbox publisher
+│  │  ├─ charts/uts-chat/
+│  │  ├─ contracts/                            # openapi + events chat.*
+│  │  ├─ tests/
+│  │  └─ Dockerfile
+│  │
+│  ├─ meeting/                                 # Product team: Meeting
+│  │  ├─ signaling/                            # signaling api
+│  │  ├─ recorder/                             # ingest media -> S3
+│  │  ├─ ui/
+│  │  ├─ sdk/
+│  │  ├─ charts/uts-meeting/
+│  │  ├─ contracts/
+│  │  ├─ tests/
+│  │  └─ Dockerfile
+│  │
+│  └─ pm/                                      # Product team: Project Management
+│     ├─ api/
+│     ├─ ui/
+│     ├─ sdk/
+│     ├─ workers/
+│     ├─ charts/uts-pm/
+│     ├─ contracts/
+│     ├─ tests/
+│     └─ Dockerfile
 │
-├─ be/                                        # Backend (tất cả dịch vụ BE)
-│  ├─ gateway/                                # API Gateway / BFF (NestJS/Express/Go)
-│  │  ├─ src/
-│  │  │  ├─ middleware/                       # auth, tenant, quota
-│  │  │  └─ routes/                           # proxy/compose to services
-│  │  └─ .env.example
-│  ├─ bounded-contexts/
-│  │  ├─ pm/                                  # Project Management (Spring Boot + Postgres)
-│  │  │  ├─ domain/
-│  │  │  ├─ application/                      # CQRS, services, handlers
-│  │  │  ├─ interfaces/
-│  │  │  │  ├─ rest/                          # Spring Web + OpenAPI binding
-│  │  │  │  └─ messaging/                     # Event handlers / outbox publisher
-│  │  │  └─ infrastructure/
-│  │  │     ├─ persistence/                   # JPA/Repository, Flyway
-│  │  │     ├─ config/                        # Spring config, security
-│  │  │     └─ outbox/                        # Transactional outbox
-│  │  ├─ chat/                                # Chat (NestJS + Scylla/Cassandra)
-│  │  │  ├─ domain/
-│  │  │  ├─ application/                      # services, command/query handlers
-│  │  │  ├─ interfaces/
-│  │  │  │  ├─ ws/                            # WebSocket gateway
-│  │  │  │  ├─ rest/                          # Nest controllers
-│  │  │  │  └─ messaging/                     # consumers/producers (events)
-│  │  │  └─ infrastructure/
-│  │  │     ├─ db/                            # Prisma/TypeORM/CQL schema, migrations
-│  │  │     ├─ cache/                         # Redis (presence, rate limiting)
-│  │  │     └─ outbox/
-│  │  ├─ meeting/                             # Meeting (Java signaling + Node recorder)
-│  │  │  ├─ signaling/                        # Java/Ktor/Spring
-│  │  │  │  ├─ domain/
-│  │  │  │  ├─ application/                   # createRoom, issueToken, join/leave…
-│  │  │  │  ├─ interfaces/
-│  │  │  │  │  ├─ rest/                       # join/invite/tokens
-│  │  │  │  │  └─ messaging/                  # meet.room.created, meet.participant.joined
-│  │  │  │  └─ infrastructure/
-│  │  │  │     ├─ persistence/                # Postgres/Redis, migrations
-│  │  │  │     ├─ sfu/                        # Adapter to SFU (LiveKit/Jitsi)
-│  │  │  │     └─ outbox/
-│  │  │  ├─ recorder/                         # Node service: receive SFU media → S3
-│  │  │  │  └─ src/{ingest,storage,emit}/
-│  │  │  └─ jobs/                             # Transcriber, summarizer queues
-│  │  └─ foundation/                          # FOUNDATION SERVICES (Core Platform)
-│  │     ├─ identity/                         # Realm-as-code, themes, scripts (Keycloak external)
-│  │     ├─ billing/
-│  │     │  ├─ domain/                        # Plan, Subscription, Quota, UsageLedger
-│  │     │  ├─ application/                   # Policy engine, quota checks API
-│  │     │  ├─ interfaces/
-│  │     │  │  ├─ rest/                       # /plans /subscriptions /quota/check
-│  │     │  │  └─ webhooks/                   # Stripe, VNPay webhooks
-│  │     │  └─ infrastructure/                # Postgres ledger, cache, geo/IP resolver
-│  │     ├─ file/
-│  │     │  ├─ domain/ application/ interfaces/rest/ infrastructure/s3/
-│  │     ├─ notify/
-│  │     │  ├─ domain/ application/ interfaces/ infrastructure/  # SES/SMTP, WS push
-│  │     └─ search/
-│  │        ├─ domain/                        # Doc, ACL, RelevancePolicy
-│  │        ├─ application/                   # indexers, query, context-provider
-│  │        ├─ interfaces/rest/               # /search/query, /search/context
-│  │        └─ infrastructure/                # OpenSearch client, pgvector/Qdrant
-│  ├─ packages/                               # Shared technical libs (server-side)
-│  │  ├─ api-clients/                         # OpenAPI generators for BE (Java/TS)
-│  │  ├─ auth-client/                         # Keycloak helpers (server)
-│  │  └─ utils/                               # logger, tracing, common tooling
-│  └─ shared-kernel/                          # Technical shared code (no domain logic)
-│     ├─ ts/
-│     └─ java/
+├─ apps/                                       # Aggregated user-facing applications (shells)
+│  ├─ unified-teamespace/                      # Integrated app (embeds chat/meet/pm UI)
+│  ├─ chat-app/                                # Standalone Chat app (if needed)
+│  ├─ meet-app/
+│  └─ pm-app/
 │
-├─ infra/                                     # Infrastructure as Code & ops
-│  ├─ terraform/
-│  │  ├─ modules/                             # vpc, eks, rds, s3, opensearch, redis/msk, alb/nlb, route53, acm, kms, waf
-│  │  └─ envs/{dev,stage,prod}/
-│  ├─ k8s/
-│  │  ├─ base/                                # Helm charts/manifests per service
-│  │  └─ ingress/                             # wildcard *.domain, tenant routing
-│  ├─ docker/                                 # dev compose: postgres, scylla/cassandra, minio, opensearch, redis, keycloak
+├─ packages/                                   # Shared libraries reused across services
+│  ├─ design-system/                           # tokens, theme, base components
+│  ├─ fe-utils/                                # frontend utils: logger, telemetry, date, i18n
+│  ├─ be-utils/                                # backend utils: JSON logger, tracing, http, outbox, idempotency
+│  ├─ api-clients/                             # generated OpenAPI/SDK clients (ts/java)
+│  ├─ auth-client/                             # OIDC helpers (browser & server)
+│  └─ event-schemas/                           # Avro/JSON Schemas + codegen types
+│
+├─ infra/
+│  ├─ docker/                                  # compose.dev.yml (pg, redis, minio, opensearch, redpanda, mailhog)
+│  ├─ k8s/                                     # kind config, wildcard ingress, base manifests
+│  ├─ helm/                                    # library chart + global values
+│  ├─ terraform/                               # (prod) vpc, eks, rds, s3, opensearch, route53…
 │  └─ certs/
 │
-├─ diagrams/                                  # All architecture diagrams
-│  ├─ c4/                                     # L1 Context, L2 Container, L3 Component
-│  └─ sequences/                              # Sequence diagrams (search, billing quota…)
+├─ contracts/                                  # Central source of truth (if not kept inside each service)
+│  ├─ openapi/                                 # can sync from each service via CI
+│  └─ events/
 │
-├─ docs/                                      # Documentation
-│  ├─ adr/                                    # Architecture Decision Records
-│  └─ runbooks/                               # SSO, quota, backup/restore, incident
+├─ diagrams/                                   # Mermaid/C4/sequence diagrams (ELK layout)
+│  ├─ architecture.md
+│  └─ system-context.md
 │
-├─ scripts/                                   # Tooling & automation scripts
-│  ├─ codegen.sh                              # generate clients from OpenAPI
-│  ├─ kc-export.sh / kc-import.sh             # Keycloak realm-as-code
-│  └─ seed-dev.sh                             # seed sample data
+├─ docs/                                       # ADR, runbooks, standards
+│  ├─ adr/
+│  └─ runbooks/
 │
-├─ contracts/                                 # Source of truth for APIs & Events
-│  ├─ openapi/
-│  │  ├─ pm.yaml
-│  │  ├─ chat.yaml
-│  │  ├─ meeting.yaml
-│  │  ├─ billing.yaml
-│  │  ├─ file.yaml
-│  │  ├─ notify.yaml
-│  │  └─ search.yaml
-│  └─ events/                                 # Avro/JSON schemas (pm.task.created, …)
-│
-├─ pnpm-workspace.yaml / turbo.json           # Build graph/workspaces
-├─ Makefile                                   # dev-up / build / test / deploy
-└─ .github/workflows/ci.yml                   # CI: path filters, contract-tests, quality gates
+├─ scripts/                                    # shared tools: codegen, kc-export/import, seed
+├─ Makefile
+├─ pnpm-workspace.yaml                         # or nx/turbo workspaces
+├─ turbo.json                                  # (optional) build graph
+└─ .github/workflows/                          # CI pipelines
+   ├─ ci.yml                                   # build+test+lint+scan
+   ├─ docker-publish.yml                       # build & push docker images
+   └─ helm-deploy.yml                          # helm lint & deploy per namespace
 ```
