@@ -1,0 +1,16 @@
+{
+  "name": "datn-monorepo",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "services/*",
+    "packages/*",
+    "scripts/*",
+    "docs/*"
+  ],
+  "scripts": {
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test"
+  }
+}

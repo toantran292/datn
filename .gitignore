@@ -12,9 +12,6 @@ infra/docker/.env.dev
 
 # Node
 node_modules/
-pnpm-lock.yaml
-yarn.lock
-package-lock.json
 
 # Java build
 .gradle/
