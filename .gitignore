@@ -1,0 +1,29 @@
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Local secrets / env
+infra/docker/.env.dev
+
+# Logs
+*.log
+
+# Node
+node_modules/
+pnpm-lock.yaml
+yarn.lock
+package-lock.json
+
+# Java build
+.gradle/
+build/
+out/
+
+# Python
+__pycache__/
+*.pyc
+
+# Docker
+*.pid

@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install deps (tolerant)
+        run: pnpm install --frozen-lockfile || true
+
+      - name: Lint & Test (placeholder)
+        run: |
+          echo "Run lint & test here"
+          # pnpm -w lint && pnpm -w test
+
+      # Turn on when having service Java
+      - name: Setup Java (Temurin 21)
+        if: ${{ false }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle

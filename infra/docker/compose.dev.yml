@@ -1,0 +1,155 @@
+version: "3.9"
+
+name: uts-dev
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: uts_pg
+    restart: unless-stopped
+    env_file:
+      - .env.dev
+    environment:
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_DB: ${PG_DB}
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - "${PG_PORT}:5432" # 41000 -> 5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [uts_net]
+
+  redis:
+    image: redis:7-alpine
+    container_name: uts_redis
+    command: ["redis-server", "--appendonly", "yes"]
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT}:6379" # 41100 -> 6379
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "PING"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    networks: [uts_net]
+
+  minio:
+    image: minio/minio:latest
+    container_name: uts_minio
+    command: ["server", "/data", "--console-address", ":9001"]
+    restart: unless-stopped
+    env_file:
+      - .env.dev
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio_data:/data
+    ports:
+      - "${MINIO_API_PORT}:9000"       # 41200 -> 9000
+      - "${MINIO_CONSOLE_PORT}:9001"   # 41201 -> 9001
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [uts_net]
+
+  opensearch:
+    image: opensearchproject/opensearch:1.3.18
+    container_name: uts_opensearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - plugins.security.disabled=true       # tắt security plugin (dev)
+      - bootstrap.memory_lock=true
+      - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
+    ulimits:
+      memlock: { soft: -1, hard: -1 }
+      nofile:  { soft: 65536, hard: 65536 }
+    volumes:
+      - os_data:/usr/share/opensearch/data   # giữ nguyên volume cũ tên os_data
+    ports:
+      - "${OPENSEARCH_PORT}:9200"            # 41300 -> 9200 (HTTP)
+      - "${OS_NODE_PORT:-0}:9600"            # tuỳ chọn; bỏ nếu không dùng
+    healthcheck:
+      test: ["CMD-SHELL", "curl --silent --fail http://localhost:9200 >/dev/null"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+    networks: [uts_net]
+
+  os_dashboards:
+    image: opensearchproject/opensearch-dashboards:1.3.18
+    container_name: uts_os_dashboards
+    restart: unless-stopped
+    environment:
+      - OPENSEARCH_HOSTS=["http://opensearch:9200"]
+      - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true  # bắt buộc nếu OS tắt security
+    depends_on:
+      opensearch:
+        condition: service_healthy
+    ports:
+      - "${OS_DASHBOARDS_PORT}:5601"        # 41301 -> 5601
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:5601/api/status >/dev/null"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+    networks: [uts_net]
+
+  redpanda:
+    image: redpandadata/redpanda:latest
+    container_name: uts_redpanda
+    command:
+      - redpanda
+      - start
+      - --overprovisioned
+      - --check=false
+      - --smp=1
+      - --memory=1G
+      - --reserve-memory=0M
+      - --node-id=0
+      - --kafka-addr=PLAINTEXT://0.0.0.0:9092,OUTSIDE://0.0.0.0:19092
+      - --advertise-kafka-addr=PLAINTEXT://redpanda:9092,OUTSIDE://localhost:${KAFKA_PORT}
+      - --pandaproxy-addr=0.0.0.0:8082
+      - --advertise-pandaproxy-addr=localhost:${PANDAPROXY_PORT}
+    restart: unless-stopped
+    ports:
+      - "${KAFKA_PORT}:19092"       # 41400 -> 19092 (external)
+      - "${PANDAPROXY_PORT}:8082"   # 41401 -> 8082
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster metadata --hosts localhost:9092 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    networks: [uts_net]
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: uts_mailhog
+    restart: unless-stopped
+    ports:
+      - "${MAILHOG_HTTP_PORT}:8025"  # 41500 -> 8025
+      - "${MAILHOG_SMTP_PORT}:1025"  # 41501 -> 1025
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "8025"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [uts_net]
+
+networks:
+  uts_net: {}
+
+volumes:
+  pg_data:
+  redis_data:
+  minio_data:
+  os_data:
