@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-test:
-    runs-on: self-hosted
+    runs-on: ${{ fromJSON(vars.CI_RUNNER_JSON) }}
     permissions:
       contents: read
     steps:
