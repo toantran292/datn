@@ -24,3 +24,10 @@ __pycache__/
 
 # Docker
 *.pid
+
+# Env
+.env
+.env.dev
+
+# key
+*.pem

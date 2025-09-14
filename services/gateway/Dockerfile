@@ -1,23 +1,14 @@
-# Stage 1: build
 FROM node:20-alpine AS builder
 WORKDIR /app
-COPY package*.json ./
-COPY tsconfig.json ./
-COPY pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml tsconfig.json ./
 COPY src ./src
+RUN npm i -g pnpm@9 && pnpm install --frozen-lockfile && pnpm build
 
-RUN npm install -g pnpm@9 \
-  && pnpm install --no-frozen-lockfile \
-  && pnpm run build
-
-# Stage 2: runtime
 FROM node:20-alpine
 WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
-COPY package*.json ./
-
-RUN npm install -g pnpm@9 \
-  && pnpm install --prod --no-frozen-lockfile
-
-EXPOSE 6969
+EXPOSE 8080
 CMD ["node", "dist/main.js"]

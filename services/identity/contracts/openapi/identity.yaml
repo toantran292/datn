@@ -1,0 +1,774 @@
+openapi: 3.0.3
+info:
+  title: UTS Identity API
+  version: 0.1.0
+  description: |
+    Identity service: Users, Orgs, Memberships, RBAC (org/project scope), Invitations, Audit.
+    - Gateway sẽ parse `/o/{org}/identity/**` và forward header `X-Org-ID: {org}`.
+    - Mọi org-scoped endpoint yêu cầu header `X-Org-ID`.
+    - Bảo mật: Bearer JWT (RS256, JWKS từ Identity).
+servers:
+  - url: https://api.dev.test
+    description: Dev via Gateway
+  - url: http://localhost:8081
+    description: Identity local (bỏ Gateway khi chạy local)
+
+tags:
+  - name: OIDC
+  - name: Auth
+  - name: Orgs
+  - name: Memberships
+  - name: Invitations
+  - name: RBAC
+  - name: Audit
+  - name: Internal
+
+paths:
+  /.well-known/jwks.json:
+    get:
+      tags: [OIDC]
+      summary: JWKS
+      description: Public JWKS used by Gateway/services to verify JWT.
+      security: []
+      responses:
+        '200':
+          description: JWKS
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  keys:
+                    type: array
+                    items:
+                      type: object
+
+  /oauth2/token:
+    post:
+      tags: [OIDC]
+      summary: OAuth2 token endpoint (Authorization Server)
+      description: Provided by Spring Authorization Server (auth code, refresh, client_credentials).
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                grant_type: { type: string }
+                client_id: { type: string }
+                client_secret: { type: string }
+                code: { type: string }
+                redirect_uri: { type: string, format: uri }
+                refresh_token: { type: string }
+                scope: { type: string }
+      responses:
+        '200':
+          description: Access token response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register user + bootstrap org (OWNER)
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Created user & org
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current user profile in org context
+      parameters:
+        - $ref: '#/components/parameters/OrgHeader'
+        - $ref: '#/components/parameters/RequestId'
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Me with membership snapshot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MeResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /orgs:
+    post:
+      tags: [Orgs]
+      summary: Create a new organization (caller becomes OWNER)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateOrgRequest' }
+      responses:
+        '201':
+          description: Org created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Organization' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+    get:
+      tags: [Orgs]
+      summary: List organizations of current user
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - $ref: '#/components/parameters/RequestId'
+      responses:
+        '200':
+          description: Paged orgs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedOrganizations'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /orgs/{orgId}/members:
+    get:
+      tags: [Memberships]
+      summary: List members of the org
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrgHeader'
+        - $ref: '#/components/parameters/OrgId'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Paged members
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedMembers'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+    post:
+      tags: [Memberships]
+      summary: Add existing user to the org
+      description: Caller must be ADMIN+ in the org.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrgHeader'
+        - $ref: '#/components/parameters/OrgId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AddMemberRequest' }
+      responses:
+        '201':
+          description: Member added
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Membership' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /orgs/{orgId}/members/{userId}:
+    patch:
+      tags: [Memberships]
+      summary: Update roles/member_type of a user in org
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrgHeader'
+        - $ref: '#/components/parameters/OrgId'
+        - $ref: '#/components/parameters/UserId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateMemberRequest' }
+      responses:
+        '200':
+          description: Updated membership
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Membership' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+    delete:
+      tags: [Memberships]
+      summary: Remove user from org
+      description: Cannot remove the last OWNER of the org.
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrgHeader'
+        - $ref: '#/components/parameters/OrgId'
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '204':
+          description: Removed
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /orgs/{orgId}/invitations:
+    post:
+      tags: [Invitations]
+      summary: Create an invitation to the org
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrgHeader'
+        - $ref: '#/components/parameters/OrgId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateInvitationRequest' }
+      responses:
+        '201':
+          description: Invitation created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Invitation' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /invitations/accept:
+    post:
+      tags: [Invitations]
+      summary: Accept invitation (one-time token)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AcceptInvitationRequest' }
+      responses:
+        '200':
+          description: Accepted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AcceptInvitationResponse' }
+        '410':
+          description: Gone (token expired/used)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /roles:
+    get:
+      tags: [RBAC]
+      summary: List roles
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Roles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Role' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /permissions:
+    get:
+      tags: [RBAC]
+      summary: List permissions
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Permissions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Permission' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /role-bindings:
+    get:
+      tags: [RBAC]
+      summary: Query role bindings
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrgHeader'
+        - in: query
+          name: user_id
+          schema: { type: string, format: uuid }
+        - in: query
+          name: scope_type
+          schema: { $ref: '#/components/schemas/ScopeType' }
+        - in: query
+          name: scope_id
+          schema: { type: string }
+      responses:
+        '200':
+          description: Bindings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/RoleBinding' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+    post:
+      tags: [RBAC]
+      summary: Create role binding (ORG/PROJECT scope)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrgHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateRoleBindingRequest' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RoleBinding' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /role-bindings/{id}:
+    delete:
+      tags: [RBAC]
+      summary: Delete role binding
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrgHeader'
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '204': { description: Deleted }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /audit-logs:
+    get:
+      tags: [Audit]
+      summary: Query audit logs by org / actor / action / time
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrgHeader'
+        - in: query
+          name: actor_user_id
+          schema: { type: string, format: uuid }
+        - in: query
+          name: action
+          schema: { type: string }
+        - in: query
+          name: from
+          schema: { type: string, format: date-time }
+        - in: query
+          name: to
+          schema: { type: string, format: date-time }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: Paged audit logs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedAuditLogs'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /internal/users/{userId}:
+    get:
+      tags: [Internal]
+      summary: Get user by id (internal)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: User
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /internal/orgs/{orgId}:
+    get:
+      tags: [Internal]
+      summary: Get org by id (internal)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrgId'
+      responses:
+        '200':
+          description: Org
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Organization' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /internal/memberships:
+    get:
+      tags: [Internal]
+      summary: Get membership by user+org (internal)
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: user_id
+          required: true
+          schema: { type: string, format: uuid }
+        - in: query
+          name: org_id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Membership
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Membership' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    OrgHeader:
+      name: X-Org-ID
+      in: header
+      required: true
+      description: Organization slug or UUID, forwarded by Gateway.
+      schema: { type: string }
+    RequestId:
+      name: X-Request-ID
+      in: header
+      required: false
+      schema: { type: string }
+    OrgId:
+      name: orgId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    Page:
+      name: page
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, default: 1 }
+    Size:
+      name: size
+      in: query
+      required: false
+      schema: { type: integer, minimum: 1, maximum: 200, default: 20 }
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Unauthorized:
+      description: Unauthorized
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Forbidden:
+      description: Forbidden
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    NotFound:
+      description: Not found
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Conflict:
+      description: Conflict
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    Unprocessable:
+      description: Unprocessable entity
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+
+  schemas:
+    UUID:
+      type: string
+      format: uuid
+    Email:
+      type: string
+      format: email
+    MemberType:
+      type: string
+      enum: [STAFF, PARTNER]
+    ScopeType:
+      type: string
+      enum: [ORG, PROJECT]
+
+    TokenResponse:
+      type: object
+      properties:
+        access_token: { type: string }
+        token_type: { type: string, example: Bearer }
+        expires_in: { type: integer }
+        refresh_token: { type: string }
+        scope: { type: string }
+
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+        message: { type: string }
+        request_id: { type: string }
+
+    User:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        email: { $ref: '#/components/schemas/Email' }
+        disabled: { type: boolean }
+
+    Organization:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        slug: { type: string }
+        display_name: { type: string }
+
+    Membership:
+      type: object
+      properties:
+        user_id: { $ref: '#/components/schemas/UUID' }
+        org_id: { $ref: '#/components/schemas/UUID' }
+        roles:
+          type: array
+          items: { type: string }
+        member_type: { $ref: '#/components/schemas/MemberType' }
+
+    Role:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        builtin: { type: boolean }
+
+    Permission:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+
+    Invitation:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        org_id: { $ref: '#/components/schemas/UUID' }
+        email: { $ref: '#/components/schemas/Email' }
+        token: { type: string }
+        accepted_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    RoleBinding:
+      type: object
+      properties:
+        id: { $ref: '#/components/schemas/UUID' }
+        org_id: { $ref: '#/components/schemas/UUID' }
+        user_id: { $ref: '#/components/schemas/UUID' }
+        role_id: { type: integer }
+        scope_type: { $ref: '#/components/schemas/ScopeType' }
+        scope_id:
+          type: string
+          nullable: true
+
+    AuditLog:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        actor_user_id: { $ref: '#/components/schemas/UUID' }
+        org_id: { $ref: '#/components/schemas/UUID' }
+        action: { type: string }
+        meta: { type: object, additionalProperties: true }
+        at: { type: string, format: date-time }
+
+    RegisterRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { $ref: '#/components/schemas/Email' }
+        password: { type: string, minLength: 8 }
+        org_name: { type: string }
+        org_slug: { type: string }
+
+    RegisterResponse:
+      type: object
+      properties:
+        user: { $ref: '#/components/schemas/User' }
+        org: { $ref: '#/components/schemas/Organization' }
+
+    MeResponse:
+      type: object
+      properties:
+        user: { $ref: '#/components/schemas/User' }
+        org: { $ref: '#/components/schemas/Organization' }
+        membership: { $ref: '#/components/schemas/Membership' }
+
+    CreateOrgRequest:
+      type: object
+      required: [slug, display_name]
+      properties:
+        slug: { type: string }
+        display_name: { type: string }
+
+    AddMemberRequest:
+      type: object
+      required: [email]
+      properties:
+        email: { $ref: '#/components/schemas/Email' }
+        roles:
+          type: array
+          items: { type: string }
+          default: [MEMBER]
+        member_type:
+          $ref: '#/components/schemas/MemberType'
+
+    UpdateMemberRequest:
+      type: object
+      properties:
+        roles:
+          type: array
+          items: { type: string }
+        member_type:
+          $ref: '#/components/schemas/MemberType'
+
+    CreateInvitationRequest:
+      type: object
+      required: [email]
+      properties:
+        email: { $ref: '#/components/schemas/Email' }
+        roles:
+          type: array
+          items: { type: string }
+          default: [MEMBER]
+        member_type:
+          $ref: '#/components/schemas/MemberType'
+
+    AcceptInvitationRequest:
+      type: object
+      required: [token]
+      properties:
+        token: { type: string }
+        password:
+          type: string
+          description: Password to set if user does not exist.
+
+    AcceptInvitationResponse:
+      type: object
+      properties:
+        status: { type: string, example: accepted }
+        org_id: { $ref: '#/components/schemas/UUID' }
+        user_id: { $ref: '#/components/schemas/UUID' }
+
+    PagedOrganizations:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Organization' }
+        page: { type: integer }
+        size: { type: integer }
+        total: { type: integer }
+
+    PagedMembers:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              user: { $ref: '#/components/schemas/User' }
+              membership: { $ref: '#/components/schemas/Membership' }
+        page: { type: integer }
+        size: { type: integer }
+        total: { type: integer }
+
+    PagedAuditLogs:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/AuditLog' }
+        page: { type: integer }
+        size: { type: integer }
+        total: { type: integer }

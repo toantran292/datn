@@ -1,21 +1,14 @@
+// src/main.ts
 import { NestFactory } from '@nestjs/core';
-import { Module, Controller, Get } from '@nestjs/common';
+import { AppModule } from './app.module';
+import * as dotenv from 'dotenv';
 
-@Controller()
-class AppController {
-  @Get()
-  getHello(): string {
-    return 'Hello from Gateway Service!';
-  }
-}
-
-@Module({
-  controllers: [AppController],
-})
-class AppModule {}
+dotenv.config();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  await app.listen(6969);
+  const PORT = process.env.GATEWAY_PORT ?? '8080';
+  await app.listen(Number(PORT));
+  console.log(`Gateway listening on :${PORT}`);
 }
 bootstrap();
