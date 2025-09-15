@@ -29,7 +29,6 @@ public class AuthController {
         return ResponseEntity.status(201).body(new RegisterRes(userId.toString()));
     }
 
-    // Optional: tiện test nhanh
     @GetMapping("/me")
     public ResponseEntity<?> me(@RequestHeader("X-User-ID") String userId,
                                 @RequestHeader("X-Org-ID") String orgId) {

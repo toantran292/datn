@@ -6,7 +6,6 @@ import com.datn.identity.domain.outbox.OutboxMessage;
 import com.datn.identity.domain.outbox.OutboxRepository;
 import com.datn.identity.domain.user.*;
 import com.datn.identity.infrastructure.util.Jsons;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -61,7 +60,6 @@ public class UserApplicationService {
 
         var userOpt = users.findByEmail(emailCI);
         if (userOpt.isPresent()) {
-            // account exists but not yet synced -> do NOT allow sync
             throw new IllegalStateException("google_sync_not_allowed");
         } else {
             var random = UUID.randomUUID().toString();

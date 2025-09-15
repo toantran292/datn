@@ -18,11 +18,6 @@ public class RBACController {
         this.rbac = rbac;
     }
 
-    /**
-     * Tạo role binding.
-     * Header:
-     *  - X-User-ID: actor (đã auth ở Gateway)
-     */
     @PostMapping("/bindings")
     public ResponseEntity<CreateBindingRes> createBinding(
             @RequestHeader("X-User-ID") String actorUserId,
@@ -40,12 +35,6 @@ public class RBACController {
         return ResponseEntity.status(201).body(new CreateBindingRes(id.toString()));
     }
 
-    /**
-     * Xoá role binding.
-     * Header:
-     *  - X-User-ID: actor
-     *  - X-Org-ID : org
-     */
     @DeleteMapping("/bindings/{bindingId}")
     public ResponseEntity<?> deleteBinding(@RequestHeader("X-User-ID") String actorUserId,
                                            @RequestHeader("X-Org-ID") String orgId,

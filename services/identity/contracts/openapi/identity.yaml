@@ -4,14 +4,14 @@ info:
   version: 0.1.0
   description: |
     Identity service: Users, Orgs, Memberships, RBAC (org/project scope), Invitations, Audit.
-    - Gateway sẽ parse `/o/{org}/identity/**` và forward header `X-Org-ID: {org}`.
-    - Mọi org-scoped endpoint yêu cầu header `X-Org-ID`.
-    - Bảo mật: Bearer JWT (RS256, JWKS từ Identity).
+    - Gateway will parse `/o/{org}/identity/**` and forward header `X-Org-ID: {org}`.
+    - All org-scoped endpoint require header `X-Org-ID`.
+    - Security: Bearer JWT (RS256, JWKS from Identity).
 servers:
-  - url: https://api.dev.test
+  - url: http://localhost:8080/identity
     description: Dev via Gateway
-  - url: http://localhost:8081
-    description: Identity local (bỏ Gateway khi chạy local)
+  - url: http://localhost:40000
+    description: Identity local
 
 tags:
   - name: OIDC
@@ -42,6 +42,30 @@ paths:
                     type: array
                     items:
                       type: object
+
+  /auth/token:
+    post:
+      tags: [Auth]
+      summary: Password-based login
+      description: Login with email/password and optional org ID.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordLoginRequest'
+      responses:
+        '200':
+          description: Access token response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '400':
+          $ref: '#/components/responses/BadRequest'
 
   /oauth2/token:
     post:
@@ -76,7 +100,7 @@ paths:
   /auth/register:
     post:
       tags: [Auth]
-      summary: Register user + bootstrap org (OWNER)
+      summary: Register user (basic registration)
       security: []
       parameters:
         - $ref: '#/components/parameters/RequestId'
@@ -85,14 +109,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RegisterRequest'
+              $ref: '#/components/schemas/BasicRegisterRequest'
       responses:
         '201':
-          description: Created user & org
+          description: Created user
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RegisterResponse'
+                $ref: '#/components/schemas/BasicRegisterResponse'
         '409':
           $ref: '#/components/responses/Conflict'
         '400':
@@ -135,7 +159,7 @@ paths:
           description: Org created
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Organization' }
+              schema: { $ref: '#/components/schemas/IdResponse' }
         '409': { $ref: '#/components/responses/Conflict' }
         '400': { $ref: '#/components/responses/BadRequest' }
         '401': { $ref: '#/components/responses/Unauthorized' }
@@ -156,6 +180,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PagedOrganizations'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /orgs/resolve:
+    get:
+      tags: [Orgs]
+      summary: Resolve organization by slug
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: slug
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Organization found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  org_id: { type: string, format: uuid }
+                  slug: { type: string }
+                  display_name: { type: string }
+        '404': { $ref: '#/components/responses/NotFound' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
   /orgs/{orgId}/members:
@@ -204,6 +253,26 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
 
+  /orgs/{orgId}/members/roles:
+    put:
+      tags: [Memberships]
+      summary: Update member roles
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrgId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateMemberRolesRequest' }
+      responses:
+        '204':
+          description: Roles updated
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
   /orgs/{orgId}/members/{userId}:
     patch:
       tags: [Memberships]
@@ -248,7 +317,7 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
 
-  /orgs/{orgId}/invitations:
+  /invitations:
     post:
       tags: [Invitations]
       summary: Create an invitation to the org
@@ -256,7 +325,6 @@ paths:
         - bearerAuth: []
       parameters:
         - $ref: '#/components/parameters/OrgHeader'
-        - $ref: '#/components/parameters/OrgId'
       requestBody:
         required: true
         content:
@@ -267,7 +335,7 @@ paths:
           description: Invitation created
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Invitation' }
+              schema: { $ref: '#/components/schemas/CreateInvitationResponse' }
         '409': { $ref: '#/components/responses/Conflict' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
@@ -406,6 +474,119 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
+
+  /rbac/bindings:
+    post:
+      tags: [RBAC]
+      summary: Create role binding
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrgHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateRoleBindingRequest' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CreateRoleBindingResponse' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /rbac/bindings/{bindingId}:
+    delete:
+      tags: [RBAC]
+      summary: Delete role binding
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/OrgHeader'
+        - in: path
+          name: bindingId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Deleted }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /authz/check:
+    get:
+      tags: [Auth]
+      summary: Check permission for user in org
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: user_id
+          required: true
+          schema: { type: string, format: uuid }
+        - in: query
+          name: org_id
+          required: true
+          schema: { type: string, format: uuid }
+        - in: query
+          name: permission
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Permission check result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PermissionCheckResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /authz/check/batch:
+    post:
+      tags: [Auth]
+      summary: Batch permission check
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items: { $ref: '#/components/schemas/BatchCheckItem' }
+      responses:
+        '200':
+          description: Batch check results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BatchCheckResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /users:
+    post:
+      tags: [Users]
+      summary: Create user
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateUserRequest' }
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/IdResponse' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
 
   /audit-logs:
     get:
@@ -661,6 +842,26 @@ components:
         meta: { type: object, additionalProperties: true }
         at: { type: string, format: date-time }
 
+    BasicRegisterRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { $ref: '#/components/schemas/Email' }
+        password: { type: string, minLength: 8 }
+
+    BasicRegisterResponse:
+      type: object
+      properties:
+        user_id: { type: string }
+
+    PasswordLoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { $ref: '#/components/schemas/Email' }
+        password: { type: string }
+        orgId: { type: string, format: uuid }
+
     RegisterRequest:
       type: object
       required: [email, password]
@@ -676,6 +877,61 @@ components:
         user: { $ref: '#/components/schemas/User' }
         org: { $ref: '#/components/schemas/Organization' }
 
+    IdResponse:
+      type: object
+      properties:
+        id: { type: string }
+
+    CreateUserRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { $ref: '#/components/schemas/Email' }
+        password: { type: string, minLength: 8 }
+
+    UpdateMemberRolesRequest:
+      type: object
+      required: [userId]
+      properties:
+        userId: { type: string, format: uuid }
+        roles: 
+          type: array
+          items: { type: string }
+
+    CreateInvitationResponse:
+      type: object
+      properties:
+        token: { type: string }
+
+    CreateRoleBindingResponse:
+      type: object
+      properties:
+        id: { type: string }
+
+    PermissionCheckResponse:
+      type: object
+      properties:
+        user_id: { type: string }
+        org_id: { type: string }
+        permission: { type: string }
+        allow: { type: boolean }
+        reason: { type: string }
+
+    BatchCheckItem:
+      type: object
+      required: [user_id, org_id, permission]
+      properties:
+        user_id: { type: string, format: uuid }
+        org_id: { type: string, format: uuid }
+        permission: { type: string }
+
+    BatchCheckResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items: { $ref: '#/components/schemas/PermissionCheckResponse' }
+
     MeResponse:
       type: object
       properties:
@@ -685,10 +941,11 @@ components:
 
     CreateOrgRequest:
       type: object
-      required: [slug, display_name]
+      required: [name]
       properties:
+        name: { type: string }
         slug: { type: string }
-        display_name: { type: string }
+        ownerUserId: { type: string, format: uuid }
 
     AddMemberRequest:
       type: object

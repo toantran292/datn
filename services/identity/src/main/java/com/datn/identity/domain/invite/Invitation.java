@@ -8,7 +8,7 @@ import java.util.UUID;
 public final class Invitation {
     private final UUID id;
     private final UUID orgId;
-    private final String email;          // đổi từ emailCI → email (CITEXT trong DB)
+    private final String email;
     private final String token;
     private final Instant createdAt;
     private final Instant acceptedAt;    // nullable
@@ -32,8 +32,8 @@ public final class Invitation {
         return new Invitation(
                 UUID.randomUUID(),
                 orgId,
-                email.toLowerCase(),               // chuẩn hoá lowercase
-                UUID.randomUUID().toString(),      // token random
+                email.toLowerCase(),
+                UUID.randomUUID().toString(), 
                 Instant.now(),
                 null,
                 type == null ? MemberType.STAFF : type

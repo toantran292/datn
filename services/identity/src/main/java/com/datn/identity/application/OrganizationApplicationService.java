@@ -36,8 +36,7 @@ public class OrganizationApplicationService {
 
         var org = Organization.create(slug, displayName);
         orgs.save(org);
-
-        // owner becomes OWNER
+        
         memberships.save(Membership.of(ownerUserId, org.id(), Set.of("OWNER"), MemberType.STAFF));
 
         var evt1 = new IdentityEvents.OrganizationCreated(org.id(), org.slug().value(), org.displayName());

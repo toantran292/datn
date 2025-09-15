@@ -1,4 +1,3 @@
-// src/main/java/com/datn/identity/interfaces/api/AuthTokenController.java
 package com.datn.identity.interfaces.api;
 
 import com.datn.identity.application.TokenService;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
-// AuthTokenController.java
 @RestController
 @RequestMapping("/auth")
 public class AuthTokenController {

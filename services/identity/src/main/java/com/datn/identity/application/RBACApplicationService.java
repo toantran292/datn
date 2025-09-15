@@ -29,12 +29,10 @@ public class RBACApplicationService implements RBACPolicy {
         this.mapper = mapper;
     }
 
-    /** Tạo role binding (ORG/PROJECT scope). */
     @Transactional
     public UUID createBinding(UUID actorUserId, UUID orgId, UUID targetUserId,
                               Integer roleId, ScopeType scope, String scopeId) {
         assertActorCanBind(actorUserId, orgId, memberships);
-        // target user phải là member của org
         memberships.find(targetUserId, orgId)
                 .orElseThrow(() -> new IllegalStateException("target_not_member"));
 
@@ -45,14 +43,9 @@ public class RBACApplicationService implements RBACPolicy {
                 rb.id(), orgId, targetUserId, roleId, scope.name(), scopeId);
         outbox.append(OutboxMessage.create(evt.topic(), toJson(evt)));
 
-        // Lưu ý: không cập nhật cache roles trong memberships ở đây.
-        // Nếu bạn muốn “cache” vai trò ORG-level trong memberships, hãy dùng OrganizationApplicationService.updateMemberRoles()
-        // để đảm bảo một luồng thống nhất phát IdentityEvents.MembershipRolesUpdated.
-
         return rb.id();
     }
 
-    /** Xoá role binding. */
     @Transactional
     public void deleteBinding(UUID actorUserId, UUID orgId, UUID bindingId){
         assertActorCanBind(actorUserId, orgId, memberships);
@@ -67,7 +60,6 @@ public class RBACApplicationService implements RBACPolicy {
         outbox.append(OutboxMessage.create(evt.topic(), toJson(evt)));
     }
 
-    // ===== RBACPolicy (stub mặc định): actor phải là OWNER/ADMIN trong org =====
     @Override
     public void assertActorCanBind(UUID actorUserId, UUID orgId, MembershipRepository memberships) {
         var m = memberships.find(actorUserId, orgId)

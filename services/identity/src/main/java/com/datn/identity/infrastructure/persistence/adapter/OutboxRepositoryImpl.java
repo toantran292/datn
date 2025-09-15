@@ -23,7 +23,7 @@ public class OutboxRepositoryImpl implements OutboxRepository {
         try {
             PGobject jsonb = new PGobject();
             jsonb.setType("jsonb");
-            jsonb.setValue(msg.payloadJson()); // payload là chuỗi JSON
+            jsonb.setValue(msg.payloadJson());
             jdbc.update(
                     "INSERT INTO outbox(topic, payload, created_at) VALUES (?, ?, now())",
                     msg.topic(), jsonb

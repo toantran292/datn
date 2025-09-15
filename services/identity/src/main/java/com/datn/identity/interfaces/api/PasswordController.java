@@ -25,7 +25,6 @@ public class PasswordController {
     @PostMapping("/password/set")
     public ResponseEntity<Void> set(@RequestHeader("X-User-ID") String actorUserId,
                                     @Valid @RequestBody SetPasswordReq req) {
-        // actorUserId đến từ HeaderAuthFilter (dev) hoặc từ JWT (prod)
         userApp.setPassword(UUID.fromString(actorUserId), req.newPassword());
         return ResponseEntity.noContent().build(); // 204
     }

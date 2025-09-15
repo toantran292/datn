@@ -23,8 +23,7 @@ public class RoleBindingRepositoryImpl implements RoleBindingRepository {
         return e;
     }
     private static RoleBinding toDomain(RoleBindingEntity e){
-        return RoleBinding.create(e.getOrgId(), e.getUserId(), e.getRoleId(), e.getScope(), e.getScopeId())
-                ; // create() sinh id mới—để giữ id cũ, thêm ctor public trong domain:
+        return RoleBinding.create(e.getOrgId(), e.getUserId(), e.getRoleId(), e.getScope(), e.getScopeId());
     }
     @Override public void save(RoleBinding rb){ repo.save(toEntity(rb)); }
     @Override public void delete(UUID id){ repo.deleteById(id); }

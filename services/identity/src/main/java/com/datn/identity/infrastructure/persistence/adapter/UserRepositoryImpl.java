@@ -5,7 +5,6 @@ import com.datn.identity.domain.user.UserRepository;
 import com.datn.identity.infrastructure.persistence.entity.UserEntity;
 import com.datn.identity.infrastructure.persistence.springdata.UserJpaRepo;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 import java.util.UUID;

@@ -3,7 +3,6 @@ package com.datn.identity.domain.invite;
 import com.datn.identity.domain.org.MembershipRepository;
 
 import java.util.Arrays;
-import java.util.Set;
 import java.util.UUID;
 
 public interface InvitationPolicy {
@@ -14,7 +13,6 @@ public interface InvitationPolicy {
     }
 
     default void assertRolesWithinActorPower(UUID actorUserId, UUID orgId, String[] roles, MembershipRepository memberships){
-        // Simple baseline: OWNER can grant any; ADMIN cannot grant OWNER
         var m = memberships.find(actorUserId, orgId).orElseThrow();
         if (m.roles().contains("OWNER")) return;
         if (Arrays.stream(roles).anyMatch(r -> r.equalsIgnoreCase("OWNER")))

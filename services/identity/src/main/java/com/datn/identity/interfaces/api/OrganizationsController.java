@@ -46,7 +46,6 @@ public class OrganizationsController {
         return ResponseEntity.noContent().build();
     }
 
-    // com.datn.identity.interfaces.api.OrganizationsController (bổ sung)
     @GetMapping("/resolve")
     public ResponseEntity<?> resolve(@RequestParam("slug") String slug) {
         return orgs.findBySlug(slug)

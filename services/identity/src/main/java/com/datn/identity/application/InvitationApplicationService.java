@@ -18,8 +18,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -43,7 +41,6 @@ public class InvitationApplicationService {
         this.hasher = hasher; this.pwdPolicy = pwdPolicy; this.outbox = outbox; this.mapper = mapper;
     }
 
-    /** Tạo invite với memberType & (tuỳ chọn) roles đề xuất; mặc định roles ["MEMBER"]. */
     @Transactional
     public String createInvitation(UUID actorUserId, UUID orgId, String emailRaw, MemberType type) {
         // TODO: check actor permission in org (OWNER/ADMIN)
@@ -60,18 +57,12 @@ public class InvitationApplicationService {
         return inv.token();
     }
 
-    /** Accept:
-     *  - Upsert user (nếu chưa có, yêu cầu password).
-     *  - Thêm membership roles default ["MEMBER"] nếu chưa có.
-     *  - Mark invitation accepted.
-     */
     @Transactional
     public AcceptResult accept(String token, String rawPasswordIfNew) {
         var inv = invites.findByToken(token)
                 .orElseThrow(() -> new IllegalArgumentException("invalid_token"));
         if (inv.acceptedAt() != null) throw new IllegalStateException("already_accepted");
 
-        // 1) Lấy (hoặc tạo) user theo email trong invite
         var email = inv.email();
         var user = users.findByEmail(email).orElseGet(() -> {
             if (rawPasswordIfNew == null || rawPasswordIfNew.isBlank()) {
@@ -89,17 +80,15 @@ public class InvitationApplicationService {
             return u;
         });
 
-        // 2) Bảo đảm user là member của org (roles mặc định: MEMBER)
         var orgId = inv.orgId();
         if (memberships.find(user.id(), orgId).isEmpty()) {
-            var roles = java.util.Set.of("MEMBER"); // Invitation KHÔNG còn roles
+            var roles = java.util.Set.of("MEMBER");
             memberships.save(Membership.of(user.id(), orgId, roles, inv.memberType()));
 
             var mEvt = new IdentityEvents.MembershipAdded(orgId, user.id(), roles, inv.memberType().name());
             outbox.append(OutboxMessage.create(mEvt.topic(), toJson(mEvt)));
         }
 
-        // 3) Đánh dấu đã accept và phát event
         invites.save(inv.markAccepted());
 
         var evt = new IdentityEvents.InvitationAccepted(orgId, user.id(), email);
