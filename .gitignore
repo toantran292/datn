@@ -6,6 +6,7 @@
 
 # Local secrets / env
 infra/docker/.env.dev
+.env
 
 # Logs
 *.log
@@ -24,3 +25,6 @@ __pycache__/
 
 # Docker
 *.pid
+
+# JetBrains IDE (WebStorm/IntelliJ)
+.idea/
