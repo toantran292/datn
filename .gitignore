@@ -6,7 +6,6 @@
 
 # Local secrets / env
 infra/docker/.env.dev
-.env
 
 # Logs
 *.log
