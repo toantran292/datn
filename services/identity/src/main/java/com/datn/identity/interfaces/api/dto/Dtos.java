@@ -13,7 +13,7 @@ public class Dtos {
     public record IdRes(String id) {}
 
     // Orgs
-    public record CreateOrgReq(@NotBlank String name, String slug, String ownerUserId) {}
+    public record CreateOrgReq(String ownerUserId, @NotBlank String slug, @NotBlank String name) {}
     public record UpdateMemberRolesReq(@NotBlank String userId, Set<String> roles) {}
 
     // Invitations

@@ -70,6 +70,10 @@ public class OrganizationApplicationService {
         return orgs.findBySlug(slug);
     }
 
+    public boolean isMember(UUID userId, UUID orgId) {
+        return memberships.find(userId, orgId).isPresent();
+    }
+
     private String toJson(Object o) {
         try { return mapper.writeValueAsString(o); }
         catch (JsonProcessingException e) { throw new RuntimeException(e); }

@@ -13,22 +13,25 @@ Assigned Ports
 
 ID | Service | HTTP/API | WS | Console/Admin | In-Container
 -- | ------- | -------- | -- | ------------- | -----------
-— | API Gateway | 8080 | — | — | 8080 (HTTP)
-0 | Identity Service | 40000 | 40001 | 40002 | 40000 (HTTP)
-1 | Notification Service | 40100 | 40101 | 40102 | (service default)
-2 | Billing Service | 40200 | 40201 | 40202 | (service default)
-3 | File Service | 40300 | 40301 | 40302 | (service default)
-4 | Project Management | 40400 | 40401 | 40402 | (service default)
-5 | Chat Service | 40500 | 40501 | 40502 | (service default; WS on 40501)
-6 | Meeting Service | 40600 | 40601 | 40602 | (service default; WS on 40601)
-7 | Postgres | 41000 | — | — | 5432
-8 | Redis | 41100 | — | — | 6379
-9 | MinIO API | 41200 | — | 41201 | 9000/9001
-10 | OpenSearch | 41300 | — | 41301 | 9200/9201
-11 | Kafka (Redpanda) | 41400 | — | — | 19092
-12 | Pandaproxy | 41401 | — | — | 8082
-13 | MailHog HTTP | 41500 | — | — | 8025
-14 | MailHog SMTP | 41501 | — | — | 1025
+—  | API Gateway (Edge)   | —        | —      | —             | 8080 (HTTP)
+—  | BFF (NestJS)         | —        | —      | —             | 40800 (HTTP)
+—  | Auth Service (Go)    | —        | —      | —             | 40900 (HTTP)
+0  | Identity Service     | 40000    | 40001  | 40002         | 40000 (HTTP)
+1  | Notification Service | 40100    | 40101  | 40102         | (service default)
+2  | Billing Service      | 40200    | 40201  | 40202         | (service default)
+3  | File Service         | 40300    | 40301  | 40302         | (service default)
+4  | Project Management   | 40400    | 40401  | 40402         | (service default)
+5  | Chat Service         | 40500    | 40501  | 40502         | (service default; WS on 40501)
+6  | Meeting Service      | 40600    | 40601  | 40602         | (service default; WS on 40601)
+7  | Postgres             | 41000    | —      | —             | 5432
+8  | Redis                | 41100    | —      | —             | 6379
+9  | MinIO API            | 41200    | —      | 41201         | 9000/9001
+10 | OpenSearch           | 41300    | —      | 41301         | 9200/9201
+11 | Kafka (Redpanda)     | 41400    | —      | —             | 19092
+12 | Pandaproxy           | 41401    | —      | —             | 8082
+13 | MailHog HTTP         | 41500    | —      | —             | 8025
+14 | MailHog SMTP         | 41501    | —      | —             | 1025
+
 
 Notes
 - Identity Service must be exposed at host port 40000 (HTTP). This is the default expected by other components and examples.
