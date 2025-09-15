@@ -13,7 +13,7 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
     ports:
-      - "${PG_PORT}:5432" # 41000 -> 5432
+      - "${PG_PORT}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
@@ -27,7 +27,7 @@ services:
     command: ["redis-server", "--appendonly", "yes"]
     restart: unless-stopped
     ports:
-      - "${REDIS_PORT}:6379" # 41100 -> 6379
+      - "${REDIS_PORT}:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -50,8 +50,8 @@ services:
     volumes:
       - minio_data:/data
     ports:
-      - "${MINIO_API_PORT}:9000"       # 41200 -> 9000
-      - "${MINIO_CONSOLE_PORT}:9001"   # 41201 -> 9001
+      - "${MINIO_API_PORT}:9000"
+      - "${MINIO_CONSOLE_PORT}:9001"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 10s
@@ -65,17 +65,17 @@ services:
     restart: unless-stopped
     environment:
       - discovery.type=single-node
-      - plugins.security.disabled=true       # tắt security plugin (dev)
+      - plugins.security.disabled=true
       - bootstrap.memory_lock=true
       - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
     ulimits:
       memlock: { soft: -1, hard: -1 }
       nofile:  { soft: 65536, hard: 65536 }
     volumes:
-      - os_data:/usr/share/opensearch/data   # giữ nguyên volume cũ tên os_data
+      - os_data:/usr/share/opensearch/data
     ports:
-      - "${OPENSEARCH_PORT}:9200"            # 41300 -> 9200 (HTTP)
-      - "${OS_NODE_PORT}:9600"            # 41302 -> 9600 (HTTP)
+      - "${OPENSEARCH_PORT}:9200"
+      - "${OS_NODE_PORT}:9600"
     healthcheck:
       test: ["CMD-SHELL", "curl --silent --fail http://localhost:9200 >/dev/null"]
       interval: 10s
@@ -89,12 +89,12 @@ services:
     restart: unless-stopped
     environment:
       - OPENSEARCH_HOSTS=["http://opensearch:9200"]
-      - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true  # bắt buộc nếu OS tắt security
+      - DISABLE_SECURITY_DASHBOARDS_PLUGIN=true
     depends_on:
       opensearch:
         condition: service_healthy
     ports:
-      - "${OS_DASHBOARDS_PORT}:5601"        # 41301 -> 5601
+      - "${OS_DASHBOARDS_PORT}:5601"
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:5601/api/status >/dev/null"]
       interval: 10s
@@ -143,21 +143,6 @@ services:
       retries: 10
     networks: [uts_net]
 
-  gateway:
-    build:
-      context: ../../services/gateway
-      dockerfile: Dockerfile
-    container_name: uts_gateway
-    environment:
-      - GATEWAY_PORT=8080
-      - IDENTITY_BASE_URL=${IDENTITY_BASE_URL:-http://host.docker.internal:40000}
-      - TOKEN_ISSUER=identity
-    ports:
-      - "8080:8080"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    networks: [uts_net]
-
   identity:
     build:
       context: ../../services/identity
@@ -168,18 +153,14 @@ services:
       - .env.dev
     environment:
       - PORT=${IDENTITY_PORT}
-      - PWD_PEPPER=${PWD_PEPPER}
-      # - SPRING_PROFILES_ACTIVE=docker
-      - DB_URL=jdbc:postgresql://postgres:5432/${PG_DB}
-      - DB_USER=${PG_USER}
-      - DB_PASSWORD=${PG_PASSWORD}
-      # - SPRING_REDIS_HOST=redis
-      # - SPRING_REDIS_PORT=6379
-      # - SPRING_KAFKA_BOOTSTRAP_SERVERS=redpanda:9092
-      - RSA_PRIVATE_KEY_PATH=${RSA_PRIVATE_KEY_PATH}
-      - RSA_PUBLIC_KEY_PATH=${RSA_PUBLIC_KEY_PATH}
-      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
-      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - PWD_PEPPER=${IDENTITY_PWD_PEPPER}
+      - DB_URL=${IDENTITY_DB_URL}
+      - DB_USER=${IDENTITY_DB_USER}
+      - DB_PASSWORD=${IDENTITY_DB_PASSWORD}
+      - RSA_PRIVATE_KEY_PATH=${IDENTITY_RSA_PRIVATE_KEY_PATH}
+      - RSA_PUBLIC_KEY_PATH=${IDENTITY_RSA_PUBLIC_KEY_PATH}
+      - GOOGLE_CLIENT_ID=${IDENTITY_GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${IDENTITY_GOOGLE_CLIENT_SECRET}
     ports:
       - "${IDENTITY_PORT}:40000"
     depends_on:
