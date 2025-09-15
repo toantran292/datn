@@ -25,6 +25,3 @@ __pycache__/
 
 # Docker
 *.pid
-
-# JetBrains IDE (WebStorm/IntelliJ)
-.idea/
