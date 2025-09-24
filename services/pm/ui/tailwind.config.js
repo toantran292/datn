@@ -1,7 +1,7 @@
 const path = require("path");
 const config = require("@unified-teamspace/tailwind-config/tailwind.config.js");
 
-const rootDir = path.join(__dirname, "..", "..", "..", "..");
+const rootDir = path.resolve(__dirname, "..", "..", "..");
 
 config.content.files = [
   ...new Set([

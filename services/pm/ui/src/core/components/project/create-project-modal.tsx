@@ -14,12 +14,9 @@ type Props = {
 export const CreateProjectModal: FC<Props> = (props) => {
   const { isOpen, onClose, setToFavorite = false, workspaceSlug, data, templateId } = props;
 
-  console.log("isOpen", isOpen);
-
   return (
     <ModalCore isOpen={isOpen} position={EModalPosition.TOP} width={EModalWidth.XXL}>
-      ádakdskadkaksdkaksdkakakdskasdkskdkd
-      {/* <CreateProjectForm
+      <CreateProjectForm
         setToFavorite={setToFavorite}
         workspaceSlug={workspaceSlug}
         onClose={onClose}
@@ -27,7 +24,7 @@ export const CreateProjectModal: FC<Props> = (props) => {
         handleNextStep={() => {}}
         data={data}
         templateId={templateId}
-      /> */}
+      />
     </ModalCore>
   );
 };

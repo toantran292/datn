@@ -408,6 +408,12 @@ importers:
       '@unified-teamspace/fe-utils':
         specifier: workspace:*
         version: link:../../../packages/fe-utils
+      '@unified-teamspace/hooks':
+        specifier: workspace:*
+        version: link:../../../packages/hooks
+      '@unified-teamspace/types':
+        specifier: workspace:*
+        version: link:../../../packages/types
       '@unified-teamspace/ui':
         specifier: workspace:*
         version: link:../../../packages/design-system/ui
@@ -417,12 +423,21 @@ importers:
       clsx:
         specifier: ^2.0.0
         version: 2.1.1
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
       lucide-react:
         specifier: ^0.469.0
         version: 0.469.0(react@18.3.1)
+      mobx:
+        specifier: ^6.10.0
+        version: 6.13.7
       mobx-react:
         specifier: ^9.1.1
         version: 9.2.0(mobx@6.13.7)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      mobx-utils:
+        specifier: ^6.0.8
+        version: 6.1.1(mobx@6.13.7)
       next:
         specifier: 14.2.30
         version: 14.2.30(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -439,6 +454,9 @@ importers:
         specifier: ^2.1.3
         version: 2.3.6(react@18.3.1)
     devDependencies:
+      '@types/lodash':
+        specifier: ^4.17.6
+        version: 4.17.20
       '@types/node':
         specifier: 18.16.1
         version: 18.16.1
@@ -4227,6 +4245,11 @@ packages:
         optional: true
       react-native:
         optional: true
+
+  mobx-utils@6.1.1:
+    resolution: {integrity: sha512-ZR4tOKucWAHOdMjqElRl2BEvrzK7duuDdKmsbEbt2kzgVpuLuoYLiDCjc3QwWQl8CmOlxPgaZQpZ7emwNqPkIg==}
+    peerDependencies:
+      mobx: ^6.0.0
 
   mobx@6.13.7:
     resolution: {integrity: sha512-aChaVU/DO5aRPmk1GX8L+whocagUUpBQqoPtJk+cm7UOXUk87J4PeWCh6nNmTTIfEhiR9DI/+FnA8dln/hTK7g==}
@@ -10139,6 +10162,10 @@ snapshots:
       react: 18.3.1
     optionalDependencies:
       react-dom: 18.3.1(react@18.3.1)
+
+  mobx-utils@6.1.1(mobx@6.13.7):
+    dependencies:
+      mobx: 6.13.7
 
   mobx@6.13.7: {}
 

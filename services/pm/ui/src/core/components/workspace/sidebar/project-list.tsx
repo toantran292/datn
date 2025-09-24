@@ -3,7 +3,7 @@ import { observer } from "mobx-react";
 import { FC, useRef, useState } from "react";
 import { Disclosure, Transition } from "@headlessui/react";
 import { Plus } from "lucide-react";
-import { Tooltip } from "@unified-teamspace/ui";
+import { Button, Tooltip } from "@unified-teamspace/ui";
 import { CreateProjectModal } from "../../project/create-project-modal";
 
 export const SidebarProjectsList: FC = observer(() => {
@@ -21,6 +21,10 @@ export const SidebarProjectsList: FC = observer(() => {
 
   return (
     <>
+      <p className="text-custom-primary-200">Project</p>
+
+      <Button>Create Project</Button>
+
       <CreateProjectModal
         isOpen={isProjectModalOpen}
         onClose={() => setIsProjectModalOpen(false)}
