@@ -1,7 +1,7 @@
 import { TProject } from "@unified-teamspace/types";
 import { observable, action, makeObservable, runInAction } from "mobx";
-import type { CoreRootStore } from "../root.store";
 import { ProjectService } from "@/core/services/project";
+import { CoreRootStore } from "../root.store";
 
 export interface IProjectStore {
   // observables
