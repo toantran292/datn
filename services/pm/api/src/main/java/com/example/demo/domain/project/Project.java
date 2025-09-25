@@ -28,8 +28,8 @@ public class Project {
     @Column(name = "org_id", nullable = false)
     private UUID orgId;
 
-    @Column(name = "key", nullable = false, unique = true, length = 50)
-    private String key;
+    @Column(name = "identifier", nullable = false, unique = true, length = 50)
+    private String identifier;
 
     @Column(name = "name", nullable = false)
     private String name;
@@ -68,12 +68,12 @@ public class Project {
         this.orgId = orgId;
     }
 
-    public String getKey() {
-        return key;
+    public String getIdentifier() {
+        return identifier;
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
     }
 
     public String getName() {

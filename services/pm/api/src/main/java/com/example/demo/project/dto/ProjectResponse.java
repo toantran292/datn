@@ -7,7 +7,7 @@ import java.util.UUID;
 public record ProjectResponse(
         UUID id,
         UUID orgId,
-        String key,
+        String identifier,
         String name,
         UUID projectLead,
         UUID defaultAssignee,

@@ -20,7 +20,7 @@ public class ProjectMapper {
         }
         Project project = new Project();
         project.setOrgId(request.getOrgId());
-        project.setKey(request.getKey());
+        project.setIdentifier(request.getIdentifier());
         project.setName(request.getName());
         project.setProjectLead(request.getProjectLead());
         project.setDefaultAssignee(request.getDefaultAssignee());
@@ -34,7 +34,7 @@ public class ProjectMapper {
         return new ProjectResponse(
                 project.getId(),
                 project.getOrgId(),
-                project.getKey(),
+                project.getIdentifier(),
                 project.getName(),
                 project.getProjectLead(),
                 project.getDefaultAssignee(),
@@ -49,7 +49,7 @@ public class ProjectMapper {
             return;
         }
         project.setOrgId(request.getOrgId());
-        project.setKey(request.getKey());
+        project.setIdentifier(request.getIdentifier());
         project.setName(request.getName());
         project.setProjectLead(request.getProjectLead());
         project.setDefaultAssignee(request.getDefaultAssignee());

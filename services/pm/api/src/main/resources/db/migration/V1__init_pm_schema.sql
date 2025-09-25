@@ -4,13 +4,13 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 CREATE TABLE project (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     org_id UUID NOT NULL,
-    key VARCHAR(50) NOT NULL,
+    identifier VARCHAR(50) NOT NULL,
     name VARCHAR(255) NOT NULL,
     project_lead UUID,
     default_assignee UUID,
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT uk_project_key UNIQUE (key)
+    CONSTRAINT uk_project_identifier UNIQUE (identifier)
 );
 
 CREATE TABLE sprint (

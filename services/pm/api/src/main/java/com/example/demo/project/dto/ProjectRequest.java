@@ -13,7 +13,7 @@ public class ProjectRequest {
 
     @NotBlank
     @Size(max = 50)
-    private String key;
+    private String identifier;
 
     @NotBlank
     private String name;
@@ -33,12 +33,12 @@ public class ProjectRequest {
         this.orgId = orgId;
     }
 
-    public String getKey() {
-        return key;
+    public String getIdentifier() {
+        return identifier;
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
     }
 
     public String getName() {

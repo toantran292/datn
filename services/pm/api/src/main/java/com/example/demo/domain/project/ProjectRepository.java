@@ -6,5 +6,5 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ProjectRepository extends JpaRepository<Project, UUID> {
-    Optional<Project> findByKey(String key);
+    Optional<Project> findByIdentifier(String identifier);
 }
