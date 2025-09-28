@@ -1,5 +1,6 @@
 package com.example.demo.project;
 
+import com.example.demo.project.dto.ProjectIdentifierAvailabilityResponse;
 import com.example.demo.project.dto.ProjectRequest;
 import com.example.demo.project.dto.ProjectResponse;
 import jakarta.validation.Valid;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -27,15 +29,20 @@ public class ProjectController {
         this.projectService = projectService;
     }
 
-    @PostMapping
+    @PostMapping({"", "/"})
     public ResponseEntity<ProjectResponse> create(@Valid @RequestBody ProjectRequest request) {
         ProjectResponse response = projectService.create(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping
+    @GetMapping({"", "/"})
     public List<ProjectResponse> findAll() {
         return projectService.findAll();
+    }
+
+    @GetMapping("/check-identifier")
+    public ProjectIdentifierAvailabilityResponse checkIdentifier(@RequestParam("identifier") String identifier) {
+        return projectService.checkIdentifierAvailability(identifier);
     }
 
     @GetMapping("/{id}")

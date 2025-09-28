@@ -9,7 +9,6 @@ export interface IProjectStore {
 
   // actions
   createProject: (workspaceSlug: string, data: Partial<TProject>) => Promise<TProject>;
-  checkProjectIdentifier: (workspaceSlug: string, identifier: string) => Promise<boolean>;
 }
 
 export class ProjectStore implements IProjectStore {
@@ -28,7 +27,6 @@ export class ProjectStore implements IProjectStore {
 
       // actions
       createProject: action,
-      checkProjectIdentifier: action,
     });
 
     this.rootStore = _rootStore;
@@ -61,15 +59,4 @@ export class ProjectStore implements IProjectStore {
     }
   };
 
-  /**
-   * Check if project identifier is available
-   */
-  checkProjectIdentifier = async (workspaceSlug: string, identifier: string) => {
-    try {
-      await this.projectService.checkProjectIdentifierAvailability(workspaceSlug, identifier);
-      return true; // Available
-    } catch (error) {
-      return false; // Not available
-    }
-  };
 }

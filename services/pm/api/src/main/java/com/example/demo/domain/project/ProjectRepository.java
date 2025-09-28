@@ -7,4 +7,8 @@ import java.util.UUID;
 
 public interface ProjectRepository extends JpaRepository<Project, UUID> {
     Optional<Project> findByIdentifier(String identifier);
+
+    boolean existsByIdentifierIgnoreCase(String identifier);
+
+    boolean existsByNameIgnoreCase(String name);
 }

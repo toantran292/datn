@@ -62,6 +62,7 @@ export const CreateProjectForm: FC<TCreateProjectFormProps> = observer((props) =
 
           if (nameError || identifierError) {
             if (nameError) {
+              console.log("check");
               setToast({
                 type: TOAST_TYPE.ERROR,
                 title: "Error",
