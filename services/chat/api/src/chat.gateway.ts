@@ -8,12 +8,14 @@ import {
   WebSocketServer
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
-import type {AuthenticatedSocket} from "../common/types/socket.types";
+import type { AuthenticatedSocket } from "../common/types/socket.types";
 
-type MessageBody = {roomId: string, text: string}
+type MessageBody = { roomId: string, text: string }
 
 @WebSocketGateway({
   namespace: 'chat',
+  pingInterval: 60000,
+  pingTimeout: 120000,
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() io: Server;
@@ -27,7 +29,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(`[WS] Disconnected: ${client.id}`);
   }
 
-  afterInit(server: Server){
+  afterInit(server: Server) {
     server.use((socket: AuthenticatedSocket, next) => {
       const userId = socket.handshake.headers["x-user-id"]
       const orgId = socket.handshake.headers["x-org-id"]
