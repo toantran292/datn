@@ -8,7 +8,7 @@ export class ProjectService extends APIService {
   }
 
   async createProject(workspaceSlug: string, data: Partial<TProject>): Promise<TProject> {
-    return this.post(`/api/projects/`, data)
+    return this.post(`/api/projects`, data)
       .then((response) => response?.data)
       .catch((error) => {
         throw error?.response;
