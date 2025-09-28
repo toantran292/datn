@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public record ProjectResponse(
         UUID id,
-        UUID orgId,
+        String orgId,
         String identifier,
         String name,
         UUID projectLead,

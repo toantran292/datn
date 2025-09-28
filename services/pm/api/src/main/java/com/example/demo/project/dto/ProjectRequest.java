@@ -1,15 +1,14 @@
 package com.example.demo.project.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.util.UUID;
 
 public class ProjectRequest {
 
-    @NotNull
-    private UUID orgId;
+    @NotBlank
+    private String orgId;
 
     @NotBlank
     @Size(max = 50)
@@ -25,11 +24,11 @@ public class ProjectRequest {
     public ProjectRequest() {
     }
 
-    public UUID getOrgId() {
+    public String getOrgId() {
         return orgId;
     }
 
-    public void setOrgId(UUID orgId) {
+    public void setOrgId(String orgId) {
         this.orgId = orgId;
     }
 

@@ -36,9 +36,14 @@ export const CreateProjectForm: FC<TCreateProjectFormProps> = observer((props) =
   const onSubmit = async (formData: Partial<any>) => {
     // Upper case identifier
     formData.identifier = formData.identifier?.toUpperCase();
-    const project = await createProject(workspaceSlug, formData);
 
-    return createProject(workspaceSlug.toString(), formData)
+    const payload = {
+      name: formData.name,
+      identifier: formData.identifier,
+      orgId: "dattuan",
+    };
+
+    return createProject(workspaceSlug.toString(), payload)
       .then(async (res) => {
         setToast({
           type: TOAST_TYPE.SUCCESS,
@@ -47,6 +52,7 @@ export const CreateProjectForm: FC<TCreateProjectFormProps> = observer((props) =
         });
       })
       .catch((err) => {
+        console.log({ err });
         try {
           // Handle the new error format where codes are nested in arrays under field names
           const errorData = err?.data ?? {};

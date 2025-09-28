@@ -25,8 +25,8 @@ public class Project {
     @UuidGenerator
     private UUID id;
 
-    @Column(name = "org_id", nullable = false)
-    private UUID orgId;
+    @Column(name = "org_id", nullable = false, length = 255)
+    private String orgId;
 
     @Column(name = "identifier", nullable = false, unique = true, length = 50)
     private String identifier;
@@ -60,11 +60,11 @@ public class Project {
         this.id = id;
     }
 
-    public UUID getOrgId() {
+    public String getOrgId() {
         return orgId;
     }
 
-    public void setOrgId(UUID orgId) {
+    public void setOrgId(String orgId) {
         this.orgId = orgId;
     }
 
