@@ -1,6 +1,7 @@
 package com.example.demo.project;
 
 import com.example.demo.project.dto.ProjectIdentifierAvailabilityResponse;
+import com.example.demo.project.dto.ProjectLiteResponse;
 import com.example.demo.project.dto.ProjectRequest;
 import com.example.demo.project.dto.ProjectResponse;
 import jakarta.validation.Valid;
@@ -36,8 +37,8 @@ public class ProjectController {
     }
 
     @GetMapping({"", "/"})
-    public List<ProjectResponse> findAll() {
-        return projectService.findAll();
+    public List<ProjectLiteResponse> findLite() {
+        return projectService.findAllLite();
     }
 
     @GetMapping("/check-identifier")

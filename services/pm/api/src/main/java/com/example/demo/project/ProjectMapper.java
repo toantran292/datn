@@ -2,6 +2,7 @@ package com.example.demo.project;
 
 import com.example.demo.domain.project.Project;
 import com.example.demo.domain.sprint.Sprint;
+import com.example.demo.project.dto.ProjectLiteResponse;
 import com.example.demo.project.dto.ProjectRequest;
 import com.example.demo.project.dto.ProjectResponse;
 import org.springframework.stereotype.Component;
@@ -53,6 +54,19 @@ public class ProjectMapper {
         project.setName(request.getName());
         project.setProjectLead(request.getProjectLead());
         project.setDefaultAssignee(request.getDefaultAssignee());
+    }
+
+    public ProjectLiteResponse toLiteResponse(Project project) {
+        if (project == null) {
+            return null;
+        }
+        return new ProjectLiteResponse(
+                project.getId(),
+                project.getIdentifier(),
+                project.getName(),
+                project.getOrgId(),
+                project.getProjectLead()
+        );
     }
 
     private List<UUID> mapSprintIds(List<Sprint> sprints) {

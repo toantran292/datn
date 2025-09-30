@@ -40,7 +40,7 @@ export const CreateProjectForm: FC<TCreateProjectFormProps> = observer((props) =
     const payload = {
       name: formData.name,
       identifier: formData.identifier,
-      orgId: "dattuan",
+      orgId: workspaceSlug,
     };
 
     return createProject(workspaceSlug.toString(), payload)

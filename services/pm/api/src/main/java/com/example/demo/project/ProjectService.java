@@ -3,14 +3,15 @@ package com.example.demo.project;
 import com.example.demo.domain.project.Project;
 import com.example.demo.domain.project.ProjectRepository;
 import com.example.demo.project.dto.ProjectIdentifierAvailabilityResponse;
+import com.example.demo.project.dto.ProjectLiteResponse;
 import com.example.demo.project.dto.ProjectRequest;
 import com.example.demo.project.dto.ProjectResponse;
 import com.example.demo.project.exception.ProjectValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.util.StringUtils;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,9 +41,9 @@ public class ProjectService {
         return projectMapper.toResponse(saved);
     }
 
-    public List<ProjectResponse> findAll() {
+    public List<ProjectLiteResponse> findAllLite() {
         return projectRepository.findAll().stream()
-                .map(projectMapper::toResponse)
+                .map(projectMapper::toLiteResponse)
                 .toList();
     }
 
