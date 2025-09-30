@@ -1,0 +1,89 @@
+services:
+  prosody:
+    image: jitsi/prosody:stable
+    environment:
+      XMPP_DOMAIN: meet.local
+      XMPP_AUTH_DOMAIN: auth.meet.local
+      XMPP_MUC_DOMAIN: muc.meet.local
+      XMPP_INTERNAL_MUC_DOMAIN: internal-muc.meet.local
+
+      ENABLE_AUTH: "1"
+      AUTH_TYPE: jwt
+      JWT_ACCEPTED_ISSUERS: meet-auth
+      JWT_ACCEPTED_AUDIENCES: meet
+#      JWT_PUBLIC_KEY_PATH: /config/keys/jwtRS256.key.pub
+      JWT_ASAP_KEYSERVER: /config/keys/jwtRS256.key.pub
+
+      JICOFO_COMPONENT_SECRET: focussecret
+      JICOFO_AUTH_USER: focus
+      JICOFO_AUTH_PASSWORD: focuspass
+      JVB_AUTH_USER: jvb
+      JVB_AUTH_PASSWORD: jvbpass
+
+    volumes:
+      # Prosody config rời từng nhánh, KHÔNG mount /config toàn cục
+      - ./config/prosody/data:/config/data
+      - ./config/prosody/keys:/config/keys
+      # Certs: trỏ thẳng tới thư mục có file .key/.crt
+      - ./config/certs:/config/certs:ro
+      # (tuỳ chọn) nếu jwt nằm ở chỗ khác thì mount file vào /config/keys
+      - ./config/certs/meet/jwtRS256.key.pub:/config/keys/jwtRS256.key.pub
+    ports:
+      - "40622:5222"   # c2s
+      - "40680:5280"   # http/ws
+      - "40647:5347"   # component
+    networks: [meetnet]
+
+  jicofo:
+    image: jitsi/jicofo:stable
+    env_file:
+      - ../.env.dev
+    environment:
+      XMPP_SERVER: prosody
+      XMPP_DOMAIN: meet.local
+      XMPP_AUTH_DOMAIN: auth.meet.local
+      XMPP_MUC_DOMAIN: muc.meet.local
+      XMPP_INTERNAL_MUC_DOMAIN: internal-muc.meet.local
+      # QUAN TRỌNG: chỉ rõ brewery MUC đúng domain
+      JICOFO_BRIDGE_MUC: jvbbrewery@internal-muc.meet.local
+      JICOFO_COMPONENT_SECRET: focussecret
+      JICOFO_AUTH_USER: focus
+      JICOFO_AUTH_PASSWORD: focuspass
+    depends_on: [prosody]
+    networks: [meetnet]
+
+  jvb:
+    image: jitsi/jvb:stable
+    env_file:
+      - ../.env.dev
+    environment:
+      XMPP_SERVER: prosody
+      XMPP_DOMAIN: meet.local
+      XMPP_AUTH_DOMAIN: auth.meet.local
+      XMPP_MUC_DOMAIN: muc.meet.local
+      XMPP_INTERNAL_MUC_DOMAIN: internal-muc.meet.local
+      JVB_AUTH_USER: jvb
+      JVB_AUTH_PASSWORD: jvbpass
+      JVB_BREWERY_MUC: jvbbrewery
+      JVB_PORT: 10000
+      DOCKER_HOST_ADDRESS: 192.168.100.195
+    depends_on: [prosody]
+    ports:
+      - "40600:10000/udp"
+    networks: [meetnet]
+
+  coturn:
+    image: coturn/coturn:latest
+    command: >
+      --no-cli --realm=meet.local --use-auth-secret
+      --static-auth-secret=turnsharedsecret
+      --min-port=49000 --max-port=50000 --fingerprint
+    ports:
+      - "40678:3478/udp"
+      - "40678:3478/tcp"
+      - "40649:5349/tcp"
+    networks: [meetnet]
+
+networks:
+  meetnet:
+    driver: bridge
