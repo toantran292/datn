@@ -50,9 +50,9 @@ export const CreateProjectForm: FC<TCreateProjectFormProps> = observer((props) =
           title: "Success",
           message: "Project created successfully",
         });
+        onClose();
       })
       .catch((err) => {
-        console.log({ err });
         try {
           // Handle the new error format where codes are nested in arrays under field names
           const errorData = err?.data ?? {};
