@@ -2,18 +2,27 @@ services:
   prosody:
     image: jitsi/prosody:stable
     environment:
+      # --- XMPP domains ---
       XMPP_DOMAIN: meet.local
       XMPP_AUTH_DOMAIN: auth.meet.local
       XMPP_MUC_DOMAIN: muc.meet.local
       XMPP_INTERNAL_MUC_DOMAIN: internal-muc.meet.local
 
+      # --- Enable JWT auth (do NOT mount custom conf.d overrides) ---
       ENABLE_AUTH: "1"
       AUTH_TYPE: jwt
+
+      # Dùng 1 trong 2 cách (CHỈ 1):
+      JWT_APP_SECRET: superlongrandomsecret123
+      # C1) Public key PEM trực tiếp:
+#      JWT_PUBLIC_KEY_PATH: /config/keys/jwtRS256.key.pub
+      # C2) hoặc JWKS/ASAP key server (HTTP/HTTPS/file) -> chỉ dùng khi có 'kid'
+#      JWT_ASAP_KEYSERVER: file:///config/keys
+
       JWT_ACCEPTED_ISSUERS: meet-auth
       JWT_ACCEPTED_AUDIENCES: meet
-#      JWT_PUBLIC_KEY_PATH: /config/keys/jwtRS256.key.pub
-      JWT_ASAP_KEYSERVER: /config/keys/jwtRS256.key.pub
 
+      # --- Internal creds ---
       JICOFO_COMPONENT_SECRET: focussecret
       JICOFO_AUTH_USER: focus
       JICOFO_AUTH_PASSWORD: focuspass
@@ -21,13 +30,12 @@ services:
       JVB_AUTH_PASSWORD: jvbpass
 
     volumes:
-      # Prosody config rời từng nhánh, KHÔNG mount /config toàn cục
+      # KHÔNG mount /config/conf.d nữa để tránh RO & override
       - ./config/prosody/data:/config/data
       - ./config/prosody/keys:/config/keys
-      # Certs: trỏ thẳng tới thư mục có file .key/.crt
       - ./config/certs:/config/certs:ro
-      # (tuỳ chọn) nếu jwt nằm ở chỗ khác thì mount file vào /config/keys
-      - ./config/certs/meet/jwtRS256.key.pub:/config/keys/jwtRS256.key.pub
+      # nếu public key để nơi khác thì bind đúng file vào /config/keys/jwtRS256.key.pub
+      # - ./config/certs/meet/jwtRS256.key.pub:/config/keys/jwtRS256.key.pub:ro
     ports:
       - "40622:5222"   # c2s
       - "40680:5280"   # http/ws
@@ -36,15 +44,12 @@ services:
 
   jicofo:
     image: jitsi/jicofo:stable
-    env_file:
-      - ../.env.dev
     environment:
       XMPP_SERVER: prosody
       XMPP_DOMAIN: meet.local
       XMPP_AUTH_DOMAIN: auth.meet.local
       XMPP_MUC_DOMAIN: muc.meet.local
       XMPP_INTERNAL_MUC_DOMAIN: internal-muc.meet.local
-      # QUAN TRỌNG: chỉ rõ brewery MUC đúng domain
       JICOFO_BRIDGE_MUC: jvbbrewery@internal-muc.meet.local
       JICOFO_COMPONENT_SECRET: focussecret
       JICOFO_AUTH_USER: focus
@@ -54,19 +59,18 @@ services:
 
   jvb:
     image: jitsi/jvb:stable
-    env_file:
-      - ../.env.dev
     environment:
       XMPP_SERVER: prosody
       XMPP_DOMAIN: meet.local
       XMPP_AUTH_DOMAIN: auth.meet.local
       XMPP_MUC_DOMAIN: muc.meet.local
       XMPP_INTERNAL_MUC_DOMAIN: internal-muc.meet.local
+
       JVB_AUTH_USER: jvb
       JVB_AUTH_PASSWORD: jvbpass
       JVB_BREWERY_MUC: jvbbrewery
       JVB_PORT: 10000
-      DOCKER_HOST_ADDRESS: 192.168.100.195
+      DOCKER_HOST_ADDRESS: 192.168.100.195   # IP máy host LAN của bạn
     depends_on: [prosody]
     ports:
       - "40600:10000/udp"
