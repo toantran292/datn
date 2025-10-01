@@ -46,8 +46,8 @@ export const SidebarProjectsList = observer(() => {
     fetchPartialProjects(workspaceSlug).catch(() => {
       setToast({
         type: TOAST_TYPE.ERROR,
-        title: "Error",
-        message: "Unable to load projects",
+        title: "Lỗi",
+        message: "Không thể tải danh sách dự án",
       });
     });
   }, [workspaceSlug, fetchStatus, joinedProjectIds.length, fetchPartialProjects]);
@@ -98,7 +98,7 @@ export const SidebarProjectsList = observer(() => {
   const handleCopyText = async (projectId: string) => {
     if (!workspaceSlug) return;
     const origin = typeof window !== "undefined" ? window.location.origin : "";
-    const projectUrl = `${origin}/${workspaceSlug}/projects/${projectId}/issues`;
+    const projectUrl = `${origin}/${workspaceSlug}/projects/board/${projectId}`;
     try {
       if (typeof navigator !== "undefined" && navigator.clipboard) {
         await navigator.clipboard.writeText(projectUrl);
@@ -107,14 +107,14 @@ export const SidebarProjectsList = observer(() => {
       }
       setToast({
         type: TOAST_TYPE.SUCCESS,
-        title: "Link copied",
-        message: "Project link copied to clipboard",
+        title: "Đã sao chép liên kết",
+        message: "Đường dẫn dự án đã được sao chép",
       });
     } catch (_error) {
       setToast({
         type: TOAST_TYPE.ERROR,
-        title: "Error",
-        message: "Unable to copy project link",
+        title: "Lỗi",
+        message: "Không thể sao chép đường dẫn dự án",
       });
     }
   };
@@ -147,18 +147,18 @@ export const SidebarProjectsList = observer(() => {
               type="button"
               className="w-full flex items-center gap-1 whitespace-nowrap text-left text-sm font-semibold text-custom-sidebar-text-400"
               onClick={() => toggleListDisclosure(!isAllProjectsListOpen)}
-              aria-label={isAllProjectsListOpen ? "Close project list" : "Open project list"}
+              aria-label={isAllProjectsListOpen ? "Đóng danh sách dự án" : "Mở danh sách dự án"}
             >
-              <span className="text-sm font-semibold">Projects</span>
+              <span className="text-sm font-semibold">Dự án</span>
             </Disclosure.Button>
             <div className="flex items-center opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto">
               {workspaceSlug && (
-                <Tooltip tooltipHeading="Create project" tooltipContent="">
+                <Tooltip tooltipHeading="Tạo dự án" tooltipContent="">
                   <button
                     type="button"
                     className="p-0.5 rounded hover:bg-custom-sidebar-background-80 flex-shrink-0"
                     onClick={() => setIsProjectModalOpen(true)}
-                    aria-label="create new project"
+                    aria-label="tạo dự án mới"
                   >
                     <Plus className="size-3" />
                   </button>
@@ -169,7 +169,7 @@ export const SidebarProjectsList = observer(() => {
                 type="button"
                 className="p-0.5 rounded hover:bg-custom-sidebar-background-80 flex-shrink-0"
                 onClick={() => toggleListDisclosure(!isAllProjectsListOpen)}
-                aria-label={isAllProjectsListOpen ? "Close project list" : "Open project list"}
+                aria-label={isAllProjectsListOpen ? "Đóng danh sách dự án" : "Mở danh sách dự án"}
               >
                 <ChevronRight
                   className={cn("flex-shrink-0 size-3 transition-all", {
@@ -212,7 +212,7 @@ export const SidebarProjectsList = observer(() => {
             )}
             {isAllProjectsListOpen && shouldShowEmptyState && (
               <div className="px-2 py-1.5 text-xs text-custom-sidebar-text-400">
-                No projects yet. Create your first project.
+                Chưa có dự án nào. Hãy tạo dự án đầu tiên của bạn.
               </div>
             )}
           </Transition>
@@ -224,7 +224,7 @@ export const SidebarProjectsList = observer(() => {
             onClick={() => setIsProjectModalOpen(true)}
           >
             <Plus className="size-3" />
-            Add project
+            Thêm dự án
           </button>
         )}
       </div>
