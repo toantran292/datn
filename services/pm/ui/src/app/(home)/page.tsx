@@ -1,5 +1,5 @@
-import DefaultLayout from "@/core/layouts/default-layout";
 import React from "react";
+import DefaultLayout from "@/core/layouts/default-layout";
 
 const HomePage = () => (
   <DefaultLayout>

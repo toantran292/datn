@@ -1,12 +1,12 @@
-import { DEFAULT_PROJECT_FORM_VALUES } from "@uts/constants";
-import { observer } from "mobx-react";
 import { FC, useState } from "react";
+import { observer } from "mobx-react";
 import { FormProvider, useForm } from "react-hook-form";
-import ProjectCommonAttributes from "./common-attributes";
-import { usePlatformOS } from "@uts/hooks";
-import ProjectCreateButtons from "./project-create-buttons";
-import { useProject } from "@/core/hooks/store/use-project";
+import { DEFAULT_PROJECT_FORM_VALUES } from "@uts/constants";
 import { setToast, TOAST_TYPE } from "@uts/design-system/ui";
+import { usePlatformOS } from "@uts/hooks";
+import { useProject } from "@/core/hooks/store/use-project";
+import ProjectCommonAttributes from "./common-attributes";
+import ProjectCreateButtons from "./project-create-buttons";
 
 export type TCreateProjectFormProps = {
   setToFavorite?: boolean;

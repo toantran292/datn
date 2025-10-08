@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { observer } from "mobx-react";
 import { useParams } from "next/navigation";
+import { setToast, TOAST_TYPE } from "@uts/design-system/ui";
 import {
   BacklogIssueDropPayload,
   BacklogView,
@@ -15,7 +16,6 @@ import { useIssue } from "@/core/hooks/store/use-issue";
 import { useProject } from "@/core/hooks/store/use-project";
 import { useSprint } from "@/core/hooks/store/use-sprint";
 import { IIssue } from "@/core/types/issue";
-import { setToast, TOAST_TYPE } from "@uts/design-system/ui";
 
 const UNIMPLEMENTED_TOAST = () =>
   setToast({

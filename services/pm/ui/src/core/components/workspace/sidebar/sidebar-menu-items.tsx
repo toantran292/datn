@@ -1,9 +1,8 @@
-import { SidebarItem } from "@/ce/components/workspace/sidebar/sidebar-item";
-import { WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS_LINKS } from "@uts/constants";
 import { observer } from "mobx-react";
+import { WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS_LINKS } from "@uts/constants";
+import { SidebarItem } from "@/ce/components/workspace/sidebar/sidebar-item";
 
-export const SidebarMenuItems = observer(() => {
-  return (
+export const SidebarMenuItems = observer(() => (
     <>
       <div className="flex flex-col gap-0.5">
         {WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS_LINKS.map((item, _index) => (
@@ -11,5 +10,4 @@ export const SidebarMenuItems = observer(() => {
         ))}
       </div>
     </>
-  );
-});
+  ));

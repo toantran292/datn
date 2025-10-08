@@ -1,10 +1,9 @@
+import { FC } from "react";
+import { observer } from "mobx-react";
 import { SidebarProjectsList } from "@/core/components/workspace/sidebar/project-list";
 import { SidebarMenuItems } from "@/core/components/workspace/sidebar/sidebar-menu-items";
-import { observer } from "mobx-react";
-import { FC } from "react";
 
-export const AppSidebar: FC = observer(() => {
-  return (
+export const AppSidebar: FC = observer(() => (
     <>
       <div className="flex flex-col gap-3 px-3">Workspace</div>
 
@@ -14,5 +13,4 @@ export const AppSidebar: FC = observer(() => {
         <SidebarProjectsList />
       </div>
     </>
-  );
-});
+  ));

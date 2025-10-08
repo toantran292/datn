@@ -1,0 +1,35 @@
+{
+  "name": "@uts/auth-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "fix:lint": "eslint --fix",
+    "check:types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@uts/constants": "workspace:*",
+    "@uts/fe-utils": "workspace:*",
+    "@uts/types": "workspace:*",
+    "@uts/hooks": "workspace:*",
+    "@uts/design-system/ui": "workspace:*",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "axios": "1.11.0",
+    "next": "14.2.30",
+    "next-themes": "^0.2.1"
+  },
+  "devDependencies": {
+    "@uts/eslint-config": "workspace:*",
+    "@uts/design-system/tailwind-config": "workspace:*",
+    "@types/node": "18.16.1",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.2.18",
+    "eslint": "8.57.1",
+    "prettier": "^3.2.5",
+    "typescript": "5.8.3"
+  }
+}

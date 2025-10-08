@@ -4,10 +4,10 @@ import { useEffect } from "react";
 import { observer } from "mobx-react";
 import { useParams } from "next/navigation";
 
-import { BoardView } from "./board-view";
+import { setToast, TOAST_TYPE } from "@uts/design-system/ui";
 import { useIssue } from "@/core/hooks/store/use-issue";
 import { useSprint } from "@/core/hooks/store/use-sprint";
-import { setToast, TOAST_TYPE } from "@uts/design-system/ui";
+import { BoardView } from "./board-view";
 
 export const KanbanLayout = observer(() => {
   const params = useParams<{ workspaceSlug?: string | string[]; projectId?: string | string[] }>();

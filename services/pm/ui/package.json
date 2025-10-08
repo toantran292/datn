@@ -1,5 +1,5 @@
 {
-  "name": "ui",
+  "name": "@uts/pm/ui",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -11,7 +11,8 @@
     "check:types": "tsc --noEmit",
     "check:format": "prettier --check \"**/*.{ts,tsx,md,json,css,scss}\"",
     "fix:lint": "eslint . --fix",
-    "fix:format": "prettier --write \"**/*.{ts,tsx,md,json,css,scss}\""
+    "fix:format": "prettier --write \"**/*.{ts,tsx,md,json,css,scss}\"",
+    "lint": "eslint"
   },
   "dependencies": {
     "@atlaskit/pragmatic-drag-and-drop": "1.7.7",
@@ -45,6 +46,7 @@
     "@types/node": "18.16.1",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.2.18",
+    "eslint": "8.57.1",
     "prettier": "^3.2.5",
     "typescript": "5.8.3"
   }
