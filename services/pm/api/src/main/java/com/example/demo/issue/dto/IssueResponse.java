@@ -23,7 +23,7 @@ public record IssueResponse(
         IssueType type,
         BigDecimal point,
         Long sequenceId,
-        Integer sortOrder,
+        BigDecimal sortOrder,
         LocalDate startDate,
         LocalDate targetDate,
         List<UUID> assignees,

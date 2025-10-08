@@ -71,8 +71,8 @@ public class Issue {
     @Column(name = "sequence_id")
     private Long sequenceId;
 
-    @Column(name = "sort_order")
-    private Integer sortOrder;
+    @Column(name = "sort_order", precision = 20, scale = 10)
+    private BigDecimal sortOrder;
 
     @Column(name = "start_date")
     private LocalDate startDate;
@@ -188,11 +188,11 @@ public class Issue {
         this.sequenceId = sequenceId;
     }
 
-    public Integer getSortOrder() {
+    public BigDecimal getSortOrder() {
         return sortOrder;
     }
 
-    public void setSortOrder(Integer sortOrder) {
+    public void setSortOrder(BigDecimal sortOrder) {
         this.sortOrder = sortOrder;
     }
 

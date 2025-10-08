@@ -158,9 +158,9 @@ export const SidebarProjectsListItem: React.FC<Props> = observer((props) => {
   useOutsideClickDetector(actionSectionRef, () => setIsMenuActive(false));
   useOutsideClickDetector(projectRef, () => setIsMenuActive(false));
 
-  const projectBoardPath = useMemo(() => {
+  const projectBacklogPath = useMemo(() => {
     if (!normalizedWorkspaceSlug || !project) return "#";
-    return `/${normalizedWorkspaceSlug}/projects/board/${project.id}`;
+    return `/${normalizedWorkspaceSlug}/project/${project.id}/backlog`;
   }, [normalizedWorkspaceSlug, project]);
 
   const projectSettingsPath = useMemo(() => {
@@ -171,11 +171,11 @@ export const SidebarProjectsListItem: React.FC<Props> = observer((props) => {
   if (!project) return null;
 
   const isDragDisabled = !canProjectDrag;
-  const isActive = projectBoardPath !== "#" && pathname?.startsWith(projectBoardPath);
+  const isActive = projectBacklogPath !== "#" && pathname?.startsWith(projectBacklogPath);
 
-  const handleNavigateToBoard = (_event: ReactMouseEvent<HTMLAnchorElement>) => {
-    if (projectBoardPath === "#") return;
-    router.push(projectBoardPath);
+  const handleNavigateToBacklog = (_event: ReactMouseEvent<HTMLAnchorElement>) => {
+    if (projectBacklogPath === "#") return;
+    router.push(projectBacklogPath);
   };
 
   return (
@@ -223,12 +223,15 @@ export const SidebarProjectsListItem: React.FC<Props> = observer((props) => {
         )}
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <ControlLink
-            href={projectBoardPath}
-            className={cn("flex-grow flex items-center gap-1.5 truncate", {
-              "pointer-events-none": projectBoardPath === "#",
-            })}
-            disabled={projectBoardPath === "#"}
-            onClick={handleNavigateToBoard}
+            href={projectBacklogPath}
+            className={cn(
+              "flex-grow flex items-center gap-1.5 truncate",
+              {
+                "pointer-events-none": projectBacklogPath === "#",
+              }
+            )}
+            disabled={projectBacklogPath === "#"}
+            onClick={handleNavigateToBacklog}
             draggable={false}
           >
             <div className="size-4 grid place-items-center flex-shrink-0">

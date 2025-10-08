@@ -41,7 +41,7 @@ public class IssueRequest {
 
     private Long sequenceId;
 
-    private Integer sortOrder;
+    private BigDecimal sortOrder;
 
     private LocalDate startDate;
 
@@ -141,11 +141,11 @@ public class IssueRequest {
         this.sequenceId = sequenceId;
     }
 
-    public Integer getSortOrder() {
+    public BigDecimal getSortOrder() {
         return sortOrder;
     }
 
-    public void setSortOrder(Integer sortOrder) {
+    public void setSortOrder(BigDecimal sortOrder) {
         this.sortOrder = sortOrder;
     }
 

@@ -1,5 +1,6 @@
 package com.example.demo.issue;
 
+import com.example.demo.issue.dto.IssueReorderRequest;
 import com.example.demo.issue.dto.IssueRequest;
 import com.example.demo.issue.dto.IssueResponse;
 import jakarta.validation.Valid;
@@ -51,6 +52,14 @@ public class IssueController {
     @PutMapping("/issues/{id}")
     public IssueResponse update(@PathVariable UUID id, @Valid @RequestBody IssueRequest request) {
         return issueService.update(id, request);
+    }
+
+    @PostMapping("/projects/{projectId}/issues/{issueId}/reorder")
+    public ResponseEntity<Void> reorder(@PathVariable UUID projectId,
+                                        @PathVariable UUID issueId,
+                                        @Valid @RequestBody IssueReorderRequest request) {
+        issueService.reorder(projectId, issueId, request);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/issues/{id}")

@@ -98,7 +98,7 @@ export const SidebarProjectsList = observer(() => {
   const handleCopyText = async (projectId: string) => {
     if (!workspaceSlug) return;
     const origin = typeof window !== "undefined" ? window.location.origin : "";
-    const projectUrl = `${origin}/${workspaceSlug}/projects/board/${projectId}`;
+    const projectUrl = `${origin}/${workspaceSlug}/project/${projectId}/backlog`;
     try {
       if (typeof navigator !== "undefined" && navigator.clipboard) {
         await navigator.clipboard.writeText(projectUrl);
