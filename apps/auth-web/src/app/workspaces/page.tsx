@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Badge, Card } from "@uts/design-system/ui";
 import { routes } from "@/lib/routes";
@@ -83,7 +84,7 @@ function WorkspacesPageContent() {
             <div className="absolute inset-0 animate-pulse rounded-full h-16 w-16 bg-gradient-to-r from-[#FF8800]/10 to-[#00C4AB]/10 mx-auto" />
           </div>
           <p className="text-[#475569] font-medium text-lg">Loading your workspaces...</p>
-          <p className="text-[#64748B] text-sm mt-2">This won't take long</p>
+          <p className="text-[#64748B] text-sm mt-2">This won&apos;t take long</p>
         </div>
       </div>
     );
@@ -135,7 +136,7 @@ function WorkspacesPageContent() {
             </div>
             <div className="space-y-6 items-center justify-center flex flex-col">
               <div>
-                <h2 className="text-2xl font-bold text-[#0F172A] mb-3">You're not part of any workspace yet</h2>
+                <h2 className="text-2xl font-bold text-[#0F172A] mb-3">You&apos;re not part of any workspace yet</h2>
                 <p className="text-[#64748B] text-lg leading-relaxed">Create your first workspace to get started with your team collaboration.</p>
               </div>
               <Button
@@ -263,10 +264,28 @@ function WorkspacesPageContent() {
   );
 }
 
+// Loading fallback component
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-[#F9FAFB] via-[#FFF4E6] to-[#E6FFFB] flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-12 h-12 bg-gradient-to-br from-[#FF8800] to-[#00C4AB] rounded-xl flex items-center justify-center shadow-lg mx-auto mb-4 animate-pulse">
+          <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+          </svg>
+        </div>
+        <h1 className="text-2xl font-bold text-[#0F172A] tracking-tight mb-2">Loading...</h1>
+      </div>
+    </div>
+  );
+}
+
 export default function WorkspacesPage() {
   return (
     <ProtectedRoute>
-      <WorkspacesPageContent />
+      <Suspense fallback={<LoadingFallback />}>
+        <WorkspacesPageContent />
+      </Suspense>
     </ProtectedRoute>
   );
 }

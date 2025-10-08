@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Input, Card } from "@uts/design-system/ui";
 import { routes } from "@/lib/routes";
@@ -8,7 +8,7 @@ import { useEmailAuth } from "@/hooks/use-auth";
 import { PublicOnlyRoute } from "@/components/auth/route-guard";
 import type { EmailAuthRequest } from "@/types/identity";
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -127,7 +127,7 @@ export default function LoginPage() {
               {/* Sign Up Link */}
               <div className="text-center">
                 <p className="text-[#64748B]">
-                  Don't have an account?{" "}
+                  Don&apos;t have an account?{" "}
                   <span
                     onClick={() => router.push(routes.signUp())}
                     className="text-[#00C4AB] hover:text-[#00B3A0] font-bold cursor-pointer transition-colors duration-200 hover:underline"
@@ -139,9 +139,9 @@ export default function LoginPage() {
 
               {/* Divider */}
               <div className="flex items-center my-8">
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#E2E8F0] to-transparent"></div>
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#E2E8F0] to-transparent"/>
                 <span className="px-4 text-[#64748B] font-medium">OR</span>
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#E2E8F0] to-transparent"></div>
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#E2E8F0] to-transparent"/>
               </div>
 
               {/* Social Login Options */}
@@ -177,5 +177,33 @@ export default function LoginPage() {
       </div>
       </div>
     </PublicOnlyRoute>
+  );
+}
+
+// Loading fallback component
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F9FAFB] via-[#FFF4E6] to-[#E6FFFB] px-4">
+      <div className="w-full max-w-md">
+        <div className="bg-white/90 backdrop-blur-sm p-8 shadow-[0_20px_50px_rgba(15,23,42,0.15)] border border-white/20 rounded-3xl">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-[#FF8800] to-[#00C4AB] rounded-2xl flex items-center justify-center shadow-xl mx-auto mb-4 animate-pulse">
+              <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-bold text-[#0F172A] mb-2 tracking-tight">Loading...</h1>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <LoginPageContent />
+    </Suspense>
   );
 }

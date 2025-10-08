@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Input, Card } from "@uts/design-system/ui";
 import { routes } from "@/lib/routes";
 import { useForgotPassword } from "@/hooks/use-auth";
 import { PublicOnlyRoute } from "@/components/auth/route-guard";
 
-export default function ForgotPasswordPage() {
+function ForgotPasswordPageContent() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [success, setSuccess] = useState(false);
@@ -45,7 +45,7 @@ export default function ForgotPasswordPage() {
                 <UTSLogo />
               </div>
               <h1 className="text-2xl font-bold text-[#0F172A] mb-2 tracking-tight">Check Your Email</h1>
-              <p className="text-[#64748B] font-medium leading-relaxed">We've sent password reset instructions to your email address</p>
+              <p className="text-[#64748B] font-medium leading-relaxed">We&apos;ve sent password reset instructions to your email address</p>
               <div className="w-20 h-px bg-gradient-to-r from-transparent via-[#E2E8F0] to-transparent mx-auto mt-4 opacity-60" />
             </div>
 
@@ -59,10 +59,10 @@ export default function ForgotPasswordPage() {
 
               <div className="space-y-4">
                 <p className="text-[#475569] text-lg">
-                  We've sent a password reset link to <span className="font-semibold text-[#0F172A]">{email}</span>
+                  We&apos;ve sent a password reset link to <span className="font-semibold text-[#0F172A]">{email}</span>
                 </p>
                 <p className="text-[#64748B]">
-                  Click the link in the email to reset your password. If you don't see the email, check your spam folder.
+                  Click the link in the email to reset your password. If you don&apos;t see the email, check your spam folder.
                 </p>
               </div>
 
@@ -104,7 +104,7 @@ export default function ForgotPasswordPage() {
               <UTSLogo />
             </div>
             <h1 className="text-2xl font-bold text-[#0F172A] mb-2 tracking-tight">Forgot Password?</h1>
-            <p className="text-[#64748B] font-medium leading-relaxed">No worries, we'll send you reset instructions</p>
+            <p className="text-[#64748B] font-medium leading-relaxed">No worries, we&apos;ll send you reset instructions</p>
             <div className="w-20 h-px bg-gradient-to-r from-transparent via-[#E2E8F0] to-transparent mx-auto mt-4 opacity-60" />
           </div>
 
@@ -181,5 +181,33 @@ export default function ForgotPasswordPage() {
       </div>
       </div>
     </PublicOnlyRoute>
+  );
+}
+
+// Loading fallback component
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F9FAFB] via-[#FFF4E6] to-[#E6FFFB] px-4">
+      <div className="w-full max-w-md">
+        <div className="bg-white/90 backdrop-blur-sm p-8 shadow-[0_20px_50px_rgba(15,23,42,0.15)] border border-white/20 rounded-3xl">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-[#FF8800] to-[#00C4AB] rounded-2xl flex items-center justify-center shadow-xl mx-auto mb-4 animate-pulse">
+              <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+              </svg>
+            </div>
+            <h1 className="text-2xl font-bold text-[#0F172A] mb-2 tracking-tight">Loading...</h1>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function ForgotPasswordPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <ForgotPasswordPageContent />
+    </Suspense>
   );
 }
