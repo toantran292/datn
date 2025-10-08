@@ -36,6 +36,7 @@ __pycache__/
 **/build/
 .next/
 .turbo/
+.astro/
 
 # Dependencies
 node_modules/

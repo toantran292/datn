@@ -1,5 +1,5 @@
 {
-  "name": "marketing-web",
+  "name": "@uts/marketing-web",
   "private": true,
   "scripts": {
     "dev": "astro dev",
