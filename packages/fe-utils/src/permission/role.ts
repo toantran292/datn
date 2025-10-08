@@ -1,6 +1,6 @@
 // plane imports
-import { EUserPermissions } from "@unified-teamspace/constants";
-import { EUserProjectRoles, EUserWorkspaceRoles } from "@unified-teamspace/types";
+import { EUserPermissions } from "@uts/constants";
+import { EUserProjectRoles, EUserWorkspaceRoles } from "@uts/types";
 
 export const getUserRole = (role: EUserPermissions | EUserWorkspaceRoles | EUserProjectRoles) => {
   switch (role) {

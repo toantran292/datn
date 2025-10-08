@@ -1,6 +1,6 @@
 // plane imports
-import { STATE_GROUPS, TDraggableData } from "@unified-teamspace/constants";
-import { IState, IStateResponse } from "@unified-teamspace/types";
+import { STATE_GROUPS, TDraggableData } from "@uts/constants";
+import { IState, IStateResponse } from "@uts/types";
 
 export const orderStateGroups = (unorderedStateGroups: IStateResponse | undefined): IStateResponse | undefined => {
   if (!unorderedStateGroups) return undefined;

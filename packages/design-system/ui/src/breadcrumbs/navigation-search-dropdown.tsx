@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
-import { ICustomSearchSelectOption } from "@unified-teamspace/types";
+import { ICustomSearchSelectOption } from "@uts/types";
 import { CustomSearchSelect } from "../dropdowns";
 import { Tooltip } from "../tooltip";
 import { cn } from "../utils";

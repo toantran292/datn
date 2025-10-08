@@ -1,6 +1,6 @@
 // plane imports
-import { EProductSubscriptionEnum } from "@unified-teamspace/types";
-import { cn } from "@unified-teamspace/fe-utils";
+import { EProductSubscriptionEnum } from "@uts/types";
+import { cn } from "@uts/fe-utils";
 
 export const getSubscriptionTextColor = (
   planVariant: EProductSubscriptionEnum,

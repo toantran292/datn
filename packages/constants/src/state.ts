@@ -1,4 +1,4 @@
-import { TStateGroups } from "@unified-teamspace/types";
+import { TStateGroups } from "@uts/types";
 
 export type TDraggableData = {
   groupKey: TStateGroups;

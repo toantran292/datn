@@ -3,7 +3,7 @@ import { Check, ChevronDown } from "lucide-react";
 import React, { useRef, useState } from "react";
 import { usePopper } from "react-popper";
 // plane helpers
-import { useOutsideClickDetector } from "@unified-teamspace/hooks";
+import { useOutsideClickDetector } from "@uts/hooks";
 // hooks
 import { useDropdownKeyDown } from "../hooks/use-dropdown-key-down";
 // helpers

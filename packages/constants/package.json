@@ -1,5 +1,5 @@
 {
-  "name": "@unified-teamspace/constants",
+  "name": "@uts/constants",
   "version": "1.0.0",
   "private": true,
   "files": [
@@ -26,11 +26,11 @@
     "clean": "rm -rf .turbo && rm -rf .next && rm -rf node_modules && rm -rf dist"
   },
   "dependencies": {
-    "@unified-teamspace/types": "workspace:*"
+    "@uts/types": "workspace:*"
   },
   "devDependencies": {
-    "@unified-teamspace/eslint-config": "workspace:*",
-    "@unified-teamspace/typescript-config": "workspace:*",
+    "@uts/eslint-config": "workspace:*",
+    "@uts/typescript-config": "workspace:*",
     "@types/node": "^22.5.4",
     "@types/react": "^18.3.11",
     "tsup": "8.4.0",

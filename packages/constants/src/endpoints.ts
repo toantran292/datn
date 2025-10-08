@@ -20,7 +20,7 @@ export const WEB_URL = encodeURI(`${WEB_BASE_URL}${WEB_BASE_PATH}`);
 // plane website url
 export const WEBSITE_URL = process.env.NEXT_PUBLIC_WEBSITE_URL || "https://plane.so";
 // support email
-export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@unified-teamspace.so";
+export const SUPPORT_EMAIL = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "support@uts.so";
 // marketing links
 export const MARKETING_PRICING_PAGE_LINK = "https://plane.so/pricing";
 export const MARKETING_CONTACT_US_PAGE_LINK = "https://plane.so/contact";

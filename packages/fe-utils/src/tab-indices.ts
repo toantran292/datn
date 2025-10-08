@@ -1,5 +1,5 @@
 // plane imports
-import { ETabIndices, TAB_INDEX_MAP } from "@unified-teamspace/constants";
+import { ETabIndices, TAB_INDEX_MAP } from "@uts/constants";
 
 export const getTabIndex = (type?: ETabIndices, isMobile: boolean = false) => {
   const getIndex = (key: string) =>

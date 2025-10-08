@@ -1,5 +1,5 @@
 import { SidebarItem } from "@/ce/components/workspace/sidebar/sidebar-item";
-import { WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS_LINKS } from "@unified-teamspace/constants";
+import { WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS_LINKS } from "@uts/constants";
 import { observer } from "mobx-react";
 
 export const SidebarMenuItems = observer(() => {

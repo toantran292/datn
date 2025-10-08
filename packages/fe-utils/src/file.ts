@@ -1,6 +1,6 @@
 // plane imports
-import { API_BASE_URL } from "@unified-teamspace/constants";
-import { TFileMetaDataLite, TFileSignedURLResponse } from "@unified-teamspace/types";
+import { API_BASE_URL } from "@uts/constants";
+import { TFileMetaDataLite, TFileSignedURLResponse } from "@uts/types";
 
 /**
  * @description combine the file path with the base URL

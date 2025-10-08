@@ -1,5 +1,5 @@
 {
-  "name": "@unified-teamspace/typescript-config",
+  "name": "@uts/typescript-config",
   "version": "1.0.0",
   "private": true,
   "files": [

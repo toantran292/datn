@@ -8,7 +8,7 @@ import {
   TIssuePriorities,
   ISSUE_PRIORITY_FILTERS,
   TIssueFilterPriorityObject,
-} from "@unified-teamspace/constants";
+} from "@uts/constants";
 import {
   IIssueDisplayFilterOptions,
   IIssueDisplayProperties,
@@ -22,7 +22,7 @@ import {
   TSubGroupedIssues,
   TUnGroupedIssues,
   EIssueLayoutTypes,
-} from "@unified-teamspace/types";
+} from "@uts/types";
 // local imports
 import { orderArrayBy } from "../array";
 import { getDate } from "../datetime";

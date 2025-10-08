@@ -1,4 +1,4 @@
-import { TFetchStatus, TLoader, TPartialProject, TProject } from "@unified-teamspace/types";
+import { TFetchStatus, TLoader, TPartialProject, TProject } from "@uts/types";
 import { observable, action, makeObservable, runInAction, computed } from "mobx";
 import { ProjectService } from "@/core/services/project";
 import { CoreRootStore } from "../root.store";

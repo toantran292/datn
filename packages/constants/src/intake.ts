@@ -1,4 +1,4 @@
-import { EInboxIssueStatus, TInboxIssueStatus } from "@unified-teamspace/types";
+import { EInboxIssueStatus, TInboxIssueStatus } from "@uts/types";
 
 export const INBOX_STATUS: {
   key: string;

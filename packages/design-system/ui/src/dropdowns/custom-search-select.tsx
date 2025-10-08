@@ -4,7 +4,7 @@ import React, { useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { usePopper } from "react-popper";
 // plane imports
-import { useOutsideClickDetector } from "@unified-teamspace/hooks";
+import { useOutsideClickDetector } from "@uts/hooks";
 // local imports
 import { useDropdownKeyDown } from "../hooks/use-dropdown-key-down";
 import { Tooltip } from "../tooltip";

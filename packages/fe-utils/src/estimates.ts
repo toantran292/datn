@@ -1,5 +1,5 @@
 // plane web constants
-import { EEstimateSystem } from "@unified-teamspace/constants";
+import { EEstimateSystem } from "@uts/constants";
 
 export const isEstimatePointValuesRepeated = (
   estimatePoints: string[],

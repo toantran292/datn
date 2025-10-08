@@ -3,7 +3,7 @@ import { FC } from "react";
 import { observer } from "mobx-react";
 import { AppSidebar } from "./sidebar";
 
-import { cn } from "@unified-teamspace/fe-utils";
+import { cn } from "@uts/fe-utils";
 
 export const ProjectAppSidebar: FC = observer(() => {
   return (

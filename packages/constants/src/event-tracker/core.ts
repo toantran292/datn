@@ -1,4 +1,4 @@
-import { EProductSubscriptionEnum } from "@unified-teamspace/types";
+import { EProductSubscriptionEnum } from "@uts/types";
 
 /**
  * ===========================================================================

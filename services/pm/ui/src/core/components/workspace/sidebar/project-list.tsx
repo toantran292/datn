@@ -8,8 +8,8 @@ import { ChevronRight, Plus } from "lucide-react";
 import { observer } from "mobx-react";
 import { useParams, usePathname } from "next/navigation";
 
-import { cn } from "@unified-teamspace/fe-utils";
-import { Loader, Tooltip, TOAST_TYPE, setToast } from "@unified-teamspace/ui";
+import { cn } from "@uts/fe-utils";
+import { Loader, Tooltip, TOAST_TYPE, setToast } from "@uts/design-system/ui";
 
 import { useProject } from "@/core/hooks/store/use-project";
 

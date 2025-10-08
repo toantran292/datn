@@ -11,9 +11,9 @@ import { observer } from "mobx-react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { createRoot } from "react-dom/client";
 
-import { cn } from "@unified-teamspace/fe-utils";
-import { useOutsideClickDetector, usePlatformOS } from "@unified-teamspace/hooks";
-import { ControlLink, CustomMenu, DragHandle, DropIndicator, Logo, Tooltip } from "@unified-teamspace/ui";
+import { cn } from "@uts/fe-utils";
+import { useOutsideClickDetector, usePlatformOS } from "@uts/hooks";
+import { ControlLink, CustomMenu, DragHandle, DropIndicator, Logo, Tooltip } from "@uts/design-system/ui";
 
 import { useProject } from "@/core/hooks/store/use-project";
 

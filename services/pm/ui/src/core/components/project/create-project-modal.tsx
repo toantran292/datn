@@ -1,5 +1,5 @@
 import { CreateProjectForm } from "@/ce/components/projects/create/root";
-import { EModalPosition, EModalWidth, ModalCore } from "@unified-teamspace/ui";
+import { EModalPosition, EModalWidth, ModalCore } from "@uts/design-system/ui";
 import { FC } from "react";
 
 type Props = {

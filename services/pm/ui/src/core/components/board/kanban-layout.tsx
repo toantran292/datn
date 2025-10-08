@@ -7,7 +7,7 @@ import { useParams } from "next/navigation";
 import { BoardView } from "./board-view";
 import { useIssue } from "@/core/hooks/store/use-issue";
 import { useSprint } from "@/core/hooks/store/use-sprint";
-import { setToast, TOAST_TYPE } from "@unified-teamspace/ui";
+import { setToast, TOAST_TYPE } from "@uts/design-system/ui";
 
 export const KanbanLayout = observer(() => {
   const params = useParams<{ workspaceSlug?: string | string[]; projectId?: string | string[] }>();

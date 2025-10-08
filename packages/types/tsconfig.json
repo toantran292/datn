@@ -1,5 +1,5 @@
 {
-  "extends": "@unified-teamspace/typescript-config/base.json",
+  "extends": "@uts/typescript-config/base.json",
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",

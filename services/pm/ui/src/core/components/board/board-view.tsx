@@ -17,13 +17,13 @@ import {
   Circle,
   MoreVertical,
 } from "lucide-react";
-import { cn } from "@unified-teamspace/fe-utils";
+import { cn } from "@uts/fe-utils";
 
 import type { IIssue } from "@/core/types/issue";
 import type { ISprint } from "@/core/types/sprint";
 import type { IIssueStore } from "@/core/store/issue/issue.store";
 
-import { Badge, Button, Checkbox, Input, setToast, TOAST_TYPE } from "@unified-teamspace/ui";
+import { Badge, Button, Checkbox, Input, setToast, TOAST_TYPE } from "@uts/design-system/ui";
 
 type BoardViewProps = {
   projectId: string;

@@ -1,4 +1,4 @@
-import type { BadgeProps } from "@unified-teamspace/ui";
+import type { BadgeProps } from "@uts/design-system/ui";
 
 import { TIssuePriority, TIssueState, TIssueType } from "@/core/types/issue";
 

@@ -57,7 +57,7 @@ module.exports = {
         groups: ["builtin", "external", "internal", "parent", "sibling"],
         pathGroups: [
           {
-            pattern: "@unified-teamspace/**",
+            pattern: "@uts/**",
             group: "external",
             position: "after",
           },

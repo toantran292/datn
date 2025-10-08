@@ -1,6 +1,6 @@
 "use client";
 
-import { IWorkspaceSidebarNavigationItem } from "@unified-teamspace/constants";
+import { IWorkspaceSidebarNavigationItem } from "@uts/constants";
 import { observer } from "mobx-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";

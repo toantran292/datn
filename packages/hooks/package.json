@@ -1,5 +1,5 @@
 {
-  "name": "@unified-teamspace/hooks",
+  "name": "@uts/hooks",
   "version": "1.0.0",
   "description": "React hooks that are shared across multiple apps internally",
   "private": true,
@@ -23,8 +23,8 @@
     "react": "^18.3.1"
   },
   "devDependencies": {
-    "@unified-teamspace/eslint-config": "workspace:*",
-    "@unified-teamspace/typescript-config": "workspace:*",
+    "@uts/eslint-config": "workspace:*",
+    "@uts/typescript-config": "workspace:*",
     "@types/node": "^22.5.4",
     "@types/react": "^18.3.11",
     "tsup": "8.4.0",
