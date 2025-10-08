@@ -101,7 +101,20 @@ export class ProjectStore implements IProjectStore {
 
       runInAction(() => {
         this.isCreating = false;
-        update(this.projectMap, [project.id], () => ({ ...project } as TPartialProject));
+        // Ensure logo_props exists when updating projectMap
+        const projectWithLogoProps = {
+          ...project,
+          logo_props: project.logo_props || {
+            in_use: "icon",
+            icon: {
+              name: "folder",
+              color: "#6B7280",
+              background_color: "#F3F4F6",
+            },
+          },
+        } as TPartialProject;
+
+        update(this.projectMap, [project.id], () => projectWithLogoProps);
         const sortedProjects = Object.values(this.projectMap).sort((a, b) => {
           const orderA = a.sort_order ?? Number.MAX_SAFE_INTEGER;
           const orderB = b.sort_order ?? Number.MAX_SAFE_INTEGER;

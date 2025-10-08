@@ -30,7 +30,9 @@ export const ProjectTabs: FC<ProjectTabsProps> = ({ workspaceSlug, projectId, ac
             href={href}
             className={cn(
               "border-b-2 pb-2 text-sm transition-colors",
-              isActive ? "border-custom-primary-100 font-medium text-custom-primary-100" : "border-transparent text-custom-text-300 hover:text-custom-text-100"
+              isActive
+                ? "border-custom-primary-100 font-medium text-custom-primary-100"
+                : "border-transparent text-custom-text-300 hover:text-custom-text-100"
             )}
           >
             {tab.label}

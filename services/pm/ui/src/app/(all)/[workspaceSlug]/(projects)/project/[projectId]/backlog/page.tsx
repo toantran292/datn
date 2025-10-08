@@ -29,9 +29,7 @@ const ProjectBacklogPage = observer(() => {
   const projectIdParam = params?.projectId;
   const workspaceSlugParam = params?.workspaceSlug;
   const projectId = Array.isArray(projectIdParam) ? (projectIdParam[0] ?? "") : (projectIdParam ?? "");
-  const workspaceSlug = Array.isArray(workspaceSlugParam)
-    ? workspaceSlugParam[0] ?? ""
-    : workspaceSlugParam ?? "";
+  const workspaceSlug = Array.isArray(workspaceSlugParam) ? (workspaceSlugParam[0] ?? "") : (workspaceSlugParam ?? "");
 
   const issueStore = useIssue();
   const sprintStore = useSprint();
@@ -174,8 +172,7 @@ const ProjectBacklogPage = observer(() => {
         message: sprint.name,
       });
     } catch (error: any) {
-      const apiMessage =
-        error?.response?.data?.message ?? error?.message ?? "Không thể tạo sprint. Vui lòng thử lại.";
+      const apiMessage = error?.response?.data?.message ?? error?.message ?? "Không thể tạo sprint. Vui lòng thử lại.";
       const finalMessage = typeof apiMessage === "string" ? apiMessage : "Không thể tạo sprint. Vui lòng thử lại.";
       setToast({
         type: TOAST_TYPE.ERROR,
@@ -198,7 +195,12 @@ const ProjectBacklogPage = observer(() => {
 
   const sprintToStart = startSprintState ? sprintStore.getSprintById(startSprintState.sprintId) : undefined;
 
-  const handleConfirmStartSprint = async (values: { name: string; startDate: string; endDate: string; goal: string | null }) => {
+  const handleConfirmStartSprint = async (values: {
+    name: string;
+    startDate: string;
+    endDate: string;
+    goal: string | null;
+  }) => {
     if (!projectId || !startSprintState) return;
     const sprintId = startSprintState.sprintId;
 
@@ -270,10 +272,7 @@ const ProjectBacklogPage = observer(() => {
     [issuesGroupedBySprint]
   );
 
-  const sections = useMemo(
-    () => [...sprintSections, backlogSection],
-    [backlogSection, sprintSections]
-  );
+  const sections = useMemo(() => [...sprintSections, backlogSection], [backlogSection, sprintSections]);
 
   const issueLoader = getIssueLoader(projectId);
   const sprintLoader = getSprintLoader(projectId);
