@@ -5,8 +5,10 @@ import com.datn.identity.infrastructure.persistence.entity.InvitationEntity;
 import com.datn.identity.infrastructure.persistence.springdata.InvitationJpaRepo;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Repository
 public class InvitationRepositoryImpl implements InvitationRepository {
@@ -42,4 +44,11 @@ public class InvitationRepositoryImpl implements InvitationRepository {
         return repo.existsByOrgIdAndEmailAndAcceptedAtIsNull(orgId, emailCI);
     }
     @Override public void save(Invitation inv){ repo.save(toEntity(inv)); }
+    @Override
+    public List<Invitation> findPendingByEmail(String email) {
+        return repo.findByEmailAndAcceptedAtIsNull(email.toLowerCase())
+                .stream()
+                .map(InvitationRepositoryImpl::toDomain)
+                .collect(Collectors.toList());
+    }
 }

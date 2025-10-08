@@ -1,6 +1,7 @@
 package com.datn.identity.interfaces.api;
 
 import com.datn.identity.domain.org.MembershipRepository;
+import com.datn.identity.infrastructure.security.SecurityUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -69,5 +70,23 @@ public class AuthzController {
             results.add(one.getBody());
         }
         return ResponseEntity.ok(new BatchCheckResult(results));
+    }
+
+    /**
+     * Check permission for the currently authenticated user
+     */
+    @GetMapping("/check/me")
+    public ResponseEntity<CheckResult> checkMe(@RequestParam("permission") String permission) {
+        UUID userId = SecurityUtils.getCurrentUserId();
+        UUID orgId = SecurityUtils.getCurrentOrgId();
+
+        if (userId == null) {
+            return ResponseEntity.status(401).body(new CheckResult("", "", permission, false, "not_authenticated"));
+        }
+        if (orgId == null) {
+            return ResponseEntity.status(400).body(new CheckResult(userId.toString(), "", permission, false, "no_org_context"));
+        }
+
+        return check(userId, orgId, permission);
     }
 }

@@ -1,6 +1,7 @@
 package com.datn.identity.interfaces.api;
 
 import com.datn.identity.application.UserApplicationService;
+import com.datn.identity.infrastructure.security.SecurityUtils;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -8,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -30,11 +32,20 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> me(@RequestHeader("X-User-ID") String userId,
-                                @RequestHeader("X-Org-ID") String orgId) {
-        return ResponseEntity.ok(new Object() {
-            public final String user_id = userId;
-            public final String org_id = orgId;
-        });
+    public ResponseEntity<?> me() {
+        String userId = SecurityUtils.getCurrentUserIdAsString();
+        String orgId = SecurityUtils.getCurrentOrgIdAsString();
+        String email = SecurityUtils.getCurrentUserEmail();
+
+        if (userId == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "not_authenticated"));
+        }
+
+        return ResponseEntity.ok(Map.of(
+            "user_id", userId,
+            "org_id", orgId != null ? orgId : "",
+            "email", email != null ? email : "",
+            "roles", SecurityUtils.getCurrentUserRoles()
+        ));
     }
 }

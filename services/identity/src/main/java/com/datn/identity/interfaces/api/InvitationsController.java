@@ -2,6 +2,7 @@ package com.datn.identity.interfaces.api;
 
 import com.datn.identity.application.InvitationApplicationService;
 import com.datn.identity.domain.org.MemberType;
+import com.datn.identity.infrastructure.security.SecurityUtils;
 import com.datn.identity.interfaces.api.dto.Dtos.*;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -17,12 +18,20 @@ public class InvitationsController {
     public InvitationsController(InvitationApplicationService invites) { this.invites = invites; }
 
     @PostMapping
-    public ResponseEntity<CreateInviteRes> create(@RequestHeader("X-User-ID") String actorUserId,
-                                                  @RequestHeader("X-Org-ID") String orgId,
-                                                  @Valid @RequestBody CreateInviteReq req) {
+    public ResponseEntity<CreateInviteRes> create(@Valid @RequestBody CreateInviteReq req) {
+        UUID actorUserId = SecurityUtils.getCurrentUserId();
+        UUID orgId = SecurityUtils.getCurrentOrgId();
+
+        if (actorUserId == null) {
+            return ResponseEntity.status(401).build();
+        }
+        if (orgId == null) {
+            return ResponseEntity.status(400).build(); // Bad request - no org context
+        }
+
         var token = invites.createInvitation(
-                UUID.fromString(actorUserId),
-                UUID.fromString(orgId),
+                actorUserId,
+                orgId,
                 req.email(),
                 req.memberType() == null ? MemberType.STAFF : req.memberType()
         );

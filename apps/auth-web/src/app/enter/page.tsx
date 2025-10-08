@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { routes } from "@/lib/routes";
+import { ProtectedRoute } from "@/components/auth/route-guard";
 
 const stages = [
   { percent: 25, text: "Loading workspace..." },
@@ -147,8 +148,10 @@ function LoadingFallback() {
 
 export default function EnterPage() {
   return (
-    <Suspense fallback={<LoadingFallback />}>
-      <EnterPageContent />
-    </Suspense>
+    <ProtectedRoute>
+      <Suspense fallback={<LoadingFallback />}>
+        <EnterPageContent />
+      </Suspense>
+    </ProtectedRoute>
   );
 }

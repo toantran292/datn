@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -95,6 +96,13 @@ public class InvitationApplicationService {
         outbox.append(OutboxMessage.create(evt.topic(), toJson(evt)));
 
         return new AcceptResult(user.id(), orgId);
+    }
+
+    /**
+     * Find all pending invitations for a user by email
+     */
+    public List<Invitation> findPendingByEmail(String email) {
+        return invites.findPendingByEmail(email);
     }
 
     public record AcceptResult(UUID userId, UUID orgId) {}

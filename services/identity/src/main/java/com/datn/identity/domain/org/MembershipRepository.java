@@ -9,5 +9,6 @@ public interface MembershipRepository {
     void save(Membership m);
     void delete(UUID userId, UUID orgId);
     List<Membership> listByOrg(UUID orgId, int page, int size);
+    List<Membership> listByUser(UUID userId);
     long countOwners(UUID orgId);
 }

@@ -4,15 +4,19 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Input, Card } from "@uts/design-system/ui";
 import { routes } from "@/lib/routes";
-import { useEmailAuth } from "@/hooks/use-auth";
+import { useEmailSignUp } from "@/hooks/use-auth";
 import { PublicOnlyRoute } from "@/components/auth/route-guard";
-import type { EmailAuthRequest } from "@/types/identity";
+import type { EmailSignUpRequest } from "@/types/identity";
 
-export default function LoginPage() {
+export default function SignUpPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const emailAuthMutation = useEmailAuth();
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [error, setError] = useState("");
+  const emailSignUpMutation = useEmailSignUp();
 
   // UTS Brand Logo Component
   const UTSLogo = () => (
@@ -23,16 +27,33 @@ export default function LoginPage() {
     </div>
   );
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignUp = () => {
     window.location.href = routes.api.googleOAuth();
   };
 
-  const handleEmailSignIn = (e: React.FormEvent) => {
+  const handleEmailSignUp = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) return;
+    if (!email || !password || !confirmPassword || !firstName || !lastName) return;
 
-    const authData: EmailAuthRequest = { email, password };
-    emailAuthMutation.mutate(authData);
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters long");
+      return;
+    }
+
+    setError("");
+
+    const signUpData: EmailSignUpRequest = {
+      email,
+      password,
+      firstName,
+      lastName
+    };
+    emailSignUpMutation.mutate(signUpData);
   };
 
   return (
@@ -45,13 +66,13 @@ export default function LoginPage() {
             <div className="flex justify-center mb-4">
               <UTSLogo />
             </div>
-            <h1 className="text-2xl font-bold text-[#0F172A] mb-2 tracking-tight">Welcome Back</h1>
-            <p className="text-[#64748B] font-medium leading-relaxed">Sign in to your Unified TeamSpace account</p>
+            <h1 className="text-2xl font-bold text-[#0F172A] mb-2 tracking-tight">Join Unified TeamSpace</h1>
+            <p className="text-[#64748B] font-medium leading-relaxed">Create your account to get started with your team</p>
             <div className="w-20 h-px bg-gradient-to-r from-transparent via-[#E2E8F0] to-transparent mx-auto mt-4 opacity-60" />
           </div>
 
           {/* Error Banner */}
-          {emailAuthMutation.error && (
+          {(error || emailSignUpMutation.error) && (
             <div className="bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-2xl p-5 mb-8 shadow-sm">
               <div className="flex items-center">
                 <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center mr-4">
@@ -59,26 +80,48 @@ export default function LoginPage() {
                     <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                   </svg>
                 </div>
-                <p className="text-red-700 font-medium">{emailAuthMutation.error.message}</p>
+                <p className="text-red-700 font-medium">{error || emailSignUpMutation.error?.message}</p>
               </div>
             </div>
           )}
 
           {/* Loading State */}
-          {emailAuthMutation.isPending && (
+          {emailSignUpMutation.isPending && (
             <div className="text-center py-12">
               <div className="relative mb-6">
                 <div className="animate-spin rounded-full h-16 w-16 border-4 border-[#FF8800]/20 border-t-[#FF8800] mx-auto" />
                 <div className="absolute inset-0 animate-pulse rounded-full h-16 w-16 bg-gradient-to-r from-[#FF8800]/10 to-[#00C4AB]/10 mx-auto" />
               </div>
-              <p className="text-[#475569] font-semibold text-lg">Signing you in...</p>
-              <p className="text-[#64748B] text-sm mt-2">Please wait a moment</p>
+              <p className="text-[#475569] font-semibold text-lg">Creating your account...</p>
+              <p className="text-[#64748B] text-sm mt-2">This will just take a moment</p>
             </div>
           )}
 
           {/* Auth Form */}
-          {!emailAuthMutation.isPending && (
-            <form onSubmit={handleEmailSignIn} className="space-y-6">
+          {!emailSignUpMutation.isPending && (
+            <form onSubmit={handleEmailSignUp} className="space-y-6">
+              {/* Name Fields */}
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  id="firstName"
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  placeholder="First name"
+                  className="w-full px-5 py-4 border-2 border-[#E5E7EB] rounded-2xl focus:ring-4 focus:ring-[#00C4AB]/25 focus:border-[#00C4AB] transition-all duration-200 bg-white/80 backdrop-blur-sm font-medium text-lg"
+                  required
+                />
+                <Input
+                  id="lastName"
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  placeholder="Last name"
+                  className="w-full px-5 py-4 border-2 border-[#E5E7EB] rounded-2xl focus:ring-4 focus:ring-[#00C4AB]/25 focus:border-[#00C4AB] transition-all duration-200 bg-white/80 backdrop-blur-sm font-medium text-lg"
+                  required
+                />
+              </div>
+
               {/* Email Input */}
               <div>
                 <Input
@@ -92,14 +135,24 @@ export default function LoginPage() {
                 />
               </div>
 
-              {/* Password Input */}
-              <div>
+              {/* Password Fields */}
+              <div className="space-y-4">
                 <Input
                   id="password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Password"
+                  placeholder="Password (min 8 characters)"
+                  className="w-full px-5 py-4 border-2 border-[#E5E7EB] rounded-2xl focus:ring-4 focus:ring-[#00C4AB]/25 focus:border-[#00C4AB] transition-all duration-200 bg-white/80 backdrop-blur-sm font-medium text-lg"
+                  required
+                  minLength={8}
+                />
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm password"
                   className="w-full px-5 py-4 border-2 border-[#E5E7EB] rounded-2xl focus:ring-4 focus:ring-[#00C4AB]/25 focus:border-[#00C4AB] transition-all duration-200 bg-white/80 backdrop-blur-sm font-medium text-lg"
                   required
                 />
@@ -109,30 +162,20 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 className="w-full bg-[#0F172A] hover:bg-[#1E293B] text-white font-bold py-5 px-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-[#0F172A]/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-lg"
-                disabled={!email || !password || emailAuthMutation.isPending}
+                disabled={!email || !password || !confirmPassword || !firstName || !lastName || password !== confirmPassword || password.length < 8 || emailSignUpMutation.isPending}
               >
                 Continue
               </Button>
 
-              {/* Forgot Password */}
-              <div className="text-center">
-                <span
-                  onClick={() => router.push(routes.forgotPassword())}
-                  className="text-[#00C4AB] hover:text-[#00B3A0] font-semibold hover:underline cursor-pointer transition-colors duration-200"
-                >
-                  Forgot password?
-                </span>
-              </div>
-
-              {/* Sign Up Link */}
+              {/* Sign In Link */}
               <div className="text-center">
                 <p className="text-[#64748B]">
-                  Don't have an account?{" "}
+                  Already have an account?{" "}
                   <span
-                    onClick={() => router.push(routes.signUp())}
+                    onClick={() => router.push(routes.login())}
                     className="text-[#00C4AB] hover:text-[#00B3A0] font-bold cursor-pointer transition-colors duration-200 hover:underline"
                   >
-                    Sign up
+                    Sign in
                   </span>
                 </p>
               </div>
@@ -147,7 +190,7 @@ export default function LoginPage() {
               {/* Social Login Options */}
               <div className="space-y-4">
                 <Button
-                  onClick={handleGoogleSignIn}
+                  onClick={handleGoogleSignUp}
                   variant="outline-primary"
                   className="w-full bg-white/80 backdrop-blur-sm hover:bg-white text-[#374151] hover:text-[#0F172A] font-semibold py-4 px-8 rounded-2xl border-2 border-[#E5E7EB] hover:border-[#D1D5DB] transition-all duration-300 flex items-center justify-center space-x-3 shadow-sm hover:shadow-md"
                 >
@@ -164,10 +207,10 @@ export default function LoginPage() {
           )}
 
           {/* Terms */}
-          {!emailAuthMutation.isPending && (
+          {!emailSignUpMutation.isPending && (
             <div className="text-center pt-8 border-t border-gradient-to-r from-transparent via-[#E2E8F0] to-transparent mt-8">
               <p className="text-sm text-[#64748B] leading-relaxed">
-                By continuing, you agree to our{" "}
+                By creating an account, you agree to our{" "}
                 <span className="text-[#00C4AB] hover:text-[#00B3A0] font-semibold hover:underline cursor-pointer transition-colors">Terms of Service</span> and{" "}
                 <span className="text-[#00C4AB] hover:text-[#00B3A0] font-semibold hover:underline cursor-pointer transition-colors">Privacy Policy</span>.
               </p>

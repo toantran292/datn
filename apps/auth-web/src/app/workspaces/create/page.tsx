@@ -1,32 +1,83 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Input } from "@uts/design-system/ui";
-import { apiPost } from "@/lib/api";
 import { routes } from "@/lib/routes";
 import { slugify, validateSlug } from "@/lib/slug";
-import { toast } from "@/lib/toast";
-import type { CreateTenantRequest, CreateTenantResponse } from "@/types/identity";
+import { useCreateOrg } from "@/hooks/use-tenants";
+import { ProtectedRoute } from "@/components/auth/route-guard";
+import { apiGet } from "@/lib/api";
+import type { CreateOrgRequest } from "@/types/identity";
 
-export default function CreateWorkspacePage() {
+function CreateWorkspacePageContent() {
   const router = useRouter();
   const [displayName, setDisplayName] = useState("");
   const [slug, setSlug] = useState("");
   const [isSlugEdited, setIsSlugEdited] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ displayName?: string; slug?: string }>({});
+  const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'invalid'>('idle');
+  const createOrgMutation = useCreateOrg();
+
+  // Debounced slug availability check
+  const checkSlugAvailability = useCallback(async (slugToCheck: string) => {
+    if (!slugToCheck || !validateSlug(slugToCheck)) {
+      setSlugStatus('invalid');
+      return;
+    }
+
+    setSlugStatus('checking');
+
+    try {
+      const response = await apiGet<{ available: boolean }>(routes.api.orgAvailability(slugToCheck));
+      setSlugStatus(response.available ? 'available' : 'taken');
+
+      if (!response.available) {
+        setErrors(prev => ({ ...prev, slug: 'This slug is already taken' }));
+      } else {
+        setErrors(prev => ({ ...prev, slug: undefined }));
+      }
+    } catch (error) {
+      console.error('Slug availability check failed:', error);
+      setSlugStatus('idle');
+    }
+  }, []);
+
+  // Debounce slug check
+  useEffect(() => {
+    if (!slug) {
+      setSlugStatus('idle');
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      checkSlugAvailability(slug);
+    }, 500); // 500ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [slug, checkSlugAvailability]);
 
   // Auto-generate slug from display name
   useEffect(() => {
-    if (!isSlugEdited && displayName) {
-      setSlug(slugify(displayName));
+    if (!isSlugEdited) {
+      if (displayName) {
+        const newSlug = slugify(displayName);
+        setSlug(newSlug);
+      } else {
+        // Clear slug when display name is empty
+        setSlug('');
+      }
     }
   }, [displayName, isSlugEdited]);
 
   const handleDisplayNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setDisplayName(value);
+
+    // Reset slug editing flag when display name is cleared
+    if (!value.trim() && isSlugEdited) {
+      setIsSlugEdited(false);
+    }
 
     if (errors.displayName) {
       setErrors(prev => ({ ...prev, displayName: undefined }));
@@ -37,6 +88,7 @@ export default function CreateWorkspacePage() {
     const value = slugify(e.target.value);
     setSlug(value);
     setIsSlugEdited(true);
+    setSlugStatus('idle'); // Reset status when user manually edits
     if (errors.slug) {
       setErrors(prev => ({ ...prev, slug: undefined }));
     }
@@ -53,46 +105,43 @@ export default function CreateWorkspacePage() {
       newErrors.slug = "Workspace slug is required";
     } else if (!validateSlug(slug)) {
       newErrors.slug = "Invalid slug format";
+    } else if (slugStatus === 'taken') {
+      newErrors.slug = "This slug is already taken";
+    } else if (slugStatus === 'checking') {
+      newErrors.slug = "Checking slug availability...";
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return Object.keys(newErrors).length === 0 && slugStatus === 'available';
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!validateForm()) {
       return;
     }
 
-    setLoading(true);
+    const createData: CreateOrgRequest = {
+      name: displayName.trim(),  // Backend expects 'name', not 'display_name'
+      slug: slug.trim(),
+    };
 
-    try {
-      const createData: CreateTenantRequest = {
-        display_name: displayName.trim(),
-        slug: slug.trim(),
-      };
+    createOrgMutation.mutate(createData, {
+      onSuccess: (response) => {
+        // Redirect to enter page with the new org ID
+        router.push(routes.enter(response.id));
+      },
+      onError: (error) => {
+        const errorMessage = error.message || "Failed to create workspace";
 
-      const response = await apiPost<CreateTenantResponse>(routes.api.createTenant(), createData);
-
-      toast.success("Workspace created successfully!");
-
-      // Redirect to enter page with the new org ID
-      router.push(routes.enter(response.id));
-    } catch (error) {
-      console.error("Failed to create workspace:", error);
-      const errorMessage = error instanceof Error ? error.message : "Failed to create workspace";
-
-      // Check if it's a slug conflict error
-      if (errorMessage.includes("slug") || errorMessage.includes("already exists")) {
-        setErrors({ slug: "This slug is already taken" });
-      } else {
-        toast.error(errorMessage);
-      }
-    } finally {
-      setLoading(false);
-    }
+        // Check if it's a slug conflict error (backend returns 'slug_exists' or 'slug_invalid')
+        if (errorMessage.includes("slug") || errorMessage.includes("already exists") ||
+            errorMessage.includes("slug_exists") || errorMessage.includes("slug_invalid")) {
+          setErrors({ slug: "This slug is already taken or invalid" });
+        }
+      },
+    });
   };
 
   const handleCancel = () => {
@@ -111,7 +160,7 @@ export default function CreateWorkspacePage() {
             </div>
 
             {/* Success Banner */}
-            {loading && (
+            {createOrgMutation.isPending && (
               <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
                 <div className="flex items-center">
                   <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -138,7 +187,7 @@ export default function CreateWorkspacePage() {
                   className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C4AB] focus:ring-opacity-40 focus:border-[#00C4AB] transition-colors ${
                     errors.displayName ? 'border-red-500 bg-red-50' : 'border-gray-300'
                   }`}
-                  disabled={loading}
+                  disabled={createOrgMutation.isPending}
                 />
                 {errors.displayName && (
                   <div className="mt-2 text-sm text-red-600">
@@ -162,14 +211,32 @@ export default function CreateWorkspacePage() {
                   onChange={handleSlugChange}
                   placeholder="workspace-slug"
                   className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00C4AB] focus:ring-opacity-40 focus:border-[#00C4AB] transition-colors ${
-                    errors.slug ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                    errors.slug || slugStatus === 'taken' || slugStatus === 'invalid'
+                      ? 'border-red-500 bg-red-50'
+                      : slugStatus === 'available'
+                        ? 'border-green-500 bg-green-50'
+                        : slugStatus === 'checking'
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-300'
                   } ${!isSlugEdited ? 'bg-gray-50' : ''}`}
-                  disabled={loading}
+                  disabled={createOrgMutation.isPending}
                 />
                 {!errors.slug && !isSlugEdited && displayName && (
                   <p className="mt-2 text-sm text-gray-500">Auto-generated from workspace name</p>
                 )}
-                {!errors.slug && slug && validateSlug(slug) && (
+
+                {/* Slug Status Indicators */}
+                {slugStatus === 'checking' && (
+                  <div className="mt-2 text-sm text-blue-600">
+                    <svg className="inline w-4 h-4 mr-1 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                    Checking availability...
+                  </div>
+                )}
+
+                {slugStatus === 'available' && !errors.slug && (
                   <div className="mt-2 text-sm text-green-600">
                     <svg className="inline w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -177,7 +244,27 @@ export default function CreateWorkspacePage() {
                     Slug is available
                   </div>
                 )}
-                {errors.slug && (
+
+                {slugStatus === 'taken' && (
+                  <div className="mt-2 text-sm text-red-600">
+                    <svg className="inline w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                    This slug is already taken
+                  </div>
+                )}
+
+                {slugStatus === 'invalid' && slug && (
+                  <div className="mt-2 text-sm text-red-600">
+                    <svg className="inline w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    Invalid slug format
+                  </div>
+                )}
+
+                {/* Only show form validation errors if not handled by slug status */}
+                {errors.slug && slugStatus !== 'taken' && slugStatus !== 'invalid' && (
                   <div className="mt-2 text-sm text-red-600">
                     <svg className="inline w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
@@ -205,10 +292,10 @@ export default function CreateWorkspacePage() {
               <div className="flex space-x-4 pt-4">
                 <Button
                   type="submit"
-                  disabled={loading || !displayName.trim() || !slug.trim()}
+                  disabled={createOrgMutation.isPending || !displayName.trim() || !slug.trim() || slugStatus !== 'available'}
                   className="flex-1 bg-[#FF8800] text-white py-3 px-6 rounded-lg font-medium hover:bg-orange-600 transition-colors focus:outline-none focus:ring-2 focus:ring-[#FF8800] focus:ring-opacity-40 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? (
+                  {createOrgMutation.isPending ? (
                     <div className="flex items-center justify-center">
                       <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -223,7 +310,7 @@ export default function CreateWorkspacePage() {
                 <Button
                   type="button"
                   onClick={handleCancel}
-                  disabled={loading}
+                  disabled={createOrgMutation.isPending}
                   variant="outline-primary"
                   className="px-6 py-3 border-2 border-[#00C4AB] text-[#00C4AB] rounded-lg font-medium hover:bg-[#00C4AB] hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#00C4AB] focus:ring-opacity-40 disabled:opacity-50"
                 >
@@ -265,5 +352,13 @@ export default function CreateWorkspacePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CreateWorkspacePage() {
+  return (
+    <ProtectedRoute>
+      <CreateWorkspacePageContent />
+    </ProtectedRoute>
   );
 }

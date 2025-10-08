@@ -14,4 +14,5 @@ public interface MembershipJpaRepo extends JpaRepository<MembershipEntity, Membe
     long countOwners(@Param("orgId") UUID orgId);
 
     List<MembershipEntity> findById_OrgId(UUID orgId);
+    List<MembershipEntity> findById_UserId(UUID userId);
 }

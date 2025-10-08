@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
+import "../styles/globals.css";
+import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
   title: "Unified TeamSpace - Authentication",
@@ -18,10 +15,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${inter.variable} font-sans antialiased`}
-      >
-        {children}
+      <body>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

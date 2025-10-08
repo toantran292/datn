@@ -1,6 +1,7 @@
 package com.datn.identity.interfaces.api;
 
 import com.datn.identity.application.UserApplicationService;
+import com.datn.identity.infrastructure.security.SecurityUtils;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.ResponseEntity;
@@ -23,9 +24,13 @@ public class PasswordController {
     public record SetPasswordReq(@NotBlank String newPassword) {}
 
     @PostMapping("/password/set")
-    public ResponseEntity<Void> set(@RequestHeader("X-User-ID") String actorUserId,
-                                    @Valid @RequestBody SetPasswordReq req) {
-        userApp.setPassword(UUID.fromString(actorUserId), req.newPassword());
+    public ResponseEntity<Void> set(@Valid @RequestBody SetPasswordReq req) {
+        UUID actorUserId = SecurityUtils.getCurrentUserId();
+        if (actorUserId == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        userApp.setPassword(actorUserId, req.newPassword());
         return ResponseEntity.noContent().build(); // 204
     }
 }

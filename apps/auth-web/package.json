@@ -11,23 +11,25 @@
     "check:types": "tsc --noEmit"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.90.2",
+    "@tanstack/react-query-devtools": "^5.90.2",
     "@uts/constants": "workspace:*",
-    "@uts/fe-utils": "workspace:*",
-    "@uts/types": "workspace:*",
-    "@uts/hooks": "workspace:*",
     "@uts/design-system/ui": "workspace:*",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "@uts/fe-utils": "workspace:*",
+    "@uts/hooks": "workspace:*",
+    "@uts/types": "workspace:*",
     "axios": "1.11.0",
     "next": "14.2.30",
-    "next-themes": "^0.2.1"
+    "next-themes": "^0.2.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@uts/eslint-config": "workspace:*",
-    "@uts/design-system/tailwind-config": "workspace:*",
     "@types/node": "18.16.1",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.2.18",
+    "@uts/design-system/tailwind-config": "workspace:*",
+    "@uts/eslint-config": "workspace:*",
     "eslint": "8.57.1",
     "prettier": "^3.2.5",
     "typescript": "5.8.3"

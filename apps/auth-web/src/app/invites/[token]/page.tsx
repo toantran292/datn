@@ -6,6 +6,7 @@ import { Button, Card } from "@uts/design-system/ui";
 import { apiPost } from "@/lib/api";
 import { routes } from "@/lib/routes";
 import { toast } from "@/lib/toast";
+import { ProtectedRoute } from "@/components/auth/route-guard";
 
 interface InvitePageProps {
   params: {
@@ -13,7 +14,7 @@ interface InvitePageProps {
   };
 }
 
-export default function InviteAcceptPage({ params }: InvitePageProps) {
+function InviteAcceptPageContent({ params }: InvitePageProps) {
   const router = useRouter();
   const { token } = params;
   const [loading, setLoading] = useState(false);
@@ -31,7 +32,7 @@ export default function InviteAcceptPage({ params }: InvitePageProps) {
     setError(null);
 
     try {
-      await apiPost(routes.api.acceptInvite(token));
+      await apiPost(routes.api.acceptInvite(), { token });
 
       toast.success("Invitation accepted successfully!");
 
@@ -170,5 +171,13 @@ export default function InviteAcceptPage({ params }: InvitePageProps) {
         </div>
       </Card>
     </div>
+  );
+}
+
+export default function InviteAcceptPage({ params }: InvitePageProps) {
+  return (
+    <ProtectedRoute>
+      <InviteAcceptPageContent params={params} />
+    </ProtectedRoute>
   );
 }

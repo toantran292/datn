@@ -1,5 +1,8 @@
 export const routes = {
   login: () => '/login',
+  signUp: () => '/sign-up',
+  forgotPassword: () => '/forgot-password',
+  resetPassword: (token?: string) => `/reset-password${token ? `?token=${token}` : ''}`,
   workspaces: () => '/workspaces',
   workspaceCreate: () => '/workspaces/create',
   inviteAccept: (token: string) => `/invites/${token}`,
@@ -7,11 +10,14 @@ export const routes = {
 
   // API routes
   api: {
-    googleOAuth: () => '/auth/oidc/google',
+    googleOAuth: () => 'http://localhost:40000/oauth2/authorization/google',
     emailAuth: () => '/auth/token',
+    emailSignUp: () => '/auth/register',
+    forgotPassword: () => '/auth/forgot-password',
+    resetPassword: () => '/auth/reset-password',
     meTenants: () => '/me/tenants',
-    createTenant: () => '/tenants',
-    acceptInvite: (token: string) => `/invites/${token}/accept`,
+    createOrg: () => '/orgs',
+    acceptInvite: () => '/invitations/accept',
     orgAvailability: (slug: string) => `/orgs/availability?slug=${slug}`,
   }
 } as const;

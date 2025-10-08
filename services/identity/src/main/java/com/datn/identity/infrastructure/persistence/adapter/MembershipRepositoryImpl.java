@@ -38,5 +38,8 @@ public class MembershipRepositoryImpl implements MembershipRepository {
     @Override public List<Membership> listByOrg(UUID orgId, int page, int size){
         return repo.findById_OrgId(orgId).stream().map(MembershipRepositoryImpl::toDomain).collect(Collectors.toList());
     }
+    @Override public List<Membership> listByUser(UUID userId){
+        return repo.findById_UserId(userId).stream().map(MembershipRepositoryImpl::toDomain).collect(Collectors.toList());
+    }
     @Override public long countOwners(UUID orgId){ return repo.countOwners(orgId); }
 }

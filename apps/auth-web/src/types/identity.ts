@@ -15,26 +15,45 @@ export type Invite = {
   member_type?: "STAFF" | "PARTNER";
 };
 
+// Backend response from /orgs/my
+export type BackendUserOrg = {
+  orgId: string;
+  slug: string;
+  displayName: string;
+  roles: string[];
+  memberType: string;
+};
+
+export type BackendOrgsResponse = {
+  organizations: BackendUserOrg[];
+};
+
+// Frontend expected format
 export type MeTenants = {
   joined: Org[];
   invites: Invite[];
 };
 
-export type CreateTenantRequest = {
-  display_name: string;
+export type CreateOrgRequest = {
+  name: string;  // Backend expects 'name', not 'display_name'
   slug: string;
+  ownerUserId?: string;  // Optional for backward compatibility
 };
 
-export type CreateTenantResponse = {
-  id: string;
-  display_name: string;
-  slug: string;
-  role: string;
+export type CreateOrgResponse = {
+  id: string;  // Backend returns simple { id: string } format
 };
 
 export type EmailAuthRequest = {
   email: string;
   password: string;
+};
+
+export type EmailSignUpRequest = {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
 };
 
 export type AuthResponse = {

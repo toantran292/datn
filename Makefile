@@ -70,7 +70,7 @@ dev-setup:
 	@echo "Generating JWT keys for Identity service..."
 	@cd services/identity && \
 		if [ ! -f private.pem ]; then \
-			openssl genpkey -algorithm RSA -out private.pem -pkcs8 -pkeyopt rsa_keygen_bits:2048; \
+			openssl genpkey -algorithm RSA -out private.pem -pkeyopt rsa_keygen_bits:2048; \
 		fi && \
 		if [ ! -f public.pem ]; then \
 			openssl rsa -pubout -in private.pem -out public.pem; \

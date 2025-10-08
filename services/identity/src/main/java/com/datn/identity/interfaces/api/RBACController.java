@@ -1,6 +1,7 @@
 package com.datn.identity.interfaces.api;
 
 import com.datn.identity.application.RBACApplicationService;
+import com.datn.identity.infrastructure.security.SecurityUtils;
 import com.datn.identity.interfaces.api.dto.RbacDtos.*;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -19,14 +20,20 @@ public class RBACController {
     }
 
     @PostMapping("/bindings")
-    public ResponseEntity<CreateBindingRes> createBinding(
-            @RequestHeader("X-User-ID") String actorUserId,
-            @RequestHeader("X-Org-ID") String orgId,
-            @Valid @RequestBody CreateBindingReq req
-    ) {
+    public ResponseEntity<CreateBindingRes> createBinding(@Valid @RequestBody CreateBindingReq req) {
+        UUID actorUserId = SecurityUtils.getCurrentUserId();
+        UUID orgId = SecurityUtils.getCurrentOrgId();
+
+        if (actorUserId == null) {
+            return ResponseEntity.status(401).build();
+        }
+        if (orgId == null) {
+            return ResponseEntity.status(400).build(); // Bad request - no org context
+        }
+
         var id = rbac.createBinding(
-                UUID.fromString(actorUserId),
-                UUID.fromString(orgId),
+                actorUserId,
+                orgId,
                 UUID.fromString(req.userId()),
                 req.roleId(),
                 req.scope(),
@@ -36,12 +43,20 @@ public class RBACController {
     }
 
     @DeleteMapping("/bindings/{bindingId}")
-    public ResponseEntity<?> deleteBinding(@RequestHeader("X-User-ID") String actorUserId,
-                                           @RequestHeader("X-Org-ID") String orgId,
-                                           @PathVariable String bindingId) {
+    public ResponseEntity<?> deleteBinding(@PathVariable String bindingId) {
+        UUID actorUserId = SecurityUtils.getCurrentUserId();
+        UUID orgId = SecurityUtils.getCurrentOrgId();
+
+        if (actorUserId == null) {
+            return ResponseEntity.status(401).build();
+        }
+        if (orgId == null) {
+            return ResponseEntity.status(400).build(); // Bad request - no org context
+        }
+
         rbac.deleteBinding(
-                UUID.fromString(actorUserId),
-                UUID.fromString(orgId),
+                actorUserId,
+                orgId,
                 UUID.fromString(bindingId)
         );
         return ResponseEntity.ok().build();

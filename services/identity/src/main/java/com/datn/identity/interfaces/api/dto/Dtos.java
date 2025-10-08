@@ -15,6 +15,7 @@ public class Dtos {
     // Orgs
     public record CreateOrgReq(String ownerUserId, @NotBlank String slug, @NotBlank String name) {}
     public record UpdateMemberRolesReq(@NotBlank String userId, Set<String> roles) {}
+    public record UserOrgRes(String orgId, String slug, String displayName, Set<String> roles, String memberType) {}
 
     // Invitations
     public record CreateInviteReq(@Email String email, MemberType memberType) {}

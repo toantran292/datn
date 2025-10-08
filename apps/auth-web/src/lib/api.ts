@@ -1,7 +1,10 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:40000';
 
 export async function apiGet<T>(path: string, init?: any): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, {
+  const fullUrl = `${API_BASE}${path}`;
+  console.log('[API] GET request to:', fullUrl);
+
+  const response = await fetch(fullUrl, {
     method: 'GET',
     credentials: 'include',
     headers: {
@@ -11,6 +14,8 @@ export async function apiGet<T>(path: string, init?: any): Promise<T> {
     ...init,
   });
 
+  console.log('[API] Response status:', response.status);
+
   if (!response.ok) {
     throw new Error(`API Error: ${response.status} ${response.statusText}`);
   }
@@ -19,7 +24,10 @@ export async function apiGet<T>(path: string, init?: any): Promise<T> {
 }
 
 export async function apiPost<T>(path: string, body?: unknown, init?: any): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, {
+  const fullUrl = `${API_BASE}${path}`;
+  console.log('[API] POST request to:', fullUrl);
+
+  const response = await fetch(fullUrl, {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -29,6 +37,8 @@ export async function apiPost<T>(path: string, body?: unknown, init?: any): Prom
     body: body ? JSON.stringify(body) : undefined,
     ...init,
   });
+
+  console.log('[API] Response status:', response.status);
 
   if (!response.ok) {
     throw new Error(`API Error: ${response.status} ${response.statusText}`);
