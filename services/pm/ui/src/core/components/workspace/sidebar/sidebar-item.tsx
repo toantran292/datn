@@ -1,0 +1,36 @@
+"use client";
+
+import { IWorkspaceSidebarNavigationItem } from "@unified-teamspace/constants";
+import { observer } from "mobx-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { FC, ReactNode } from "react";
+import { SidebarNavItem } from "./sidebar-navigation";
+import { getSidebarNavigationItemIcon } from "@/ce/components/workspace/sidebar/helper";
+
+type Props = {
+  item: IWorkspaceSidebarNavigationItem;
+  additionalRender?: (itemKey: string, workspaceSlug: string) => ReactNode;
+  additionalStaticItems?: string[];
+};
+
+export const SidebarItemBase: FC<Props> = observer(({ item, additionalRender, additionalStaticItems }) => {
+  const pathname = usePathname();
+  const slug = "dattuan";
+  const itemHref = `/${slug}${item.href}`;
+
+  const isActive = pathname === itemHref;
+
+  const icon = getSidebarNavigationItemIcon(item.key);
+
+  return (
+    <Link href={itemHref} onClick={() => {}}>
+      <SidebarNavItem isActive={isActive}>
+        <div className="flex items-center gap-1.5 py-[1px]">
+          {icon}
+          <p className="text-sm leading-5 font-medium">test cuc</p>
+        </div>
+      </SidebarNavItem>
+    </Link>
+  );
+});
