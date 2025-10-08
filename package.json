@@ -11,7 +11,10 @@
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "clean": "turbo run clean && pnpm rimraf node_modules */*/node_modules */*/*/node_modules"
+    "clean": "turbo run clean && pnpm rimraf node_modules */*/node_modules */*/*/node_modules",
+    "marketing:dev": "pnpm --filter marketing-web dev",
+    "marketing:build": "pnpm --filter marketing-web build",
+    "marketing:preview": "pnpm --filter marketing-web preview"
   },
   "devDependencies": {
     "turbo": "^2.1.3",

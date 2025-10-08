@@ -1,0 +1,421 @@
+<html><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unified TeamSpace - Work smarter. Collaborate faster.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script> window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <style>
+        ::-webkit-scrollbar { display: none;}
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-primary { background: linear-gradient(135deg, #FF8800 0%, #00C4AB 100%); }
+        .gradient-bg { background: linear-gradient(135deg, #FFF6ED 0%, #E6FFFB 100%); }
+        .gradient-light { background: linear-gradient(135deg, #FFF4E6 0%, #E6FFFB 100%); }
+        .shadow-custom { box-shadow: rgba(15, 23, 42, 0.08) 0 4px 16px; }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
+    </style>
+    <script>tailwind.config = {
+  "theme": {
+    "extend": {
+      "colors": {
+        "orange-primary": "#FF8800",
+        "teal-primary": "#00C4AB"
+      },
+      "fontFamily": {}
+    }
+  }
+};</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&amp;display=swap"><style>
+  .highlighted-section {
+    outline: 2px solid #3F20FB;
+    background-color: rgba(63, 32, 251, 0.1);
+  }
+
+  .edit-button {
+    position: absolute;
+    z-index: 1000;
+  }
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  html, body {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  </style></head>
+<body class="bg-gray-50">
+
+    <!-- Header -->
+    <header id="header" class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
+                        <i class="fa-solid fa-cube text-white text-sm"></i>
+                    </div>
+                    <span class="font-semibold text-xl text-gray-900">Unified TeamSpace</span>
+                </div>
+                
+                <nav class="hidden md:flex items-center space-x-8">
+                    <span class="text-gray-600 hover:text-gray-900 transition-colors cursor-pointer">Features</span>
+                    <span class="text-gray-600 hover:text-gray-900 transition-colors cursor-pointer">Pricing</span>
+                    <span class="text-gray-600 hover:text-gray-900 transition-colors cursor-pointer">Integrations</span>
+                    <span class="text-gray-600 hover:text-gray-900 transition-colors cursor-pointer">Docs</span>
+                </nav>
+
+                <div class="flex items-center space-x-3">
+                    <button class="text-gray-600 hover:text-gray-900 px-4 py-2 rounded-xl transition-colors">
+                        Sign in
+                    </button>
+                    <button class="bg-orange-primary hover:bg-orange-600 text-white px-4 py-2 rounded-xl transition-colors font-medium">
+                        Get Started
+                    </button>
+                </div>
+
+                <button class="md:hidden text-gray-600">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="hero" class="pt-16 h-[800px] gradient-bg overflow-hidden relative">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center h-full">
+                <div class="space-y-8">
+                    <div class="space-y-4">
+                        <h1 class="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
+                            Work smarter.
+                            <span class="bg-gradient-to-r from-orange-primary to-teal-primary bg-clip-text text-transparent">
+                                Collaborate faster.
+                            </span>
+                        </h1>
+                        <p class="text-xl text-gray-600 leading-relaxed">
+                            Unified TeamSpace brings your projects, meetings, and conversations together in one place. 
+                            All your teams. One unified workspace.
+                        </p>
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <button class="bg-orange-primary hover:bg-orange-600 text-white px-8 py-4 rounded-2xl font-semibold text-lg transition-all transform hover:scale-105 shadow-custom">
+                            Get Started for Free
+                        </button>
+                        <button class="border-2 border-teal-primary text-teal-primary hover:bg-teal-primary hover:text-white px-8 py-4 rounded-2xl font-semibold text-lg transition-all">
+                            Sign in
+                        </button>
+                    </div>
+
+                    <div class="flex items-center space-x-6 text-sm text-gray-500">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-check text-teal-primary"></i>
+                            <span>No credit card required</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-check text-teal-primary"></i>
+                            <span>Free 14-day trial</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative">
+                    <div class="relative bg-white rounded-2xl shadow-custom overflow-hidden">
+                        <img class="w-full h-64 object-cover" src="https://storage.googleapis.com/uxpilot-auth.appspot.com/400c793d5a-f61303d670a693d11a43.png" alt="modern dashboard interface with project management boards, team chat sidebar, and video call integration in orange and teal color scheme">
+                    </div>
+                    
+                    <!-- Floating Icons -->
+                    <div class="absolute -top-4 -right-4 w-12 h-12 bg-orange-primary rounded-full flex items-center justify-center text-white animate-float">
+                        <i class="fa-solid fa-tasks"></i>
+                    </div>
+                    <div class="absolute -bottom-4 -left-4 w-12 h-12 bg-teal-primary rounded-full flex items-center justify-center text-white animate-float" style="animation-delay: 1s;">
+                        <i class="fa-solid fa-comments"></i>
+                    </div>
+                    <div class="absolute top-1/2 -right-8 w-10 h-10 bg-gradient-to-r from-orange-primary to-teal-primary rounded-full flex items-center justify-center text-white animate-float" style="animation-delay: 2s;">
+                        <i class="fa-solid fa-video"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feature Highlights -->
+    <section id="features" class="py-20 bg-white">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Everything your team needs</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    From project planning to team communication, we've got all the tools you need to work efficiently.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="bg-white rounded-2xl p-8 shadow-custom hover:shadow-lg transition-shadow">
+                    <div class="w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center mb-6">
+                        <i class="fa-solid fa-puzzle-piece text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Project Management</h3>
+                    <p class="text-gray-600">
+                        Plan and track sprints, tasks, and blueprints with ease. Visualize your workflow with Kanban boards and Gantt charts.
+                    </p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-8 shadow-custom hover:shadow-lg transition-shadow">
+                    <div class="w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center mb-6">
+                        <i class="fa-solid fa-comments text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Team Chat</h3>
+                    <p class="text-gray-600">
+                        Chat instantly with your team and integrate context directly into your tasks. Never lose track of important conversations.
+                    </p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-8 shadow-custom hover:shadow-lg transition-shadow">
+                    <div class="w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center mb-6">
+                        <i class="fa-solid fa-video text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Meetings</h3>
+                    <p class="text-gray-600">
+                        Start video meetings directly from your workspace — no context switching. Record sessions and share with your team.
+                    </p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-8 shadow-custom hover:shadow-lg transition-shadow">
+                    <div class="w-16 h-16 gradient-primary rounded-2xl flex items-center justify-center mb-6">
+                        <i class="fa-solid fa-chart-line text-white text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">CRM &amp; Automations</h3>
+                    <p class="text-gray-600">
+                        Manage your customers and workflows seamlessly inside one space. Automate repetitive tasks and focus on what matters.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section id="how-it-works" class="py-20 gradient-light">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Get started in 3 simple steps</h2>
+                <p class="text-xl text-gray-600">
+                    Setting up your unified workspace takes less than 5 minutes
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-orange-primary rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-6">
+                        1
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Sign up and create workspace</h3>
+                    <p class="text-gray-600">
+                        Create your account and set up your first workspace in seconds. No credit card required.
+                    </p>
+                </div>
+
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-teal-primary rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-6">
+                        2
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Invite your team</h3>
+                    <p class="text-gray-600">
+                        Send invitations to your team members via email or sharing link. They'll join instantly.
+                    </p>
+                </div>
+
+                <div class="text-center">
+                    <div class="w-20 h-20 gradient-primary rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-6">
+                        3
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Start collaborating</h3>
+                    <p class="text-gray-600">
+                        Begin managing projects, chatting with your team, and scheduling meetings all in one place.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Integrations -->
+    <section id="integrations" class="py-20 bg-white">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Seamlessly connect with tools you love</h2>
+                <p class="text-xl text-gray-600">
+                    Integrate with your existing workflow and favorite applications
+                </p>
+            </div>
+
+            <div class="bg-gray-50 rounded-2xl p-12">
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-8 items-center opacity-60">
+                    <div class="flex justify-center">
+                        <img class="h-12 w-auto grayscale" src="https://storage.googleapis.com/uxpilot-auth.appspot.com/b3dd12880e-15e9df500569aae35928.png" alt="Google logo">
+                    </div>
+                    <div class="flex justify-center">
+                        <img class="h-12 w-auto grayscale" src="https://storage.googleapis.com/uxpilot-auth.appspot.com/4942217d46-41b0c105abf7aaaf302c.png" alt="Slack logo">
+                    </div>
+                    <div class="flex justify-center">
+                        <img class="h-12 w-auto grayscale" src="https://storage.googleapis.com/uxpilot-auth.appspot.com/b1dae5bef7-47a1969ca5383a95ab53.png" alt="GitLab logo">
+                    </div>
+                    <div class="flex justify-center">
+                        <img class="h-12 w-auto grayscale" src="https://storage.googleapis.com/uxpilot-auth.appspot.com/7c0f1dfff6-f1c9c0042ffc92bc1fee.png" alt="Zoom logo">
+                    </div>
+                    <div class="flex justify-center">
+                        <img class="h-12 w-auto grayscale" src="https://storage.googleapis.com/uxpilot-auth.appspot.com/d49f27da61-4672c8d0465d9d2b9193.png" alt="Notion logo">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section id="testimonials" class="py-20 gradient-light">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Loved by remote teams worldwide</h2>
+                <p class="text-xl text-gray-600">
+                    See what our customers have to say about their experience
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white rounded-2xl p-8 shadow-custom">
+                    <div class="flex items-center mb-4">
+                        <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-1.jpg" alt="Sarah Chen" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Sarah Chen</h4>
+                            <p class="text-gray-600 text-sm">Product Manager at TechFlow</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 italic">
+                        "UTS has transformed how our remote team collaborates. Having everything in one place saves us hours every week."
+                    </p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-8 shadow-custom">
+                    <div class="flex items-center mb-4">
+                        <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-2.jpg" alt="Marcus Johnson" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Marcus Johnson</h4>
+                            <p class="text-gray-600 text-sm">CTO at StartupLab</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 italic">
+                        "The integration between chat, projects, and meetings is seamless. It's like having a virtual office that actually works."
+                    </p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-8 shadow-custom">
+                    <div class="flex items-center mb-4">
+                        <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/avatars/avatar-5.jpg" alt="Elena Rodriguez" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <h4 class="font-semibold text-gray-900">Elena Rodriguez</h4>
+                            <p class="text-gray-600 text-sm">Design Lead at CreativeStudio</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 italic">
+                        "Finally, a tool that doesn't make us switch between 10 different apps. Our productivity has increased dramatically."
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing CTA -->
+    <section id="pricing" class="py-20 bg-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-4xl font-bold text-gray-900 mb-4">Ready to transform your workflow?</h2>
+            <p class="text-xl text-gray-600 mb-8">
+                Start free, upgrade anytime. No hidden fees, no surprises.
+            </p>
+            
+            <div class="bg-gray-50 rounded-2xl p-8 mb-8">
+                <div class="text-6xl font-bold text-gray-900 mb-2">Free</div>
+                <p class="text-gray-600 mb-6">14-day trial, then $12/user/month</p>
+                <ul class="text-left max-w-md mx-auto space-y-3 mb-8">
+                    <li class="flex items-center">
+                        <i class="fa-solid fa-check text-teal-primary mr-3"></i>
+                        <span>Unlimited projects and tasks</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fa-solid fa-check text-teal-primary mr-3"></i>
+                        <span>Team chat and video meetings</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fa-solid fa-check text-teal-primary mr-3"></i>
+                        <span>CRM and automation tools</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fa-solid fa-check text-teal-primary mr-3"></i>
+                        <span>All integrations included</span>
+                    </li>
+                </ul>
+            </div>
+
+            <button class="bg-orange-primary hover:bg-orange-600 text-white px-12 py-4 rounded-2xl font-semibold text-xl transition-all transform hover:scale-105 shadow-custom mb-4">
+                Create your free workspace
+            </button>
+            <p class="text-gray-500">No credit card required • Cancel anytime</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="footer" class="bg-gray-900 text-white py-16">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="col-span-1 md:col-span-2">
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
+                            <i class="fa-solid fa-cube text-white text-sm"></i>
+                        </div>
+                        <span class="font-semibold text-xl">Unified TeamSpace</span>
+                    </div>
+                    <p class="text-gray-400 mb-6">
+                        All your teams. One unified workspace.
+                    </p>
+                    <div class="flex space-x-4">
+                        <span class="text-gray-400 hover:text-white transition-colors cursor-pointer">
+                            <i class="fa-brands fa-github text-xl"></i>
+                        </span>
+                        <span class="text-gray-400 hover:text-white transition-colors cursor-pointer">
+                            <i class="fa-brands fa-twitter text-xl"></i>
+                        </span>
+                        <span class="text-gray-400 hover:text-white transition-colors cursor-pointer">
+                            <i class="fa-brands fa-linkedin text-xl"></i>
+                        </span>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-4">Product</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><span class="hover:text-white transition-colors cursor-pointer">Features</span></li>
+                        <li><span class="hover:text-white transition-colors cursor-pointer">Pricing</span></li>
+                        <li><span class="hover:text-white transition-colors cursor-pointer">Integrations</span></li>
+                        <li><span class="hover:text-white transition-colors cursor-pointer">Updates</span></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold mb-4">Support</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><span class="hover:text-white transition-colors cursor-pointer">Documentation</span></li>
+                        <li><span class="hover:text-white transition-colors cursor-pointer">Help Center</span></li>
+                        <li><span class="hover:text-white transition-colors cursor-pointer">Contact</span></li>
+                        <li><span class="hover:text-white transition-colors cursor-pointer">Privacy Policy</span></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
+                <p>© 2025 Unified TeamSpace. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+
+</body></html>
