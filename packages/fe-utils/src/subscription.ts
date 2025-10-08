@@ -5,7 +5,7 @@ import {
   IPaymentProduct,
   TProductSubscriptionType,
   TSubscriptionPrice,
-} from "@unified-teamspace/types";
+} from "@uts/types";
 
 /**
  * Calculates the yearly discount percentage when switching from monthly to yearly billing

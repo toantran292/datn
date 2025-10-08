@@ -2,7 +2,7 @@
 
 import { ReactNode } from "react";
 // plane imports
-import { E_PASSWORD_STRENGTH, EErrorAlertType, EAuthErrorCodes, TAuthErrorInfo } from "@unified-teamspace/constants";
+import { E_PASSWORD_STRENGTH, EErrorAlertType, EAuthErrorCodes, TAuthErrorInfo } from "@uts/constants";
 
 /**
  * @description Password strength levels

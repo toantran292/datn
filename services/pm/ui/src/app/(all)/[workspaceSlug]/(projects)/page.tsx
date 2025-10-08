@@ -2,13 +2,13 @@
 
 import { observer } from "mobx-react";
 
-const WorkspaceDashboardPage = observer(() => {
+const WorkspaceDashboardPage = observer(() =>
   //   const { currentWorkspace } = useWorkspace();
   //   const { t } = useTranslation();
   //   derived values
   //   const pageTitle = currentWorkspace?.name ? `${currentWorkspace?.name} - ${t("home.title")}` : undefined;
 
-  return (
+   (
     <>
       {/* <AppHeader header={<WorkspaceDashboardHeader />} />
       <ContentWrapper>
@@ -17,7 +17,7 @@ const WorkspaceDashboardPage = observer(() => {
       </ContentWrapper> */}
       children
     </>
-  );
-});
+  )
+);
 
 export default WorkspaceDashboardPage;

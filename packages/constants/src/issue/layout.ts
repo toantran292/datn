@@ -1,4 +1,4 @@
-import { EIssueLayoutTypes } from "@unified-teamspace/types";
+import { EIssueLayoutTypes } from "@uts/types";
 
 export type TIssueLayout = "list" | "kanban" | "calendar" | "spreadsheet" | "gantt";
 

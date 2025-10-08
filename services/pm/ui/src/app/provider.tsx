@@ -6,10 +6,10 @@ import dynamic from "next/dynamic";
 import { useTheme, ThemeProvider } from "next-themes";
 import { SWRConfig } from "swr";
 // Plane Imports
-import { WEB_SWR_CONFIG } from "@unified-teamspace/constants";
-import { Toast } from "@unified-teamspace/ui";
+import { WEB_SWR_CONFIG } from "@uts/constants";
+import { Toast } from "@uts/design-system/ui";
 //helpers
-import { resolveGeneralTheme } from "@unified-teamspace/fe-utils";
+import { resolveGeneralTheme } from "@uts/fe-utils";
 // polyfills
 // import "@/lib/polyfills";
 

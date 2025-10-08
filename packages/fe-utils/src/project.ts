@@ -1,6 +1,6 @@
 import sortBy from "lodash/sortBy";
 // plane imports
-import { TProject, TProjectDisplayFilters, TProjectFilters, TProjectOrderByOptions } from "@unified-teamspace/types";
+import { TProject, TProjectDisplayFilters, TProjectFilters, TProjectOrderByOptions } from "@uts/types";
 // local imports
 import { getDate } from "./datetime";
 import { satisfiesDateFilter } from "./filter";

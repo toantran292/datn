@@ -6,7 +6,7 @@ import {
   TPageFiltersSortBy,
   TPageFiltersSortKey,
   TPageNavigationTabs,
-} from "@unified-teamspace/types";
+} from "@uts/types";
 // local imports
 import { getDate } from "./datetime";
 import { satisfiesDateFilter } from "./filter";

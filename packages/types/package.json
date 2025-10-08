@@ -1,5 +1,5 @@
 {
-  "name": "@unified-teamspace/types",
+  "name": "@uts/types",
   "version": "1.0.0",
   "private": true,
   "files": [
@@ -30,8 +30,8 @@
     "react-dom": "^18.0.0"
   },
   "devDependencies": {
-    "@unified-teamspace/eslint-config": "workspace:*",
-    "@unified-teamspace/typescript-config": "workspace:*",
+    "@uts/eslint-config": "workspace:*",
+    "@uts/typescript-config": "workspace:*",
     "@types/react": "18.3.11",
     "@types/react-dom": "18.3.1",
     "tsup": "8.4.0",

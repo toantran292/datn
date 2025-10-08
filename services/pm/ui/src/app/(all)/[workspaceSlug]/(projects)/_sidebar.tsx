@@ -1,12 +1,11 @@
 "use client";
 import { FC } from "react";
 import { observer } from "mobx-react";
+import { cn } from "@uts/fe-utils";
 import { AppSidebar } from "./sidebar";
 
-import { cn } from "@unified-teamspace/fe-utils";
 
-export const ProjectAppSidebar: FC = observer(() => {
-  return (
+export const ProjectAppSidebar: FC = observer(() => (
     <div
       className={cn("h-full z-20 bg-custom-background-100 border-r border-custom-sidebar-border-200")}
       style={{
@@ -19,5 +18,4 @@ export const ProjectAppSidebar: FC = observer(() => {
     >
       <AppSidebar />
     </div>
-  );
-});
+  ));

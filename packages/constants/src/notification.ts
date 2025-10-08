@@ -1,4 +1,4 @@
-import { TUnreadNotificationsCount } from "@unified-teamspace/types";
+import { TUnreadNotificationsCount } from "@uts/types";
 
 export enum ENotificationTab {
   ALL = "all",

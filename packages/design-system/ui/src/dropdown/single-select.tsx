@@ -3,7 +3,7 @@ import sortBy from "lodash/sortBy";
 import React, { FC, useMemo, useRef, useState } from "react";
 import { usePopper } from "react-popper";
 // plane imports
-import { useOutsideClickDetector } from "@unified-teamspace/hooks";
+import { useOutsideClickDetector } from "@uts/hooks";
 // local imports
 import { useDropdownKeyPressed } from "../hooks/use-dropdown-key-pressed";
 import { cn } from "../utils";

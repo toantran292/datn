@@ -1,0 +1,191 @@
+<html><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script> window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <style>
+        ::-webkit-scrollbar { display: none;}
+        body { font-family: 'Inter', sans-serif; }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, rgba(255, 136, 0, 0.08) 0%, rgba(0, 196, 171, 0.08) 100%);
+        }
+        
+        .dark .gradient-bg {
+            background: linear-gradient(135deg, rgba(255, 136, 0, 0.10) 0%, rgba(0, 196, 171, 0.10) 100%);
+        }
+        
+        .logo-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        .progress-fill {
+            animation: progressFill 3s ease-out forwards;
+            transform-origin: left;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        
+        @keyframes progressFill {
+            0% { width: 0%; }
+            30% { width: 25%; }
+            60% { width: 60%; }
+            90% { width: 85%; }
+            100% { width: 100%; }
+        }
+        
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (prefers-reduced-motion: reduce) {
+            .logo-pulse, .progress-fill, .fade-in {
+                animation: none;
+            }
+        }
+    </style>
+    <script>tailwind.config = {
+  "darkMode": "class",
+  "theme": {
+    "extend": {
+      "colors": {
+        "primary": {
+          "orange": "#FF8800",
+          "teal": "#00C4AB"
+        }
+      },
+      "fontFamily": {}
+    }
+  }
+};</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&amp;display=swap"><style>
+  .highlighted-section {
+    outline: 2px solid #3F20FB;
+    background-color: rgba(63, 32, 251, 0.1);
+  }
+
+  .edit-button {
+    position: absolute;
+    z-index: 1000;
+  }
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  html, body {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  </style></head>
+<body class="bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
+    
+    <div id="loading-screen" class="fixed inset-0 gradient-bg flex items-center justify-center min-h-screen overflow-hidden">
+        <div id="loading-content" class="flex flex-col items-center justify-center text-center px-8 max-w-lg w-full fade-in">
+            
+            <!-- Logo/Icon -->
+            <div id="logo-container" class="mb-8 logo-pulse">
+                <div class="w-16 h-16 bg-gradient-to-br from-primary-orange to-primary-teal rounded-xl flex items-center justify-center shadow-lg">
+                    <i class="fas fa-cube text-white text-2xl drop-shadow-sm"></i>
+                </div>
+            </div>
+            
+            <!-- Main Heading -->
+            <div id="heading-section" class="mb-4">
+                <h1 class="text-3xl font-semibold text-slate-900 dark:text-slate-50 mb-3">
+                    Preparing your workspace…
+                </h1>
+                <p class="text-lg text-slate-600 dark:text-slate-300 font-normal">
+                    Loading preferences and permissions.
+                </p>
+            </div>
+            
+            <!-- Progress Bar Section -->
+            <div id="progress-section" class="w-full max-w-md mt-8">
+                <!-- Progress Bar -->
+                <div class="relative">
+                    <div class="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                        <div id="progress-fill" class="h-full bg-primary-teal rounded-full progress-fill" style="width: 0%;"></div>
+                    </div>
+                </div>
+                
+                <!-- Progress Label -->
+                <div id="progress-label" class="flex justify-between items-center mt-4">
+                    <span class="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                        Initializing…
+                    </span>
+                    <span id="progress-percentage" class="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                        0%
+                    </span>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <script>
+        // Progress simulation
+        let progress = 0;
+        const progressFill = document.getElementById('progress-fill');
+        const progressPercentage = document.getElementById('progress-percentage');
+        const progressLabel = document.querySelector('#progress-label span');
+        
+        const stages = [
+            { percent: 25, text: 'Loading workspace...' },
+            { percent: 50, text: 'Syncing preferences...' },
+            { percent: 75, text: 'Setting permissions...' },
+            { percent: 100, text: 'Almost ready...' }
+        ];
+        
+        let currentStage = 0;
+        
+        function updateProgress() {
+            if (currentStage < stages.length) {
+                const stage = stages[currentStage];
+                progress = stage.percent;
+                
+                progressFill.style.width = progress + '%';
+                progressPercentage.textContent = progress + '%';
+                progressLabel.textContent = stage.text;
+                
+                currentStage++;
+                
+                if (progress < 100) {
+                    setTimeout(updateProgress, 750);
+                } else {
+                    setTimeout(() => {
+                        // Simulate transition to workspace
+                        document.getElementById('loading-screen').style.opacity = '0';
+                        document.getElementById('loading-screen').style.transition = 'opacity 0.5s ease-out';
+                        setTimeout(() => {
+                            // This would typically redirect to the actual workspace
+                            console.log('Transitioning to workspace...');
+                        }, 500);
+                    }, 500);
+                }
+            }
+        }
+        
+        // Start progress after initial fade-in
+        setTimeout(updateProgress, 800);
+        
+        // Dark mode toggle (for demo purposes)
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'd' || e.key === 'D') {
+                document.documentElement.classList.toggle('dark');
+            }
+        });
+    </script>
+
+
+</body></html>

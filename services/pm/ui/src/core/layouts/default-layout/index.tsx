@@ -1,5 +1,5 @@
 import { FC, ReactNode } from "react";
-import { cn } from "@unified-teamspace/fe-utils";
+import { cn } from "@uts/fe-utils";
 
 type Props = {
   children: ReactNode;

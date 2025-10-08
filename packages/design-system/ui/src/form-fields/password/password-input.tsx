@@ -1,6 +1,6 @@
 import { Eye, EyeClosed } from "lucide-react";
 import React, { useState } from "react";
-import { cn } from "@unified-teamspace/fe-utils";
+import { cn } from "@uts/fe-utils";
 import { Tooltip } from "../../tooltip";
 
 interface PasswordInputProps {

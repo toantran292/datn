@@ -1,11 +1,11 @@
 import { useFormContext } from "react-hook-form";
 // plane imports
-import { ETabIndices } from "@unified-teamspace/constants";
-import { IProject } from "@unified-teamspace/types";
+import { ETabIndices } from "@uts/constants";
 // ui
-import { Button } from "@unified-teamspace/ui";
+import { Button } from "@uts/design-system/ui";
 // helpers
-import { getTabIndex } from "@unified-teamspace/fe-utils";
+import { getTabIndex } from "@uts/fe-utils";
+import { IProject } from "@uts/types";
 
 type Props = {
   handleClose: () => void;

@@ -1,4 +1,4 @@
-import { EStartOfTheWeek } from "@unified-teamspace/types";
+import { EStartOfTheWeek } from "@uts/types";
 
 export const PROFILE_SETTINGS = {
   profile: {

@@ -1,7 +1,7 @@
 "use client";
 import React, { FC } from "react";
 // helpers
-import { cn } from "@unified-teamspace/fe-utils";
+import { cn } from "@uts/fe-utils";
 
 type TSidebarNavItem = {
   className?: string;

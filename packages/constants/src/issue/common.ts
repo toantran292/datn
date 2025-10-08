@@ -5,7 +5,7 @@ import {
   IIssueFilterOptions,
   TIssue,
   EIssuesStoreType,
-} from "@unified-teamspace/types";
+} from "@uts/types";
 
 export const ALL_ISSUES = "All Issues";
 

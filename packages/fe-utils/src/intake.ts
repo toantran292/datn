@@ -1,6 +1,6 @@
 import { subDays } from "date-fns";
 // plane imports
-import { EPastDurationFilters } from "@unified-teamspace/constants";
+import { EPastDurationFilters } from "@uts/constants";
 // local imports
 import { renderFormattedPayloadDate } from "./datetime";
 

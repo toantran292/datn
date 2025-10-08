@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { cn } from "@unified-teamspace/fe-utils";
+import { cn } from "@uts/fe-utils";
 import { AuthInput } from "./auth-input";
 
 export interface AuthConfirmPasswordInputProps

@@ -1,5 +1,5 @@
 {
-  "extends": "@unified-teamspace/typescript-config/react-library.json",
+  "extends": "@uts/typescript-config/react-library.json",
   "compilerOptions": {
     "jsx": "react",
     "lib": ["esnext", "dom"]
