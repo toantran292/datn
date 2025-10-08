@@ -73,11 +73,14 @@ services:
   coturn:
     image: coturn/coturn:latest
     command: >
-      --no-cli --realm=meet.local --use-auth-secret --static-auth-secret=turnsharedsecret --min-port=49000 --max-port=50000 --fingerprint ports:
+      --no-cli --realm=meet.local --use-auth-secret
+      --static-auth-secret=turnsharedsecret 
+      --min-port=49000 --max-port=50000 --fingerprint
+    ports:
         - "3478:3478/udp"
         - "3478:3478/tcp"
         - "5349:5349/tcp"
-      networks: [meetnet]
+    networks: [meetnet]
 
 networks:
   meetnet:

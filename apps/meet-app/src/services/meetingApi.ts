@@ -1,4 +1,5 @@
-const API = process.env.NEXT_PUBLIC_MEET_API!; // vd: http://localhost:40600
+// Fallback mặc định khi thiếu env
+const API = process.env.NEXT_PUBLIC_MEET_API || 'http://localhost:40600'; // vd: http://localhost:40600
 
 export async function createRoom(hostUserId: string) {
     const r = await fetch(`${API}/rooms`, {
