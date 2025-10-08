@@ -1,0 +1,79 @@
+---
+import Base from '../../../layouts/Base.astro';
+import Header from '../../../components/Header.astro';
+import Footer from '../../../components/Footer.astro';
+---
+
+<Base
+  title="Integrate Google and Slack — Unified TeamSpace Docs"
+  description="Connect your existing Google Workspace and Slack accounts to streamline workflows and maintain context."
+>
+  <Header />
+
+  <main class="pt-24 pb-16 bg-white">
+    <div class="max-w-4xl mx-auto px-6">
+      <!-- Breadcrumb -->
+      <nav class="mb-8" aria-label="Breadcrumb">
+        <ol class="flex items-center space-x-2 text-sm text-[#475569]">
+          <li><a href="/docs" class="hover:text-[#00C4AB] transition-colors">Documentation</a></li>
+          <li><i class="fa-solid fa-chevron-right text-xs"></i></li>
+          <li><a href="/docs" class="hover:text-[#00C4AB] transition-colors">Guides</a></li>
+          <li><i class="fa-solid fa-chevron-right text-xs"></i></li>
+          <li class="text-[#0F172A]">Integrate Google and Slack</li>
+        </ol>
+      </nav>
+
+      <article class="prose prose-lg max-w-none">
+        <h1 class="text-4xl font-bold text-[#0F172A] mb-6">Integrate Google and Slack</h1>
+
+        <p class="text-xl text-[#475569] mb-8 leading-relaxed">
+          Connect your existing Google Workspace and Slack accounts to streamline workflows and maintain context. This guide walks you through the setup process and best practices.
+        </p>
+
+        <div class="bg-[#F9FAFB] border border-[#E2E8F0] rounded-xl p-6 mb-8">
+          <p class="text-[#475569] mb-0">
+            <i class="fa-solid fa-info-circle text-[#00C4AB] mr-2"></i>
+            This is a placeholder page. The full documentation content will be available soon.
+          </p>
+        </div>
+
+        <h2 class="text-2xl font-semibold text-[#0F172A] mb-4">What you'll learn</h2>
+        <ul class="space-y-2 mb-8">
+          <li class="flex items-start">
+            <i class="fa-solid fa-check text-[#00C4AB] mt-1 mr-3"></i>
+            <span>Setting up Google Workspace single sign-on</span>
+          </li>
+          <li class="flex items-start">
+            <i class="fa-solid fa-check text-[#00C4AB] mt-1 mr-3"></i>
+            <span>Connecting Google Calendar for meeting scheduling</span>
+          </li>
+          <li class="flex items-start">
+            <i class="fa-solid fa-check text-[#00C4AB] mt-1 mr-3"></i>
+            <span>Integrating Slack channels with project discussions</span>
+          </li>
+          <li class="flex items-start">
+            <i class="fa-solid fa-check text-[#00C4AB] mt-1 mr-3"></i>
+            <span>Automating workflows between platforms</span>
+          </li>
+        </ul>
+
+        <div class="flex items-center gap-4 pt-8 border-t border-[#E2E8F0]">
+          <a
+            href="/docs"
+            class="text-[#00C4AB] hover:text-[#00B0A0] font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[#00C4AB] focus:ring-offset-2 rounded"
+          >
+            ← Back to docs
+          </a>
+          <a
+            href="http://localhost:3000/login"
+            class="bg-[#FF8800] hover:bg-[#FF7700] text-white px-6 py-2 rounded-xl font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[#00C4AB] focus:ring-offset-2"
+          >
+            Try it now
+          </a>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <Footer />
+</Base>
