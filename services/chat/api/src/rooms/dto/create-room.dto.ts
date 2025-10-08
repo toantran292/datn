@@ -1,6 +1,17 @@
-import { IsBoolean } from 'class-validator';
+// src/chat/dto/create-room.dto.ts
+import { Expose, Transform } from 'class-transformer';
+import {IsBoolean, IsString} from 'class-validator';
 
 export class CreateRoomDto {
+  @Expose({ name: 'is_private' })
+  @Transform(({ value }) => {
+    if (typeof value === 'string') return value.toLowerCase() === 'true';
+    return Boolean(value);
+  })
   @IsBoolean()
   isPrivate!: boolean;
+
+  @Expose()
+  @IsString()
+  name?: string;
 }

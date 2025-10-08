@@ -9,6 +9,16 @@ import Composer from "./components/chat/Composer";
 import { useDragSidebar } from "./hooks/useDragSidebar";
 import RightPanel from "./components/chat/RightPanel";
 import { useChatSocket } from "./hooks/useChatSocket";
+import { listMessages, joinRoomById, type MessageDTO } from "@/lib/api";
+import type { Message } from "./types/chat";
+
+const mapMessage = (m: MessageDTO): Message => ({
+  id: m.id,
+  roomId: m.roomId,
+  userId: m.userId,
+  text: m.content,
+  at: new Date(m.sentAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+});
 
 export default function Page() {
   const [sidebarWidth, setSidebarWidth] = useState(280);
@@ -17,7 +27,27 @@ export default function Page() {
   const [input, setInput] = useState("");
   const [roomId, setRoomId] = useState<string | undefined>(undefined);
 
-  const { messagesByRoom, joinRoom, leaveRoom, sendMessage, connected } = useChatSocket();
+  const { messagesByRoom, joinRoom, leaveRoom, sendMessage, connected, currentUserId } = useChatSocket();
+  const [historyByRoom, setHistoryByRoom] = useState<Record<string, Message[]>>({});
+  const [pagingStateByRoom, setPagingStateByRoom] = useState<Record<string, string | undefined>>({});
+  const [loadingRoom, setLoadingRoom] = useState<string | null>(null);
+
+  const [joinRoomInput, setJoinRoomInput] = useState("");
+  const [joining, setJoining] = useState(false);
+
+  const joinRoomManually = async () => {
+    if (!joinRoomInput.trim()) return;
+    try {
+      setJoining(true);
+      await joinRoomById(joinRoomInput.trim());
+      setRoomId(joinRoomInput.trim());
+      setJoinRoomInput("");
+    } catch (err) {
+      alert((err as Error).message ?? "Failed to join room");
+    } finally {
+      setJoining(false);
+    }
+  };
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
@@ -30,7 +60,7 @@ export default function Page() {
   });
 
 
-  const activeMsgs = roomId ? messagesByRoom[roomId] || [] : [];
+  const activeMsgs = roomId ? [...(historyByRoom[roomId] || []), ...(messagesByRoom[roomId] || [])] : [];
 
   useEffect(() => {
     if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight;
@@ -67,6 +97,17 @@ export default function Page() {
   useEffect(() => {
     if (!roomId) return;
     joinRoom(roomId);
+
+    // fetch initial history
+    setLoadingRoom(roomId);
+    listMessages({ roomId, pageSize: 50 })
+      .then((r) => {
+        setHistoryByRoom((prev) => ({ ...prev, [roomId]: r.items.map(mapMessage) }));
+        setPagingStateByRoom((prev) => ({ ...prev, [roomId]: r.pageState }));
+      })
+      .catch(console.error)
+      .finally(() => setLoadingRoom(null));
+
     return () => {
       leaveRoom(roomId);
     };
@@ -91,10 +132,40 @@ export default function Page() {
         <div onMouseDown={handleMouseDown} className="w-1 cursor-col-resize hover:bg-indigo-500/30" title="Drag to resize" />
 
         <div className="flex-1 grid" style={{ gridTemplateColumns: showRight ? "1fr 320px" : "1fr" }}>
-          <div className="flex flex-col min-w-0">
+          <div className="flex flex-1 flex-col min-w-0 min-h-0 gap-2">
             {header}
 
-            <MessageList listRef={listRef} msgs={activeMsgs} />
+            <div className="px-4 pt-2">
+              <div className="flex gap-2">
+                <input
+                  value={joinRoomInput}
+                  onChange={(e) => setJoinRoomInput(e.target.value)}
+                  placeholder="Join room by ID"
+                  className="flex-1 rounded-lg border border-zinc-300/60 dark:border-zinc-700/60 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring focus:ring-indigo-500/30"
+                />
+                <button
+                  onClick={joinRoomManually}
+                  disabled={joining || !joinRoomInput.trim()}
+                  className="rounded-lg bg-zinc-200 dark:bg-zinc-800 px-3 py-2 text-sm font-medium text-zinc-800 dark:text-zinc-200 hover:bg-zinc-300 dark:hover:bg-zinc-700 disabled:opacity-60"
+                >
+                  {joining ? "Joining…" : "Join"}
+                </button>
+              </div>
+            </div>
+
+            <MessageList listRef={listRef} msgs={activeMsgs} loading={loadingRoom === roomId} currentUserId={currentUserId} onLoadMore={() => {
+              const paging = pagingStateByRoom[roomId ?? ""];
+              if (!roomId || !paging) return;
+              listMessages({ roomId, pageState: paging, pageSize: 50 })
+                .then((r) => {
+                  setHistoryByRoom((prev) => ({
+                    ...prev,
+                    [roomId]: [...(prev[roomId] || []), ...r.items.map(mapMessage)],
+                  }));
+                  setPagingStateByRoom((prev) => ({ ...prev, [roomId]: r.pageState }));
+                })
+                .catch(console.error);
+            }} />
 
             <Composer
               placeholder={roomId ? roomId.slice(0, 8) : "general"}

@@ -14,8 +14,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 }
 
 function SidebarItem({
-                       name, active, dot, onClick,
-                     }: { name: string; active?: boolean; dot?: boolean; onClick?: () => void }) {
+  name, active, dot, onClick,
+}: { name: string; active?: boolean; dot?: boolean; onClick?: () => void }) {
   return (
     <button
       onClick={onClick}
@@ -33,14 +33,25 @@ function SidebarItem({
 }
 
 export default function Sidebar({
-                                  currentRoomId,
-                                  onOpenRoom,
-                                }: {
+  currentRoomId,
+  onOpenRoom,
+}: {
   currentRoomId?: string;
   onOpenRoom: (roomId: string) => void;
 }) {
   const [rooms, setRooms] = useState<Room[]>([]);
-  const { summaries, joinRoom, joinedRooms } = useChatSocket(); // <-- lấy joinRoom
+  const { summaries, joinRoom, joinedRooms, rooms: socketRooms } = useChatSocket((room) => {
+    if (!room?.id) return;
+    setRooms((prev) => {
+      if (prev.some((r) => r.id === room.id)) return prev;
+      return [{
+        id: room.id,
+        org_id: room.orgId,
+        is_private: room.isPrivate,
+        name: room.name ?? null,
+      }, ...prev];
+    });
+  });
 
   // create-room state
   const [name, setName] = useState("");
@@ -55,6 +66,22 @@ export default function Sidebar({
       })
       .catch(console.error);
   }, []);
+
+  useEffect(() => {
+    if (!socketRooms?.length) return;
+    setRooms((prev) => {
+      const map = new Map(prev.map((r) => [r.id, r]));
+      for (const room of socketRooms) {
+        map.set(room.id, {
+          id: room.id,
+          org_id: room.orgId,
+          is_private: room.isPrivate,
+          name: room.name ?? null,
+        });
+      }
+      return Array.from(map.values());
+    });
+  }, [socketRooms]);
 
   // Auto-join khi currentRoomId thay đổi (reload hoặc mở từ URL)
   useEffect(() => {
@@ -84,36 +111,31 @@ export default function Sidebar({
 
   return (
     <>
-      <div className="p-3 space-y-2">
-        {/* Search */}
-        <div className="flex items-center gap-2">
-          <button className="w-full text-left text-sm rounded-md border border-zinc-300 dark:border-zinc-700 px-2 py-1.5 hover:bg-zinc-50 dark:hover:bg-zinc-900 flex items-center gap-2">
-            <span className="truncate">Search</span>
-          </button>
-        </div>
-
-        {/* Create room */}
-        <div className="flex items-center gap-2">
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Room name (optional)"
-            className="flex-1 rounded-md border border-zinc-300 dark:border-zinc-700 px-2 py-1.5 bg-transparent text-sm"
-          />
-          <label className="flex items-center gap-1 text-xs px-2 py-1.5 rounded-md border border-zinc-300 dark:border-zinc-700">
+      <div className="p-3 space-y-3">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
             <input
-              type="checkbox"
-              checked={isPrivate}
-              onChange={(e) => setIsPrivate(e.target.checked)}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="New channel name"
+              className="flex-1 rounded-lg border border-zinc-300/60 dark:border-zinc-700/60 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring focus:ring-indigo-500/30"
             />
-            Private
-          </label>
+            <label className="flex items-center gap-2 text-xs px-3 py-2 rounded-lg border border-zinc-300/60 dark:border-zinc-700/60 cursor-pointer whitespace-nowrap">
+              <input
+                type="checkbox"
+                className="accent-indigo-500"
+                checked={isPrivate}
+                onChange={(e) => setIsPrivate(e.target.checked)}
+              />
+              Private
+            </label>
+          </div>
           <button
             onClick={onCreate}
-            disabled={creating}
-            className="shrink-0 rounded-md px-2 py-1.5 text-sm border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-900"
+            disabled={creating || (!name.trim() && !isPrivate)}
+            className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-indigo-400/60"
           >
-            {creating ? "…" : "Create"}
+            {creating ? "Creating…" : "Create channel"}
           </button>
         </div>
       </div>

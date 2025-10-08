@@ -34,10 +34,6 @@ export const CASS_MAPPER = Symbol('CASS_MAPPER');
         const toCamel = new mapping.UnderscoreCqlToCamelCaseMappings();
         const mappingOptions: mapping.MappingOptions = {
           models: {
-            User: {
-              tables: ['users'],
-              mappings: toCamel,
-            },
             Room: {
               tables: ['rooms'],
               mappings: toCamel,

@@ -9,6 +9,7 @@ export function toRoomResponseDto(row: RoomEntity) {
       id: row.id?.toString(),
       orgId: row.orgId?.toString(),
       isPrivate: row.isPrivate,
+      name: row.name,
     },
     { excludeExtraneousValues: true },
   );

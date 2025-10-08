@@ -4,4 +4,5 @@ export class RoomResponseDto {
   @Expose() id: string;
   @Expose() orgId: string;
   @Expose() isPrivate: boolean;
+  @Expose() name: string | null;
 }

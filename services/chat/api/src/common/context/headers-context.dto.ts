@@ -3,10 +3,10 @@ import { IsUUID } from 'class-validator';
 
 export class HeadersContextDto {
   @Expose({ name: 'x-user-id' })
-  @IsUUID()
+  @IsUUID('4')
   userId!: string;
 
   @Expose({ name: 'x-org-id' })
-  @IsUUID()
+  @IsUUID('4')
   orgId!: string;
 }

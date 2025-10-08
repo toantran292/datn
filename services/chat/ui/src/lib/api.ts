@@ -23,7 +23,17 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return ct.includes("application/json") ? (await res.json()) as T : (await res.text() as any);
 }
 
-export type Room = { id: string; org_id: string; is_private: boolean; name: string | null;}; // tối thiểu
+export type Room = { id: string; org_id: string; is_private: boolean; name: string | null; }; // tối thiểu
+
+export type MessageDTO = {
+  id: string;
+  roomId: string;
+  userId: string;
+  orgId: string;
+  type: string;
+  content: string;
+  sentAt: string;
+};
 
 export function listRooms(): Promise<{ items: Room[], pagingState: any }> {
   return request<{ items: Room[], pagingState: any }>("/rooms");
@@ -34,4 +44,19 @@ export function createRoom(payload: { is_private: boolean; name?: string }) {
     method: "POST",
     body: JSON.stringify(payload),
   });
+}
+
+export function joinRoomById(roomId: string) {
+  return request<{ joined: boolean }>("/rooms/join", {
+    method: "POST",
+    body: JSON.stringify({ roomId }),
+  });
+}
+
+export function listMessages(params: { roomId: string; pageSize?: number; pageState?: string }) {
+  const q = new URLSearchParams();
+  q.set("roomId", params.roomId);
+  if (params.pageSize) q.set("pageSize", String(params.pageSize));
+  if (params.pageState) q.set("pageState", params.pageState);
+  return request<{ items: MessageDTO[]; pageState?: string }>(`/messages?${q.toString()}`);
 }

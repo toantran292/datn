@@ -8,8 +8,21 @@ export interface MessageEntity {
   roomId: types.TimeUuid;
   userId: types.Uuid;
   orgId: types.Uuid;
-  text: string;
-  sentAt: Date;
+  threadId?: types.TimeUuid | null;
+  type: string;
+  content: string;
+  sendAt?: Date;
+}
+
+export interface PersistedMessage {
+  id: types.TimeUuid;
+  roomId: types.TimeUuid;
+  userId: types.Uuid;
+  orgId: types.Uuid;
+  threadId: types.TimeUuid | null;
+  type: string;
+  content: string;
+  sendAt: Date;
 }
 
 @Injectable()
@@ -20,14 +33,56 @@ export class MessagesRepository {
     this.model = mapper.forModel<MessageEntity>("Message");
   }
 
-  async create(msg: MessageEntity) {
-    const entity = { ...msg, id: types.TimeUuid.now() };
-    await this.model.insert(entity);
-    return entity;
+  async create(msg: MessageEntity): Promise<PersistedMessage> {
+    const id = msg.id ?? types.TimeUuid.now();
+    const sendAt = msg.sendAt ?? new Date();
+
+    const dbPayload: MessageEntity = {
+      id,
+      roomId: msg.roomId,
+      userId: msg.userId,
+      orgId: msg.orgId,
+      threadId: msg.threadId ?? null,
+      type: msg.type,
+      content: msg.content,
+      sendAt,
+    };
+
+    await this.model.insert(dbPayload as any);
+
+    return {
+      id,
+      roomId: msg.roomId,
+      userId: msg.userId,
+      orgId: msg.orgId,
+      threadId: msg.threadId ?? null,
+      type: msg.type,
+      content: msg.content,
+      sendAt,
+    };
   }
 
-  async findByRoom(roomId: types.TimeUuid, limit = 50) {
-    const res = await this.model.find({ roomId }, { limit });
-    return res.toArray();
+  async listByRoom(
+    roomId: types.TimeUuid,
+    opts: { pageSize?: number; pageState?: string } = {},
+  ): Promise<{ items: PersistedMessage[]; pageState?: string }> {
+    const rs = await this.model.find({ roomId }, {
+      fetchSize: opts.pageSize ?? 50,
+      pageState: opts.pageState,
+      orderBy: { sendAt: "ASC", id: "ASC" },
+    } as any);
+
+    const items: PersistedMessage[] = rs.toArray().map(row => ({
+      id: row.id!,
+      roomId: row.roomId,
+      userId: row.userId,
+      orgId: row.orgId,
+      threadId: row.threadId ?? null,
+      type: row.type,
+      content: row.content,
+      sendAt: row.sendAt!,
+    }));
+
+    return { items, pageState: (rs as any).pageState ?? undefined };
   }
 }

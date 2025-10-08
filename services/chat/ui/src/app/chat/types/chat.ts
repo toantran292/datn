@@ -1,7 +1,7 @@
 export type Message = {
   id: string;
   roomId: string;
-  author: string;
+  userId: string;
   text: string;
   at: string;
 };

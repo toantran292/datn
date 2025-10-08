@@ -145,6 +145,48 @@ services:
       retries: 10
     networks: [uts_net]
 
+  cassandra:
+    image: cassandra:latest
+    container_name: uts_cassandra
+    restart: unless-stopped
+    env_file:
+      - .env.dev
+    environment:
+      CASSANDRA_CLUSTER_NAME: uts-dev
+      CASSANDRA_DC: dc1
+      CASSANDRA_RACK: rack1
+      CASSANDRA_PASSWORD_SEEDER: "yes"     # tạo user/password lần đầu
+      CASSANDRA_USER: cassandra
+      CASSANDRA_PASSWORD: cassandra
+      CASSANDRA_NUM_TOKENS: "256"
+      CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+    ports:
+      - "41600:9042"
+    healthcheck:
+      test: [ "CMD-SHELL", "cqlsh -e 'DESCRIBE KEYSPACES' 127.0.0.1 9042 >/dev/null 2>&1 || exit 1" ]
+      interval: 15s
+      timeout: 10s
+      retries: 30
+    networks: [ uts_net ]
+
+  cass_init:
+    image: cassandra:latest
+    container_name: uts_cassandra_init
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    entrypoint: [ "/bin/bash","-lc" ]
+    command:
+      - |
+        cqlsh cassandra 9042 -e "
+        CREATE KEYSPACE IF NOT EXISTS chat
+        WITH replication = {'class': 'SimpleStrategy','replication_factor': 1}
+        AND durable_writes = true;"
+    networks: [ uts_net ]
+    restart: "no"
+
 networks:
   uts_net: {}
 
@@ -153,3 +195,4 @@ volumes:
   redis_data:
   minio_data:
   os_data:
+  cassandra_data:
