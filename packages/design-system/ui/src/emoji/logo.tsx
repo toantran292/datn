@@ -26,6 +26,9 @@ type Props = {
 export const Logo: FC<Props> = (props) => {
   const { logo, size = 16, type = "material" } = props;
 
+  // Handle case when logo is undefined
+  if (!logo) return <></>;
+
   // destructuring the logo object
   const { in_use, emoji, icon } = logo;
 
