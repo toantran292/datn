@@ -1,4 +1,4 @@
-import { E_PASSWORD_STRENGTH } from "@unified-teamspace/constants";
+import { E_PASSWORD_STRENGTH } from "@uts/constants";
 
 export interface StrengthInfo {
   message: string;

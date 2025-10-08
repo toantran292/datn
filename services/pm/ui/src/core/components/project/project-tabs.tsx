@@ -1,7 +1,7 @@
 import { FC } from "react";
 import Link from "next/link";
 
-import { cn } from "@unified-teamspace/fe-utils";
+import { cn } from "@uts/fe-utils";
 
 export type TProjectTabKey = "backlog" | "board";
 

@@ -1,0 +1,244 @@
+<html><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script> window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    
+    <style>
+        ::-webkit-scrollbar { display: none;}
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+    <script>tailwind.config = {
+  "theme": {
+    "extend": {
+      "colors": {
+        "primary": "#FF8800",
+        "primary-hover": "#FF7700",
+        "primary-active": "#E56600",
+        "secondary": "#00C4AB",
+        "secondary-hover": "#00B0A0",
+        "secondary-active": "#009988",
+        "bg-light": "#FFFFFF",
+        "surface-light": "#F8FAFC",
+        "card-light": "#FFFFFF",
+        "border-light": "#E5E7EB",
+        "text-primary": "#0F172A",
+        "text-secondary": "#475569",
+        "text-muted": "#64748B",
+        "error-text": "#B91C1C",
+        "error-border": "#EF4444",
+        "error-bg": "#FEF2F2",
+        "success-text": "#065F46",
+        "success-border": "#A7F3D0",
+        "success-bg": "#ECFDF5"
+      },
+      "fontFamily": {}
+    }
+  }
+};</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&amp;display=swap"><style>
+  .highlighted-section {
+    outline: 2px solid #3F20FB;
+    background-color: rgba(63, 32, 251, 0.1);
+  }
+
+  .edit-button {
+    position: absolute;
+    z-index: 1000;
+  }
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  html, body {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  </style></head>
+<body class="bg-surface-light min-h-screen">
+
+<div id="create-workspace-container" class="min-h-screen flex">
+    <div id="form-section" class="w-1/2 flex items-center justify-center p-12">
+        <div id="form-wrapper" class="w-full max-w-md">
+            <div id="header-section" class="mb-8">
+                <h1 class="text-3xl font-bold text-text-primary mb-2">Create a new workspace</h1>
+                <p class="text-text-secondary">Set up a workspace for your team or company.</p>
+            </div>
+
+            <div id="success-banner" class="hidden mb-6 p-4 bg-success-bg border border-success-border rounded-lg">
+                <div class="flex items-center">
+                    <i class="fa-solid fa-circle-check text-success-text mr-3"></i>
+                    <span class="text-success-text font-medium">Workspace created successfully! Redirecting...</span>
+                </div>
+            </div>
+
+            <form id="workspace-form" class="space-y-6">
+                <div id="workspace-name-field">
+                    <label for="display_name" class="block text-sm font-medium text-text-primary mb-2">
+                        Workspace Name <span class="text-error-text">*</span>
+                    </label>
+                    <input type="text" id="display_name" name="display_name" class="w-full px-4 py-3 border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-opacity-40 focus:border-secondary transition-colors" placeholder="Enter workspace name">
+                    <div id="name-error" class="hidden mt-2 text-sm text-error-text">
+                        <i class="fa-solid fa-circle-exclamation mr-1"></i>
+                        Workspace name is required
+                    </div>
+                </div>
+
+                <div id="workspace-slug-field">
+                    <label for="slug" class="block text-sm font-medium text-text-primary mb-2">
+                        Workspace Slug
+                    </label>
+                    <input type="text" id="slug" name="slug" class="w-full px-4 py-3 border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-opacity-40 focus:border-secondary transition-colors bg-gray-50" placeholder="workspace-slug" readonly="">
+                    <p class="mt-2 text-sm text-text-muted">Auto-generated from workspace name</p>
+                    <div id="slug-error" class="hidden mt-2 text-sm text-error-text">
+                        <i class="fa-solid fa-circle-exclamation mr-1"></i>
+                        This slug is already taken
+                    </div>
+                    <div id="slug-success" class="hidden mt-2 text-sm text-green-600">
+                        <i class="fa-solid fa-circle-check mr-1"></i>
+                        Slug is available
+                    </div>
+                </div>
+
+                <div id="logo-upload-field">
+                    <label class="block text-sm font-medium text-text-primary mb-2">
+                        Workspace Logo (Optional)
+                    </label>
+                    <div id="logo-upload-area" class="border-2 border-dashed border-border-light rounded-lg p-8 text-center hover:border-gray-400 focus-within:ring-2 focus-within:ring-secondary focus-within:ring-opacity-40 transition-colors cursor-pointer">
+                        <input type="file" id="logo-input" class="hidden" accept="image/*">
+                        <div id="upload-content">
+                            <i class="fa-solid fa-cloud-arrow-up text-3xl text-text-muted mb-3"></i>
+                            <p class="text-text-secondary font-medium mb-1">Click to upload or drag and drop</p>
+                            <p class="text-sm text-text-muted">PNG, JPG up to 2MB</p>
+                        </div>
+                        <div id="uploaded-file" class="hidden">
+                            <i class="fa-solid fa-image text-3xl text-secondary mb-3"></i>
+                            <p class="text-text-primary font-medium" id="file-name"></p>
+                            <button type="button" id="remove-file" class="text-sm text-error-text hover:underline mt-2">Remove</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="form-actions" class="flex space-x-4 pt-4">
+                    <button type="submit" id="create-btn" class="flex-1 bg-primary text-white py-3 px-6 rounded-lg font-medium hover:bg-primary-hover active:bg-primary-active transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-opacity-40">
+                        Create workspace
+                    </button>
+                    <button type="button" id="cancel-btn" class="px-6 py-3 border-2 border-secondary text-secondary rounded-lg font-medium hover:bg-secondary hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-opacity-40">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="illustration-section" class="w-1/2 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-secondary/12"></div>
+        <div class="relative h-full flex items-center justify-center p-12">
+            <div id="illustration-content" class="text-center">
+                <div class="mb-8">
+                    <div class="w-32 h-32 mx-auto bg-white rounded-2xl shadow-xl flex items-center justify-center mb-6 transform rotate-3">
+                        <i class="fa-solid fa-users text-4xl text-primary"></i>
+                    </div>
+                    <div class="w-24 h-24 mx-auto bg-white rounded-xl shadow-lg flex items-center justify-center mb-4 transform -rotate-6 translate-x-8">
+                        <i class="fa-solid fa-chart-line text-2xl text-secondary"></i>
+                    </div>
+                    <div class="w-20 h-20 mx-auto bg-white rounded-lg shadow-md flex items-center justify-center transform rotate-12 -translate-x-6">
+                        <i class="fa-solid fa-rocket text-xl text-primary"></i>
+                    </div>
+                </div>
+                <h3 class="text-2xl font-bold text-text-primary mb-4">Build something amazing</h3>
+                <p class="text-text-secondary max-w-sm mx-auto">Create a collaborative workspace where your team can work together, share ideas, and achieve great results.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const displayNameInput = document.getElementById('display_name');
+    const slugInput = document.getElementById('slug');
+    const nameError = document.getElementById('name-error');
+    const slugError = document.getElementById('slug-error');
+    const slugSuccess = document.getElementById('slug-success');
+    const logoUploadArea = document.getElementById('logo-upload-area');
+    const logoInput = document.getElementById('logo-input');
+    const uploadContent = document.getElementById('upload-content');
+    const uploadedFile = document.getElementById('uploaded-file');
+    const fileName = document.getElementById('file-name');
+    const removeFileBtn = document.getElementById('remove-file');
+    const form = document.getElementById('workspace-form');
+    const successBanner = document.getElementById('success-banner');
+
+    function generateSlug(name) {
+        return name.toLowerCase()
+                  .replace(/[^a-z0-9\s-]/g, '')
+                  .replace(/\s+/g, '-')
+                  .replace(/-+/g, '-')
+                  .trim();
+    }
+
+    displayNameInput.addEventListener('input', function() {
+        const value = this.value.trim();
+        
+        if (value) {
+            nameError.classList.add('hidden');
+            this.classList.remove('border-error-border', 'bg-error-bg');
+            
+            const slug = generateSlug(value);
+            slugInput.value = slug;
+            
+            if (slug) {
+                slugError.classList.add('hidden');
+                slugSuccess.classList.remove('hidden');
+            }
+        } else {
+            slugInput.value = '';
+            slugSuccess.classList.add('hidden');
+        }
+    });
+
+    logoUploadArea.addEventListener('click', function() {
+        logoInput.click();
+    });
+
+    logoInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            fileName.textContent = file.name;
+            uploadContent.classList.add('hidden');
+            uploadedFile.classList.remove('hidden');
+        }
+    });
+
+    removeFileBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        logoInput.value = '';
+        uploadContent.classList.remove('hidden');
+        uploadedFile.classList.add('hidden');
+    });
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        let isValid = true;
+        
+        if (!displayNameInput.value.trim()) {
+            nameError.classList.remove('hidden');
+            displayNameInput.classList.add('border-error-border', 'bg-error-bg');
+            isValid = false;
+        }
+        
+        if (isValid) {
+            successBanner.classList.remove('hidden');
+            setTimeout(() => {
+                console.log('Redirecting to workspace...');
+            }, 2000);
+        }
+    });
+});
+</script>
+
+
+</body></html>

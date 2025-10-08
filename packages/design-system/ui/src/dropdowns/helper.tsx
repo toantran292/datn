@@ -1,6 +1,6 @@
 // FIXME: fix this!!!
 import { Placement } from "@blueprintjs/popover2";
-import { ICustomSearchSelectOption } from "@unified-teamspace/types";
+import { ICustomSearchSelectOption } from "@uts/types";
 
 export interface IDropdownProps {
   customButtonClassName?: string;

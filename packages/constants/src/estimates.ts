@@ -1,5 +1,5 @@
 // plane imports
-import { TEstimateSystems } from "@unified-teamspace/types";
+import { TEstimateSystems } from "@uts/types";
 
 export const MAX_ESTIMATE_POINT_INPUT_LENGTH = 20;
 

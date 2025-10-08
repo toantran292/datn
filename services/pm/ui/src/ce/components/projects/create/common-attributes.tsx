@@ -1,10 +1,10 @@
-import { ETabIndices } from "@unified-teamspace/constants";
-import { cn, getTabIndex, projectIdentifierSanitizer } from "@unified-teamspace/fe-utils";
-import { TProject } from "@unified-teamspace/types";
-import { Input, TextArea, Tooltip } from "@unified-teamspace/ui";
-import { Info } from "lucide-react";
 import { ChangeEvent } from "react";
 import { Controller, useFormContext, UseFormSetValue } from "react-hook-form";
+import { Info } from "lucide-react";
+import { ETabIndices } from "@uts/constants";
+import { Input, TextArea, Tooltip } from "@uts/design-system/ui";
+import { cn, getTabIndex, projectIdentifierSanitizer } from "@uts/fe-utils";
+import { TProject } from "@uts/types";
 
 type Props = {
   setValue: UseFormSetValue<any>;

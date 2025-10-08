@@ -1,5 +1,5 @@
 // types
-import { TIssuesListTypes } from "@unified-teamspace/types";
+import { TIssuesListTypes } from "@uts/types";
 
 export enum EDurationFilters {
   NONE = "none",

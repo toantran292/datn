@@ -1,6 +1,6 @@
 // services
-import { API_BASE_URL } from "@unified-teamspace/constants";
-import type { IState } from "@unified-teamspace/types";
+import { API_BASE_URL } from "@uts/constants";
+import type { IState } from "@uts/types";
 import { APIService } from "@/core/services/api.service";
 
 export class ProjectStateService extends APIService {

@@ -1,5 +1,5 @@
 import isEmpty from "lodash/isEmpty";
-import { IIssueLabel, IIssueLabelTree } from "@unified-teamspace/types";
+import { IIssueLabel, IIssueLabelTree } from "@uts/types";
 
 /**
  * @description Groups an array of objects by a specified key

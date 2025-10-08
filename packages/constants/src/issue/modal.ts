@@ -1,5 +1,5 @@
 // plane imports
-import { TIssue } from "@unified-teamspace/types";
+import { TIssue } from "@uts/types";
 
 export const DEFAULT_WORK_ITEM_FORM_VALUES: Partial<TIssue> = {
   project_id: "",

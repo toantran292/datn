@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { CompleteOrEmpty } from "@unified-teamspace/types";
+import { CompleteOrEmpty } from "@uts/types";
 
 // Support email can be configured by the application
 export const getSupportEmail = (defaultEmail: string = ""): string => defaultEmail;

@@ -1,5 +1,5 @@
-import { API_BASE_URL } from "@unified-teamspace/constants";
-import { TPartialProject, TProject } from "@unified-teamspace/types";
+import { API_BASE_URL } from "@uts/constants";
+import { TPartialProject, TProject } from "@uts/types";
 import { APIService } from "@/core/services/api.service";
 
 type TProjectLiteResponse = {

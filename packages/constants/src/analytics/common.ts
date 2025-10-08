@@ -1,4 +1,4 @@
-import { ChartXAxisProperty, ChartYAxisMetric, TAnalyticsTabsBase } from "@unified-teamspace/types";
+import { ChartXAxisProperty, ChartYAxisMetric, TAnalyticsTabsBase } from "@uts/types";
 
 export interface IInsightField {
   key: string;

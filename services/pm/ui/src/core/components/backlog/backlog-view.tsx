@@ -20,9 +20,8 @@ import {
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { observer } from "mobx-react";
-
-import { cn } from "@unified-teamspace/fe-utils";
-import { Badge, Button, Checkbox, Input, Loader } from "@unified-teamspace/ui";
+import { Badge, Button, Checkbox, Input, Loader } from "@uts/design-system/ui";
+import { cn } from "@uts/fe-utils";
 
 import { IIssue, IReorderIssuePayload } from "@/core/types/issue";
 import {

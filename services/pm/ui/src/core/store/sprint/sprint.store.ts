@@ -1,6 +1,6 @@
 import { action, makeObservable, observable, runInAction } from "mobx";
 
-import { TFetchStatus, TLoader } from "@unified-teamspace/types";
+import { TFetchStatus, TLoader } from "@uts/types";
 
 import { SprintService } from "@/core/services/sprint";
 import { CoreRootStore } from "@/core/store/root.store";

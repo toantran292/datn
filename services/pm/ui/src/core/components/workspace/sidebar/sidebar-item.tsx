@@ -1,12 +1,12 @@
 "use client";
 
-import { IWorkspaceSidebarNavigationItem } from "@unified-teamspace/constants";
+import { FC, ReactNode } from "react";
 import { observer } from "mobx-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FC, ReactNode } from "react";
-import { SidebarNavItem } from "./sidebar-navigation";
+import { IWorkspaceSidebarNavigationItem } from "@uts/constants";
 import { getSidebarNavigationItemIcon } from "@/ce/components/workspace/sidebar/helper";
+import { SidebarNavItem } from "./sidebar-navigation";
 
 type Props = {
   item: IWorkspaceSidebarNavigationItem;

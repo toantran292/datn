@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { E_PASSWORD_STRENGTH } from "@unified-teamspace/constants";
-import { cn, getPasswordStrength } from "@unified-teamspace/fe-utils";
+import { E_PASSWORD_STRENGTH } from "@uts/constants";
+import { cn, getPasswordStrength } from "@uts/fe-utils";
 import { PasswordStrengthIndicator } from "../form-fields/password/indicator";
 import { AuthInput } from "./auth-input";
 

@@ -1,8 +1,8 @@
-import { TFetchStatus, TLoader, TPartialProject, TProject } from "@unified-teamspace/types";
+import update from "lodash/update";
 import { observable, action, makeObservable, runInAction, computed } from "mobx";
+import { TFetchStatus, TLoader, TPartialProject, TProject } from "@uts/types";
 import { ProjectService } from "@/core/services/project";
 import { CoreRootStore } from "../root.store";
-import update from "lodash/update";
 
 export interface IProjectStore {
   // observables

@@ -1,6 +1,6 @@
 import React, { FC } from "react";
 // plane utils
-import { calculateTimeAgo, cn, getIconForLink } from "@unified-teamspace/fe-utils";
+import { calculateTimeAgo, cn, getIconForLink } from "@uts/fe-utils";
 // plane ui
 import { TContextMenuItem } from "../dropdowns/context-menu/root";
 import { CustomMenu } from "../dropdowns/custom-menu";

@@ -1,5 +1,5 @@
 // plane imports
-import { IProject, TProjectAppliedDisplayFilterKeys, TProjectOrderByOptions } from "@unified-teamspace/types";
+import { IProject, TProjectAppliedDisplayFilterKeys, TProjectOrderByOptions } from "@uts/types";
 // local imports
 import { RANDOM_EMOJI_CODES } from "./emoji";
 
