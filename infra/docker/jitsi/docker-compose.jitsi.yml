@@ -2,45 +2,29 @@ services:
   prosody:
     image: jitsi/prosody:stable
     environment:
-      # --- XMPP domains ---
       XMPP_DOMAIN: meet.local
       XMPP_AUTH_DOMAIN: auth.meet.local
       XMPP_MUC_DOMAIN: muc.meet.local
       XMPP_INTERNAL_MUC_DOMAIN: internal-muc.meet.local
-
-      # --- Enable JWT auth (do NOT mount custom conf.d overrides) ---
       ENABLE_AUTH: "1"
       AUTH_TYPE: jwt
-
-      # Dùng 1 trong 2 cách (CHỈ 1):
       JWT_APP_SECRET: superlongrandomsecret123
-      # C1) Public key PEM trực tiếp:
-#      JWT_PUBLIC_KEY_PATH: /config/keys/jwtRS256.key.pub
-      # C2) hoặc JWKS/ASAP key server (HTTP/HTTPS/file) -> chỉ dùng khi có 'kid'
-#      JWT_ASAP_KEYSERVER: file:///config/keys
-
       JWT_ACCEPTED_ISSUERS: meet-auth
       JWT_ACCEPTED_AUDIENCES: meet
-
-      # --- Internal creds ---
       JICOFO_COMPONENT_SECRET: focussecret
       JICOFO_AUTH_USER: focus
       JICOFO_AUTH_PASSWORD: focuspass
       JVB_AUTH_USER: jvb
       JVB_AUTH_PASSWORD: jvbpass
-
     volumes:
-      # KHÔNG mount /config/conf.d nữa để tránh RO & override
       - ./config/prosody/data:/config/data
       - ./config/prosody/keys:/config/keys
       - ./config/certs:/config/certs:ro
-      # nếu public key để nơi khác thì bind đúng file vào /config/keys/jwtRS256.key.pub
-      # - ./config/certs/meet/jwtRS256.key.pub:/config/keys/jwtRS256.key.pub:ro
     ports:
-      - "40622:5222"   # c2s
-      - "40680:5280"   # http/ws
-      - "40647:5347"   # component
-    networks: [meetnet]
+      - "40622:5222"
+      - "40680:5280"
+      - "40647:5347"
+    networks: [ meetnet ]
 
   jicofo:
     image: jitsi/jicofo:stable
@@ -54,8 +38,8 @@ services:
       JICOFO_COMPONENT_SECRET: focussecret
       JICOFO_AUTH_USER: focus
       JICOFO_AUTH_PASSWORD: focuspass
-    depends_on: [prosody]
-    networks: [meetnet]
+    depends_on: [ prosody ]
+    networks: [ meetnet ]
 
   jvb:
     image: jitsi/jvb:stable
@@ -65,28 +49,35 @@ services:
       XMPP_AUTH_DOMAIN: auth.meet.local
       XMPP_MUC_DOMAIN: muc.meet.local
       XMPP_INTERNAL_MUC_DOMAIN: internal-muc.meet.local
-
+      DOCKER_HOST_ADDRESS: "192.168.100.195" # IP LAN của máy Windows
+      JVB_ADVERTISE_IPS: "192.168.100.195,1.53.114.54"
       JVB_AUTH_USER: jvb
       JVB_AUTH_PASSWORD: jvbpass
       JVB_BREWERY_MUC: jvbbrewery
-      JVB_PORT: 10000
-      DOCKER_HOST_ADDRESS: 192.168.100.195   # IP máy host LAN của bạn
-    depends_on: [prosody]
+      # Bật Colibri WS + expose đúng domain bạn truy cập:
+      JVB_ENABLE_APIS: "rest,colibri"
+      COLIBRI_REST_ENABLED: "true"
+      COLIBRI_WS_ENABLED: "true"
+      COLIBRI_WS_DOMAIN: "192.168.100.195"
+      COLIBRI_WS_TLS: "false"
+      # Nếu sau NAT, có thể cần:
+      # TCP fallback (tùy nhu cầu):
+      # JVB_ENABLE_TCP_HARVESTER: "true"
+      # JVB_TCP_HARVESTER_PORT: "4443"
+    depends_on: [ prosody ]
     ports:
-      - "40600:10000/udp"
-    networks: [meetnet]
+      - "10000:10000/udp" # giữ nguyên 10000
+      - "9090:9090" # Colibri WS
+    networks: [ meetnet ]
 
   coturn:
     image: coturn/coturn:latest
     command: >
-      --no-cli --realm=meet.local --use-auth-secret
-      --static-auth-secret=turnsharedsecret
-      --min-port=49000 --max-port=50000 --fingerprint
-    ports:
-      - "40678:3478/udp"
-      - "40678:3478/tcp"
-      - "40649:5349/tcp"
-    networks: [meetnet]
+      --no-cli --realm=meet.local --use-auth-secret --static-auth-secret=turnsharedsecret --min-port=49000 --max-port=50000 --fingerprint ports:
+        - "3478:3478/udp"
+        - "3478:3478/tcp"
+        - "5349:5349/tcp"
+      networks: [meetnet]
 
 networks:
   meetnet:

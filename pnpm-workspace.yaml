@@ -1,0 +1,12 @@
+packages:
+  - packages/*
+  - packages/*/
+  - packages/*/*
+  - services/*/ui
+  - services/gateway
+
+onlyBuiltDependencies:
+  - turbo
+  - sharp
+
+useNodeVersion: 20.19.0
