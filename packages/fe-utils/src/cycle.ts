@@ -4,7 +4,7 @@ import orderBy from "lodash/orderBy";
 import sortBy from "lodash/sortBy";
 import uniqBy from "lodash/uniqBy";
 // plane imports
-import { ICycle, TCycleFilters } from "@unified-teamspace/types";
+import { ICycle, TCycleFilters } from "@uts/types";
 // local imports
 import { findTotalDaysInRange, generateDateArray, getDate } from "./datetime";
 import { satisfiesDateFilter } from "./filter";

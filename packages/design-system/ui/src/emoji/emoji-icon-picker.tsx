@@ -3,7 +3,7 @@ import EmojiPicker from "emoji-picker-react";
 import React, { useRef, useState } from "react";
 import { usePopper } from "react-popper";
 // plane helpers
-import { useOutsideClickDetector } from "@unified-teamspace/hooks";
+import { useOutsideClickDetector } from "@uts/hooks";
 // components
 import { cn } from "../utils";
 import { EmojiIconPickerTypes, TABS_LIST, TCustomEmojiPicker } from "./emoji-icon-helper";

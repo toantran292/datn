@@ -4,7 +4,7 @@ import * as React from "react";
 import ReactDOM from "react-dom";
 import { usePopper } from "react-popper";
 // plane helpers
-import { useOutsideClickDetector } from "@unified-teamspace/hooks";
+import { useOutsideClickDetector } from "@uts/hooks";
 // helpers
 import { useDropdownKeyDown } from "../hooks/use-dropdown-key-down";
 import { cn } from "../utils";

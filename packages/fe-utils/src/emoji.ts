@@ -1,7 +1,7 @@
 "use client";
 
 // plane imports
-import { RANDOM_EMOJI_CODES } from "@unified-teamspace/constants";
+import { RANDOM_EMOJI_CODES } from "@uts/constants";
 
 /**
  * Converts a hyphen-separated hexadecimal emoji code to its decimal representation

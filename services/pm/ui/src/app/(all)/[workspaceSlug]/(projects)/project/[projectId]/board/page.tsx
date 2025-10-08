@@ -3,10 +3,10 @@
 import { observer } from "mobx-react";
 import { useParams } from "next/navigation";
 
+import { KanbanLayout } from "@/core/components/board/kanban-layout";
 import { ProjectTabs } from "@/core/components/project/project-tabs";
 import { useProject } from "@/core/hooks/store/use-project";
 
-import { KanbanLayout } from "@/core/components/board/kanban-layout";
 
 const ProjectBoardPage = observer(() => {
   const params = useParams<{ workspaceSlug?: string | string[]; projectId?: string | string[] }>();

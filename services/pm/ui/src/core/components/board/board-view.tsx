@@ -17,13 +17,13 @@ import {
   Circle,
   MoreVertical,
 } from "lucide-react";
-import { cn } from "@unified-teamspace/fe-utils";
+import { Badge, Button, Checkbox, Input, setToast, TOAST_TYPE } from "@uts/design-system/ui";
+import { cn } from "@uts/fe-utils";
 
+import type { IIssueStore } from "@/core/store/issue/issue.store";
 import type { IIssue } from "@/core/types/issue";
 import type { ISprint } from "@/core/types/sprint";
-import type { IIssueStore } from "@/core/store/issue/issue.store";
 
-import { Badge, Button, Checkbox, Input, setToast, TOAST_TYPE } from "@unified-teamspace/ui";
 
 type BoardViewProps = {
   projectId: string;
@@ -192,8 +192,7 @@ export const BoardView = memo(function BoardView({ projectId, issues, sprint, is
   );
 });
 
-const BoardToolbar = () => {
-  return (
+const BoardToolbar = () => (
     <div className="flex flex-wrap items-center justify-between gap-3 bg-custom-background-100 rounded-lg p-4 border border-custom-border-200">
       <div className="flex items-center gap-2">
         <div className="relative">
@@ -225,7 +224,6 @@ const BoardToolbar = () => {
       </div>
     </div>
   );
-};
 
 const SprintSummary: React.FC<{ sprint: ISprint; issueCount: number }> = ({ sprint, issueCount }) => {
   const calculateProgress = () => {

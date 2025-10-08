@@ -9,6 +9,6 @@ export default defineConfig({
   minify: true,
   splitting: true,
   treeshake: true,
-  external: ["react", "@unified-teamspace/types"],
+  external: ["react", "@uts/types"],
   injectStyle: true,
 });

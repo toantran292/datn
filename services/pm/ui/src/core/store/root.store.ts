@@ -1,5 +1,5 @@
-import { ProjectStore } from "@/core/store/project/project.store";
 import { IssueStore } from "@/core/store/issue/issue.store";
+import { ProjectStore } from "@/core/store/project/project.store";
 import { SprintStore } from "@/core/store/sprint/sprint.store";
 
 export interface IProjectRootStore {

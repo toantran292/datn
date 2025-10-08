@@ -79,7 +79,7 @@ module.exports = {
             position: "after",
           },
           {
-            pattern: "@unified-teamspace/**",
+            pattern: "@uts/**",
             group: "external",
             position: "after",
           },

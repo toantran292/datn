@@ -1,6 +1,6 @@
-import { CreateProjectForm } from "@/ce/components/projects/create/root";
-import { EModalPosition, EModalWidth, ModalCore } from "@unified-teamspace/ui";
 import { FC } from "react";
+import { EModalPosition, EModalWidth, ModalCore } from "@uts/design-system/ui";
+import { CreateProjectForm } from "@/ce/components/projects/create/root";
 
 type Props = {
   isOpen: boolean;

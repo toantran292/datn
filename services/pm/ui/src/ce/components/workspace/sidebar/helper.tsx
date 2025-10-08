@@ -1,5 +1,5 @@
 import { BarChart2, Briefcase, Home, Inbox, Layers, PenSquare } from "lucide-react";
-import { cn } from "@unified-teamspace/fe-utils";
+import { cn } from "@uts/fe-utils";
 
 export const getSidebarNavigationItemIcon = (key: string, className: string = "") => {
   switch (key) {

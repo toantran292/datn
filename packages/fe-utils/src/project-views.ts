@@ -1,8 +1,8 @@
 import isNil from "lodash/isNil";
 import orderBy from "lodash/orderBy";
 // plane imports
-import { SPACE_BASE_PATH, SPACE_BASE_URL } from "@unified-teamspace/constants";
-import { IProjectView, TViewFilterProps, TViewFiltersSortBy, TViewFiltersSortKey } from "@unified-teamspace/types";
+import { SPACE_BASE_PATH, SPACE_BASE_URL } from "@uts/constants";
+import { IProjectView, TViewFilterProps, TViewFiltersSortBy, TViewFiltersSortKey } from "@uts/types";
 // local imports
 import { getDate } from "./datetime";
 import { satisfiesDateFilter } from "./filter";

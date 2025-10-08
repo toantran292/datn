@@ -1,6 +1,6 @@
 import { differenceInCalendarDays } from "date-fns/differenceInCalendarDays";
 // plane imports
-import { IIssueFilters } from "@unified-teamspace/types";
+import { IIssueFilters } from "@uts/types";
 // local imports
 import { getDate } from "./datetime";
 

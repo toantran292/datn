@@ -1,5 +1,5 @@
 import React from "react";
-import { cn } from "@unified-teamspace/fe-utils";
+import { cn } from "@uts/fe-utils";
 
 // Reusable Label Component
 interface LabelProps {

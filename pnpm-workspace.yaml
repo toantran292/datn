@@ -2,11 +2,17 @@ packages:
   - packages/*
   - packages/*/
   - packages/*/*
+
   - services/*/ui
-  - services/gateway
+  - apps/*
+
+  - "!infra"
+  - "!imgs"
+  - "!.github"
+  - "!.idea"
+  - "!.vscode"
 
 onlyBuiltDependencies:
-  - turbo
   - sharp
 
 useNodeVersion: 20.19.0

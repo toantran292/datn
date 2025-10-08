@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "@unified-teamspace/constants";
+import { API_BASE_URL } from "@uts/constants";
 
 import { ICreateSprintPayload, IUpdateSprintPayload, ISprint } from "@/core/types/sprint";
 

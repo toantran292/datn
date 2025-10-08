@@ -1,4 +1,4 @@
-import { EIconSize } from "@unified-teamspace/constants";
+import { EIconSize } from "@uts/constants";
 
 export interface IStateGroupIcon {
   className?: string;

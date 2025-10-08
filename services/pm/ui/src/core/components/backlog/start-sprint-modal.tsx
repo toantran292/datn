@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
-import { Button, EModalPosition, EModalWidth, Input, ModalCore } from "@unified-teamspace/ui";
+import { Button, EModalPosition, EModalWidth, Input, ModalCore } from "@uts/design-system/ui";
 
 type StartSprintModalProps = {
   isOpen: boolean;

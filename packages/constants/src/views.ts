@@ -1,4 +1,4 @@
-import { EViewAccess } from "@unified-teamspace/types";
+import { EViewAccess } from "@uts/types";
 
 export const VIEW_ACCESS_SPECIFIERS: {
   key: EViewAccess;

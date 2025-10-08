@@ -1,4 +1,4 @@
-import { EProductSubscriptionEnum, IPaymentProduct, TBillingFrequency, TProductBillingFrequency } from "@unified-teamspace/types";
+import { EProductSubscriptionEnum, IPaymentProduct, TBillingFrequency, TProductBillingFrequency } from "@uts/types";
 
 /**
  * Default billing frequency for each product subscription type

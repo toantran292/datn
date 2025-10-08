@@ -1,5 +1,5 @@
 // types
-import { TModuleLayoutOptions, TModuleOrderByOptions, TModuleStatus } from "@unified-teamspace/types";
+import { TModuleLayoutOptions, TModuleOrderByOptions, TModuleStatus } from "@uts/types";
 
 export const MODULE_STATUS_COLORS: {
   [key in TModuleStatus]: string;

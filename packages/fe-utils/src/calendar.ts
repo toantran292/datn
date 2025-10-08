@@ -1,5 +1,5 @@
 // plane imports
-import { EStartOfTheWeek, ICalendarDate, ICalendarPayload } from "@unified-teamspace/types";
+import { EStartOfTheWeek, ICalendarDate, ICalendarPayload } from "@uts/types";
 // local imports
 import { getWeekNumberOfDate, renderFormattedPayloadDate } from "./datetime";
 

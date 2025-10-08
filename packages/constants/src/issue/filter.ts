@@ -1,4 +1,4 @@
-import { EIssuesStoreType, ILayoutDisplayFiltersOptions, TIssueActivityComment } from "@unified-teamspace/types";
+import { EIssuesStoreType, ILayoutDisplayFiltersOptions, TIssueActivityComment } from "@uts/types";
 import {
   TIssueFilterPriorityObject,
   ISSUE_DISPLAY_PROPERTIES_KEYS,

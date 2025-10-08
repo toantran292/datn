@@ -1,7 +1,7 @@
 import set from "lodash/set";
 // plane imports
-import { DEFAULT_WORK_ITEM_FORM_VALUES } from "@unified-teamspace/constants";
-import { IPartialProject, ISearchIssueResponse, IState, TIssue } from "@unified-teamspace/types";
+import { DEFAULT_WORK_ITEM_FORM_VALUES } from "@uts/constants";
+import { IPartialProject, ISearchIssueResponse, IState, TIssue } from "@uts/types";
 
 export const getUpdateFormDataForReset = (projectId: string | null | undefined, formData: Partial<TIssue>) => ({
   ...DEFAULT_WORK_ITEM_FORM_VALUES,

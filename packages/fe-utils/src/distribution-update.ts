@@ -4,8 +4,8 @@ import { format } from "date-fns";
 import get from "lodash/get";
 import set from "lodash/set";
 // plane imports
-import { COMPLETED_STATE_GROUPS, STATE_DISTRIBUTION } from "@unified-teamspace/constants";
-import { ICycle, IEstimatePoint, IModule, IState, TIssue } from "@unified-teamspace/types";
+import { COMPLETED_STATE_GROUPS, STATE_DISTRIBUTION } from "@uts/constants";
+import { ICycle, IEstimatePoint, IModule, IState, TIssue } from "@uts/types";
 // helper
 import { getDate } from "./datetime";
 

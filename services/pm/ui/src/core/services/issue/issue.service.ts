@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "@unified-teamspace/constants";
+import { API_BASE_URL } from "@uts/constants";
 
 import { ICreateIssuePayload, IIssue, IReorderIssuePayload, TIssuePriority, TIssueState, TIssueType } from "@/core/types/issue";
 
