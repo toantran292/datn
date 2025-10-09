@@ -8,6 +8,8 @@ import { ControlsToolbar } from "@/components/ControlsToolbar";
 import { WaitingState } from "@/components/WaitingState";
 import { CompactHuddle } from "@/components/CompactHuddle";
 import { ChatPanel } from "@/components/ChatPanel";
+import { useLocalMedia } from "@/hooks/useLocalMedia";
+import { useScreenShare } from "@/hooks/useScreenShare";
 
 type ViewMode =
     | "waiting"
@@ -171,16 +173,24 @@ export default function App() {
     const [isScreenSharing, setIsScreenSharing] = useState(false);
     const [isChatOpen, setIsChatOpen] = useState(false);
     const [unreadMessages, setUnreadMessages] = useState(0);
-    const [showGridCaptions, setShowGridCaptions] =
-        useState(true);
-    const [participants, setParticipants] = useState(() =>
-        generateParticipants(participantCount),
-    );
+    const [showGridCaptions, setShowGridCaptions] = useState(true);
+    const [participants, setParticipants] = useState(() => {
+        const base = generateParticipants(participantCount);
+        return [{ id: 'local', name: 'You', avatarUrl: base[0]?.avatarUrl || '', isSpeaking: false, isMuted: !isMicOn, caption: '', isLocal: true }, ...base];
+    });
     const [duration, setDuration] = useState("12:34");
+
+    // Local media for self-preview
+    const { videoStream, enableVideo, disableVideo, enableMic, disableMic, audioLevel } = useLocalMedia();
+    const { isSharing, screenStream, toggleShare } = useScreenShare();
 
     // Update participants when count changes
     useEffect(() => {
-        setParticipants(generateParticipants(participantCount));
+        setParticipants((prev) => {
+            const base = generateParticipants(participantCount);
+            const local = prev.find(p => p.id === 'local') || { id: 'local', name: 'You', avatarUrl: base[0]?.avatarUrl || '', isSpeaking: false, isMuted: !isMicOn, caption: '', isLocal: true };
+            return [local, ...base];
+        });
     }, [participantCount]);
 
     // Simulate speaking participants rotation
@@ -190,14 +200,14 @@ export default function App() {
                 const next = [...prev];
                 // Clear all speaking
                 next.forEach((p) => {
-                    p.isSpeaking = true;
+                    p.isSpeaking = false;
                     p.caption = "";
                 });
                 // Pick random speaker
                 const speakerIndex = Math.floor(
                     Math.random() * next.length,
                 );
-                next[speakerIndex].isSpeaking = true;
+                next[speakerIndex].isSpeaking = false;
                 if (isCaptionsOn) {
                     next[speakerIndex].caption =
                         captions[
@@ -243,12 +253,10 @@ export default function App() {
     }, [isChatOpen]);
 
     const handleToggleScreenShare = () => {
-        setIsScreenSharing(!isScreenSharing);
-        if (!isScreenSharing) {
-            setViewMode("screenShare");
-        } else {
-            setViewMode("grid");
-        }
+        const next = !isScreenSharing;
+        setIsScreenSharing(next);
+        if (next) setViewMode("screenShare"); else setViewMode("grid");
+        void toggleShare();
     };
 
     const handleViewModeChange = (mode: ViewMode) => {
@@ -275,6 +283,37 @@ export default function App() {
         if (viewMode === "focusView") return "focusView";
         return "default";
     };
+
+    // Sync local preview with camera state
+    useEffect(() => {
+        (async () => {
+            try {
+                if (isVideoOn) {
+                    await enableVideo();
+                } else {
+                    disableVideo();
+                }
+            } catch { }
+        })();
+    }, [isVideoOn, enableVideo, disableVideo]);
+
+    // Sync mic capture with mic toggle
+    useEffect(() => {
+        (async () => {
+            try {
+                if (isMicOn) {
+                    await enableMic();
+                } else {
+                    disableMic();
+                }
+            } catch { }
+        })();
+    }, [isMicOn, enableMic, disableMic]);
+
+    // Mark local speaking when audio level is high
+    useEffect(() => {
+        setParticipants(prev => prev.map(p => p.id === 'local' ? { ...p, isSpeaking: audioLevel > 8 } : p));
+    }, [audioLevel]);
 
     return (
         <div
@@ -308,6 +347,7 @@ export default function App() {
                                 participants={participants}
                                 showCaptions={isCaptionsOn}
                                 onToggleCaptions={() => setIsCaptionsOn(!isCaptionsOn)}
+                                localVideoStream={videoStream}
                             />
                         </motion.div>
                     )}
@@ -324,7 +364,7 @@ export default function App() {
                             >
                                 <ScreenShareView
                                     participants={participants}
-                                    sharerName="Marcus Johnson"
+                                    sharerName="You"
                                     meetingTitle="Product Strategy Q3"
                                     duration={duration}
                                     isRecording={true}
@@ -334,6 +374,9 @@ export default function App() {
                                     micOn={isMicOn}
                                     videoOn={isVideoOn}
                                     screenShareOn={isScreenSharing}
+                                    localVideoStream={videoStream}
+                                    localScreenStream={screenStream}
+                                    localAudioLevel={audioLevel}
                                 />
                             </motion.div>
                         )}
@@ -373,6 +416,8 @@ export default function App() {
                         onLeave={() => router.replace('/auth-join')}
                     />
                 )}
+
+                {/* Local preview tile is now part of MeetingGrid as a participant */}
             </div>
 
             {/* Chat Panel */}

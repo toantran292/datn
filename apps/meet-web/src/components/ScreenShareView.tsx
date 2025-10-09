@@ -14,6 +14,7 @@ interface Participant {
   isSpeaking: boolean;
   isMuted: boolean;
   caption?: string;
+  isLocal?: boolean;
 }
 
 interface ScreenShareViewProps {
@@ -30,6 +31,9 @@ interface ScreenShareViewProps {
   screenShareOn?: boolean;
   roomId?: string;
   onParticipantsUpdate?: (participants: Participant[]) => void;
+  localVideoStream?: MediaStream | null;
+  localScreenStream?: MediaStream | null;
+  localAudioLevel?: number;
 }
 
 export function ScreenShareView({
@@ -46,6 +50,9 @@ export function ScreenShareView({
   screenShareOn = false,
   roomId,
   onParticipantsUpdate,
+  localVideoStream,
+  localScreenStream,
+  localAudioLevel = 0,
 }: ScreenShareViewProps) {
   const [scrollPosition, setScrollPosition] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -53,8 +60,8 @@ export function ScreenShareView({
   const localScreenElRef = useRef<HTMLVideoElement>(null);
   const remoteContainerRef = useRef<HTMLDivElement>(null);
 
-  const { isVideoOn, isMicOn, videoStream, audioStream } = useLocalMedia();
-  const { isSharing, screenStream } = useScreenShare();
+  // Use passed streams instead of creating new ones
+  const isSharing = !!localScreenStream;
   const { status, connect, addLocalTracks, leave, toggleVideo, toggleAudio, toggleScreenShare } = useJitsiConference(roomId || 'demo-room', {
     attachLocal: (t) => {
       try {
@@ -134,25 +141,25 @@ export function ScreenShareView({
   useEffect(() => {
     const el = localVideoElRef.current;
     if (!el) return;
-    if (videoStream) {
-      el.srcObject = videoStream;
+    if (localVideoStream) {
+      el.srcObject = localVideoStream;
       el.play().catch(() => { });
     } else {
       el.srcObject = null;
     }
-  }, [videoStream]);
+  }, [localVideoStream]);
 
   // Attach local screen share preview
   useEffect(() => {
     const el = localScreenElRef.current;
     if (!el) return;
-    if (screenStream) {
-      el.srcObject = screenStream;
+    if (localScreenStream) {
+      el.srcObject = localScreenStream;
       el.play().catch(() => { });
     } else {
       el.srcObject = null;
     }
-  }, [screenStream]);
+  }, [localScreenStream]);
 
   // Join room when roomId available
   useEffect(() => {
@@ -243,7 +250,7 @@ export function ScreenShareView({
         >
           {/* Screen share or placeholder */}
           {isSharing ? (
-            <video ref={localScreenElRef} className="w-full h-full object-contain bg-black" muted playsInline />
+            <video ref={localScreenElRef} className="w-full h-[75vh] object-contain bg-black" muted playsInline />
           ) : (
             <div
               className="w-full h-full flex items-center justify-center"
@@ -359,10 +366,11 @@ export function ScreenShareView({
                     <ParticipantAvatar
                       name={participant.name}
                       avatarUrl={participant.avatarUrl}
-                      isSpeaking={participant.isSpeaking}
+                      isSpeaking={participant.isLocal ? localAudioLevel > 8 : participant.isSpeaking}
                       isMuted={participant.isMuted}
                       caption=""
                       size={viewMode === 'compactGrid' ? 'small' : 'small'}
+                      videoStream={participant.isLocal ? localVideoStream : undefined}
                     />
                   </motion.div>
                 ))}

@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { Mic, MicOff } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface ParticipantAvatarProps {
   name: string;
@@ -10,6 +10,7 @@ interface ParticipantAvatarProps {
   caption?: string;
   size?: 'tiny' | 'small' | 'medium' | 'large';
   showTooltip?: boolean;
+  videoStream?: MediaStream | null;
 }
 
 export function ParticipantAvatar({
@@ -20,8 +21,23 @@ export function ParticipantAvatar({
   caption,
   size = 'medium',
   showTooltip = false,
+  videoStream,
 }: ParticipantAvatarProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+    if (videoStream) {
+      try {
+        el.srcObject = videoStream;
+        void el.play();
+      } catch { }
+    } else {
+      try { el.srcObject = null; } catch { }
+    }
+  }, [videoStream]);
 
   const sizeClasses = {
     tiny: 'w-12 h-12',
@@ -78,12 +94,15 @@ export function ParticipantAvatar({
             }`}
           style={isHovered && !isSpeaking ? { boxShadow: '0 0 20px rgba(0,196,171,0.4)' } : undefined}
         >
-          <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
-
-          {isMuted && size !== 'tiny' && (
-            <div className="absolute bottom-1 right-1 bg-[var(--ts-card-surface)] rounded-full p-1.5 border border-[var(--ts-border)]">
+          {/* {isMuted && size !== 'tiny' && (
+            <div className="absolute bottom-1 left-5 bg-[var(--ts-card-surface)] rounded-full p-1.5 border border-[var(--ts-border)]">
               <MicOff className="w-3 h-3 text-[var(--ts-text-secondary)]" />
             </div>
+          )} */}
+          {videoStream ? (
+            <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+          ) : (
+            <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
           )}
         </motion.div>
       </div>

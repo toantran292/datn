@@ -11,15 +11,17 @@ interface Participant {
   isSpeaking: boolean;
   isMuted: boolean;
   caption?: string;
+  isLocal?: boolean;
 }
 
 interface MeetingGridProps {
   participants: Participant[];
   showCaptions?: boolean;
   onToggleCaptions?: () => void;
+  localVideoStream?: MediaStream | null;
 }
 
-export function MeetingGrid({ participants, showCaptions = true, onToggleCaptions }: MeetingGridProps) {
+export function MeetingGrid({ participants, showCaptions = true, onToggleCaptions, localVideoStream }: MeetingGridProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
 
@@ -102,6 +104,7 @@ export function MeetingGrid({ participants, showCaptions = true, onToggleCaption
                   isMuted={participant.isMuted}
                   caption={showCaptions ? participant.caption : ''}
                   size={config.size}
+                  videoStream={participant.isLocal ? localVideoStream : undefined}
                 />
               </motion.div>
             ))}
