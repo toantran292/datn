@@ -1,0 +1,264 @@
+import { motion, AnimatePresence } from 'motion/react';
+import { Mic, MicOff, Video, VideoOff, Monitor, Users, Settings, PhoneOff, MessageSquare, Captions } from 'lucide-react';
+import { useState, useEffect } from 'react';
+
+interface ControlsToolbarProps {
+  isMicOn: boolean;
+  isVideoOn: boolean;
+  isCaptionsOn: boolean;
+  isScreenSharing: boolean;
+  isChatOpen: boolean;
+  unreadCount?: number;
+  onToggleMic: () => void;
+  onToggleVideo: () => void;
+  onToggleCaptions: () => void;
+  onToggleScreenShare: () => void;
+  onToggleChat: () => void;
+  onShowParticipants: () => void;
+  onShowSettings: () => void;
+  onLeave: () => void;
+}
+
+export function ControlsToolbar({
+  isMicOn,
+  isVideoOn,
+  isCaptionsOn,
+  isScreenSharing,
+  isChatOpen,
+  unreadCount = 0,
+  onToggleMic,
+  onToggleVideo,
+  onToggleCaptions,
+  onToggleScreenShare,
+  onToggleChat,
+  onShowParticipants,
+  onShowSettings,
+  onLeave,
+}: ControlsToolbarProps) {
+  const [isVisible, setIsVisible] = useState(true);
+  const [mouseY, setMouseY] = useState(0);
+  const [hideTimeout, setHideTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMouseY(e.clientY);
+      const windowHeight = window.innerHeight;
+      const bottomThreshold = windowHeight - 150; // Show when mouse is within 150px of bottom
+
+      if (e.clientY > bottomThreshold) {
+        setIsVisible(true);
+
+        // Clear existing timeout
+        if (hideTimeout) {
+          clearTimeout(hideTimeout);
+        }
+
+        // Set new timeout to hide after 3 seconds
+        const timeout = setTimeout(() => {
+          setIsVisible(false);
+        }, 3000);
+        setHideTimeout(timeout);
+      }
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      if (hideTimeout) {
+        clearTimeout(hideTimeout);
+      }
+    };
+  }, [hideTimeout]);
+
+  return (
+    <>
+      {/* Main Toolbar - Auto-hide */}
+      <AnimatePresence>
+        {isVisible && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[9999]"
+          >
+            <div
+              className="flex items-center gap-3 px-4 py-3 rounded-2xl backdrop-blur-xl border border-[var(--ts-border)]"
+              style={{
+                background: 'rgba(17, 24, 39, 0.9)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 196, 171, 0.2)',
+              }}
+            >
+              {/* Mic control */}
+              <ControlButton
+                icon={isMicOn ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
+                active={isMicOn}
+                onClick={onToggleMic}
+                activeColor="orange"
+                label="Mic"
+              />
+
+              {/* Video control */}
+              <ControlButton
+                icon={isVideoOn ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
+                active={isVideoOn}
+                onClick={onToggleVideo}
+                activeColor="teal"
+                label="Camera"
+              />
+
+              {/* Captions toggle */}
+              <ControlButton
+                icon={<Captions className="w-5 h-5" />}
+                active={isCaptionsOn}
+                onClick={onToggleCaptions}
+                activeColor="teal"
+                label="Captions"
+              />
+
+              {/* Screen share */}
+              <ControlButton
+                icon={<Monitor className="w-5 h-5" />}
+                active={isScreenSharing}
+                onClick={onToggleScreenShare}
+                activeColor="orange"
+                label="Share"
+              />
+
+              {/* Divider */}
+              <div className="w-px h-8 bg-[var(--ts-border)]" />
+
+              {/* Chat toggle with badge */}
+              <div className="relative">
+                <ControlButton
+                  icon={<MessageSquare className="w-5 h-5" />}
+                  active={isChatOpen}
+                  onClick={onToggleChat}
+                  activeColor="teal"
+                  label="Chat"
+                />
+                {unreadCount > 0 && !isChatOpen && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -top-1 -right-1 bg-[var(--ts-accent)] rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1"
+                    style={{
+                      boxShadow: '0 2px 8px rgba(255, 59, 105, 0.4)',
+                    }}
+                  >
+                    <span className="text-[10px] text-white">{unreadCount > 99 ? '99+' : unreadCount}</span>
+                  </motion.div>
+                )}
+              </div>
+
+              {/* Participants */}
+              <ControlButton
+                icon={<Users className="w-5 h-5" />}
+                onClick={onShowParticipants}
+                label="People"
+              />
+
+              {/* Settings */}
+              <ControlButton
+                icon={<Settings className="w-5 h-5" />}
+                onClick={onShowSettings}
+                label="Settings"
+              />
+
+              {/* Divider */}
+              <div className="w-px h-8 bg-[var(--ts-border)]" />
+
+              {/* Leave button */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={onLeave}
+                className="px-4 py-2.5 rounded-xl bg-[#EF4444] hover:bg-[#DC2626] transition-colors relative group"
+              >
+                <PhoneOff className="w-5 h-5 text-white" />
+                <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-[var(--ts-card-surface)] px-2 py-1 rounded text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  Leave
+                </span>
+              </motion.button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Leave button - Always visible in corner */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.3 }}
+        className="fixed bottom-6 right-6 z-40"
+      >
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={onLeave}
+          className="p-4 rounded-full bg-[#EF4444] hover:bg-[#DC2626] transition-colors shadow-lg group"
+          style={{
+            boxShadow: '0 4px 16px rgba(239, 68, 68, 0.4)',
+          }}
+        >
+          {/* <PhoneOff className="w-6 h-6 text-white" />
+          <span className="absolute -top-10 right-0 bg-[var(--ts-card-surface)] px-3 py-1.5 rounded-lg text-sm text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-[var(--ts-border)]">
+            Leave Meeting
+          </span> */}
+        </motion.button>
+      </motion.div>
+    </>
+  );
+}
+
+interface ControlButtonProps {
+  icon: React.ReactNode;
+  active?: boolean;
+  onClick: () => void;
+  activeColor?: 'orange' | 'teal';
+  label?: string;
+}
+
+function ControlButton({ icon, active, onClick, activeColor = 'orange', label }: ControlButtonProps) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  const activeStyles = {
+    orange: {
+      background: 'var(--ts-orange)',
+      boxShadow: '0 0 20px rgba(255, 136, 0, 0.4)',
+    },
+    teal: {
+      background: 'var(--ts-teal)',
+      boxShadow: '0 0 20px rgba(0, 196, 171, 0.4)',
+    },
+  };
+
+  return (
+    <div className="relative">
+      <motion.button
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onClick}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        className={`p-3 rounded-xl transition-all ${active ? 'text-white' : 'text-[var(--ts-text-secondary)] hover:text-white hover:bg-[var(--ts-card-surface)]'
+          }`}
+        style={active ? activeStyles[activeColor] : undefined}
+      >
+        {icon}
+      </motion.button>
+
+      {/* Tooltip label */}
+      {label && isHovered && !active && (
+        <motion.div
+          initial={{ opacity: 0, y: -5 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="absolute -top-10 left-1/2 -translate-x-1/2 bg-[var(--ts-card-surface)] px-2 py-1 rounded text-xs text-white whitespace-nowrap border border-[var(--ts-border)]"
+        >
+          {label}
+        </motion.div>
+      )}
+    </div>
+  );
+}
