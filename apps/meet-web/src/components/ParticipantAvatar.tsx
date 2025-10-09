@@ -94,11 +94,11 @@ export function ParticipantAvatar({
             }`}
           style={isHovered && !isSpeaking ? { boxShadow: '0 0 20px rgba(0,196,171,0.4)' } : undefined}
         >
-          {/* {isMuted && size !== 'tiny' && (
-            <div className="absolute bottom-1 left-5 bg-[var(--ts-card-surface)] rounded-full p-1.5 border border-[var(--ts-border)]">
+          {isMuted && size !== 'tiny' && (
+            <div className="absolute bottom-1 right-1 bg-[var(--ts-card-surface)] rounded-full p-1.5 border border-[var(--ts-border)]">
               <MicOff className="w-3 h-3 text-[var(--ts-text-secondary)]" />
             </div>
-          )} */}
+          )}
           {videoStream ? (
             <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
           ) : (

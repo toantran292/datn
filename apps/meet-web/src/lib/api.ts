@@ -1,47 +1,34 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? 'http://localhost:40600';
+// Fallback mặc định khi thiếu env
+const API = process.env.NEXT_PUBLIC_MEET_API || 'http://localhost:40600';
 
-export async function apiGet<T>(path: string, init?: any): Promise<T> {
-  const fullUrl = `${API_BASE}${path}`;
-  console.log('[API] GET request to:', fullUrl);
-
-  const response = await fetch(fullUrl, {
-    method: 'GET',
-    credentials: 'include',
+export async function apiPost<T>(endpoint: string, data: any): Promise<T> {
+  const response = await fetch(`${API}${endpoint}`, {
+    method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      ...init?.headers,
     },
-    ...init,
+    body: JSON.stringify(data),
   });
 
-  console.log('[API] Response status:', response.status);
-
   if (!response.ok) {
-    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    const errorText = await response.text();
+    throw new Error(`Request failed: ${errorText}`);
   }
 
   return response.json();
 }
 
-export async function apiPost<T>(path: string, body?: unknown, init?: any): Promise<T> {
-  const fullUrl = `${API_BASE}${path}`;
-  console.log('[API] POST request to:', fullUrl);
-
-  const response = await fetch(fullUrl, {
-    method: 'POST',
-    // credentials: 'include',
+export async function apiGet<T>(endpoint: string): Promise<T> {
+  const response = await fetch(`${API}${endpoint}`, {
+    method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      ...init?.headers,
     },
-    body: body ? JSON.stringify(body) : undefined,
-    ...init,
   });
 
-  console.log('[API] Response status:', response.status);
-
   if (!response.ok) {
-    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    const errorText = await response.text();
+    throw new Error(`Request failed: ${errorText}`);
   }
 
   return response.json();

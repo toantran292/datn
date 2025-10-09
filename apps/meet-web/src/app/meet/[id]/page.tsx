@@ -1,7 +1,7 @@
 "use client"
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { MeetingGrid } from "@/components/MeetingGrid";
 import { ScreenShareView } from "@/components/ScreenShareView";
 import { ControlsToolbar } from "@/components/ControlsToolbar";
@@ -10,6 +10,10 @@ import { CompactHuddle } from "@/components/CompactHuddle";
 import { ChatPanel } from "@/components/ChatPanel";
 import { useLocalMedia } from "@/hooks/useLocalMedia";
 import { useScreenShare } from "@/hooks/useScreenShare";
+import { useJitsiLoader } from "@/hooks/useJitsiLoader";
+import { useMeetingConnection } from "@/hooks/useMeetingConnection";
+import { useConferenceTracks } from "@/hooks/useConferenceTracks";
+import { getMeetingToken } from "@/services/meetingApi";
 
 type ViewMode =
     | "waiting"
@@ -164,8 +168,9 @@ const captions = [
 
 export default function App() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [viewMode, setViewMode] =
-        useState<ViewMode>("grid");
+        useState<ViewMode>("waiting");
     const [participantCount, setParticipantCount] = useState(12);
     const [isMicOn, setIsMicOn] = useState(false);
     const [isVideoOn, setIsVideoOn] = useState(false);
@@ -180,9 +185,79 @@ export default function App() {
     });
     const [duration, setDuration] = useState("12:34");
 
+    // Jitsi connection
+    const { ready } = useJitsiLoader();
+    const { status, setStatus, connectAndJoin, leave, conferenceRef } = useMeetingConnection();
+    const localVideoRef = useRef<HTMLVideoElement>(null);
+    const remoteContainerRef = useRef<HTMLDivElement>(null);
+    const [remoteParticipants, setRemoteParticipants] = useState<any[]>([]);
+
     // Local media for self-preview
     const { videoStream, enableVideo, disableVideo, enableMic, disableMic, audioLevel } = useLocalMedia();
     const { isSharing, screenStream, toggleShare } = useScreenShare();
+
+    // Conference tracks management
+    const {
+        wireConferenceEvents,
+        addLocalAV,
+        disposeLocal,
+        toggleVideo: jitsiToggleVideo,
+        toggleAudio: jitsiToggleAudio,
+        toggleScreenShare: jitsiToggleScreenShare,
+    } = useConferenceTracks({
+        attachLocal: (t) => {
+            try {
+                const el = localVideoRef.current;
+                if (!el) return;
+                t.attach(el);
+            } catch { }
+        },
+        attachRemote: (t) => {
+            try {
+                const el = document.createElement('video');
+                el.autoplay = true;
+                el.playsInline = true;
+                el.muted = false;
+                t.attach(el);
+                remoteContainerRef.current?.appendChild(el);
+
+                // Add to remote participants
+                const participantId = t.getParticipantId?.() || t.getParticipant?.()?.getId?.() || Math.random().toString(36).slice(2);
+                setRemoteParticipants(prev => {
+                    const existing = prev.find(p => p.id === participantId);
+                    if (existing) return prev;
+                    return [...prev, {
+                        id: participantId,
+                        name: `User ${participantId.slice(-4)}`,
+                        avatarUrl: '',
+                        isSpeaking: false,
+                        isMuted: false,
+                        caption: '',
+                        videoElement: el
+                    }];
+                });
+            } catch { }
+        },
+        detachRemote: (t) => {
+            try { t.detach?.(); } catch { }
+            try {
+                const participantId = t.getParticipantId?.() || t.getParticipant?.()?.getId?.() || Math.random().toString(36).slice(2);
+                setRemoteParticipants(prev => prev.filter(p => p.id !== participantId));
+            } catch { }
+        },
+        attachShare: (t) => {
+            // Handle remote screen share
+            console.log('Remote screen share attached');
+        },
+        detachShare: (t) => {
+            console.log('Remote screen share detached');
+        },
+        onLocalAudioLevel: (lvl, speaking) => {
+            // Update local participant speaking state
+            setParticipants(prev => prev.map(p => p.id === 'local' ? { ...p, isSpeaking: speaking } : p));
+        },
+        setStatus,
+    });
 
     // Update participants when count changes
     useEffect(() => {
@@ -252,11 +327,17 @@ export default function App() {
         }
     }, [isChatOpen]);
 
-    const handleToggleScreenShare = () => {
+    const handleToggleScreenShare = async () => {
         const next = !isScreenSharing;
         setIsScreenSharing(next);
         if (next) setViewMode("screenShare"); else setViewMode("grid");
-        void toggleShare();
+
+        // Sync with Jitsi
+        if (conferenceRef.current) {
+            await jitsiToggleScreenShare(conferenceRef.current);
+        } else {
+            await toggleShare();
+        }
     };
 
     const handleViewModeChange = (mode: ViewMode) => {
@@ -284,6 +365,65 @@ export default function App() {
         return "default";
     };
 
+    // Join room when Jitsi is ready
+    const calledRef = useRef(false);
+    useEffect(() => {
+        if (!ready) return;
+        if (calledRef.current) return;
+        calledRef.current = true;
+
+        (async () => {
+            try {
+                setStatus('fetching token…');
+
+                // Get user info from localStorage (saved during auth-join)
+                const userId = localStorage.getItem('userId') || `user-${Math.random().toString(36).slice(2)}`;
+                const subjectType = (localStorage.getItem('subjectType') as 'chat' | 'project') || 'chat';
+                const chatId = localStorage.getItem('chatId') || '';
+                const projectId = localStorage.getItem('projectId') || '';
+                const roomId = localStorage.getItem('roomId') || '';
+
+                console.log('Meeting page - localStorage data:', { userId, subjectType, chatId, projectId, roomId });
+
+                const payload = subjectType === 'chat'
+                    ? {
+                        user_id: userId,
+                        subject_type: 'chat' as const,
+                        chat_id: chatId,
+                    }
+                    : {
+                        user_id: userId,
+                        subject_type: 'project' as const,
+                        project_id: projectId,
+                        room_id: roomId || undefined,
+                    };
+
+                console.log('Meeting page - token payload:', payload);
+
+                const tokenData = await getMeetingToken(payload);
+                const joinRoom = tokenData.room_id;
+
+                const conf = await connectAndJoin(joinRoom, tokenData.token, tokenData.websocket_url);
+                wireConferenceEvents(conf);
+
+                await addLocalAV(conf, { camOn: isVideoOn, micOn: isMicOn });
+                if (!isVideoOn) await jitsiToggleVideo(conf, { mute: true });
+                if (!isMicOn) await jitsiToggleAudio(conf, { mute: true });
+                setViewMode("grid");
+            } catch (err) {
+                setStatus(`Error: ${err}`);
+                console.error('Failed to join room:', err);
+            }
+        })();
+
+        return () => {
+            (async () => {
+                await disposeLocal(conferenceRef.current);
+                await leave(conferenceRef.current);
+            })();
+        };
+    }, [ready]);
+
     // Sync local preview with camera state
     useEffect(() => {
         (async () => {
@@ -293,9 +433,13 @@ export default function App() {
                 } else {
                     disableVideo();
                 }
+                // Also sync with Jitsi
+                if (conferenceRef.current) {
+                    await jitsiToggleVideo(conferenceRef.current);
+                }
             } catch { }
         })();
-    }, [isVideoOn, enableVideo, disableVideo]);
+    }, [isVideoOn, enableVideo, disableVideo, jitsiToggleVideo]);
 
     // Sync mic capture with mic toggle
     useEffect(() => {
@@ -306,9 +450,13 @@ export default function App() {
                 } else {
                     disableMic();
                 }
+                // Also sync with Jitsi
+                if (conferenceRef.current) {
+                    await jitsiToggleAudio(conferenceRef.current);
+                }
             } catch { }
         })();
-    }, [isMicOn, enableMic, disableMic]);
+    }, [isMicOn, enableMic, disableMic, jitsiToggleAudio]);
 
     // Mark local speaking when audio level is high
     useEffect(() => {
@@ -344,7 +492,7 @@ export default function App() {
                             className="w-full h-full"
                         >
                             <MeetingGrid
-                                participants={participants}
+                                participants={[...participants, ...remoteParticipants]}
                                 showCaptions={isCaptionsOn}
                                 onToggleCaptions={() => setIsCaptionsOn(!isCaptionsOn)}
                                 localVideoStream={videoStream}
@@ -363,7 +511,7 @@ export default function App() {
                                 className="w-full h-full"
                             >
                                 <ScreenShareView
-                                    participants={participants}
+                                    participants={[...participants, ...remoteParticipants]}
                                     sharerName="You"
                                     meetingTitle="Product Strategy Q3"
                                     duration={duration}
@@ -413,11 +561,17 @@ export default function App() {
                             console.log("Show participants")
                         }
                         onShowSettings={() => console.log("Show settings")}
-                        onLeave={() => router.replace('/auth-join')}
+                        onLeave={async () => {
+                            await disposeLocal(conferenceRef.current);
+                            await leave(conferenceRef.current);
+                            router.replace('/auth-join');
+                        }}
                     />
                 )}
 
-                {/* Local preview tile is now part of MeetingGrid as a participant */}
+                {/* Hidden video elements for Jitsi tracks */}
+                <video ref={localVideoRef} autoPlay playsInline muted style={{ display: 'none' }} />
+                <div ref={remoteContainerRef} style={{ display: 'none' }} />
             </div>
 
             {/* Chat Panel */}
