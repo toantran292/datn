@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { apiGet, apiPost } from '@/lib/api';
 import { routes } from '@/lib/routes';
 import { toast } from '@/lib/toast';
@@ -34,8 +34,6 @@ export function useAuthStatus() {
 
 // Hook for email authentication
 export function useEmailAuth() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -48,12 +46,8 @@ export function useEmailAuth() {
 
       // Small delay to ensure cookies are set before redirect
       setTimeout(() => {
-        // Check for redirect parameter
-        const redirectTo = searchParams.get('redirect');
-        const targetUrl = redirectTo || routes.workspaces();
-
         // Use window.location.href for full page reload to ensure middleware runs with fresh cookies
-        window.location.href = targetUrl;
+        window.location.href = routes.workspaces();
       }, 200);
     },
     onError: (error: Error) => {

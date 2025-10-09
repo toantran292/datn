@@ -1,0 +1,61 @@
+---
+// Hero component
+---
+
+<section class="pt-16 h-[800px] gradient-light overflow-hidden relative">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center h-full">
+      <div class="space-y-8">
+        <div class="space-y-4">
+          <h1 class="text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
+            Work smarter.
+            <span class="bg-gradient-to-r from-[#FF8800] to-[#00C4AB] bg-clip-text text-transparent">
+              Collaborate faster.
+            </span>
+          </h1>
+          <p class="text-xl text-gray-600 leading-relaxed">
+            Unified TeamSpace brings your projects, meetings, and conversations together in one place.
+            All your teams. One unified workspace.
+          </p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-4">
+          <a href="http://localhost:3000/login" class="bg-uts-primary hover:bg-[#FF7700] text-white px-8 py-4 rounded-2xl font-semibold text-lg transition-all transform hover:scale-105 shadow-uts inline-flex items-center justify-center">
+            Get Started for Free
+          </a>
+          <a href="http://localhost:3000/login" class="border-2 border-uts-secondary text-uts-secondary hover:bg-uts-secondary hover:text-white px-8 py-4 rounded-2xl font-semibold text-lg transition-all inline-flex items-center justify-center">
+            Sign in
+          </a>
+        </div>
+
+        <div class="flex items-center space-x-6 text-sm text-gray-500">
+          <div class="flex items-center space-x-2">
+            <i class="fa-solid fa-check text-uts-secondary"></i>
+            <span>No credit card required</span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <i class="fa-solid fa-check text-uts-secondary"></i>
+            <span>Free 14-day trial</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="relative">
+        <div class="relative bg-white rounded-2xl shadow-uts overflow-hidden">
+          <img class="w-full h-64 object-cover" src="https://storage.googleapis.com/uxpilot-auth.appspot.com/400c793d5a-f61303d670a693d11a43.png" alt="modern dashboard interface with project management boards, team chat sidebar, and video call integration in orange and teal color scheme">
+        </div>
+
+        <!-- Floating Icons -->
+        <div class="absolute -top-4 -right-4 w-12 h-12 bg-uts-primary rounded-full flex items-center justify-center text-white animate-float">
+          <i class="fa-solid fa-tasks"></i>
+        </div>
+        <div class="absolute -bottom-4 -left-4 w-12 h-12 bg-uts-secondary rounded-full flex items-center justify-center text-white animate-float" style="animation-delay: 1s;">
+          <i class="fa-solid fa-comments"></i>
+        </div>
+        <div class="absolute top-1/2 -right-8 w-10 h-10 gradient-primary rounded-full flex items-center justify-center text-white animate-float" style="animation-delay: 2s;">
+          <i class="fa-solid fa-video"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

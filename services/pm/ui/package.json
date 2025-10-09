@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 40401",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 40401",
     "clean": "rm -rf .turbo && rm -rf .next && rm -rf node_modules && rm -rf dist",
     "check:lint": "eslint . --max-warnings 821",
     "check:types": "tsc --noEmit",

@@ -1,24 +1,19 @@
 "use client";
 
 import { useEffect } from 'react';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useAuthStatus } from '@/hooks/use-auth';
-import { routes } from '@/lib/routes';
 
 interface RouteGuardProps {
   children: React.ReactNode;
   requireAuth?: boolean; // true = require login, false = require NOT logged in
-  fallbackRoute?: string;
 }
 
 export function RouteGuard({
   children,
-  requireAuth = true,
-  fallbackRoute
+  requireAuth = true
 }: RouteGuardProps) {
-  const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const { data: user, isLoading, error } = useAuthStatus();
 
   // User is authenticated if we have user data and no error
@@ -67,7 +62,7 @@ export function RouteGuard({
 
 // Convenience components for common use cases
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  return <RouteGuard requireAuth={true}>{children}</RouteGuard>;
+  return <RouteGuard requireAuth>{children}</RouteGuard>;
 }
 
 export function PublicOnlyRoute({ children }: { children: React.ReactNode }) {

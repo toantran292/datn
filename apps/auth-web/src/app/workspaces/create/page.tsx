@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Input } from "@uts/design-system/ui";
 import { routes } from "@/lib/routes";
@@ -355,10 +355,28 @@ function CreateWorkspacePageContent() {
   );
 }
 
+// Loading fallback component
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-16 h-16 bg-gradient-to-br from-[#FF8800] to-[#00C4AB] rounded-2xl flex items-center justify-center shadow-xl mx-auto mb-4 animate-pulse">
+          <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+          </svg>
+        </div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Loading...</h1>
+      </div>
+    </div>
+  );
+}
+
 export default function CreateWorkspacePage() {
   return (
     <ProtectedRoute>
-      <CreateWorkspacePageContent />
+      <Suspense fallback={<LoadingFallback />}>
+        <CreateWorkspacePageContent />
+      </Suspense>
     </ProtectedRoute>
   );
 }
