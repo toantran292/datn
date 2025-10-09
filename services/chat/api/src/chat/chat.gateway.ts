@@ -127,10 +127,6 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       joinedAt: Date.now(),
       userId: userUuid.toString(),
     });
-
-    // (Tùy chọn) bạn có thể emit số unread hoặc lastMessage tóm tắt ở đây
-    // const summary = await this.chatsService.getRoomSummary(roomTid, userUuid);
-    // client.emit('room:summary', { roomId: roomTid.toString(), ...summary });
   }
 
   notifyRoomCreated(orgId: string, room: RoomSummaryPayload) {

@@ -51,7 +51,6 @@ export class RoomMembersRepository {
   }
 
   async findOrgIdsByUser(userId: types.Uuid): Promise<types.Uuid[]> {
-    // Đơn giản: quét theo user (cũng cần ALLOW FILTERING). Dùng raw query cho nhất quán.
     const q = 'SELECT org_id FROM chat.room_members WHERE user_id = ? ALLOW FILTERING';
     const rs = await this.client.execute(q, [userId], { prepare: true });
     const seen = new Set<string>();

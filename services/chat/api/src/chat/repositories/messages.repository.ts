@@ -1,4 +1,3 @@
-// repositories/messages.repository.ts
 import { Inject, Injectable } from "@nestjs/common";
 import { mapping, types } from "cassandra-driver";
 import { CASS_MAPPER } from "../../cassandra/cassandra.module";

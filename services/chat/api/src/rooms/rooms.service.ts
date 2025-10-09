@@ -39,11 +39,9 @@ export class RoomsService {
   ) {
     const pageSize = opts.limit ?? 50;
 
-    // 1) Lấy set roomIds mà user là member (từ room_members)
     const memberIds = await this.roomMembersRepo.findRoomIdsByUserOrg(userId, orgId, { limit: 10_000 });
     const memberSet = new Set(memberIds.items.map(id => id.toString()));
 
-    // 2) Page qua bảng rooms (đã đúng order DESC), rồi filter theo membership
     let cursor = opts.pagingState;
     const picked: RoomEntity[] = [];
 

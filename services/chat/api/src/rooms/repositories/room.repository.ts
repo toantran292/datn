@@ -39,7 +39,7 @@ export class RoomsRepository {
     if (!ids?.length) return [];
     const out: RoomEntity[] = [];
     for (const id of ids) {
-      const res = await this.model.find({ orgId, id }); // đủ PK ((org_id), id)
+      const res = await this.model.find({ orgId, id });
       const row = res.first() as RoomEntity | null;
       if (row) out.push(row);
     }
