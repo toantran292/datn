@@ -1,0 +1,18 @@
+packages:
+  - packages/*
+  - packages/*/
+  - packages/*/*
+
+  - services/*/ui
+  - apps/*
+
+  - "!infra"
+  - "!imgs"
+  - "!.github"
+  - "!.idea"
+  - "!.vscode"
+
+onlyBuiltDependencies:
+  - sharp
+
+useNodeVersion: 20.19.0

@@ -1,0 +1,45 @@
+{
+  "name": "@uts/fe-utils",
+  "version": "1.0.0",
+  "description": "Helper functions shared across multiple apps internally",
+  "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc --noEmit && tsup --minify",
+    "dev": "tsup --watch",
+    "check:lint": "eslint . --max-warnings 20",
+    "check:types": "tsc --noEmit",
+    "check:format": "prettier --check \"**/*.{ts,tsx,md,json,css,scss}\"",
+    "fix:lint": "eslint . --fix",
+    "fix:format": "prettier --write \"**/*.{ts,tsx,md,json,css,scss}\"",
+    "clean": "rm -rf .turbo && rm -rf node_modules && rm -rf dist"
+  },
+  "dependencies": {
+    "@uts/constants": "workspace:*",
+    "@uts/types": "workspace:*",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "isomorphic-dompurify": "^2.16.0",
+    "lodash": "^4.17.21",
+    "lucide-react": "^0.469.0",
+    "react": "^18.3.1",
+    "tailwind-merge": "^2.5.5",
+    "tlds": "1.259.0",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@uts/eslint-config": "workspace:*",
+    "@uts/typescript-config": "workspace:*",
+    "@types/lodash": "^4.17.6",
+    "@types/node": "^22.5.4",
+    "@types/react": "^18.3.11",
+    "@types/uuid": "^9.0.8",
+    "tsup": "8.4.0",
+    "typescript": "5.8.3"
+  }
+}

@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg-grad-from: #FFF6ED;
+  --bg-grad-to: #E6FFFB;
+}
+
+body {
+  @apply bg-gradient-to-br from-[var(--bg-grad-from)] to-[var(--bg-grad-to)];
+  font-feature-settings: "ss01" on;
+}
+
+/* Custom utility classes */
+.gradient-primary {
+  background: linear-gradient(135deg, #FF8800 0%, #00C4AB 100%);
+}
+
+.gradient-light {
+  background: linear-gradient(135deg, #FFF4E6 0%, #E6FFFB 100%);
+}
+
+.btn-primary {
+  @apply inline-flex items-center rounded-xl bg-uts-primary text-white px-5 py-3 shadow-uts hover:bg-[#FF7700] transition font-semibold;
+}
+
+.btn-outline {
+  @apply inline-flex items-center rounded-xl border border-uts-secondary text-uts-secondary px-5 py-3 hover:bg-[#E6FFFB] transition font-semibold;
+}
+
+/* Hide scrollbars */
+::-webkit-scrollbar {
+  display: none;
+}
+
+html, body {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

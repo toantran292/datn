@@ -15,7 +15,6 @@ node_modules/
 
 # Java build
 .gradle/
-build/
 out/
 
 # Python
@@ -24,3 +23,20 @@ __pycache__/
 
 # Docker
 *.pid
+
+# Env
+.env
+.env.dev
+
+# key
+*.pem
+
+# Build outputs
+**/dist/
+**/build/
+.next/
+.turbo/
+.astro/
+
+# Dependencies
+node_modules/
