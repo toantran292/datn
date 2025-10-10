@@ -34,6 +34,8 @@ interface ScreenShareViewProps {
   localVideoStream?: MediaStream | null;
   localScreenStream?: MediaStream | null;
   localAudioLevel?: number;
+  remoteScreenShare?: HTMLVideoElement | null;
+  remoteVideoById?: Record<string, MediaStream>;
 }
 
 export function ScreenShareView({
@@ -53,6 +55,8 @@ export function ScreenShareView({
   localVideoStream,
   localScreenStream,
   localAudioLevel = 0,
+  remoteScreenShare,
+  remoteVideoById,
 }: ScreenShareViewProps) {
   const [scrollPosition, setScrollPosition] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -161,6 +165,13 @@ export function ScreenShareView({
     }
   }, [localScreenStream]);
 
+  // Handle remote screen share
+  useEffect(() => {
+    if (remoteScreenShare) {
+      console.log('Remote screen share received:', remoteScreenShare);
+    }
+  }, [remoteScreenShare]);
+
   // Join room when roomId available
   useEffect(() => {
     if (!roomId) return;
@@ -251,6 +262,15 @@ export function ScreenShareView({
           {/* Screen share or placeholder */}
           {isSharing ? (
             <video ref={localScreenElRef} className="w-full h-[75vh] object-contain bg-black" muted playsInline />
+          ) : remoteScreenShare ? (
+            <div
+              className="w-full h-[75vh] bg-black"
+              ref={(el) => {
+                if (el && remoteScreenShare && !el.contains(remoteScreenShare)) {
+                  el.appendChild(remoteScreenShare);
+                }
+              }}
+            />
           ) : (
             <div
               className="w-full h-full flex items-center justify-center"
@@ -366,11 +386,11 @@ export function ScreenShareView({
                     <ParticipantAvatar
                       name={participant.name}
                       avatarUrl={participant.avatarUrl}
-                      isSpeaking={participant.isLocal ? localAudioLevel > 8 : participant.isSpeaking}
+                      isSpeaking={participant.isSpeaking}
                       isMuted={participant.isMuted}
                       caption=""
                       size={viewMode === 'compactGrid' ? 'small' : 'small'}
-                      videoStream={participant.isLocal ? localVideoStream : undefined}
+                      videoStream={participant.isLocal ? localVideoStream : remoteVideoById?.[participant.id]}
                     />
                   </motion.div>
                 ))}

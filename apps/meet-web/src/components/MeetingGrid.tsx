@@ -19,9 +19,10 @@ interface MeetingGridProps {
   showCaptions?: boolean;
   onToggleCaptions?: () => void;
   localVideoStream?: MediaStream | null;
+  remoteVideoById?: Record<string, MediaStream>;
 }
 
-export function MeetingGrid({ participants, showCaptions = true, onToggleCaptions, localVideoStream }: MeetingGridProps) {
+export function MeetingGrid({ participants, showCaptions = true, onToggleCaptions, localVideoStream, remoteVideoById }: MeetingGridProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
 
@@ -104,7 +105,7 @@ export function MeetingGrid({ participants, showCaptions = true, onToggleCaption
                   isMuted={participant.isMuted}
                   caption={showCaptions ? participant.caption : ''}
                   size={config.size}
-                  videoStream={participant.isLocal ? localVideoStream : undefined}
+                  videoStream={participant.isLocal ? localVideoStream : remoteVideoById?.[participant.id]}
                 />
               </motion.div>
             ))}

@@ -171,7 +171,7 @@ export default function App() {
     const searchParams = useSearchParams();
     const [viewMode, setViewMode] =
         useState<ViewMode>("waiting");
-    const [participantCount, setParticipantCount] = useState(12);
+    const [participantCount, setParticipantCount] = useState(0);
     const [isMicOn, setIsMicOn] = useState(false);
     const [isVideoOn, setIsVideoOn] = useState(false);
     const [isCaptionsOn, setIsCaptionsOn] = useState(false);
@@ -183,7 +183,11 @@ export default function App() {
         const base = generateParticipants(participantCount);
         return [{ id: 'local', name: 'You', avatarUrl: base[0]?.avatarUrl || '', isSpeaking: false, isMuted: !isMicOn, caption: '', isLocal: true }, ...base];
     });
+    // gần các useRef khác
+    const speakingTimersRef = useRef<Record<string, number>>({});
     const [duration, setDuration] = useState("12:34");
+    const [remoteSpeaking, setRemoteSpeaking] = useState<Record<string, boolean>>({});
+    const [remoteVideoById, setRemoteVideoById] = useState<Record<string, MediaStream>>({});
 
     // Jitsi connection
     const { ready } = useJitsiLoader();
@@ -191,18 +195,39 @@ export default function App() {
     const localVideoRef = useRef<HTMLVideoElement>(null);
     const remoteContainerRef = useRef<HTMLDivElement>(null);
     const [remoteParticipants, setRemoteParticipants] = useState<any[]>([]);
+    const lastHeardRef = useRef<Record<string, number>>({});
 
     // Local media for self-preview
     const { videoStream, enableVideo, disableVideo, enableMic, disableMic, audioLevel } = useLocalMedia();
     const { isSharing, screenStream, toggleShare } = useScreenShare();
 
+    const debug = (tag: string) => {
+        const conf = conferenceRef?.current;
+        const locals = conf?.getLocalTracks?.() || [];
+        const localSummary = locals.map((t: any) => ({
+            id: t.getId?.(),
+            type: t.getType?.(),
+            muted: t.isMuted?.(),
+        }));
+
+        const remoteCount =
+            remoteContainerRef.current?.querySelectorAll('audio,video')?.length ?? 0;
+
+        console.log('[MEET]', tag, {
+            status,
+            isMicOn,
+            isVideoOn,
+            remoteMediaElements: remoteCount,
+            locals: localSummary,
+        });
+    };
     // Conference tracks management
     const {
         wireConferenceEvents,
         addLocalAV,
         disposeLocal,
-        toggleVideo: jitsiToggleVideo,
-        toggleAudio: jitsiToggleAudio,
+        setAudioMuted,
+        setVideoMuted,
         toggleScreenShare: jitsiToggleScreenShare,
     } = useConferenceTracks({
         attachLocal: (t) => {
@@ -214,37 +239,79 @@ export default function App() {
         },
         attachRemote: (t) => {
             try {
-                const el = document.createElement('video');
+                const type = t.getType?.(); // 'audio' | 'video'
+                const el = type === 'audio'
+                    ? document.createElement('audio')
+                    : document.createElement('video');
+
                 el.autoplay = true;
-                el.playsInline = true;
+                (el as any).playsInline = true;
+                // audio remote phải KHÔNG mute để nghe được
                 el.muted = false;
+
                 t.attach(el);
                 remoteContainerRef.current?.appendChild(el);
-
-                // Add to remote participants
-                const participantId = t.getParticipantId?.() || t.getParticipant?.()?.getId?.() || Math.random().toString(36).slice(2);
+                el.play?.().catch(() => {
+                    // có thể bị chặn lần đầu; khi có tương tác user (click), browser sẽ cho phép
+                    // không cần throw
+                });
+                const participantId =
+                    t.getParticipantId?.() ||
+                    t.getParticipant?.()?.getId?.() ||
+                    Math.random().toString(36).slice(2);
+                el.dataset.pid = participantId;       // ← thêm
+                el.dataset.kind = type;
+                if (type === 'video') {
+                    const stream =
+                        t.getOriginalStream?.() || t.stream || t.getTrack?.()?.stream;
+                    if (stream) {
+                        setRemoteVideoById(prev => ({ ...prev, [participantId]: stream }));
+                    }
+                }
                 setRemoteParticipants(prev => {
-                    const existing = prev.find(p => p.id === participantId);
-                    if (existing) return prev;
-                    return [...prev, {
-                        id: participantId,
-                        name: `User ${participantId.slice(-4)}`,
-                        avatarUrl: '',
-                        isSpeaking: false,
-                        isMuted: false,
-                        caption: '',
-                        videoElement: el
-                    }];
+                    const exists = prev.some(p => p.id === participantId);
+                    if (exists) return prev;
+                    return [
+                        ...prev,
+                        {
+                            id: participantId,
+                            name: `User ${participantId.slice(-4)}`,
+                            avatarUrl: '',
+                            isSpeaking: false,
+                            isMuted: false,
+                            caption: '',
+                            // lưu lại element để detach chuẩn (hữu ích cho video)
+                            mediaElement: el
+                        }
+                    ];
                 });
             } catch { }
         },
         detachRemote: (t) => {
             try { t.detach?.(); } catch { }
             try {
-                const participantId = t.getParticipantId?.() || t.getParticipant?.()?.getId?.() || Math.random().toString(36).slice(2);
+                const pid = t.getParticipantId?.() || t.getParticipant?.()?.getId?.();
+                const el = remoteContainerRef.current?.querySelector(`video[data-pid="${pid}"],audio[data-pid="${pid}"]`);
+                el?.parentElement?.removeChild(el);   // ← gỡ khỏi DOM để không còn “khung hình cũ”
+            } catch { }
+            try {
+                const participantId =
+                    t.getParticipantId?.() ||
+                    t.getParticipant?.()?.getId?.() ||
+                    Math.random().toString(36).slice(2);
+
                 setRemoteParticipants(prev => prev.filter(p => p.id !== participantId));
+                setRemoteVideoById(prev => {
+                    const next = { ...prev };
+                    delete next[participantId];
+                    return next;
+                });
+                setRemoteSpeaking(prev => {
+                    const cp = { ...prev }; delete cp[participantId]; return cp;
+                });
             } catch { }
         },
+
         attachShare: (t) => {
             // Handle remote screen share
             console.log('Remote screen share attached');
@@ -256,8 +323,59 @@ export default function App() {
             // Update local participant speaking state
             setParticipants(prev => prev.map(p => p.id === 'local' ? { ...p, isSpeaking: speaking } : p));
         },
+        onRemoteAudioLevel: (pid, level, speaking) => {
+            window.clearTimeout(speakingTimersRef.current[pid]);
+            if (speaking) {
+                lastHeardRef.current[pid] = Date.now();
+                setRemoteParticipants(prev =>
+                    prev.map(p => (p.id === pid ? { ...p, isSpeaking: true } : p))
+                );
+                setRemoteSpeaking(prev => ({ ...prev, [pid]: true }));
+            }
+
+            speakingTimersRef.current[pid] = window.setTimeout(() => {
+                const since = Date.now() - (lastHeardRef.current[pid] || 0);
+                if (since > 800) { // quá 0.8s không nghe gì thì tắt
+                    setRemoteParticipants(prev =>
+                        prev.map(p => (p.id === pid ? { ...p, isSpeaking: false } : p))
+                    );
+                    setRemoteSpeaking(prev => ({ ...prev, [pid]: false }));
+                }
+            }, 250);
+        },
+        onRemoteVideoMuteChanged: (pid, muted) => {
+            setRemoteParticipants(prev =>
+                prev.map(p =>
+                    p.id === pid
+                        ? { ...p, hasVideo: !muted, videoStream: muted ? null : p.videoStream }
+                        : p
+                )
+            );
+            if (muted) {
+                const el = remoteContainerRef.current?.querySelector(`video[data-pid="${pid}"]`);
+                el?.parentElement?.removeChild(el);
+            }
+        },
         setStatus,
     });
+    useEffect(() => {
+        const resume = () => {
+            const container = remoteContainerRef.current;
+            if (!container) return;
+            container.querySelectorAll('audio, video').forEach((m: HTMLMediaElement) => {
+                m.play?.().catch(() => { });
+            });
+            window.removeEventListener('click', resume, { capture: true } as any);
+            window.removeEventListener('touchstart', resume, { capture: true } as any);
+        };
+        window.addEventListener('click', resume, { capture: true } as any);
+        window.addEventListener('touchstart', resume, { capture: true } as any);
+        return () => {
+            window.removeEventListener('click', resume, { capture: true } as any);
+            window.removeEventListener('touchstart', resume, { capture: true } as any);
+        };
+    }, []);
+
 
     // Update participants when count changes
     useEffect(() => {
@@ -270,31 +388,20 @@ export default function App() {
 
     // Simulate speaking participants rotation
     useEffect(() => {
-        const interval = setInterval(() => {
-            setParticipants((prev) => {
-                const next = [...prev];
-                // Clear all speaking
-                next.forEach((p) => {
-                    p.isSpeaking = false;
-                    p.caption = "";
+        // chỉ giả lập khi chưa join thật (waiting/idle)
+        if (status !== 'joined room') {
+            const interval = setInterval(() => {
+                setParticipants(prev => {
+                    const next = prev.map(p => ({ ...p, isSpeaking: false, caption: '' }));
+                    const i = Math.floor(Math.random() * next.length);
+                    next[i].isSpeaking = isCaptionsOn; // hoặc true nếu muốn
+                    if (isCaptionsOn) next[i].caption = captions[Math.floor(Math.random() * captions.length)];
+                    return next;
                 });
-                // Pick random speaker
-                const speakerIndex = Math.floor(
-                    Math.random() * next.length,
-                );
-                next[speakerIndex].isSpeaking = false;
-                if (isCaptionsOn) {
-                    next[speakerIndex].caption =
-                        captions[
-                        Math.floor(Math.random() * captions.length)
-                        ];
-                }
-                return next;
-            });
-        }, 4000);
-
-        return () => clearInterval(interval);
-    }, [isCaptionsOn]);
+            }, 4000);
+            return () => clearInterval(interval);
+        }
+    }, [isCaptionsOn, status]);
 
     // Update captions when caption toggle changes
     useEffect(() => {
@@ -326,6 +433,23 @@ export default function App() {
             setUnreadMessages(0);
         }
     }, [isChatOpen]);
+    // 🧹 Sweep every 1s to ensure silent users are cleared even if tab backgrounded
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const now = Date.now();
+            setRemoteParticipants(prev =>
+                prev.map(p => {
+                    // nếu đã lâu không cập nhật speakingTimersRef => tắt nói
+                    const lastTimeout = speakingTimersRef.current[p.id];
+                    if (!lastTimeout) return p;
+                    // Nếu timeout đã xong rồi mà vẫn đang hiển thị => tắt
+                    if (!remoteSpeaking[p.id]) return { ...p, isSpeaking: false };
+                    return p;
+                })
+            );
+        }, 1000);
+        return () => clearInterval(interval);
+    }, [remoteSpeaking]);
 
     const handleToggleScreenShare = async () => {
         const next = !isScreenSharing;
@@ -333,8 +457,10 @@ export default function App() {
         if (next) setViewMode("screenShare"); else setViewMode("grid");
 
         // Sync with Jitsi
-        if (conferenceRef.current) {
-            await jitsiToggleScreenShare(conferenceRef.current);
+        const conf = conferenceRef?.current;
+        if (conf) {
+            await jitsiToggleScreenShare(conf);
+            debug("Share")
         } else {
             await toggleShare();
         }
@@ -344,16 +470,16 @@ export default function App() {
         setViewMode(mode);
         // Adjust participant count based on mode
         if (mode === "compactGrid" || mode === "focusView") {
-            setParticipantCount(50);
+            // setParticipantCount(50);
             setIsScreenSharing(true);
         } else if (mode === "screenShare") {
-            setParticipantCount(12);
+            // setParticipantCount(12);
             setIsScreenSharing(true);
         } else if (mode === "grid") {
-            setParticipantCount(50); // Show paginated grid with 50 participants
+            // setParticipantCount(50); // Show paginated grid with 50 participants
             setIsScreenSharing(false);
         } else {
-            setParticipantCount(6);
+            // setParticipantCount(6);
             setIsScreenSharing(false);
         }
     };
@@ -398,18 +524,21 @@ export default function App() {
                         room_id: roomId || undefined,
                     };
 
-                console.log('Meeting page - token payload:', payload);
-
                 const tokenData = await getMeetingToken(payload);
                 const joinRoom = tokenData.room_id;
 
                 const conf = await connectAndJoin(joinRoom, tokenData.token, tokenData.websocket_url);
                 wireConferenceEvents(conf);
 
+                try {
+                    conf.avModeration?.setEnabled?.('audio', false);
+                    conf.avModeration?.setEnabled?.('video', false);
+                } catch { }
                 await addLocalAV(conf, { camOn: isVideoOn, micOn: isMicOn });
-                if (!isVideoOn) await jitsiToggleVideo(conf, { mute: true });
-                if (!isMicOn) await jitsiToggleAudio(conf, { mute: true });
+                await setAudioMuted(conf, !isMicOn);
+                await setVideoMuted(conf, !isVideoOn)
                 setViewMode("grid");
+                debug("joined+tracks");
             } catch (err) {
                 setStatus(`Error: ${err}`);
                 console.error('Failed to join room:', err);
@@ -418,46 +547,55 @@ export default function App() {
 
         return () => {
             (async () => {
-                await disposeLocal(conferenceRef.current);
-                await leave(conferenceRef.current);
+                await disposeLocal(conferenceRef?.current);
+                await leave(conferenceRef?.current);
             })();
         };
     }, [ready]);
 
     // Sync local preview with camera state
     useEffect(() => {
-        (async () => {
-            try {
-                if (isVideoOn) {
-                    await enableVideo();
-                } else {
-                    disableVideo();
-                }
-                // Also sync with Jitsi
-                if (conferenceRef.current) {
-                    await jitsiToggleVideo(conferenceRef.current);
-                }
-            } catch { }
-        })();
-    }, [isVideoOn, enableVideo, disableVideo, jitsiToggleVideo]);
+        const run = async () => {
+            console.log('[MEET] toggle-mic: state=', isMicOn, 'hasConf=', !!conferenceRef, 'hasCurrent=', !!conferenceRef?.current);
 
-    // Sync mic capture with mic toggle
+            if (!conferenceRef?.current) return;
+            debug('toggle-mic:start');
+            try {
+                if (isMicOn) await enableMic();
+                else await disableMic();
+
+                await setAudioMuted(conferenceRef.current, !isMicOn);
+            } catch (e) {
+                console.error('[MEET] toggle-mic error', e);
+            } finally {
+                debug('toggle-mic:end');
+            }
+        };
+        run();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isMicOn]);
+
     useEffect(() => {
-        (async () => {
-            try {
-                if (isMicOn) {
-                    await enableMic();
-                } else {
-                    disableMic();
-                }
-                // Also sync with Jitsi
-                if (conferenceRef.current) {
-                    await jitsiToggleAudio(conferenceRef.current);
-                }
-            } catch { }
-        })();
-    }, [isMicOn, enableMic, disableMic, jitsiToggleAudio]);
+        const run = async () => {
+            console.log('[MEET] toggle-cam: state=', isVideoOn, 'hasConf=', !!conferenceRef, 'hasCurrent=', !!conferenceRef?.current);
 
+            if (!conferenceRef?.current) return;
+            debug('toggle-cam:start');
+            try {
+                if (isVideoOn) await enableVideo();
+                else await disableVideo();
+
+                // ✅ đúng hàm cho camera
+                await setVideoMuted(conferenceRef.current, !isVideoOn);
+            } catch (e) {
+                console.error('[MEET] toggle-cam error', e);
+            } finally {
+                debug('toggle-cam:end');
+            }
+        };
+        run();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isVideoOn]);
     // Mark local speaking when audio level is high
     useEffect(() => {
         setParticipants(prev => prev.map(p => p.id === 'local' ? { ...p, isSpeaking: audioLevel > 8 } : p));
@@ -492,10 +630,15 @@ export default function App() {
                             className="w-full h-full"
                         >
                             <MeetingGrid
-                                participants={[...participants, ...remoteParticipants]}
+                                participants={[...participants, ...remoteParticipants.map(r => ({
+                                    ...r,
+                                    // ưu tiên speaking từ remoteSpeaking map
+                                    isSpeaking: remoteSpeaking[r.id] ?? r.isSpeaking,
+                                }))]}
                                 showCaptions={isCaptionsOn}
                                 onToggleCaptions={() => setIsCaptionsOn(!isCaptionsOn)}
                                 localVideoStream={videoStream}
+                                remoteVideoById={remoteVideoById}
                             />
                         </motion.div>
                     )}
@@ -511,7 +654,11 @@ export default function App() {
                                 className="w-full h-full"
                             >
                                 <ScreenShareView
-                                    participants={[...participants, ...remoteParticipants]}
+                                    participants={[...participants, ...remoteParticipants.map(r => ({
+                                        ...r,
+                                        // ưu tiên speaking từ remoteSpeaking map
+                                        isSpeaking: remoteSpeaking[r.id] ?? r.isSpeaking,
+                                    }))]}
                                     sharerName="You"
                                     meetingTitle="Product Strategy Q3"
                                     duration={duration}
@@ -525,6 +672,7 @@ export default function App() {
                                     localVideoStream={videoStream}
                                     localScreenStream={screenStream}
                                     localAudioLevel={audioLevel}
+                                    remoteVideoById={remoteVideoById}
                                 />
                             </motion.div>
                         )}
@@ -544,14 +692,20 @@ export default function App() {
                 {/* Controls toolbar - shown for all views except waiting and compact */}
                 {viewMode !== "waiting" && viewMode !== "compact" && (
                     <ControlsToolbar
-                        isMicOn={isMicOn}
+                        isMicOn={(isMicOn)}
                         isVideoOn={isVideoOn}
                         isCaptionsOn={isCaptionsOn}
                         isScreenSharing={isScreenSharing}
                         isChatOpen={isChatOpen}
                         unreadCount={unreadMessages}
-                        onToggleMic={() => setIsMicOn(!isMicOn)}
-                        onToggleVideo={() => setIsVideoOn(!isVideoOn)}
+                        onToggleMic={() => {
+                            setIsMicOn(v => !v);                 // ✅ functional update
+                            console.log('[MEET] click mic');     // log click, khỏi hiểu lầm do async setState
+                        }}
+                        onToggleVideo={() => {
+                            setIsVideoOn(v => !v);               // ✅ functional update
+                            console.log('[MEET] click cam');
+                        }}
                         onToggleCaptions={() =>
                             setIsCaptionsOn(!isCaptionsOn)
                         }
@@ -562,16 +716,16 @@ export default function App() {
                         }
                         onShowSettings={() => console.log("Show settings")}
                         onLeave={async () => {
-                            await disposeLocal(conferenceRef.current);
-                            await leave(conferenceRef.current);
+                            await disposeLocal(conferenceRef?.current);
+                            await leave(conferenceRef?.current);
                             router.replace('/auth-join');
                         }}
                     />
                 )}
 
                 {/* Hidden video elements for Jitsi tracks */}
-                <video ref={localVideoRef} autoPlay playsInline muted style={{ display: 'none' }} />
-                <div ref={remoteContainerRef} style={{ display: 'none' }} />
+                <video ref={localVideoRef} autoPlay playsInline muted className="hidden" />
+                <div ref={remoteContainerRef} className="hidden" />
             </div>
 
             {/* Chat Panel */}

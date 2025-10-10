@@ -30,14 +30,18 @@ export function ParticipantAvatar({
     const el = videoRef.current;
     if (!el) return;
     if (videoStream) {
+      el.srcObject = videoStream;
       try {
-        el.srcObject = videoStream;
         void el.play();
-      } catch { }
-    } else {
-      try { el.srcObject = null; } catch { }
-    }
-  }, [videoStream]);
+      } catch (e: any) {
+        if (e?.name !== 'AbortError') {
+          console.warn('media play failed', e);
+        }}
+      } 
+    else {
+        try { el.srcObject = null; } catch { }
+      }
+    }, [videoStream]);
 
   const sizeClasses = {
     tiny: 'w-12 h-12',
@@ -102,7 +106,7 @@ export function ParticipantAvatar({
           {videoStream ? (
             <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
           ) : (
-            <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
+            <img src={avatarUrl ? avatarUrl : "https://images.unsplash.com/photo-1719257751404-1dea075324bd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBtYW4lMjBoZWFkc2hvdHxlbnwxfHx8fDE3NTk5MDA3Nzl8MA&ixlib=rb-4.1.0&q=80&w=1080"} alt={name} className="w-full h-full object-cover" />
           )}
         </motion.div>
       </div>
