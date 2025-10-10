@@ -103,6 +103,109 @@ importers:
         specifier: ^3.4.10
         version: 3.4.17(ts-node@10.9.2(@swc/core@1.13.5)(@types/node@24.5.2)(typescript@5.9.2))
 
+  apps/pm-web:
+    dependencies:
+      '@atlaskit/pragmatic-drag-and-drop':
+        specifier: 1.7.7
+        version: 1.7.7
+      '@atlaskit/pragmatic-drag-and-drop-auto-scroll':
+        specifier: ^1.3.0
+        version: 1.4.0
+      '@atlaskit/pragmatic-drag-and-drop-hitbox':
+        specifier: 1.1.0
+        version: 1.1.0
+      '@bprogress/next':
+        specifier: ^3.2.12
+        version: 3.2.12(next@14.2.30(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@headlessui/react':
+        specifier: ^1.7.3
+        version: 1.7.19(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@uts/constants':
+        specifier: workspace:*
+        version: link:../../packages/constants
+      '@uts/design-system/editor':
+        specifier: workspace:*
+        version: link:../../packages/design-system/editor
+      '@uts/design-system/ui':
+        specifier: workspace:*
+        version: link:../../packages/design-system/ui
+      '@uts/fe-utils':
+        specifier: workspace:*
+        version: link:../../packages/fe-utils
+      '@uts/hooks':
+        specifier: workspace:*
+        version: link:../../packages/hooks
+      '@uts/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+      axios:
+        specifier: 1.11.0
+        version: 1.11.0
+      clsx:
+        specifier: ^2.0.0
+        version: 2.1.1
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
+      lucide-react:
+        specifier: ^0.469.0
+        version: 0.469.0(react@18.3.1)
+      mobx:
+        specifier: ^6.10.0
+        version: 6.13.7
+      mobx-react:
+        specifier: ^9.1.1
+        version: 9.2.0(mobx@6.13.7)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      mobx-utils:
+        specifier: ^6.0.8
+        version: 6.1.1(mobx@6.13.7)
+      next:
+        specifier: 14.2.30
+        version: 14.2.30(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      next-themes:
+        specifier: ^0.2.1
+        version: 0.2.1(next@14.2.30(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react:
+        specifier: ^18.3.1
+        version: 18.3.1
+      react-dom:
+        specifier: ^18.3.1
+        version: 18.3.1(react@18.3.1)
+      react-hook-form:
+        specifier: 7.51.5
+        version: 7.51.5(react@18.3.1)
+      swr:
+        specifier: ^2.1.3
+        version: 2.3.6(react@18.3.1)
+    devDependencies:
+      '@types/lodash':
+        specifier: ^4.17.6
+        version: 4.17.20
+      '@types/node':
+        specifier: 18.16.1
+        version: 18.16.1
+      '@types/react':
+        specifier: ^18.3.11
+        version: 18.3.11
+      '@types/react-dom':
+        specifier: ^18.2.18
+        version: 18.3.1
+      '@uts/design-system/tailwind-config':
+        specifier: workspace:*
+        version: link:../../packages/design-system/tailwind-config
+      '@uts/eslint-config':
+        specifier: workspace:*
+        version: link:../../packages/eslint-config
+      eslint:
+        specifier: 8.57.1
+        version: 8.57.1
+      prettier:
+        specifier: ^3.2.5
+        version: 3.6.2
+      typescript:
+        specifier: 5.8.3
+        version: 5.8.3
+
   packages/constants:
     dependencies:
       '@uts/types':
@@ -611,109 +714,6 @@ importers:
         version: 5.8.3
 
   packages/typescript-config: {}
-
-  services/pm/ui:
-    dependencies:
-      '@atlaskit/pragmatic-drag-and-drop':
-        specifier: 1.7.7
-        version: 1.7.7
-      '@atlaskit/pragmatic-drag-and-drop-auto-scroll':
-        specifier: ^1.3.0
-        version: 1.4.0
-      '@atlaskit/pragmatic-drag-and-drop-hitbox':
-        specifier: 1.1.0
-        version: 1.1.0
-      '@bprogress/next':
-        specifier: ^3.2.12
-        version: 3.2.12(next@14.2.30(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@headlessui/react':
-        specifier: ^1.7.3
-        version: 1.7.19(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@uts/constants':
-        specifier: workspace:*
-        version: link:../../../packages/constants
-      '@uts/design-system/editor':
-        specifier: workspace:*
-        version: link:../../../packages/design-system/editor
-      '@uts/design-system/ui':
-        specifier: workspace:*
-        version: link:../../../packages/design-system/ui
-      '@uts/fe-utils':
-        specifier: workspace:*
-        version: link:../../../packages/fe-utils
-      '@uts/hooks':
-        specifier: workspace:*
-        version: link:../../../packages/hooks
-      '@uts/types':
-        specifier: workspace:*
-        version: link:../../../packages/types
-      axios:
-        specifier: 1.11.0
-        version: 1.11.0
-      clsx:
-        specifier: ^2.0.0
-        version: 2.1.1
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.21
-      lucide-react:
-        specifier: ^0.469.0
-        version: 0.469.0(react@18.3.1)
-      mobx:
-        specifier: ^6.10.0
-        version: 6.15.0
-      mobx-react:
-        specifier: ^9.1.1
-        version: 9.2.1(mobx@6.15.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      mobx-utils:
-        specifier: ^6.0.8
-        version: 6.1.1(mobx@6.15.0)
-      next:
-        specifier: 14.2.30
-        version: 14.2.30(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      next-themes:
-        specifier: ^0.2.1
-        version: 0.2.1(next@14.2.30(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      react:
-        specifier: ^18.3.1
-        version: 18.3.1
-      react-dom:
-        specifier: ^18.3.1
-        version: 18.3.1(react@18.3.1)
-      react-hook-form:
-        specifier: 7.51.5
-        version: 7.51.5(react@18.3.1)
-      swr:
-        specifier: ^2.1.3
-        version: 2.3.6(react@18.3.1)
-    devDependencies:
-      '@types/lodash':
-        specifier: ^4.17.6
-        version: 4.17.20
-      '@types/node':
-        specifier: 18.16.1
-        version: 18.16.1
-      '@types/react':
-        specifier: ^18.3.11
-        version: 18.3.11
-      '@types/react-dom':
-        specifier: ^18.2.18
-        version: 18.3.1
-      '@uts/design-system/tailwind-config':
-        specifier: workspace:*
-        version: link:../../../packages/design-system/tailwind-config
-      '@uts/eslint-config':
-        specifier: workspace:*
-        version: link:../../../packages/eslint-config
-      eslint:
-        specifier: 8.57.1
-        version: 8.57.1
-      prettier:
-        specifier: ^3.2.5
-        version: 3.6.2
-      typescript:
-        specifier: 5.8.3
-        version: 5.8.3
 
 packages:
 
@@ -3007,9 +3007,6 @@ packages:
     resolution: {integrity: sha512-8WB3Jcas3swSvjIeA2yvCJ+Miyz5l1ZmB6HFb9R1317dt9LCQoswg/BGrmAmkWVEszSrrg4RwmO46qIm2OEnSA==}
     engines: {node: '>=16'}
 
-  caniuse-lite@1.0.30001741:
-    resolution: {integrity: sha512-QGUGitqsc8ARjLdgAfxETDhRbJ0REsP6O3I96TAth/mVjh2cYzN2u+3AzPP3aVSm2FehEItaJw1xd+IGBXWeSw==}
-
   caniuse-lite@1.0.30001743:
     resolution: {integrity: sha512-e6Ojr7RV14Un7dz6ASD0aZDmQPT/A+eZU+nuTNfjqmRrmkmQlnTNWH0SKmqagx9PeW87UVqapSurtAXifmtdmw==}
 
@@ -4686,8 +4683,8 @@ packages:
     resolution: {integrity: sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw==}
     engines: {node: '>=16 || 14 >=14.17'}
 
-  mobx-react-lite@4.1.1:
-    resolution: {integrity: sha512-iUxiMpsvNraCKXU+yPotsOncNNmyeS2B5DKL+TL6Tar/xm+wwNJAubJmtRSeAoYawdZqwv8Z/+5nPRHeQxTiXg==}
+  mobx-react-lite@4.1.0:
+    resolution: {integrity: sha512-QEP10dpHHBeQNv1pks3WnHRCem2Zp636lq54M2nKO2Sarr13pL4u6diQXf65yzXUn0mkk18SyIDCm9UOJYTi1w==}
     peerDependencies:
       mobx: ^6.9.0
       react: ^16.8.0 || ^17 || ^18 || ^19
@@ -4699,8 +4696,8 @@ packages:
       react-native:
         optional: true
 
-  mobx-react@9.2.1:
-    resolution: {integrity: sha512-WJNNm0FB2n0Z0u+jS1QHmmWyV8l2WiAj8V8I/96kbUEN2YbYCoKW+hbbqKKRUBqElu0llxM7nWKehvRIkhBVJw==}
+  mobx-react@9.2.0:
+    resolution: {integrity: sha512-dkGWCx+S0/1mfiuFfHRH8D9cplmwhxOV5CkXMp38u6rQGG2Pv3FWYztS0M7ncR6TyPRQKaTG/pnitInoYE9Vrw==}
     peerDependencies:
       mobx: ^6.9.0
       react: ^16.8.0 || ^17 || ^18 || ^19
@@ -4717,8 +4714,8 @@ packages:
     peerDependencies:
       mobx: ^6.0.0
 
-  mobx@6.15.0:
-    resolution: {integrity: sha512-UczzB+0nnwGotYSgllfARAqWCJ5e/skuV2K/l+Zyck/H6pJIhLXuBnz+6vn2i211o7DtbE78HQtsYEKICHGI+g==}
+  mobx@6.13.7:
+    resolution: {integrity: sha512-aChaVU/DO5aRPmk1GX8L+whocagUUpBQqoPtJk+cm7UOXUk87J4PeWCh6nNmTTIfEhiR9DI/+FnA8dln/hTK7g==}
 
   mrmime@2.0.1:
     resolution: {integrity: sha512-Y3wQdFg2Va6etvQ5I82yUhGdsKrcYox6p7FfL1LbK2J4V01F9TGlepTIhnK24t7koZibmg82KGglhA1XK5IsLQ==}
@@ -8799,8 +8796,6 @@ snapshots:
 
   camelcase@8.0.0: {}
 
-  caniuse-lite@1.0.30001741: {}
-
   caniuse-lite@1.0.30001743: {}
 
   capital-case@1.0.4:
@@ -10881,27 +10876,27 @@ snapshots:
 
   minipass@7.1.2: {}
 
-  mobx-react-lite@4.1.1(mobx@6.15.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  mobx-react-lite@4.1.0(mobx@6.13.7)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
-      mobx: 6.15.0
+      mobx: 6.13.7
       react: 18.3.1
       use-sync-external-store: 1.6.0(react@18.3.1)
     optionalDependencies:
       react-dom: 18.3.1(react@18.3.1)
 
-  mobx-react@9.2.1(mobx@6.15.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  mobx-react@9.2.0(mobx@6.13.7)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
-      mobx: 6.15.0
-      mobx-react-lite: 4.1.1(mobx@6.15.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      mobx: 6.13.7
+      mobx-react-lite: 4.1.0(mobx@6.13.7)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react: 18.3.1
     optionalDependencies:
       react-dom: 18.3.1(react@18.3.1)
 
-  mobx-utils@6.1.1(mobx@6.15.0):
+  mobx-utils@6.1.1(mobx@6.13.7):
     dependencies:
-      mobx: 6.15.0
+      mobx: 6.13.7
 
-  mobx@6.15.0: {}
+  mobx@6.13.7: {}
 
   mrmime@2.0.1: {}
 
@@ -10934,7 +10929,7 @@ snapshots:
       '@next/env': 14.2.30
       '@swc/helpers': 0.5.5
       busboy: 1.6.0
-      caniuse-lite: 1.0.30001741
+      caniuse-lite: 1.0.30001743
       graceful-fs: 4.2.11
       postcss: 8.4.31
       react: 18.3.1
