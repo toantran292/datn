@@ -5,6 +5,7 @@ const EDITOR_NODE_MODULES = path.resolve(__dirname, "../../packages/design-syste
 
 const nextConfig = {
   transpilePackages: [
+    "@uts/design-system/ui",
     "@uts/design-system/editor",
     "@tiptap/core",
     "@tiptap/react",
