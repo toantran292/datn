@@ -107,10 +107,10 @@ export const CreateProjectForm: FC<TCreateProjectFormProps> = observer((props) =
   return (
     <FormProvider {...methods}>
       {/* <ProjectCreateHeader handleClose={handleClose} isMobile={isMobile} /> */}
-      <h1 className="px-5 py-9 text-custom-primary-200">Create Project</h1>
+      <h1 className="px-5 pt-4 text-custom-primary-200">Create Project</h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="px-3">
-        <div className="mt-9 space-y-6 pb-5">
+        <div className="mt-6 space-y-6 pb-5">
           <ProjectCommonAttributes
             setValue={setValue}
             isMobile={isMobile}
