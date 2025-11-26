@@ -35,15 +35,15 @@ export class SprintService extends APIService {
   }
 
   async updateSprint(sprintId: string, payload: IUpdateSprintPayload): Promise<ISprint> {
-    const body = {
-      projectId: payload.projectId,
-      name: payload.name,
-      goal: payload.goal ?? null,
-      startDate: payload.startDate ?? null,
-      endDate: payload.endDate ?? null,
-    };
+    const body: Record<string, any> = {};
 
-    return this.put(`/api/sprints/${sprintId}`, body)
+    if (payload.name !== undefined) body.name = payload.name;
+    if (payload.status !== undefined) body.status = payload.status;
+    if (payload.goal !== undefined) body.goal = payload.goal;
+    if (payload.startDate !== undefined) body.startDate = payload.startDate;
+    if (payload.endDate !== undefined) body.endDate = payload.endDate;
+
+    return this.patch(`/api/sprints/${sprintId}`, body)
       .then((response) => this.normalizeSprint(response?.data))
       .catch((error) => {
         throw error?.response?.data ?? error;
@@ -57,6 +57,7 @@ export class SprintService extends APIService {
       id: String(sprint.id ?? ""),
       projectId: String(sprint.projectId ?? ""),
       name: String(sprint.name ?? ""),
+      status: (sprint.status as "FUTURE" | "ACTIVE" | "CLOSED") ?? "FUTURE",
       goal: (sprint.goal as string | null | undefined) ?? null,
       startDate: (sprint.startDate as string | null | undefined) ?? null,
       endDate: (sprint.endDate as string | null | undefined) ?? null,

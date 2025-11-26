@@ -81,6 +81,7 @@ export class SprintService {
       where: { id },
       data: {
         name: updateDto.name,
+        status: updateDto.status,
         goal: updateDto.goal,
         startDate: updateDto.startDate ? new Date(updateDto.startDate) : undefined,
         endDate: updateDto.endDate ? new Date(updateDto.endDate) : undefined,

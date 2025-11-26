@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, HttpCode, HttpStatus, ParseUUIDPipe } from "@nestjs/common";
+import { Controller, Get, Post, Patch, Delete, Body, Param, HttpCode, HttpStatus, ParseUUIDPipe } from "@nestjs/common";
 import { Sprint } from "@prisma/client";
 import { SprintService } from "./sprint.service";
 import { CreateSprintDto } from "./dto/create-sprint.dto";
@@ -26,7 +26,7 @@ export class SprintController {
     return this.toResponseDto(sprint);
   }
 
-  @Put(":id")
+  @Patch(":id")
   async update(@Param("id", ParseUUIDPipe) id: string, @Body() updateDto: UpdateSprintDto): Promise<SprintResponseDto> {
     const sprint = await this.sprintService.update(id, updateDto);
     return this.toResponseDto(sprint);
