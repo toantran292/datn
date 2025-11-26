@@ -17,7 +17,7 @@ enum SprintStatus {
 }
 
 model Project {
-  id              String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id              String   @id @default(uuid()) @db.Uuid
   orgId           String   @map("org_id") @db.VarChar(255)
   identifier      String   @unique @db.VarChar(50)
   name            String   @db.VarChar(255)
@@ -34,7 +34,7 @@ model Project {
 }
 
 model Sprint {
-  id        String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id        String    @id @default(uuid()) @db.Uuid
   projectId String    @map("project_id") @db.Uuid
   name      String    @db.VarChar(255)
   status    SprintStatus @default(FUTURE)
@@ -52,7 +52,7 @@ model Sprint {
 }
 
 model Issue {
-  id              String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id              String   @id @default(uuid()) @db.Uuid
   projectId       String   @map("project_id") @db.Uuid
   sprintId        String?  @map("sprint_id") @db.Uuid
   parentId        String?  @map("parent_id") @db.Uuid

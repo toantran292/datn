@@ -3,7 +3,7 @@ packages:
   - packages/*/
   - packages/*/*
 
-  - services/*
+  # - services/*
   - apps/*
 
   - "!infra"
