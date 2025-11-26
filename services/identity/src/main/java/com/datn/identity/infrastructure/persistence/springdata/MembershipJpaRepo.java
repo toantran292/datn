@@ -13,6 +13,8 @@ public interface MembershipJpaRepo extends JpaRepository<MembershipEntity, Membe
     @Query(value = "select count(*) from memberships m where m.org_id = :orgId and 'OWNER' = any(m.roles)", nativeQuery = true)
     long countOwners(@Param("orgId") UUID orgId);
 
+    long countById_OrgId(UUID orgId);
+
     List<MembershipEntity> findById_OrgId(UUID orgId);
     List<MembershipEntity> findById_UserId(UUID userId);
 }

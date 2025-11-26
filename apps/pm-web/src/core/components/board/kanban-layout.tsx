@@ -1,0 +1,55 @@
+"use client";
+
+import { useEffect } from "react";
+import { observer } from "mobx-react";
+import { useParams } from "next/navigation";
+
+import { setToast, TOAST_TYPE } from "@uts/design-system/ui";
+import { useIssue } from "@/core/hooks/store/use-issue";
+import { useSprint } from "@/core/hooks/store/use-sprint";
+import { useProject } from "@/core/hooks/store/use-project";
+import { BoardView } from "./board-view";
+
+export const KanbanLayout = observer(() => {
+  const params = useParams<{ workspaceSlug?: string | string[]; projectId?: string | string[] }>();
+  const projectIdParam = params?.projectId;
+
+  const projectId = Array.isArray(projectIdParam) ? (projectIdParam[0] ?? "") : (projectIdParam ?? "");
+
+  const issueStore = useIssue();
+  const sprintStore = useSprint();
+  const projectStore = useProject();
+
+  useEffect(() => {
+    if (!projectId) return;
+
+    issueStore
+      .fetchIssuesByProject(projectId)
+      .catch(() => setToast({ type: TOAST_TYPE.ERROR, title: "Lỗi", message: "Không thể tải danh sách công việc" }));
+    sprintStore
+      .fetchSprintsByProject(projectId)
+      .catch(() => setToast({ type: TOAST_TYPE.ERROR, title: "Lỗi", message: "Không thể tải danh sách sprint" }));
+  }, [issueStore, sprintStore, projectId]);
+
+  // Removed useMemo to allow MobX observer to properly track changes
+  const sprints = sprintStore.getSprintsForProject(projectId);
+  const activeSprints = sprints.filter((sprint) => sprint.status === "ACTIVE");
+
+  // Removed useMemo to allow MobX observer to properly track changes
+  const activeSprintIds = new Set(activeSprints.map((sprint) => sprint.id));
+  const issues = issueStore
+    .getIssuesForProject(projectId)
+    .filter((issue) => issue.sprintId && activeSprintIds.has(issue.sprintId));
+
+  const project = projectId ? projectStore.getPartialProjectById(projectId) : undefined;
+
+  return (
+    <BoardView
+      projectId={projectId}
+      issues={issues}
+      activeSprints={activeSprints}
+      issueStore={issueStore}
+      projectIdentifier={project?.identifier ?? null}
+    />
+  );
+});
