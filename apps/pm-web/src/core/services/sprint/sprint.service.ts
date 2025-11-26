@@ -1,12 +1,10 @@
-import { API_BASE_URL } from "@uts/constants";
-
 import { ICreateSprintPayload, IUpdateSprintPayload, ISprint } from "@/core/types/sprint";
 
 import { APIService } from "../api.service";
 
 export class SprintService extends APIService {
   constructor() {
-    super(API_BASE_URL);
+    super();
   }
 
   async getSprintsByProject(projectId: string): Promise<ISprint[]> {

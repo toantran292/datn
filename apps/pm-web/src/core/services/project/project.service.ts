@@ -1,4 +1,3 @@
-import { API_BASE_URL } from "@uts/constants";
 import { TPartialProject, TProject } from "@uts/types";
 import { APIService } from "@/core/services/api.service";
 
@@ -12,7 +11,7 @@ type TProjectLiteResponse = {
 
 export class ProjectService extends APIService {
   constructor() {
-    super(API_BASE_URL);
+    super();
   }
 
   async getProjectsLite(): Promise<TPartialProject[]> {
