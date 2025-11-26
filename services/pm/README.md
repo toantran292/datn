@@ -1,98 +1,166 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# PM Service (NestJS)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Project Management backend service built with NestJS and PostgreSQL.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Prerequisites
 
-## Description
+- Node.js 20.x
+- Docker & Docker Compose
+- pnpm
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Getting Started
 
-## Project setup
+### 1. Install Dependencies
 
 ```bash
-$ pnpm install
+pnpm install
 ```
 
-## Compile and run the project
+### 2. Setup Environment
+
+Copy the example environment file:
 
 ```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+cp .env.example .env
 ```
 
-## Run tests
+### 3. Start Database
 
 ```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+docker-compose up -d
 ```
 
-## Deployment
+This will start PostgreSQL on port 5433 with:
+- Database: `pm_db`
+- User: `pm_user`
+- Password: `pm_pass`
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### 4. Run Migrations
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Migrations are located in `database/migrations/`. To run them:
 
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+# Connect to the database
+docker exec -i pm-nestjs-postgres psql -U pm_user -d pm_db < database/migrations/V1__init_pm_schema.sql
+docker exec -i pm-nestjs-postgres psql -U pm_user -d pm_db < database/migrations/V2__alter_project_org_id_to_text.sql
+docker exec -i pm-nestjs-postgres psql -U pm_user -d pm_db < database/migrations/V3__change_issue_sort_order_to_numeric.sql
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Or use the migration script:
 
-## Resources
+```bash
+pnpm run migrate
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+### 5. Start Development Server
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+pnpm run start:dev
+```
 
-## Support
+The API will be available at `http://localhost:3000`
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## Available Scripts
 
-## Stay in touch
+- `pnpm run start` - Start production server
+- `pnpm run start:dev` - Start development server with watch mode
+- `pnpm run start:debug` - Start debug server
+- `pnpm run build` - Build for production
+- `pnpm run lint` - Lint and fix code
+- `pnpm run format` - Format code with Prettier
+- `pnpm run test` - Run unit tests
+- `pnpm run test:e2e` - Run e2e tests
+- `pnpm run test:cov` - Run tests with coverage
+- `pnpm run migrate` - Run database migrations
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Database Schema
+
+The service uses PostgreSQL with the following main entities:
+
+- **Project** - Project management entity
+- **Sprint** - Sprint/iteration entity
+- **Issue** - Task/issue tracking entity
+
+## API Documentation
+
+API documentation is available at:
+- Development: `http://localhost:3000/api-docs` (when Swagger is configured)
+
+## Docker Commands
+
+```bash
+# Start database
+docker-compose up -d
+
+# Stop database
+docker-compose down
+
+# View logs
+docker-compose logs -f
+
+# Reset database (⚠️ destroys all data)
+docker-compose down -v
+docker-compose up -d
+```
+
+## Migration from Java/Spring Boot
+
+This service is a migration from the Java/Spring Boot version (`services/pm-java`).
+
+### Port Differences
+
+- **Java version**: `http://localhost:8080`
+- **NestJS version**: `http://localhost:3000`
+- **Java DB**: port `5432`
+- **NestJS DB**: port `5433` (to run in parallel during migration)
+
+### Database Compatibility
+
+Both services use the same PostgreSQL schema. Migrations are copied from the Java version.
+
+## Project Structure
+
+```
+services/pm/
+├── src/
+│   ├── modules/          # Feature modules
+│   ├── common/           # Shared utilities
+│   ├── config/           # Configuration
+│   └── main.ts          # Application entry point
+├── database/
+│   └── migrations/       # SQL migrations
+├── docker/
+│   └── postgres/         # Database init scripts
+├── test/                 # Tests
+├── docker-compose.yml    # Database setup
+├── .env                  # Environment variables (not committed)
+└── .env.example         # Environment template
+```
+
+## Troubleshooting
+
+### Port already in use
+
+If port 5433 is already in use, update `docker-compose.yml` and `.env`:
+
+```yaml
+# docker-compose.yml
+ports:
+  - "5434:5432"  # Change external port
+```
+
+```bash
+# .env
+DATABASE_PORT=5434
+```
+
+### TypeScript errors
+
+Restart TypeScript server in VS Code:
+1. `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows)
+2. Type: `TypeScript: Restart TS Server`
+3. Press Enter
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+UNLICENSED
