@@ -62,7 +62,7 @@ export class SprintService {
     return this.prisma.sprint.findMany({
       where: { projectId },
       orderBy: {
-        createdAt: "desc",
+        createdAt: "asc",
       },
     });
   }
