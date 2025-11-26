@@ -19,6 +19,7 @@ function EnterPageContent() {
 
   const [progress, setProgress] = useState(0);
   const [currentStage, setCurrentStage] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // If no org_id, redirect back to workspaces
@@ -27,33 +28,69 @@ function EnterPageContent() {
       return;
     }
 
-    // Start progress animation
-    const progressInterval = setInterval(() => {
-      setCurrentStage(prev => {
-        const nextStage = prev + 1;
-        if (nextStage < stages.length) {
-          setProgress(stages[nextStage].percent);
-          return nextStage;
-        } else {
-          clearInterval(progressInterval);
-          // Complete the loading and redirect
-          setTimeout(() => {
-            const pmUrl = process.env.NEXT_PUBLIC_PM_URL;
-            if (pmUrl) {
-              window.location.replace(`${pmUrl}?org_id=${orgId}`);
-            } else {
-              // Fallback if PM_URL is not set
-              console.error("NEXT_PUBLIC_PM_URL not configured");
-              router.replace(routes.workspaces());
-            }
-          }, 500);
-          return prev;
+    let progressInterval: NodeJS.Timeout;
+
+    // Call switch-org API first
+    const switchOrganization = async () => {
+      try {
+        const apiBase = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080';
+        const response = await fetch(`${apiBase}/auth/switch-org`, {
+          method: 'POST',
+          credentials: 'include', // Important: send cookies
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ org_id: orgId })
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Failed to switch organization: ${response.status}`);
         }
-      });
-    }, 750);
+
+        // Successfully switched org, new token is set in cookie
+        // Start progress animation
+        progressInterval = setInterval(() => {
+          setCurrentStage(prev => {
+            const nextStage = prev + 1;
+            if (nextStage < stages.length) {
+              setProgress(stages[nextStage].percent);
+              return nextStage;
+            } else {
+              clearInterval(progressInterval);
+              // Complete the loading and redirect
+              setTimeout(() => {
+                const pmUrl = process.env.NEXT_PUBLIC_PM_URL;
+                if (pmUrl) {
+                  window.location.replace(`${pmUrl}?org_id=${orgId}`);
+                } else {
+                  // Fallback if PM_URL is not set
+                  console.error("NEXT_PUBLIC_PM_URL not configured");
+                  router.replace(routes.workspaces());
+                }
+              }, 500);
+              return prev;
+            }
+          });
+        }, 750);
+      } catch (err) {
+        console.error('Failed to switch organization:', err);
+        setError(err instanceof Error ? err.message : 'Failed to switch organization');
+        // Redirect back to workspaces after error
+        setTimeout(() => {
+          router.replace(routes.workspaces());
+        }, 3000);
+      }
+    };
+
+    switchOrganization();
 
     // Cleanup interval on unmount
-    return () => clearInterval(progressInterval);
+    return () => {
+      if (progressInterval) {
+        clearInterval(progressInterval);
+      }
+    };
   }, [orgId, router]);
 
   const currentStageData = stages[currentStage] || stages[0];

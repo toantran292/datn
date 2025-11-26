@@ -30,16 +30,24 @@ public class MembershipRepositoryImpl implements MembershipRepository {
         return Membership.of(e.getId().userId, e.getId().orgId, roles, e.getMemberType());
     }
 
+    @Override public void save(Membership m){ repo.save(toEntity(m)); }
+    @Override public void delete(UUID userId, UUID orgId){ repo.deleteById(new MembershipId(userId, orgId)); }
+    @Override public long countOwners(UUID orgId){ return repo.countOwners(orgId); }
+    @Override public long countByOrg(UUID orgId){ return repo.countById_OrgId(orgId); }
+
     @Override public Optional<Membership> find(UUID userId, UUID orgId){
         return repo.findById(new MembershipId(userId, orgId)).map(MembershipRepositoryImpl::toDomain);
     }
-    @Override public void save(Membership m){ repo.save(toEntity(m)); }
-    @Override public void delete(UUID userId, UUID orgId){ repo.deleteById(new MembershipId(userId, orgId)); }
+
     @Override public List<Membership> listByOrg(UUID orgId, int page, int size){
-        return repo.findById_OrgId(orgId).stream().map(MembershipRepositoryImpl::toDomain).collect(Collectors.toList());
+        return repo.findById_OrgId(orgId).stream()
+                .skip((long) page * size)
+                .limit(size)
+                .map(MembershipRepositoryImpl::toDomain)
+                .collect(Collectors.toList());
     }
+
     @Override public List<Membership> listByUser(UUID userId){
         return repo.findById_UserId(userId).stream().map(MembershipRepositoryImpl::toDomain).collect(Collectors.toList());
     }
-    @Override public long countOwners(UUID orgId){ return repo.countOwners(orgId); }
 }

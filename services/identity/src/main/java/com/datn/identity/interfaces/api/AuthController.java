@@ -48,4 +48,14 @@ public class AuthController {
             "roles", SecurityUtils.getCurrentUserRoles()
         ));
     }
+
+    @GetMapping("/verify")
+    public ResponseEntity<?> verify() {
+        String userId = SecurityUtils.getCurrentUserIdAsString();
+        String orgId = SecurityUtils.getCurrentOrgIdAsString();
+
+        return ResponseEntity.ok(Map.of(
+            "ok", true
+        ));
+    }
 }
