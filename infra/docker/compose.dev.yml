@@ -171,6 +171,34 @@ services:
       start_period: 15s
     networks: [uts_net]
 
+  chat-api:
+    build:
+      context: ../../services/chat
+      dockerfile: Dockerfile.dev
+    container_name: uts_chat_api
+    restart: unless-stopped
+    volumes:
+      - ../../services/chat:/app
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      CASSANDRA_CONTACT_POINTS: cassandra
+      CASSANDRA_LOCAL_DATA_CENTER: dc1
+      CASSANDRA_KEYSPACE: chat
+    expose:
+      - "3000"
+    depends_on:
+      cassandra: { condition: service_healthy }
+      cass_init: { condition: service_completed_successfully }
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 15s
+    networks: [uts_net]
+
   cassandra:
     image: cassandra:latest
     container_name: uts_cassandra
@@ -227,6 +255,7 @@ services:
     depends_on:
       identity: { condition: service_started }
       tenant-bff: { condition: service_started }
+      chat-api: { condition: service_started }
     ports: [ "8080:80" ]
     networks: [uts_net]
 

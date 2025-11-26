@@ -1,36 +1,107 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Chat Web - UTS
 
-## Getting Started
+Minimal React frontend for UTS Chat Service
 
-First, run the development server:
+## Features
+
+- ✅ Login with User ID and Org ID
+- ✅ Create rooms (public/private)
+- ✅ List rooms
+- ✅ Join rooms
+- ✅ Real-time messaging via WebSocket
+- ✅ View message history
+
+## Setup
+
+### 1. Install Dependencies
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd apps/chat-web
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Configure Environment
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Edit `.env.local`:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+VITE_API_URL=http://localhost:8080
+VITE_WS_URL=http://localhost:8080
+```
 
-## Learn More
+### 3. Run Development Server
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+pnpm dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The app will open at `http://localhost:40503`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Usage
 
-## Deploy on Vercel
+### Login
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. Enter your **User ID** (UUID format)
+2. Enter your **Org ID** (UUID format)
+3. Click **Login**
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Example UUIDs:
+- User ID: `123e4567-e89b-12d3-a456-426614174000`
+- Org ID: `123e4567-e89b-12d3-a456-426614174001`
+
+### Create Room
+
+1. Click **+ New** button
+2. Enter room name
+3. Check **Private** if needed
+4. Click **Create**
+
+### Send Messages
+
+1. Select a room from the list
+2. Type message in the input box
+3. Press **Send** or hit Enter
+
+## Architecture
+
+```
+src/
+├── components/
+│   ├── RoomsList.tsx      # Sidebar with room list
+│   └── ChatWindow.tsx     # Main chat interface
+├── services/
+│   ├── api.ts             # REST API client
+│   └── socket.ts          # Socket.IO client
+├── types/
+│   └── index.ts           # TypeScript types
+├── App.tsx                # Main app component
+└── main.tsx               # Entry point
+```
+
+## API Endpoints (via Edge)
+
+- `POST /api/chat/rooms` - Create room
+- `GET /api/chat/rooms` - List rooms
+- `POST /api/chat/rooms/join` - Join room
+- `GET /api/chat/messages?roomId=` - Get message history
+
+## WebSocket Events
+
+### Client → Server
+- `join_room` - Join room channel
+- `send_message` - Send message
+
+### Server → Client
+- `rooms:bootstrap` - Initial room list
+- `room:created` - New room notification
+- `room:updated` - Room update (new message)
+- `message:new` - New message in current room
+- `joined_room` - Join confirmation
+
+## Tech Stack
+
+- **React 18** - UI framework
+- **TypeScript** - Type safety
+- **Vite** - Build tool
+- **Socket.IO Client** - WebSocket connection
+- **Minimal styling** - Inline CSS for simplicity
