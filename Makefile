@@ -1,72 +1,59 @@
-DOCKER_DIR=infra/docker
-DC=docker compose -f $(DOCKER_DIR)/compose.dev.yml --env-file $(DOCKER_DIR)/.env.dev
+DOCKER_DIR = infra/docker
+DC = docker compose -f $(DOCKER_DIR)/compose.dev.yml --env-file $(DOCKER_DIR)/.env.dev
 
-.PHONY: dev-up dev-up-build dev-down dev-logs dev-ps \
-        dev-edge-logs dev-bff-logs dev-auth-logs \
-        dev-edge-build dev-bff-build dev-auth-build \
-        dev-edge-restart dev-bff-restart dev-auth-restart \
-        dev-identity-logs dev-identity-build dev-setup
-dev-up:
+#########################################################################
+# ENV = dev
+# SERVICE = edge | bff | auth | identity | ...
+#########################################################################
+
+ENV ?= dev
+
+# ---- Generic commands ----
+$(ENV).up:
 	$(DC) up -d
 
-dev-up-build:
+$(ENV).up.build:
 	$(DC) up -d --build
 
-dev-down:
+$(ENV).down:
 	$(DC) down -v
 
-dev-logs:
+$(ENV).logs:
 	$(DC) logs -f --tail=200
 
-dev-ps:
+$(ENV).ps:
 	$(DC) ps
 
-# Service-specific logs
-dev-edge-logs:
-	$(DC) logs -f edge
+# ---- Per-service generic commands ----
+# Usage:
+#   make dev.logs.edge
+#   make dev.build.auth
+#   make dev.restart.identity
 
-dev-bff-logs:
-	$(DC) logs -f bff
+$(ENV).logs.%:
+	@container_name=$$($(DC) ps -q $* | head -1); \
+	if [ -n "$$container_name" ]; then \
+		docker logs -f $$container_name; \
+	else \
+		echo "Service $* is not running"; \
+	fi
 
-dev-auth-logs:
-	$(DC) logs -f auth
+$(ENV).restart.%:
+	$(DC) restart $*
 
-# Rebuild and (re)start individual services
-dev-edge-build:
-	$(DC) build --no-cache edge && $(DC) up -d edge
+$(ENV).build.%:
+	$(DC) build --no-cache $* && $(DC) up -d $*
 
-dev-bff-build:
-	$(DC) build --no-cache bff && $(DC) up -d bff
-
-dev-auth-build:
-	$(DC) build --no-cache auth && $(DC) up -d auth
-
-# Restart running services without rebuild
-dev-edge-restart:
-	$(DC) restart edge
-
-dev-bff-restart:
-	$(DC) restart bff
-
-dev-auth-restart:
-	$(DC) restart auth
-
-# Identity service specific commands
-dev-identity-logs:
-	$(DC) logs -f identity
-
-dev-identity-build:
-	$(DC) build --no-cache identity
-	$(DC) up -d identity
-
-# Setup development environment
-dev-setup:
+# ---- Setup ----
+$(ENV).setup:
 	@echo "Setting up development environment..."
+
 	@if [ ! -f $(DOCKER_DIR)/.env.dev ]; then \
 		echo "Creating .env.dev from example..."; \
 		cp $(DOCKER_DIR)/.env.dev.example $(DOCKER_DIR)/.env.dev; \
 		echo "Please edit $(DOCKER_DIR)/.env.dev with your configuration"; \
 	fi
+
 	@echo "Generating JWT keys for Identity service..."
 	@cd services/identity && \
 		if [ ! -f private.pem ]; then \
@@ -75,5 +62,10 @@ dev-setup:
 		if [ ! -f public.pem ]; then \
 			openssl rsa -pubout -in private.pem -out public.pem; \
 		fi
-	@echo "Development environment setup complete!"
-	@echo "Run 'make dev-up' to start all services"
+
+	@echo "Setup complete! Run 'make dev.up' to start services"
+
+# ---- DB Setup ----
+$(ENV).setup.db:
+	PGPASSWORD=uts_dev_pw psql -h 127.0.0.1 -p 41000 -U uts -d postgres \
+		-c "CREATE DATABASE identity;" || true

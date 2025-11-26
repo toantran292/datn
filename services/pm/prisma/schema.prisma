@@ -1,0 +1,84 @@
+// Prisma Schema for PM Service
+// Database: PostgreSQL 16
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SprintStatus {
+  FUTURE
+  ACTIVE
+  CLOSED
+}
+
+model Project {
+  id              String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  orgId           String   @map("org_id") @db.VarChar(255)
+  identifier      String   @unique @db.VarChar(50)
+  name            String   @db.VarChar(255)
+  projectLead     String?  @map("project_lead") @db.Uuid
+  defaultAssignee String?  @map("default_assignee") @db.Uuid
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  sprints Sprint[]
+  issues  Issue[]
+
+  @@map("project")
+}
+
+model Sprint {
+  id        String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  projectId String    @map("project_id") @db.Uuid
+  name      String    @db.VarChar(255)
+  status    SprintStatus @default(FUTURE)
+  goal      String?   @db.Text
+  startDate DateTime? @map("start_date") @db.Date
+  endDate   DateTime? @map("end_date") @db.Date
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  issues  Issue[]
+
+  @@map("sprint")
+}
+
+model Issue {
+  id              String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  projectId       String   @map("project_id") @db.Uuid
+  sprintId        String?  @map("sprint_id") @db.Uuid
+  parentId        String?  @map("parent_id") @db.Uuid
+  name            String   @db.VarChar(255)
+  description     String?  @db.Text
+  descriptionHtml String?  @map("description_html") @db.Text
+  state           String   @db.VarChar(32)
+  priority        String   @db.VarChar(32)
+  type            String   @db.VarChar(32)
+  point           Decimal? @db.Decimal(5, 2)
+  sequenceId      BigInt?  @map("sequence_id")
+  sortOrder       Decimal  @map("sort_order") @db.Decimal(20, 10)
+  startDate       DateTime? @map("start_date") @db.Date
+  targetDate      DateTime? @map("target_date") @db.Date
+  assigneesJson   Json     @default("[]") @map("assignees_json") @db.JsonB
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sprint       Sprint?  @relation(fields: [sprintId], references: [id], onDelete: SetNull)
+  parent       Issue?   @relation("IssueHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  subIssues    Issue[]  @relation("IssueHierarchy")
+
+  @@index([projectId])
+  @@index([sprintId])
+  @@index([parentId])
+  @@map("issue")
+}

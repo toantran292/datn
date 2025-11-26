@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Badge, Card } from "@uts/design-system/ui";
 import { routes } from "@/lib/routes";
@@ -12,6 +12,14 @@ function WorkspacesPageContent() {
   const router = useRouter();
   const { data, isLoading: loading, error } = useTenants();
   const acceptInviteMutation = useAcceptInvite();
+
+  // Check for pending invitation and redirect back to accept page
+  useEffect(() => {
+    const pendingToken = localStorage.getItem('pending_invitation_token');
+    if (pendingToken) {
+      router.push(routes.inviteAccept(pendingToken));
+    }
+  }, [router]);
 
   const handleEnterWorkspace = (orgId: string) => {
     router.push(routes.enter(orgId));

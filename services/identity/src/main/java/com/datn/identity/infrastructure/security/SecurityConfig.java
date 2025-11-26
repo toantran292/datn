@@ -122,6 +122,7 @@ public class SecurityConfig {
                 )
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .addFilterBefore(new CookieAuthFilter(jwtDecoder), AnonymousAuthenticationFilter.class)
+                .addFilterBefore(new InternalCallBypassFilter(), AnonymousAuthenticationFilter.class)
                 .exceptionHandling(e -> e.authenticationEntryPoint(plain401()));
 
         return http.build();
@@ -129,6 +130,42 @@ public class SecurityConfig {
 
     static AuthenticationEntryPoint plain401() {
         return (req, res, ex) -> res.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+    }
+
+    static class InternalCallBypassFilter extends OncePerRequestFilter {
+        @Override
+        protected void doFilterInternal(@NonNull HttpServletRequest request,
+                                        @NonNull HttpServletResponse response,
+                                        @NonNull FilterChain filterChain)
+                throws ServletException, IOException {
+
+            String internal = request.getHeader("X-Internal-Call");
+
+            if ("bff".equals(internal)) {
+
+                // Tạo một user SYSTEM giả
+                String systemUserId = "00000000-0000-0000-0000-000000000001";
+
+                var auth = new UsernamePasswordAuthenticationToken(
+                        systemUserId,
+                        null,
+                        List.of(new SimpleGrantedAuthority("ROLE_SYSTEM"))
+                );
+
+                var details = new SecurityConfig.UserAuthDetails(
+                        systemUserId,
+                        "system@internal",
+                        null,
+                        List.of("SYSTEM")
+                );
+
+                auth.setDetails(details);
+
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            }
+
+            filterChain.doFilter(request, response);
+        }
     }
 
     static class CookieAuthFilter extends OncePerRequestFilter {
