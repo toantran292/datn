@@ -17,7 +17,7 @@ export const routes = {
     resetPassword: () => '/auth/reset-password',
     meTenants: () => '/me/tenants',
     createOrg: () => '/orgs',
-    acceptInvite: () => '/invitations/accept',
+    acceptInvite: () => '/tenant/public/invitations/accept',
     orgAvailability: (slug: string) => `/orgs/availability?slug=${slug}`,
   }
 } as const;

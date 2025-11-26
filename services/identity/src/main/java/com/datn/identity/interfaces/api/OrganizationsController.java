@@ -1,6 +1,8 @@
 package com.datn.identity.interfaces.api;
 
+import com.datn.identity.application.InvitationApplicationService;
 import com.datn.identity.application.OrganizationApplicationService;
+import com.datn.identity.domain.org.MemberType;
 import com.datn.identity.infrastructure.security.SecurityUtils;
 import com.datn.identity.interfaces.api.dto.Dtos.*;
 import jakarta.validation.Valid;
@@ -18,8 +20,12 @@ import java.util.Locale;
 @Validated
 public class OrganizationsController {
     private final OrganizationApplicationService orgs;
+    private final InvitationApplicationService invites;
 
-    public OrganizationsController(OrganizationApplicationService orgs) { this.orgs = orgs; }
+    public OrganizationsController(OrganizationApplicationService orgs, InvitationApplicationService invites) {
+        this.orgs = orgs;
+        this.invites = invites;
+    }
 
     @PostMapping
     public ResponseEntity<?> create(@Valid @RequestBody CreateOrgReq req) {
@@ -48,6 +54,49 @@ public class OrganizationsController {
                 return ResponseEntity.status(409).body(Map.of("error", "slug_exists"));
             }
             return ResponseEntity.status(409).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/{orgId}/members")
+    public ResponseEntity<?> listMembers(
+            @PathVariable String orgId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        var pagedMembers = orgs.listMembers(UUID.fromString(orgId), page, size);
+        return ResponseEntity.ok(pagedMembers);
+    }
+
+    @PostMapping("/{orgId}/members/invite")
+    public ResponseEntity<?> inviteMember(@PathVariable String orgId,
+                                          @Valid @RequestBody InviteMemberReq req) {
+        UUID actorUserId = SecurityUtils.getCurrentUserId();
+        if (actorUserId == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "not_authenticated"));
+        }
+
+        try {
+            // Determine member type from role - default to STAFF
+            MemberType memberType = MemberType.STAFF;
+
+            String token = invites.createInvitation(
+                    actorUserId,
+                    UUID.fromString(orgId),
+                    req.email(),
+                    memberType
+            );
+
+            return ResponseEntity.status(201).body(Map.of(
+                    "token", token,
+                    "email", req.email(),
+                    "status", "invited"
+            ));
+        } catch (IllegalStateException e) {
+            if ("invite_open_exists".equals(e.getMessage())) {
+                return ResponseEntity.status(409).body(Map.of("error", "invitation_already_exists"));
+            }
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 

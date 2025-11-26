@@ -1,0 +1,23 @@
+FROM gradle:8-jdk21
+
+WORKDIR /app
+
+# Copy gradle files
+COPY build.gradle.kts settings.gradle.kts ./
+COPY gradle/ gradle/
+
+# Download dependencies (for caching)
+RUN gradle dependencies --no-daemon || true
+
+# Copy JWT keys if they exist
+COPY private.pe[m] public.pe[m] ./
+
+# Set environment for colored output
+ENV TERM=xterm-256color
+ENV SPRING_OUTPUT_ANSI_ENABLED=ALWAYS
+
+# Expose port
+EXPOSE 40000
+
+# Run with bootRun for hot reload
+CMD ["sh", "-c", "gradle bootRun --no-daemon --continuous --console=rich"]

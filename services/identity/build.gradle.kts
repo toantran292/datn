@@ -45,6 +45,9 @@ dependencies {
     // MapStruct (tuỳ chọn nếu bạn dùng mapper)
     implementation("org.mapstruct:mapstruct:1.5.5.Final")
 
+    // DevTools for hot reload
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
+
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")

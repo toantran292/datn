@@ -69,6 +69,7 @@ public class AuthTokenController {
     // ======= API =======
     @PostMapping("/token")
     public ResponseEntity<?> passwordLogin(@Valid @RequestBody PasswordLoginReq req,
+                                           HttpServletRequest httpReq,
                                            HttpServletResponse resp) {
 
         final var email = req.getEmail().trim().toLowerCase();
@@ -87,10 +88,13 @@ public class AuthTokenController {
         // 1) Issue access token (KHÔNG gắn org/project/roles)
         var accessToken = tokens.issueAccessToken(u.id(), u.email().value(), /*org*/ null, /*roles*/ Set.of());
 
-        // 2) (tuỳ) issue refresh token
+        // 2) Issue refresh token
         String refreshToken = null;
         if (refreshEnabled) {
-            refreshToken = tokens.issueAccessToken(u.id(), u.email().value(), null, Set.of());
+            // Extract user-agent and IP from request (if available)
+            String userAgent = httpReq != null ? httpReq.getHeader("User-Agent") : null;
+            String ipAddress = httpReq != null ? getClientIP(httpReq) : null;
+            refreshToken = tokens.issueRefreshToken(u.id(), /*org*/ null, userAgent, ipAddress);
         }
 
         // 3) Set HttpOnly cookies
@@ -137,26 +141,86 @@ public class AuthTokenController {
      * POST /auth/logout
      * Xoá cookie phiên và (tuỳ) thu hồi refresh token.
      */
+    /**
+     * POST /auth/switch-org
+     * Switch to a different organization - issues a new token with org_id embedded
+     * Previous token becomes invalid (short TTL ensures it expires soon)
+     */
+    public record SwitchOrgReq(@NotBlank String org_id) {}
+    public record SwitchOrgRes(String user_id, String org_id, String email, Set<String> roles) {}
+
+    @PostMapping("/switch-org")
+    public ResponseEntity<?> switchOrg(@Valid @RequestBody SwitchOrgReq req,
+                                       HttpServletRequest httpReq,
+                                       HttpServletResponse resp) {
+        // Get current user from existing token
+        UUID userId = SecurityUtils.getCurrentUserId();
+        String email = SecurityUtils.getCurrentUserEmail();
+
+        if (userId == null || email == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "not_authenticated"));
+        }
+
+        // Parse org_id
+        UUID orgId;
+        try {
+            orgId = UUID.fromString(req.org_id());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(400).body(Map.of("error", "invalid_org_id"));
+        }
+
+        // Verify user is member of this org
+        var membershipOpt = memberships.find(userId, orgId);
+        if (membershipOpt.isEmpty()) {
+            return ResponseEntity.status(403).body(Map.of("error", "not_member_of_org"));
+        }
+
+        var membership = membershipOpt.get();
+        Set<String> roles = Set.copyOf(membership.roles());
+
+        // Issue new access token with org_id and roles
+        String accessToken = tokens.issueAccessToken(userId, email, orgId, roles);
+
+        // Set new cookie (this invalidates old token by replacing it)
+        addCookie(resp, "uts_at", accessToken, accessTtlSeconds, cookieSecure, cookieDomain, true);
+
+        // Issue new refresh token with org context (revoke old one and create new one)
+        if (refreshEnabled) {
+            // Revoke all existing refresh tokens for this user+org combo
+            tokens.revokeAllUserTokens(userId); // For simplicity, revoke all user tokens
+
+            // Issue new refresh token with org context
+            String userAgent = httpReq != null ? httpReq.getHeader("User-Agent") : null;
+            String ipAddress = httpReq != null ? getClientIP(httpReq) : null;
+            String newRefreshToken = tokens.issueRefreshToken(userId, orgId, userAgent, ipAddress);
+
+            // Set new refresh token cookie
+            addCookie(resp, "uts_rt", newRefreshToken, refreshTtlSeconds, cookieSecure, cookieDomain, true);
+        }
+
+        // Return new context
+        return ResponseEntity.ok(new SwitchOrgRes(userId.toString(), orgId.toString(), email, roles));
+    }
+
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(HttpServletRequest req, HttpServletResponse resp) {
-        // // 1) Nếu dùng refresh token server-side → thu hồi
-        // if (refreshEnabled) {
-        //     String rt = readCookie(req, "uts_rt");
-        //     if (rt != null && !rt.isBlank()) {
-        //         try {
-        //             // Nếu TokenService có hàm revoke/blacklist, gọi ở đây
-        //             tokens.revokeAccessToken(rt);
-        //         } catch (Exception ignore) {
-        //             // không lộ lỗi ra ngoài; vẫn tiếp tục xoá cookie
-        //         }
-        //     }
-        // }
+        // 1) Revoke refresh token if exists
+        if (refreshEnabled) {
+            String rt = readCookie(req, "uts_rt");
+            if (rt != null && !rt.isBlank()) {
+                try {
+                    tokens.revokeRefreshToken(rt);
+                } catch (Exception ignore) {
+                    // Don't expose errors; continue with cookie deletion
+                }
+            }
+        }
 
-        // 2) Xoá cookie uts_at & uts_rt
+        // 2) Clear cookies uts_at & uts_rt
         clearCookie(resp, "uts_at", cookieSecure, cookieDomain);
         clearCookie(resp, "uts_rt", cookieSecure, cookieDomain);
 
-        // 3) Trả 204
+        // 3) Return 204
         return ResponseEntity.noContent().build();
     }
 
@@ -194,5 +258,79 @@ public class AuthTokenController {
             header.append("; Domain=").append(domain);
         }
         response.addHeader("Set-Cookie", header.toString());
+    }
+
+    private static String getClientIP(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("X-Real-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        // If X-Forwarded-For contains multiple IPs, take the first one
+        if (ip != null && ip.contains(",")) {
+            ip = ip.split(",")[0].trim();
+        }
+        return ip;
+    }
+
+    /**
+     * POST /auth/refresh
+     * Use refresh token to get a new access token
+     */
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refreshToken(HttpServletRequest req, HttpServletResponse resp) {
+        if (!refreshEnabled) {
+            return ResponseEntity.status(501).body(Map.of("error", "refresh_not_enabled"));
+        }
+
+        // 1) Read refresh token from cookie
+        String refreshTokenValue = readCookie(req, "uts_rt");
+        if (refreshTokenValue == null || refreshTokenValue.isBlank()) {
+            return ResponseEntity.status(401).body(Map.of("error", "refresh_token_missing"));
+        }
+
+        // 2) Validate refresh token
+        var refreshToken = tokens.validateRefreshToken(refreshTokenValue);
+        if (refreshToken == null) {
+            // Clear invalid cookies
+            clearCookie(resp, "uts_at", cookieSecure, cookieDomain);
+            clearCookie(resp, "uts_rt", cookieSecure, cookieDomain);
+            return ResponseEntity.status(401).body(Map.of("error", "invalid_refresh_token"));
+        }
+
+        // 3) Get user info
+        var userOpt = users.findById(refreshToken.userId());
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(401).body(Map.of("error", "user_not_found"));
+        }
+
+        var user = userOpt.get();
+
+        // 4) Check if org context exists, get roles
+        UUID orgId = refreshToken.orgId();
+        Set<String> roles = Set.of();
+
+        if (orgId != null) {
+            var membershipOpt = memberships.find(user.id(), orgId);
+            if (membershipOpt.isPresent()) {
+                roles = Set.copyOf(membershipOpt.get().roles());
+            }
+        }
+
+        // 5) Issue new access token
+        String newAccessToken = tokens.issueAccessToken(user.id(), user.email().value(), orgId, roles);
+
+        // 6) Set new access token cookie
+        addCookie(resp, "uts_at", newAccessToken, accessTtlSeconds, cookieSecure, cookieDomain, true);
+
+        // 7) Return success
+        return ResponseEntity.ok(Map.of(
+                "user_id", user.id().toString(),
+                "email", user.email().value(),
+                "org_id", orgId != null ? orgId.toString() : "",
+                "refreshed", true
+        ));
     }
 }
