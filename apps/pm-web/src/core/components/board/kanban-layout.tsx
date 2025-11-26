@@ -33,17 +33,13 @@ export const KanbanLayout = observer(() => {
 
   // Removed useMemo to allow MobX observer to properly track changes
   const sprints = sprintStore.getSprintsForProject(projectId);
-  const today = new Date().toISOString().slice(0, 10);
-  const activeSprint = sprints.length
-    ? (sprints.find((sprint) => sprint.startDate && (!sprint.endDate || sprint.endDate >= today)) ??
-      sprints.find((sprint) => sprint.startDate) ??
-      sprints[0])
-    : undefined;
+  const activeSprints = sprints.filter((sprint) => sprint.status === "ACTIVE");
 
   // Removed useMemo to allow MobX observer to properly track changes
-  const issues = activeSprint
-    ? issueStore.getIssuesForProject(projectId).filter((issue) => issue.sprintId === activeSprint.id)
-    : [];
+  const activeSprintIds = new Set(activeSprints.map((sprint) => sprint.id));
+  const issues = issueStore
+    .getIssuesForProject(projectId)
+    .filter((issue) => issue.sprintId && activeSprintIds.has(issue.sprintId));
 
   const project = projectId ? projectStore.getPartialProjectById(projectId) : undefined;
 
@@ -51,7 +47,7 @@ export const KanbanLayout = observer(() => {
     <BoardView
       projectId={projectId}
       issues={issues}
-      sprint={activeSprint}
+      activeSprints={activeSprints}
       issueStore={issueStore}
       projectIdentifier={project?.identifier ?? null}
     />

@@ -230,6 +230,7 @@ const ProjectBacklogPage = observer(() => {
       await sprintStore.updateSprint(sprintId, {
         projectId,
         name: values.name,
+        status: "ACTIVE",
         startDate: values.startDate,
         endDate: values.endDate,
         goal: values.goal,

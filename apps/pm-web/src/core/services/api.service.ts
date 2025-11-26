@@ -5,10 +5,10 @@ export abstract class APIService {
   protected baseURL: string;
   private axiosInstance: AxiosInstance;
 
-  constructor(baseURL: string) {
-    this.baseURL = baseURL;
+  constructor() {
+    this.baseURL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:40301";
     this.axiosInstance = axios.create({
-      baseURL,
+      baseURL: this.baseURL,
       withCredentials: true,
     });
 

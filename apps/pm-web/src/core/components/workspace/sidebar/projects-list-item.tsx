@@ -15,7 +15,7 @@ import { ControlLink, CustomMenu, DragHandle, DropIndicator, Logo, Tooltip } fro
 import { cn } from "@uts/fe-utils";
 import { useOutsideClickDetector, usePlatformOS } from "@uts/hooks";
 
-import { useProject } from "@/core/hooks/store/use-project";
+import { useProjectsContext } from "@/core/contexts/projects-context";
 
 type Props = {
   projectId: string;
@@ -46,7 +46,7 @@ export const SidebarProjectsListItem: React.FC<Props> = observer((props) => {
     renderInExtendedSidebar = false,
   } = props;
 
-  const { getPartialProjectById } = useProject();
+  const { getProjectById } = useProjectsContext();
   const { isMobile } = usePlatformOS();
   const router = useRouter();
   const pathname = usePathname();
@@ -62,7 +62,7 @@ export const SidebarProjectsListItem: React.FC<Props> = observer((props) => {
   const [isDragging, setIsDragging] = useState(false);
   const [instruction, setInstruction] = useState<TDragInstruction>(undefined);
 
-  const project = getPartialProjectById(projectId);
+  const project = getProjectById(projectId);
 
   const normalizedWorkspaceSlug = useMemo(() => {
     if (workspaceSlugParam) return workspaceSlugParam;

@@ -1,5 +1,3 @@
-import { API_BASE_URL } from "@uts/constants";
-
 import { ICreateIssuePayload, IIssue, IReorderIssuePayload, TIssuePriority, TIssueState, TIssueType } from "@/core/types/issue";
 
 import { APIService } from "../api.service";
@@ -24,7 +22,7 @@ type IssueRequestPayload = {
 
 export class IssueService extends APIService {
   constructor() {
-    super(API_BASE_URL);
+    super();
   }
 
   async getIssuesByProject(projectId: string): Promise<IIssue[]> {

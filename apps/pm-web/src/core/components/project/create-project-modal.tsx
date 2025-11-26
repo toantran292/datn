@@ -9,10 +9,11 @@ type Props = {
   workspaceSlug: string;
   data?: any;
   templateId?: string;
+  onSuccess?: () => void;
 };
 
 export const CreateProjectModal: FC<Props> = (props) => {
-  const { isOpen, onClose, setToFavorite = false, workspaceSlug, data, templateId } = props;
+  const { isOpen, onClose, setToFavorite = false, workspaceSlug, data, templateId, onSuccess } = props;
 
   return (
     <ModalCore isOpen={isOpen} position={EModalPosition.TOP} width={EModalWidth.XXL}>
@@ -24,6 +25,7 @@ export const CreateProjectModal: FC<Props> = (props) => {
         handleNextStep={() => {}}
         data={data}
         templateId={templateId}
+        onSuccess={onSuccess}
       />
     </ModalCore>
   );

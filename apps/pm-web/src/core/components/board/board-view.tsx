@@ -45,7 +45,7 @@ const IssueDetailPanel = dynamic(
 type BoardViewProps = {
   projectId: string;
   issues: IIssue[];
-  sprint?: ISprint;
+  activeSprints: ISprint[];
   issueStore: IIssueStore;
   projectIdentifier?: string | null;
 };
@@ -60,7 +60,7 @@ const COLUMN_TITLES: Record<ColumnKey, string> = {
   DONE: "Done",
 };
 
-export const BoardView = memo(function BoardView({ projectId, issues, sprint, issueStore, projectIdentifier }: BoardViewProps) {
+export const BoardView = memo(function BoardView({ projectId, issues, activeSprints, issueStore, projectIdentifier }: BoardViewProps) {
   const grouped = useMemo(() => {
     const map: Record<ColumnKey, IIssue[]> = {
       TODO: [],
@@ -96,7 +96,7 @@ export const BoardView = memo(function BoardView({ projectId, issues, sprint, is
   const [activeColumn, setActiveColumn] = useState<ColumnKey | null>(null);
   const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
   const selectedIssue = selectedIssueId ? issueStore.getIssueById(selectedIssueId) ?? null : null;
-  const locationLabel = sprint?.name ?? null;
+  const locationLabel = activeSprints.length > 0 ? activeSprints[0].name : null;
 
   useEffect(() => {
     if (selectedIssueId && !issueStore.getIssueById(selectedIssueId)) {
@@ -105,7 +105,7 @@ export const BoardView = memo(function BoardView({ projectId, issues, sprint, is
   }, [selectedIssueId, issueStore, issues.length]);
 
   const handleQuickCreate = async () => {
-    if (!sprint) {
+    if (activeSprints.length === 0) {
       setToast({ type: TOAST_TYPE.INFO, title: "Thông báo", message: "Vui lòng bắt đầu sprint trước." });
       return;
     }
@@ -120,7 +120,7 @@ export const BoardView = memo(function BoardView({ projectId, issues, sprint, is
     try {
       const created = await issueStore.createIssue({
         projectId,
-        sprintId: sprint.id,
+        sprintId: activeSprints[0].id,
         parentId: null,
         name: trimmed,
         description: null,
@@ -147,7 +147,7 @@ export const BoardView = memo(function BoardView({ projectId, issues, sprint, is
 
   const handleDropOnColumn = useCallback(
     async (column: ColumnKey, destinationIssueId: string | null, position: "before" | "after" | "end") => {
-      if (!draggedIssueId || !sprint) return;
+      if (!draggedIssueId || activeSprints.length === 0) return;
       const issue = issueStore.getIssueById(draggedIssueId);
       if (!issue) return;
 
@@ -161,7 +161,7 @@ export const BoardView = memo(function BoardView({ projectId, issues, sprint, is
         await issueStore.reorderIssue(projectId, {
           issueId: draggedIssueId,
           fromSectionId: latestIssue.sprintId,
-          toSectionId: sprint.id,
+          toSectionId: latestIssue.sprintId,
           destinationIssueId,
           position,
         });
@@ -174,7 +174,7 @@ export const BoardView = memo(function BoardView({ projectId, issues, sprint, is
         setActiveColumn(null);
       }
     },
-    [draggedIssueId, issueStore, projectId, sprint]
+    [draggedIssueId, issueStore, projectId, activeSprints]
   );
 
   const handleColumnDragEnter = useCallback((column: ColumnKey) => {
@@ -204,16 +204,37 @@ export const BoardView = memo(function BoardView({ projectId, issues, sprint, is
 
   const handleCloseDetail = useCallback(() => setSelectedIssueId(null), []);
 
-  if (!sprint) {
+  // Group issues by sprint for issue count
+  const issuesBySprintId = useMemo(() => {
+    const map = new Map<string, number>();
+    issues.forEach((issue) => {
+      if (issue.sprintId) {
+        map.set(issue.sprintId, (map.get(issue.sprintId) || 0) + 1);
+      }
+    });
+    return map;
+  }, [issues]);
+
+  if (activeSprints.length === 0) {
     return <EmptyBoardState />;
   }
 
   return (
     <>
-      <div className="flex h-full flex-col gap-4">
-        <BoardToolbar />
-        <SprintSummary sprint={sprint} issueCount={issues.length} />
-        <div className="flex flex-1 gap-4 overflow-x-auto pb-4 pt-2">
+      <div className="flex h-full flex-col gap-4 overflow-hidden">
+        <div className="flex-shrink-0">
+          <BoardToolbar />
+        </div>
+        <div className="flex-shrink-0 flex flex-col gap-4 max-h-[40vh] overflow-y-auto">
+          {activeSprints.map((sprint) => (
+            <SprintSummary
+              key={sprint.id}
+              sprint={sprint}
+              issueCount={issuesBySprintId.get(sprint.id) || 0}
+            />
+          ))}
+        </div>
+        <div className="flex flex-1 gap-4 overflow-x-auto overflow-y-hidden pb-4 pt-2 min-h-0">
           {COLUMN_ORDER.map((column) => (
             <BoardColumn
               key={column}
@@ -297,7 +318,27 @@ const SprintSummary: React.FC<{ sprint: ISprint; issueCount: number }> = ({ spri
     return 0;
   };
 
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" });
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "ACTIVE":
+        return { label: "Đang hoạt động", variant: "primary" as const };
+      case "FUTURE":
+        return { label: "Sắp diễn ra", variant: "outline-neutral" as const };
+      case "CLOSED":
+        return { label: "Đã đóng", variant: "outline-neutral" as const };
+      default:
+        return { label: "Chưa xác định", variant: "outline-neutral" as const };
+    }
+  };
+
   const progress = calculateProgress();
+  const statusBadge = getStatusBadge(sprint.status);
 
   return (
     <div className="rounded-lg border border-custom-border-200 bg-gradient-to-r from-custom-background-100 to-custom-background-90 shadow-sm">
@@ -309,8 +350,8 @@ const SprintSummary: React.FC<{ sprint: ISprint; issueCount: number }> = ({ spri
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
               <h3 className="text-base font-semibold text-custom-text-100">{sprint.name}</h3>
-              <Badge variant="primary" size="sm">
-                Đang hoạt động
+              <Badge variant={statusBadge.variant} size="sm">
+                {statusBadge.label}
               </Badge>
             </div>
             <div className="flex items-center gap-3 text-xs text-custom-text-300">
@@ -318,7 +359,7 @@ const SprintSummary: React.FC<{ sprint: ISprint; issueCount: number }> = ({ spri
                 <CalendarDays className="size-3.5" />
                 <span>
                   {sprint.startDate && sprint.endDate
-                    ? `${sprint.startDate} → ${sprint.endDate}`
+                    ? `${formatDate(sprint.startDate)} → ${formatDate(sprint.endDate)}`
                     : "Chưa có lịch trình cụ thể"}
                 </span>
               </div>

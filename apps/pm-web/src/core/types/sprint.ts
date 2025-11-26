@@ -1,7 +1,10 @@
+export type SprintStatus = "FUTURE" | "ACTIVE" | "CLOSED";
+
 export interface ISprint {
   id: string;
   projectId: string;
   name: string;
+  status: SprintStatus;
   goal: string | null;
   startDate: string | null;
   endDate: string | null;
@@ -25,6 +28,7 @@ export interface ICreateSprintPayload {
 export interface IUpdateSprintPayload {
   projectId: string;
   name?: string;
+  status?: SprintStatus;
   goal?: string | null;
   startDate?: string | null;
   endDate?: string | null;
