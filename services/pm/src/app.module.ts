@@ -5,6 +5,7 @@ import { AppService } from "./app.service";
 import { PrismaModule } from "./prisma/prisma.module";
 import { ProjectModule } from "./modules/project/project.module";
 import { SprintModule } from "./modules/sprint/sprint.module";
+import { IssueModule } from "./modules/issue/issue.module";
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { SprintModule } from "./modules/sprint/sprint.module";
     PrismaModule,
     ProjectModule,
     SprintModule,
+    IssueModule,
   ],
   controllers: [AppController],
   providers: [AppService],
