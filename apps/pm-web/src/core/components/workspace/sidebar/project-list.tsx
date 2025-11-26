@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { autoScrollForElements } from "@atlaskit/pragmatic-drag-and-drop-auto-scroll/element";
-import { observer } from "mobx-react";
 import { useParams, usePathname } from "next/navigation";
 import { ChevronRight, Plus } from "lucide-react";
 import { Disclosure, Transition } from "@headlessui/react";
@@ -11,14 +10,14 @@ import { Disclosure, Transition } from "@headlessui/react";
 import { Loader, Tooltip, TOAST_TYPE, setToast } from "@uts/design-system/ui";
 import { cn } from "@uts/fe-utils";
 
-import { useProject } from "@/core/hooks/store/use-project";
+import { useProjectsContext } from "@/core/contexts/projects-context";
 
 import { CreateProjectModal } from "../../project/create-project-modal";
 import { SidebarProjectsListItem } from "./projects-list-item";
 
 const STORAGE_KEY = "datn-pm-sidebar-projects-open";
 
-export const SidebarProjectsList = observer(() => {
+export const SidebarProjectsList = () => {
   const [isAllProjectsListOpen, setIsAllProjectsListOpen] = useState(true);
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -30,7 +29,7 @@ export const SidebarProjectsList = observer(() => {
 
   const workspaceSlug = workspaceSlugParam?.toString();
 
-  const { loader, fetchStatus, fetchPartialProjects, joinedProjectIds } = useProject();
+  const { projects, isLoading, mutate } = useProjectsContext();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -39,18 +38,6 @@ export const SidebarProjectsList = observer(() => {
       setIsAllProjectsListOpen(storedValue === "true");
     }
   }, []);
-
-  useEffect(() => {
-    if (!workspaceSlug) return;
-    if (fetchStatus === "partial" && joinedProjectIds.length > 0) return;
-    fetchPartialProjects(workspaceSlug).catch(() => {
-      setToast({
-        type: TOAST_TYPE.ERROR,
-        title: "Lỗi",
-        message: "Không thể tải danh sách dự án",
-      });
-    });
-  }, [workspaceSlug, fetchStatus, joinedProjectIds.length, fetchPartialProjects]);
 
   useEffect(() => {
     const element = containerRef.current;
@@ -119,10 +106,9 @@ export const SidebarProjectsList = observer(() => {
     }
   };
 
-  const shouldShowEmptyState = useMemo(
-    () => loader !== "init-loader" && joinedProjectIds.length === 0,
-    [loader, joinedProjectIds.length]
-  );
+  const projectIds = useMemo(() => projects.map((p) => p.id), [projects]);
+
+  const shouldShowEmptyState = useMemo(() => !isLoading && projectIds.length === 0, [isLoading, projectIds.length]);
 
   return (
     <>
@@ -132,6 +118,7 @@ export const SidebarProjectsList = observer(() => {
           onClose={() => setIsProjectModalOpen(false)}
           setToFavorite={false}
           workspaceSlug={workspaceSlug}
+          onSuccess={() => mutate()}
         />
       )}
       <div
@@ -188,16 +175,16 @@ export const SidebarProjectsList = observer(() => {
             leaveFrom="transform scale-100 opacity-100"
             leaveTo="transform scale-95 opacity-0"
           >
-            {loader === "init-loader" && (
+            {isLoading && (
               <Loader className="w-full space-y-1.5">
                 {Array.from({ length: 4 }).map((_, index) => (
                   <Loader.Item key={index} height="28px" />
                 ))}
               </Loader>
             )}
-            {isAllProjectsListOpen && joinedProjectIds.length > 0 && (
+            {isAllProjectsListOpen && projectIds.length > 0 && (
               <Disclosure.Panel as="div" className="flex flex-col gap-0.5" static>
-                {joinedProjectIds.map((projectId, index) => (
+                {projectIds.map((projectId, index) => (
                   <SidebarProjectsListItem
                     key={projectId}
                     projectId={projectId}
@@ -205,7 +192,7 @@ export const SidebarProjectsList = observer(() => {
                     projectListType="JOINED"
                     disableDrag={false}
                     disableDrop
-                    isLastChild={index === joinedProjectIds.length - 1}
+                    isLastChild={index === projectIds.length - 1}
                   />
                 ))}
               </Disclosure.Panel>
@@ -230,4 +217,4 @@ export const SidebarProjectsList = observer(() => {
       </div>
     </>
   );
-});
+};

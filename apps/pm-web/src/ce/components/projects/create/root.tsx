@@ -16,10 +16,12 @@ export type TCreateProjectFormProps = {
   data?: Partial<any>;
   templateId?: string;
   updateCoverImageStatus: (projectId: string, coverImage: string) => Promise<void>;
+  onSuccess?: () => void;
 };
 
 export const CreateProjectForm: FC<TCreateProjectFormProps> = observer((props) => {
-  const { data, setToFavorite, workspaceSlug, onClose, handleNextStep, templateId, updateCoverImageStatus } = props;
+  const { data, setToFavorite, workspaceSlug, onClose, handleNextStep, templateId, updateCoverImageStatus, onSuccess } =
+    props;
 
   const { createProject } = useProject();
 
@@ -50,47 +52,53 @@ export const CreateProjectForm: FC<TCreateProjectFormProps> = observer((props) =
           title: "Success",
           message: "Project created successfully",
         });
+        onSuccess?.();
         onClose();
       })
       .catch((err) => {
         try {
-          // Handle the new error format where codes are nested in arrays under field names
           const errorData = err?.data ?? {};
 
-          const nameError = errorData.name?.includes("PROJECT_NAME_ALREADY_EXIST");
-          const identifierError = errorData?.identifier?.includes("PROJECT_IDENTIFIER_ALREADY_EXIST");
+          // Check if error message contains specific keywords
+          const nameError =
+            errorData.name &&
+            (typeof errorData.name === "string"
+              ? errorData.name.toLowerCase().includes("already exist")
+              : errorData.name?.includes?.("PROJECT_NAME_ALREADY_EXIST"));
 
-          if (nameError || identifierError) {
-            if (nameError) {
-              console.log("check");
-              setToast({
-                type: TOAST_TYPE.ERROR,
-                title: "Error",
-                message: "Project name already taken",
-              });
-            }
+          const identifierError =
+            errorData.identifier &&
+            (typeof errorData.identifier === "string"
+              ? errorData.identifier.toLowerCase().includes("already exist")
+              : errorData.identifier?.includes?.("PROJECT_IDENTIFIER_ALREADY_EXIST"));
 
-            if (identifierError) {
-              setToast({
-                type: TOAST_TYPE.ERROR,
-                title: "Error",
-                message: "Project identifier already taken",
-              });
-            }
-          } else {
+          if (nameError) {
             setToast({
               type: TOAST_TYPE.ERROR,
-              title: "Error",
-              message: "Something went wrong",
+              title: "Lỗi",
+              message: "Tên dự án đã tồn tại",
+            });
+          } else if (identifierError) {
+            setToast({
+              type: TOAST_TYPE.ERROR,
+              title: "Lỗi",
+              message: "Mã dự án đã tồn tại",
+            });
+          } else {
+            // Display the actual error message from backend if available
+            const errorMessage = Object.values(errorData)[0] || "Đã xảy ra lỗi";
+            setToast({
+              type: TOAST_TYPE.ERROR,
+              title: "Lỗi",
+              message: typeof errorMessage === "string" ? errorMessage : "Đã xảy ra lỗi",
             });
           }
         } catch (error) {
-          // Fallback error handling if the error processing fails
           console.error("Error processing API error:", error);
           setToast({
             type: TOAST_TYPE.ERROR,
-            title: "Error",
-            message: "Something went wrong",
+            title: "Lỗi",
+            message: "Đã xảy ra lỗi",
           });
         }
       });
