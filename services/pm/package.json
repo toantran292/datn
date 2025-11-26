@@ -22,7 +22,7 @@
     "db:down": "docker-compose down",
     "db:logs": "docker-compose logs -f",
     "db:reset": "docker-compose down -v && docker-compose up -d",
-    "migrate": "docker exec -i pm-nestjs-postgres psql -U pm_user -d pm_db < database/migrations/V1__init_pm_schema.sql && docker exec -i pm-nestjs-postgres psql -U pm_user -d pm_db < database/migrations/V2__alter_project_org_id_to_text.sql && docker exec -i pm-nestjs-postgres psql -U pm_user -d pm_db < database/migrations/V3__change_issue_sort_order_to_numeric.sql",
+    "migrate": "for file in database/migrations/*.sql; do docker exec -i pm-nestjs-postgres psql -U pm_user -d pm_db < \"$file\"; done",
     "prisma:generate": "prisma generate",
     "prisma:studio": "prisma studio",
     "prisma:format": "prisma format"

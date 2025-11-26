@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
+import { SprintStatus } from "@prisma/client";
 import { PrismaService } from "../../prisma/prisma.service";
 import { CreateSprintDto } from "./dto/create-sprint.dto";
 import { UpdateSprintDto } from "./dto/update-sprint.dto";
@@ -21,6 +22,7 @@ export class SprintService {
       data: {
         projectId: createDto.projectId,
         name: createDto.name,
+        status: createDto.status || SprintStatus.FUTURE,
         goal: createDto.goal,
         startDate: createDto.startDate ? new Date(createDto.startDate) : null,
         endDate: createDto.endDate ? new Date(createDto.endDate) : null,

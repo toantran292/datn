@@ -10,6 +10,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum SprintStatus {
+  FUTURE
+  ACTIVE
+  CLOSED
+}
+
 model Project {
   id              String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   orgId           String   @map("org_id") @db.VarChar(255)
@@ -31,6 +37,7 @@ model Sprint {
   id        String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
   projectId String    @map("project_id") @db.Uuid
   name      String    @db.VarChar(255)
+  status    SprintStatus @default(FUTURE)
   goal      String?   @db.Text
   startDate DateTime? @map("start_date") @db.Date
   endDate   DateTime? @map("end_date") @db.Date

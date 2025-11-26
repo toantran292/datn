@@ -18,6 +18,7 @@ export class ProjectSprintsController {
       id: sprint.id,
       projectId: sprint.projectId,
       name: sprint.name,
+      status: sprint.status,
       goal: sprint.goal,
       startDate: sprint.startDate,
       endDate: sprint.endDate,
