@@ -36,6 +36,8 @@ import type { IIssue } from "@/core/types/issue";
 import type { IIssueStatus } from "@/core/types/issue-status";
 import type { ISprint } from "@/core/types/sprint";
 import { formatIssueKey } from "@/core/components/backlog/utils";
+import { CreateStatusModal } from "@/core/components/issue-status";
+import { useIssueStatus } from "@/core/hooks/store/use-issue-status";
 
 const IssueDetailPanel = dynamic(
   () => import("@/core/components/issue/issue-detail-panel").then((mod) => mod.IssueDetailPanel),
@@ -59,6 +61,8 @@ export const BoardView = memo(function BoardView({
   issueStatuses,
   projectIdentifier,
 }: BoardViewProps) {
+  const issueStatusStore = useIssueStatus();
+  
   const grouped = useMemo(() => {
     const map: Record<string, IIssue[]> = {};
 
@@ -92,7 +96,8 @@ export const BoardView = memo(function BoardView({
   const [draggedIssueId, setDraggedIssueId] = useState<string | null>(null);
   const [activeColumn, setActiveColumn] = useState<string | null>(null);
   const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
-
+  const [isCreateStatusModalOpen, setIsCreateStatusModalOpen] = useState(false);
+  
   // Get first status ID for quick create (usually "TO DO")
   const firstStatusId = issueStatuses.length > 0 ? issueStatuses[0].id : null;
   const selectedIssue = selectedIssueId ? (issueStore.getIssueById(selectedIssueId) ?? null) : null;
@@ -208,6 +213,22 @@ export const BoardView = memo(function BoardView({
 
   const handleCloseDetail = useCallback(() => setSelectedIssueId(null), []);
 
+  const handleCreateStatus = useCallback(
+    async (data: { name: string; description: string; color: string }) => {
+      try {
+        await issueStatusStore.createIssueStatus(projectId, {
+          projectId,
+          name: data.name,
+          description: data.description,
+          color: data.color,
+        });
+      } catch (error) {
+        throw error;
+      }
+    },
+    [issueStatusStore, projectId]
+  );
+
   // Group issues by sprint for issue count
   const issuesBySprintId = useMemo(() => {
     const map = new Map<string, number>();
@@ -262,6 +283,15 @@ export const BoardView = memo(function BoardView({
               projectIdentifier={projectIdentifier}
             />
           ))}
+          
+          {/* Add Status Button */}
+          <button
+            onClick={() => setIsCreateStatusModalOpen(true)}
+            className="flex h-full w-80 min-w-[20rem] flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-custom-border-200 bg-custom-background-90/30 text-custom-text-300 transition-all hover:border-custom-primary-100 hover:bg-custom-background-90 hover:text-custom-primary-100"
+          >
+            <Plus className="size-8" />
+            <span className="text-sm font-medium">Thêm trạng thái</span>
+          </button>
         </div>
       </div>
 
@@ -275,6 +305,12 @@ export const BoardView = memo(function BoardView({
           onUpdateIssue={handleUpdateIssue}
         />
       ) : null}
+
+      <CreateStatusModal
+        isOpen={isCreateStatusModalOpen}
+        onClose={() => setIsCreateStatusModalOpen(false)}
+        onSubmit={handleCreateStatus}
+      />
     </>
   );
 });

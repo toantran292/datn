@@ -18,16 +18,26 @@ export class IssueStatusService {
       throw new NotFoundException(`Project with ID ${dto.projectId} not found`);
     }
 
-    // Check if order is already used in this project
-    const existingStatus = await this.prisma.issueStatus.findFirst({
-      where: {
-        projectId: dto.projectId,
-        order: dto.order,
-      },
-    });
+    // Auto-calculate order if not provided
+    let order = dto.order;
+    if (order === undefined || order === null) {
+      const maxOrderStatus = await this.prisma.issueStatus.findFirst({
+        where: { projectId: dto.projectId },
+        orderBy: { order: 'desc' },
+      });
+      order = maxOrderStatus ? maxOrderStatus.order + 1 : 0;
+    } else {
+      // Check if order is already used in this project
+      const existingStatus = await this.prisma.issueStatus.findFirst({
+        where: {
+          projectId: dto.projectId,
+          order: order,
+        },
+      });
 
-    if (existingStatus) {
-      throw new BadRequestException(`Order ${dto.order} is already used in this project`);
+      if (existingStatus) {
+        throw new BadRequestException(`Order ${order} is already used in this project`);
+      }
     }
 
     const status = await this.prisma.issueStatus.create({
@@ -36,7 +46,7 @@ export class IssueStatusService {
         name: dto.name,
         description: dto.description || null,
         color: dto.color,
-        order: dto.order,
+        order: order,
       },
     });
 

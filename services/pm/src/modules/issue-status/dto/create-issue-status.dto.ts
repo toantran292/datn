@@ -18,7 +18,7 @@ export class CreateIssueStatusDto {
   @Matches(/^#[0-9A-Fa-f]{6}$/, { message: "Color must be a valid hex color (e.g., #FF0000)" })
   color: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsInt()
-  order: number;
+  order?: number;
 }
