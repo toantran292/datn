@@ -2,15 +2,17 @@
 
 import { FC, useState, useRef, useEffect } from "react";
 import { observer } from "mobx-react";
-import { LogOut, ChevronDown, User, Sun, Moon } from "lucide-react";
+import { LogOut, ChevronDown, User, Sun, Moon, Menu } from "lucide-react";
 import { cn } from "@uts/fe-utils";
 import { useTheme } from "next-themes";
+import { useSidebar } from "@/core/contexts/sidebar-context";
 
 export const AppHeader: FC = observer(() => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const { toggleSidebar } = useSidebar();
 
   // Prevent hydration mismatch for theme
   useEffect(() => {
@@ -30,7 +32,13 @@ export const AppHeader: FC = observer(() => {
   }, []);
 
   const toggleTheme = () => {
+    console.log("Toggle theme clicked, current theme:", theme);
     setTheme(theme === "dark" ? "light" : "dark");
+  };
+
+  const handleToggleSidebar = () => {
+    console.log("Toggle sidebar clicked");
+    toggleSidebar();
   };
 
   const handleLogout = async () => {
@@ -55,9 +63,20 @@ export const AppHeader: FC = observer(() => {
   };
 
   return (
-    <header className="h-14 border-b border-custom-border-200 bg-custom-background-100 flex items-center justify-between px-4">
-      {/* Left side - can add breadcrumbs or title later */}
+    <header className="h-14 border-b border-custom-border-200 bg-custom-background-100 flex items-center justify-between px-4 flex-shrink-0">
+      {/* Left side - Toggle button & title */}
       <div className="flex items-center gap-3">
+        <button
+          onClick={handleToggleSidebar}
+          className={cn(
+            "flex items-center justify-center w-9 h-9 rounded-md transition-colors",
+            "hover:bg-custom-background-80 text-custom-text-200 hover:text-custom-text-100"
+          )}
+          aria-label="Toggle sidebar"
+          type="button"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
         <h1 className="text-lg font-semibold text-custom-text-100">Project Management</h1>
       </div>
 
@@ -72,6 +91,7 @@ export const AppHeader: FC = observer(() => {
               "hover:bg-custom-background-80 text-custom-text-200 hover:text-custom-text-100"
             )}
             aria-label="Toggle theme"
+            type="button"
           >
             {theme === "dark" ? (
               <Sun className="w-5 h-5" />
@@ -84,12 +104,16 @@ export const AppHeader: FC = observer(() => {
         {/* User Menu */}
         <div className="relative" ref={dropdownRef}>
         <button
-          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+          onClick={() => {
+            console.log("User menu clicked");
+            setIsDropdownOpen(!isDropdownOpen);
+          }}
           className={cn(
             "flex items-center gap-2 px-3 py-2 rounded-md transition-colors",
             "hover:bg-custom-background-80 text-custom-text-200 hover:text-custom-text-100",
             isDropdownOpen && "bg-custom-background-80"
           )}
+          type="button"
         >
           <div className="w-6 h-6 rounded-full bg-custom-primary-100 flex items-center justify-center">
             <User className="w-4 h-4 text-white" />
