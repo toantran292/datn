@@ -51,6 +51,17 @@ export class IssueService {
       }
     }
 
+    // Validate status exists and belongs to project
+    const status = await this.prisma.issueStatus.findUnique({
+      where: { id: dto.statusId },
+    });
+    if (!status) {
+      throw new NotFoundException(`Status not found: ${dto.statusId}`);
+    }
+    if (status.projectId !== dto.projectId) {
+      throw new BadRequestException("Status does not belong to project");
+    }
+
     // Get next sequence ID for this project
     const sequenceId = await this.getNextSequenceId(dto.projectId);
 
@@ -68,10 +79,10 @@ export class IssueService {
         projectId: dto.projectId,
         sprintId: dto.sprintId || null,
         parentId: dto.parentId || null,
+        statusId: dto.statusId,
         name: dto.name,
         description: dto.description || null,
         descriptionHtml: dto.descriptionHtml || null,
-        state: dto.state,
         priority: dto.priority,
         type: dto.type,
         point: dto.point ? new Prisma.Decimal(dto.point) : null,
@@ -82,7 +93,7 @@ export class IssueService {
         assigneesJson: dto.assignees || [],
       },
       include: {
-        project: true,
+        status: true,
       },
     });
 
@@ -96,6 +107,9 @@ export class IssueService {
         project: {
           orgId,
         },
+      },
+      include: {
+        status: true,
       },
     });
     if (!issue) {
@@ -118,9 +132,12 @@ export class IssueService {
 
     const issues = await this.prisma.issue.findMany({
       where: { projectId },
+      include: {
+        status: true,
+      },
       orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
     });
-    return issues.map(this.mapToResponse);
+    return issues.map((issue) => this.mapToResponse(issue));
   }
 
   async findBySprint(sprintId: string, orgId: string): Promise<IssueResponseDto[]> {
@@ -139,9 +156,12 @@ export class IssueService {
 
     const issues = await this.prisma.issue.findMany({
       where: { sprintId },
+      include: {
+        status: true,
+      },
       orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
     });
-    return issues.map(this.mapToResponse);
+    return issues.map((issue) => this.mapToResponse(issue));
   }
 
   async update(id: string, dto: UpdateIssueDto, orgId: string): Promise<IssueResponseDto> {
@@ -207,10 +227,10 @@ export class IssueService {
         projectId: dto.projectId,
         sprintId: dto.sprintId !== undefined ? dto.sprintId : issue.sprintId,
         parentId: dto.parentId !== undefined ? dto.parentId : issue.parentId,
+        statusId: dto.statusId !== undefined ? dto.statusId : issue.statusId,
         name: dto.name,
         description: dto.description !== undefined ? dto.description : issue.description,
         descriptionHtml: dto.descriptionHtml !== undefined ? dto.descriptionHtml : issue.descriptionHtml,
-        state: dto.state,
         priority: dto.priority,
         type: dto.type,
         point: dto.point !== undefined ? (dto.point ? new Prisma.Decimal(dto.point) : null) : issue.point,
@@ -219,6 +239,9 @@ export class IssueService {
         targetDate:
           dto.targetDate !== undefined ? (dto.targetDate ? new Date(dto.targetDate) : null) : issue.targetDate,
         assigneesJson: dto.assignees !== undefined ? (dto.assignees as any) : (issue.assigneesJson as any),
+      },
+      include: {
+        status: true,
       },
     });
 
@@ -406,10 +429,20 @@ export class IssueService {
       projectId: issue.projectId,
       sprintId: issue.sprintId,
       parentId: issue.parentId,
+      statusId: issue.statusId,
+      status: issue.status ? {
+        id: issue.status.id,
+        projectId: issue.status.projectId,
+        name: issue.status.name,
+        description: issue.status.description,
+        color: issue.status.color,
+        order: issue.status.order,
+        createdAt: issue.status.createdAt,
+        updatedAt: issue.status.updatedAt,
+      } : undefined,
       name: issue.name,
       description: issue.description,
       descriptionHtml: issue.descriptionHtml,
-      state: issue.state,
       priority: issue.priority,
       type: issue.type,
       point: issue.point ? Number(issue.point) : null,

@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException, ConflictException } from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service";
+import { IssueStatusService } from "../issue-status/issue-status.service";
 import { CreateProjectDto } from "./dto/create-project.dto";
 import { UpdateProjectDto } from "./dto/update-project.dto";
 
 @Injectable()
 export class ProjectService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private issueStatusService: IssueStatusService
+  ) {}
 
   async create(createDto: CreateProjectDto, orgId: string) {
     // Sanitize inputs
@@ -47,7 +51,7 @@ export class ProjectService {
     }
 
     // Create project
-    return this.prisma.project.create({
+    const project = await this.prisma.project.create({
       data: {
         orgId,
         identifier,
@@ -56,6 +60,11 @@ export class ProjectService {
         defaultAssignee: createDto.defaultAssignee,
       },
     });
+
+    // Create default issue statuses for the project
+    await this.issueStatusService.createDefaultStatuses(project.id);
+
+    return project;
   }
 
   async findAll(orgId: string) {

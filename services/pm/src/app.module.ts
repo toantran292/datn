@@ -7,6 +7,7 @@ import { PrismaModule } from "./prisma/prisma.module";
 import { ProjectModule } from "./modules/project/project.module";
 import { SprintModule } from "./modules/sprint/sprint.module";
 import { IssueModule } from "./modules/issue/issue.module";
+import { IssueStatusModule } from "./modules/issue-status/issue-status.module";
 import { OrgIdGuard } from "./common/guards";
 
 @Module({
@@ -18,6 +19,7 @@ import { OrgIdGuard } from "./common/guards";
     ProjectModule,
     SprintModule,
     IssueModule,
+    IssueStatusModule,
   ],
   controllers: [AppController],
   providers: [
