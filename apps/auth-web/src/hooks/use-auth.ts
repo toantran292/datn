@@ -46,14 +46,18 @@ export function useEmailAuth() {
 
       // Small delay to ensure cookies are set before redirect
       setTimeout(() => {
-        // Check for redirect parameter from pm-web
+        // Check for redirect parameter
         const urlParams = new URLSearchParams(window.location.search);
         const redirectPath = urlParams.get("redirect");
+        const fromApp = urlParams.get("from"); // 'pm' or null
 
-        if (redirectPath && redirectPath.startsWith("/")) {
-          // Redirect to pm-web with the workspace path
+        if (redirectPath && fromApp === "pm") {
+          // Redirect came from pm-web, go back to pm-web
           const pmWebUrl = process.env.NEXT_PUBLIC_PM_WEB_URL || "http://localhost:3002";
           window.location.href = `${pmWebUrl}${redirectPath}`;
+        } else if (redirectPath && redirectPath.startsWith("/") && !fromApp) {
+          // Redirect within auth-web (like /invites, /enter)
+          window.location.href = redirectPath;
         } else {
           // Default: redirect to workspaces
           window.location.href = routes.workspaces();

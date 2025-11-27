@@ -48,6 +48,30 @@ function EnterPageContent() {
           throw new Error(errorData.error || `Failed to switch organization: ${response.status}`);
         }
 
+        // Verify auth is ready before redirecting
+        const verifyAndRedirect = async () => {
+          try {
+            // Quick verification that session is active
+            const verifyResponse = await fetch(`${apiBase}/auth/me`, {
+              method: 'GET',
+              credentials: 'include',
+            });
+
+            if (verifyResponse.ok) {
+              // Session verified, safe to redirect
+              window.location.href = `http://localhost:3002/${slug}`;
+            } else {
+              // Session not ready, wait a bit longer
+              setTimeout(() => {
+                window.location.href = `http://localhost:3002/${slug}`;
+              }, 500);
+            }
+          } catch (err) {
+            // On error, still redirect (might be network issue)
+            window.location.href = `http://localhost:3002/${slug}`;
+          }
+        };
+
         progressInterval = setInterval(() => {
           setCurrentStage((prev) => {
             const nextStage = prev + 1;
@@ -56,9 +80,10 @@ function EnterPageContent() {
               return nextStage;
             } else {
               clearInterval(progressInterval);
+              // Verify session before redirect
               setTimeout(() => {
-                window.location.href = `http://localhost:3002/${slug}`;
-              }, 500);
+                verifyAndRedirect();
+              }, 300);
               return prev;
             }
           });
