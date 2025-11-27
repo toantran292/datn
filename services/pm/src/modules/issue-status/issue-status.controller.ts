@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query } from "@nestjs/common";
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, Patch } from "@nestjs/common";
 import { IssueStatusService } from "./issue-status.service";
 import { CreateIssueStatusDto } from "./dto/create-issue-status.dto";
 import { UpdateIssueStatusDto } from "./dto/update-issue-status.dto";
+import { ReorderIssueStatusDto } from "./dto/reorder-issue-status.dto";
 import { IssueStatusResponseDto } from "./dto/issue-status-response.dto";
 
 @Controller("api/issue-statuses")
@@ -31,5 +32,10 @@ export class IssueStatusController {
   @Delete(":id")
   async delete(@Param("id") id: string): Promise<void> {
     return this.issueStatusService.delete(id);
+  }
+
+  @Patch("reorder")
+  async reorder(@Body() reorderDto: ReorderIssueStatusDto): Promise<IssueStatusResponseDto[]> {
+    return this.issueStatusService.reorder(reorderDto);
   }
 }

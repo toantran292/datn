@@ -97,6 +97,8 @@ export const BoardView = memo(function BoardView({
   const [activeColumn, setActiveColumn] = useState<string | null>(null);
   const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
   const [isCreateStatusModalOpen, setIsCreateStatusModalOpen] = useState(false);
+  const [draggedColumnId, setDraggedColumnId] = useState<string | null>(null);
+  const [dropPosition, setDropPosition] = useState<{ statusId: string; position: "before" | "after" } | null>(null);
   
   // Get first status ID for quick create (usually "TO DO")
   const firstStatusId = issueStatuses.length > 0 ? issueStatuses[0].id : null;
@@ -229,6 +231,63 @@ export const BoardView = memo(function BoardView({
     [issueStatusStore, projectId]
   );
 
+  const handleColumnDrop = useCallback(
+    async (targetStatusId: string, position: "before" | "after") => {
+      if (!draggedColumnId || draggedColumnId === targetStatusId) {
+        setDraggedColumnId(null);
+        setDropPosition(null);
+        return;
+      }
+
+      try {
+        // Create new order array
+        const currentOrder = [...issueStatuses];
+        const draggedIndex = currentOrder.findIndex((s) => s.id === draggedColumnId);
+        const targetIndex = currentOrder.findIndex((s) => s.id === targetStatusId);
+
+        if (draggedIndex === -1 || targetIndex === -1) return;
+
+        // Remove dragged item
+        const [draggedItem] = currentOrder.splice(draggedIndex, 1);
+
+        // Calculate new position
+        let newIndex = targetIndex;
+        if (position === "after") {
+          newIndex = draggedIndex < targetIndex ? targetIndex : targetIndex + 1;
+        } else {
+          newIndex = draggedIndex < targetIndex ? targetIndex - 1 : targetIndex;
+        }
+
+        // Insert at new position
+        currentOrder.splice(newIndex, 0, draggedItem);
+
+        // Create array of status IDs in new order
+        const newStatusIds = currentOrder.map((s) => s.id);
+
+        // Call API to update order
+        await issueStatusStore.reorderIssueStatuses(projectId, newStatusIds);
+
+        setToast({
+          type: TOAST_TYPE.SUCCESS,
+          title: "Đã cập nhật",
+          message: "Thứ tự trạng thái đã được lưu",
+        });
+      } catch (error: any) {
+        const message =
+          error?.response?.data?.message ?? error?.message ?? "Không thể sắp xếp lại trạng thái. Vui lòng thử lại.";
+        setToast({
+          type: TOAST_TYPE.ERROR,
+          title: "Lỗi",
+          message: typeof message === "string" ? message : undefined,
+        });
+      } finally {
+        setDraggedColumnId(null);
+        setDropPosition(null);
+      }
+    },
+    [draggedColumnId, issueStatuses, issueStatusStore, projectId]
+  );
+
   // Group issues by sprint for issue count
   const issuesBySprintId = useMemo(() => {
     const map = new Map<string, number>();
@@ -281,6 +340,16 @@ export const BoardView = memo(function BoardView({
               onColumnDragEnter={handleColumnDragEnter}
               onIssueClick={setSelectedIssueId}
               projectIdentifier={projectIdentifier}
+              isDraggingColumn={draggedColumnId !== null}
+              isBeingDragged={draggedColumnId === status.id}
+              dropPosition={dropPosition?.statusId === status.id ? dropPosition.position : null}
+              onColumnDragStart={() => setDraggedColumnId(status.id)}
+              onColumnDragEnd={() => {
+                setDraggedColumnId(null);
+                setDropPosition(null);
+              }}
+              onColumnDragOver={(position) => setDropPosition({ statusId: status.id, position })}
+              onColumnDrop={handleColumnDrop}
             />
           ))}
           
@@ -443,6 +512,13 @@ const BoardColumn: React.FC<{
   onColumnDragEnter: (statusId: string) => void;
   onIssueClick?: (issueId: string) => void;
   projectIdentifier?: string | null;
+  isDraggingColumn: boolean;
+  isBeingDragged: boolean;
+  dropPosition: "before" | "after" | null;
+  onColumnDragStart: () => void;
+  onColumnDragEnd: () => void;
+  onColumnDragOver: (position: "before" | "after") => void;
+  onColumnDrop: (statusId: string, position: "before" | "after") => void;
 }> = ({
   statusId,
   title,
@@ -460,6 +536,13 @@ const BoardColumn: React.FC<{
   onColumnDragEnter,
   onIssueClick,
   projectIdentifier,
+  isDraggingColumn,
+  isBeingDragged,
+  dropPosition,
+  onColumnDragStart,
+  onColumnDragEnd,
+  onColumnDragOver,
+  onColumnDrop,
 }) => {
   const [hoveredIssueId, setHoveredIssueId] = useState<string | null>(null);
   const [hoveredPosition, setHoveredPosition] = useState<"top" | "bottom" | null>(null);
@@ -468,26 +551,61 @@ const BoardColumn: React.FC<{
   return (
     <div
       className={cn(
-        "flex h-full w-80 min-w-[20rem] flex-col gap-3 rounded-lg border border-custom-border-200 bg-custom-background-90/50 shadow-sm transition-all",
+        "flex h-full w-80 min-w-[20rem] flex-col gap-3 rounded-lg border border-custom-border-200 bg-custom-background-90/50 shadow-sm transition-all relative",
         "border-t-4",
         {
           "ring-2 ring-custom-primary-100 bg-custom-background-90": isActive,
+          "opacity-50": isBeingDragged,
         }
       )}
       style={{ borderTopColor: color }}
       onDragOver={(event) => {
+        if (!isDraggingColumn) {
+          event.preventDefault();
+          onColumnDragEnter(statusId);
+          return;
+        }
+        
+        // Column drag over
         event.preventDefault();
-        onColumnDragEnter(statusId);
+        const rect = event.currentTarget.getBoundingClientRect();
+        const midpoint = rect.left + rect.width / 2;
+        const position = event.clientX < midpoint ? "before" : "after";
+        onColumnDragOver(position);
       }}
       onDrop={(event) => {
         event.preventDefault();
-        setHoveredIssueId(null);
-        setHoveredPosition(null);
-        onIssueDrop(statusId, null, "end");
+        
+        if (isDraggingColumn && dropPosition) {
+          onColumnDrop(statusId, dropPosition);
+        } else {
+          setHoveredIssueId(null);
+          setHoveredPosition(null);
+          onIssueDrop(statusId, null, "end");
+        }
       }}
     >
+      {/* Drop indicator for column reorder */}
+      {dropPosition === "before" && (
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-custom-primary-100 z-10 rounded-l-lg" />
+      )}
+      {dropPosition === "after" && (
+        <div className="absolute right-0 top-0 bottom-0 w-1 bg-custom-primary-100 z-10 rounded-r-lg" />
+      )}
+      
       {/* Column Header */}
-      <div className="flex items-center justify-between px-4 pt-4 pb-2">
+      <div 
+        className="flex items-center justify-between px-4 pt-4 pb-2 cursor-grab active:cursor-grabbing"
+        draggable={!isDraggingColumn}
+        onDragStart={(e) => {
+          e.stopPropagation();
+          onColumnDragStart();
+        }}
+        onDragEnd={(e) => {
+          e.stopPropagation();
+          onColumnDragEnd();
+        }}
+      >
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-semibold text-custom-text-100">{title}</h3>
           <Badge variant="outline-neutral" size="sm" className="font-medium">

@@ -39,8 +39,7 @@ export class IssueStatusService extends APIService {
   }
 
   async reorderIssueStatuses(projectId: string, statusIds: string[]): Promise<IIssueStatus[]> {
-    // This endpoint doesn't exist in backend yet, will need to be implemented
-    return this.put(`/api/issue-statuses/reorder`, { projectId, statusIds })
+    return this.patch(`/api/issue-statuses/reorder`, { projectId, statusIds })
       .then((response) => response?.data)
       .catch((error) => {
         throw error?.response?.data;

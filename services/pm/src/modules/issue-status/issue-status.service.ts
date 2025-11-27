@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException } from "@nestjs/comm
 import { PrismaService } from "../../prisma/prisma.service";
 import { CreateIssueStatusDto } from "./dto/create-issue-status.dto";
 import { UpdateIssueStatusDto } from "./dto/update-issue-status.dto";
+import { ReorderIssueStatusDto } from "./dto/reorder-issue-status.dto";
 import { IssueStatusResponseDto } from "./dto/issue-status-response.dto";
 
 @Injectable()
@@ -152,6 +153,57 @@ export class IssueStatusService {
     );
 
     return createdStatuses.map((status) => this.mapToResponse(status));
+  }
+
+  async reorder(dto: ReorderIssueStatusDto): Promise<IssueStatusResponseDto[]> {
+    // Verify project exists
+    const project = await this.prisma.project.findUnique({
+      where: { id: dto.projectId },
+    });
+
+    if (!project) {
+      throw new NotFoundException(`Project with ID ${dto.projectId} not found`);
+    }
+
+    // Verify all status IDs belong to this project
+    const statuses = await this.prisma.issueStatus.findMany({
+      where: {
+        projectId: dto.projectId,
+        id: { in: dto.statusIds },
+      },
+    });
+
+    if (statuses.length !== dto.statusIds.length) {
+      throw new BadRequestException("Some status IDs are invalid or do not belong to this project");
+    }
+
+    // Use transaction to avoid unique constraint violations
+    // Strategy: Set all to negative numbers first, then set to actual order
+    const updatedStatuses = await this.prisma.$transaction(async (tx) => {
+      // Step 1: Set all to negative order (temporary)
+      await Promise.all(
+        dto.statusIds.map((statusId, index) =>
+          tx.issueStatus.update({
+            where: { id: statusId },
+            data: { order: -(index + 1) },
+          })
+        )
+      );
+
+      // Step 2: Set to actual order
+      const results = await Promise.all(
+        dto.statusIds.map((statusId, index) =>
+          tx.issueStatus.update({
+            where: { id: statusId },
+            data: { order: index },
+          })
+        )
+      );
+
+      return results;
+    });
+
+    return updatedStatuses.map((status) => this.mapToResponse(status));
   }
 
   private mapToResponse(status: any): IssueStatusResponseDto {
