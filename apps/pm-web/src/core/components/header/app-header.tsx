@@ -7,6 +7,22 @@ import { cn } from "@uts/fe-utils";
 import { useTheme } from "next-themes";
 import { useSidebar } from "@/core/contexts/sidebar-context";
 
+// UTS Brand Logo Component
+const UTSLogo: FC = () => (
+  <div className="size-8 bg-gradient-to-br from-[#FF8800] to-[#00C4AB] rounded-xl flex items-center justify-center shadow-lg">
+    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+      <path
+        d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </svg>
+  </div>
+);
+
 export const AppHeader: FC = observer(() => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -32,12 +48,10 @@ export const AppHeader: FC = observer(() => {
   }, []);
 
   const toggleTheme = () => {
-    console.log("Toggle theme clicked, current theme:", theme);
     setTheme(theme === "dark" ? "light" : "dark");
   };
 
   const handleToggleSidebar = () => {
-    console.log("Toggle sidebar clicked");
     toggleSidebar();
   };
 
@@ -64,7 +78,7 @@ export const AppHeader: FC = observer(() => {
 
   return (
     <header className="h-14 border-b border-custom-border-200 bg-custom-background-100 flex items-center justify-between px-4 flex-shrink-0">
-      {/* Left side - Toggle button & title */}
+      {/* Left side - Toggle button & logo */}
       <div className="flex items-center gap-3">
         <button
           onClick={handleToggleSidebar}
@@ -77,7 +91,8 @@ export const AppHeader: FC = observer(() => {
         >
           <Menu className="w-5 h-5" />
         </button>
-        <h1 className="text-lg font-semibold text-custom-text-100">Project Management</h1>
+        <UTSLogo />
+        <h1 className="text-lg font-semibold text-custom-text-100">Unified TeamSpace</h1>
       </div>
 
       {/* Right side - Theme toggle & User menu */}
@@ -100,10 +115,7 @@ export const AppHeader: FC = observer(() => {
         {/* User Menu */}
         <div className="relative" ref={dropdownRef}>
           <button
-            onClick={() => {
-              console.log("User menu clicked");
-              setIsDropdownOpen(!isDropdownOpen);
-            }}
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             className={cn(
               "flex items-center gap-2 px-3 py-2 rounded-md transition-colors",
               "hover:bg-custom-background-80 text-custom-text-200 hover:text-custom-text-100",
