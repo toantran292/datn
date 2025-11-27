@@ -63,7 +63,7 @@ model Issue {
   priority        String   @db.VarChar(32)
   type            String   @db.VarChar(32)
   point           Decimal? @db.Decimal(5, 2)
-  sequenceId      BigInt?  @map("sequence_id")
+  sequenceId      Int      @map("sequence_id")
   sortOrder       Decimal  @map("sort_order") @db.Decimal(20, 10)
   startDate       DateTime? @map("start_date") @db.Date
   targetDate      DateTime? @map("target_date") @db.Date
@@ -80,5 +80,6 @@ model Issue {
   @@index([projectId])
   @@index([sprintId])
   @@index([parentId])
+  @@unique([projectId, sequenceId], name: "unique_project_sequence_id")
   @@map("issue")
 }

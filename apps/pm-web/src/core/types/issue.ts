@@ -16,7 +16,7 @@ export interface IIssue {
   priority: TIssuePriority;
   type: TIssueType;
   point: number | null;
-  sequenceId: number | null;
+  sequenceId: number;
   sortOrder: number | null;
   startDate: string | null;
   targetDate: string | null;

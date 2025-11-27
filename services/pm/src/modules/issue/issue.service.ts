@@ -51,6 +51,9 @@ export class IssueService {
       }
     }
 
+    // Get next sequence ID for this project
+    const sequenceId = await this.getNextSequenceId(dto.projectId);
+
     // Calculate sortOrder if not provided
     let sortOrder = dto.sortOrder;
     if (!sortOrder) {
@@ -72,11 +75,14 @@ export class IssueService {
         priority: dto.priority,
         type: dto.type,
         point: dto.point ? new Prisma.Decimal(dto.point) : null,
-        sequenceId: dto.sequenceId ? BigInt(dto.sequenceId) : null,
+        sequenceId,
         sortOrder: new Prisma.Decimal(sortOrder),
         startDate: dto.startDate ? new Date(dto.startDate) : null,
         targetDate: dto.targetDate ? new Date(dto.targetDate) : null,
         assigneesJson: dto.assignees || [],
+      },
+      include: {
+        project: true,
       },
     });
 
@@ -208,7 +214,6 @@ export class IssueService {
         priority: dto.priority,
         type: dto.type,
         point: dto.point !== undefined ? (dto.point ? new Prisma.Decimal(dto.point) : null) : issue.point,
-        sequenceId: dto.sequenceId !== undefined ? (dto.sequenceId ? BigInt(dto.sequenceId) : null) : issue.sequenceId,
         sortOrder: dto.sortOrder !== undefined ? new Prisma.Decimal(dto.sortOrder) : issue.sortOrder,
         startDate: dto.startDate !== undefined ? (dto.startDate ? new Date(dto.startDate) : null) : issue.startDate,
         targetDate:
@@ -287,6 +292,19 @@ export class IssueService {
     }
     await this.prisma.issue.delete({
       where: { id },
+    });
+  }
+
+  private async getNextSequenceId(projectId: string): Promise<number> {
+    // Use transaction to prevent race conditions
+    return await this.prisma.$transaction(async (tx) => {
+      const maxIssue = await tx.issue.findFirst({
+        where: { projectId },
+        orderBy: { sequenceId: "desc" },
+        select: { sequenceId: true },
+      });
+
+      return Number(maxIssue?.sequenceId || 0) + 1;
     });
   }
 
@@ -395,7 +413,7 @@ export class IssueService {
       priority: issue.priority,
       type: issue.type,
       point: issue.point ? Number(issue.point) : null,
-      sequenceId: issue.sequenceId ? Number(issue.sequenceId) : null,
+      sequenceId: Number(issue.sequenceId),
       sortOrder: Number(issue.sortOrder),
       startDate: issue.startDate ? issue.startDate.toISOString().split("T")[0] : null,
       targetDate: issue.targetDate ? issue.targetDate.toISOString().split("T")[0] : null,

@@ -13,7 +13,6 @@ type IssueRequestPayload = {
   priority: TIssuePriority;
   type: TIssueType;
   point: number | null;
-  sequenceId: number | null;
   sortOrder: number | null;
   startDate: string | null;
   targetDate: string | null;
@@ -48,7 +47,6 @@ export class IssueService extends APIService {
       priority: payload.priority,
       type: payload.type,
       point: payload.point ?? null,
-      sequenceId: payload.sequenceId ?? null,
       sortOrder: payload.sortOrder ?? null,
       startDate: payload.startDate ?? null,
       targetDate: payload.targetDate ?? null,
@@ -74,7 +72,6 @@ export class IssueService extends APIService {
       priority: issue.priority,
       type: issue.type,
       point: issue.point ?? null,
-      sequenceId: issue.sequenceId ?? null,
       sortOrder: issue.sortOrder ?? null,
       startDate: issue.startDate ?? null,
       targetDate: issue.targetDate ?? null,
@@ -104,7 +101,6 @@ export class IssueService extends APIService {
       description: issue.description,
       descriptionHtml: issue.descriptionHtml,
       point: issue.point,
-      sequenceId: issue.sequenceId,
       sortOrder: issue.sortOrder,
       startDate: issue.startDate,
       targetDate: issue.targetDate,
@@ -127,7 +123,7 @@ export class IssueService extends APIService {
       priority: this.ensurePriority(issue.priority),
       type: this.ensureType(issue.type),
       point: issue.point === null || issue.point === undefined ? null : Number(issue.point),
-      sequenceId: issue.sequenceId === null || issue.sequenceId === undefined ? null : Number(issue.sequenceId),
+      sequenceId: Number(issue.sequenceId),
       sortOrder: issue.sortOrder === null || issue.sortOrder === undefined ? null : Number(issue.sortOrder),
       startDate: (issue.startDate as string | null | undefined) ?? null,
       targetDate: (issue.targetDate as string | null | undefined) ?? null,

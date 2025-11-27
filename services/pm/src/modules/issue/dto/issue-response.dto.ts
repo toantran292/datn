@@ -14,7 +14,7 @@ export class IssueResponseDto {
   priority: IssuePriority;
   type: IssueType;
   point: number | null;
-  sequenceId: number | null;
+  sequenceId: number;
   sortOrder: number;
   startDate: string | null;
   targetDate: string | null;
