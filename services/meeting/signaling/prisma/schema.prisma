@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum MeetingStatus {
+  SCHEDULED
+  ACTIVE
+  ENDED
+  TERMINATED
+}
+
+enum ParticipantRole {
+  HOST
+  MODERATOR
+  GUEST
+}
+
+enum ParticipantStatus {
+  JOINED
+  LEFT
+  KICKED
+}
+
+enum RecordingStatus {
+  PENDING
+  RECORDING
+  STOPPED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+model Meeting {
+  id            String         @id @default(uuid())
+  roomId        String         @unique // Jitsi room name
+  subjectType   String         // 'chat' | 'project'
+  subjectId     String         // chatId or projectId
+  hostUserId    String
+  orgId         String?
+  status        MeetingStatus  @default(ACTIVE)
+  locked        Boolean        @default(false)
+  maxParticipants Int?
+  startedAt     DateTime       @default(now())
+  endedAt       DateTime?
+
+  participants  Participant[]
+  recordings    Recording[]
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([roomId])
+  @@index([subjectType, subjectId])
+  @@index([hostUserId])
+  @@index([status])
+}
+
+model Participant {
+  id            String            @id @default(uuid())
+  meetingId     String
+  meeting       Meeting           @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  userId        String
+  userName      String?
+  userAvatar    String?
+  role          ParticipantRole   @default(GUEST)
+  status        ParticipantStatus @default(JOINED)
+
+  joinedAt      DateTime          @default(now())
+  leftAt        DateTime?
+  kickedBy      String?           // userId who kicked this participant
+  kickReason    String?
+
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([meetingId])
+  @@index([userId])
+  @@index([status])
+}
+
+model Recording {
+  id            String          @id @default(uuid())
+  meetingId     String
+  meeting       Meeting         @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  sessionId     String          @unique // Jibri session ID
+  status        RecordingStatus @default(PENDING)
+
+  startedBy     String          // userId who started recording
+  stoppedBy     String?         // userId who stopped recording
+
+  startedAt     DateTime        @default(now())
+  stoppedAt     DateTime?
+  duration      Int?            // seconds
+
+  filePath      String?         // Local file path from Jibri
+  fileSize      Int?            // bytes
+  s3Bucket      String?
+  s3Key         String?
+  s3Url         String?
+
+  uploadedAt    DateTime?
+  error         String?
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([meetingId])
+  @@index([sessionId])
+  @@index([status])
+}
+
+model MeetingEvent {
+  id            String   @id @default(uuid())
+  meetingId     String
+
+  eventType     String   // 'participant_joined', 'participant_left', 'recording_started', 'recording_stopped', 'meeting_ended', 'participant_kicked', 'room_locked', 'room_unlocked'
+  userId        String?  // User who triggered the event
+  targetUserId  String?  // Target user (for kick events)
+  metadata      Json?    // Additional event data
+
+  timestamp     DateTime @default(now())
+
+  @@index([meetingId])
+  @@index([eventType])
+}

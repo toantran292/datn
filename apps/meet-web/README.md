@@ -1,36 +1,147 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# UTS Meet Web
+
+Custom Jitsi meeting application built with Next.js 15 and lib-jitsi-meet.
+
+## Features
+
+- ✅ Custom UI (no default Jitsi UI)
+- ✅ Direct WebSocket connection to Jitsi (Prosody)
+- ✅ JWT authentication from backend
+- ✅ Real-time video conferencing
+- ✅ Audio/video controls
+- ✅ Grid layout for participants
+- ✅ Responsive design with Tailwind CSS
+
+## Tech Stack
+
+- **Next.js 15** - React framework
+- **TypeScript** - Type safety
+- **lib-jitsi-meet** - Jitsi Meet library
+- **Tailwind CSS** - Styling
+- **Motion** - Animations
+- **Lucide React** - Icons
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+1. Backend service running on `http://localhost:40600`
+2. Jitsi infrastructure (Prosody, Jicofo, JVB) running
+
+### Installation
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd apps/meet-web
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Environment Variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Create `.env.local`:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+NEXT_PUBLIC_MEET_API=http://localhost:40600
+NEXT_PUBLIC_JITSI_DOMAIN=meet.local
+NEXT_PUBLIC_JITSI_WEBSOCKET_URL=ws://192.168.100.195:40680/xmpp-websocket
+```
 
-## Learn More
+### Run Development Server
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+pnpm dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Architecture
 
-## Deploy on Vercel
+### Flow
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Join Page** (`/join`)
+   - User enters ID, name, and meeting details
+   - Calls backend `/meet/token` to get JWT
+   - Stores token and meeting info in localStorage
+   - Redirects to meeting room
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2. **Meeting Page** (`/meet/[roomId]`)
+   - Initializes lib-jitsi-meet
+   - Creates WebSocket connection to Prosody
+   - Joins conference room
+   - Creates local audio/video tracks
+   - Renders participant videos in grid
+   - Provides controls for mute/unmute
+
+### Key Components
+
+- **`lib/jitsi.ts`** - Jitsi initialization and helpers
+- **`hooks/useJitsiConnection.ts`** - WebSocket connection management
+- **`hooks/useJitsiConference.ts`** - Conference room management
+- **`components/ParticipantVideo.tsx`** - Video rendering
+- **`components/ControlsToolbar.tsx`** - Meeting controls
+- **`components/WaitingState.tsx`** - Loading state
+
+## API Integration
+
+### Backend Endpoints
+
+```typescript
+// Get JWT token and meeting info
+POST /meet/token
+{
+  user_id: string;
+  user_name?: string;
+  subject_type: 'chat' | 'project';
+  chat_id?: string;  // for chat meetings
+  project_id?: string;  // for project meetings
+  room_id?: string;  // optional
+}
+
+Response:
+{
+  token: string;  // JWT
+  room_id: string;
+  meeting_id: string;
+  websocket_url: string;
+  ice_servers: any[];
+}
+```
+
+## Troubleshooting
+
+### Video/Audio Not Working
+
+- Check browser permissions for camera/microphone
+- Ensure Jitsi infrastructure is running
+- Check WebSocket connection in browser console
+
+### Connection Failed
+
+- Verify backend is running on port 40600
+- Check `.env.local` has correct URLs
+- Ensure Jitsi WebSocket endpoint is accessible
+
+### Participants Not Visible
+
+- Check conference joined successfully (console logs)
+- Verify tracks are being created
+- Check participant video rendering
+
+## Development
+
+```bash
+# Install dependencies
+pnpm install
+
+# Run dev server
+pnpm dev
+
+# Build for production
+pnpm build
+
+# Start production server
+pnpm start
+```
+
+## License
+
+MIT

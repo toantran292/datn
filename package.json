@@ -15,7 +15,10 @@
     "clean": "turbo run clean && pnpm rimraf node_modules */*/node_modules */*/*/node_modules",
     "marketing:dev": "pnpm --filter marketing-web dev",
     "marketing:build": "pnpm --filter marketing-web build",
-    "marketing:preview": "pnpm --filter marketing-web preview"
+    "marketing:preview": "pnpm --filter marketing-web preview",
+    "meeting:dev": "pnpm --filter meet-web dev",
+    "meeting:build": "pnpm --filter meet-web build",
+    "meeting:preview": "pnpm --filter meet-web preview"
   },
   "devDependencies": {
     "turbo": "^2.1.3",

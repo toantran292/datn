@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ts-orange: #FF8800;
+  --ts-teal: #00C4AB;
+  --ts-bg-dark: #0F172A;
+  --ts-bg-card: #1E293B;
+  --ts-text-primary: #F8FAFC;
+  --ts-text-secondary: #94A3B8;
+}
+
+body {
+  background-color: var(--ts-bg-dark);
+  color: var(--ts-text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}

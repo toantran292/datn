@@ -6,16 +6,27 @@ services:
       XMPP_AUTH_DOMAIN: auth.meet.local
       XMPP_MUC_DOMAIN: muc.meet.local
       XMPP_INTERNAL_MUC_DOMAIN: internal-muc.meet.local
+
       ENABLE_AUTH: "1"
       AUTH_TYPE: jwt
+
       JWT_APP_SECRET: superlongrandomsecret123
       JWT_ACCEPTED_ISSUERS: meet-auth
       JWT_ACCEPTED_AUDIENCES: meet
+
       JICOFO_COMPONENT_SECRET: focussecret
       JICOFO_AUTH_USER: focus
       JICOFO_AUTH_PASSWORD: focuspass
+
       JVB_AUTH_USER: jvb
       JVB_AUTH_PASSWORD: jvbpass
+
+      # 🔥 THÊM 4 DÒNG NÀY 🔥
+      ENABLE_TURN: "1"
+      TURN_SECRET: "turnsharedsecret"
+      TURN_PORT: "3478"
+      TURN_TRANSPORT: "udp"
+
     volumes:
       - ./config/prosody/data:/config/data
       - ./config/prosody/keys:/config/keys
@@ -43,30 +54,32 @@ services:
 
   jvb:
     image: jitsi/jvb:stable
+    volumes:
+      - ./config/jvb:/config
     environment:
       XMPP_SERVER: prosody
       XMPP_DOMAIN: meet.local
       XMPP_AUTH_DOMAIN: auth.meet.local
       XMPP_MUC_DOMAIN: muc.meet.local
       XMPP_INTERNAL_MUC_DOMAIN: internal-muc.meet.local
-      DOCKER_HOST_ADDRESS: "192.168.100.195" # IP LAN của máy Windows
-      JVB_ADVERTISE_IPS: "192.168.100.195,1.53.114.54"
+      DOCKER_HOST_ADDRESS: "192.168.100.196" # IP LAN của máy Windows
+      # Single advertise IP - LAN only
+      JVB_ADVERTISE_IPS: "192.168.100.196"
       JVB_AUTH_USER: jvb
       JVB_AUTH_PASSWORD: jvbpass
       JVB_BREWERY_MUC: jvbbrewery
-      # Bật Colibri WS + expose đúng domain bạn truy cập:
-      JVB_ENABLE_APIS: "rest,colibri"
-      COLIBRI_REST_ENABLED: "true"
-      COLIBRI_WS_ENABLED: "true"
-      COLIBRI_WS_DOMAIN: "192.168.100.195"
-      COLIBRI_WS_TLS: "false"
-      # Nếu sau NAT, có thể cần:
-      # TCP fallback (tùy nhu cầu):
-      # JVB_ENABLE_TCP_HARVESTER: "true"
-      # JVB_TCP_HARVESTER_PORT: "4443"
+      # Disable public STUN servers
+      JVB_DISABLE_STUN: "true"
+      # Force specific local/public IP mapping
+      NAT_HARVESTER_LOCAL_ADDRESS: "172.19.0.5"
+      NAT_HARVESTER_PUBLIC_ADDRESS: "192.168.100.196"
+      # TCP fallback
+      JVB_ENABLE_TCP_HARVESTER: "true"
+      JVB_TCP_HARVESTER_PORT: "4443"
     depends_on: [ prosody ]
     ports:
       - "10000:10000/udp" # giữ nguyên 10000
+      - "4443:4443/tcp"
       - "9090:9090" # Colibri WS
     networks: [ meetnet ]
 
