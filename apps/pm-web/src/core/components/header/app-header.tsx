@@ -43,21 +43,21 @@ export const AppHeader: FC = observer(() => {
 
   const handleLogout = async () => {
     try {
-      const authWebUrl = process.env.NEXT_PUBLIC_AUTH_WEB_URL || 'http://localhost:3000';
-      const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL?.replace('/pm', '') || 'http://localhost:40000';
+      const authWebUrl = process.env.NEXT_PUBLIC_AUTH_WEB_URL || "http://localhost:3000";
+      const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/pm", "") || "http://localhost:40000";
 
       // Call logout API
       await fetch(`${apiBase}/auth/logout`, {
-        method: 'POST',
-        credentials: 'include',
+        method: "POST",
+        credentials: "include",
       });
 
       // Redirect to auth-web login
       window.location.href = `${authWebUrl}/login`;
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error("Logout failed:", error);
       // Still redirect even if API call fails
-      const authWebUrl = process.env.NEXT_PUBLIC_AUTH_WEB_URL || 'http://localhost:3000';
+      const authWebUrl = process.env.NEXT_PUBLIC_AUTH_WEB_URL || "http://localhost:3000";
       window.location.href = `${authWebUrl}/login`;
     }
   };
@@ -93,49 +93,42 @@ export const AppHeader: FC = observer(() => {
             aria-label="Toggle theme"
             type="button"
           >
-            {theme === "dark" ? (
-              <Sun className="w-5 h-5" />
-            ) : (
-              <Moon className="w-5 h-5" />
-            )}
+            {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>
         )}
 
         {/* User Menu */}
         <div className="relative" ref={dropdownRef}>
-        <button
-          onClick={() => {
-            console.log("User menu clicked");
-            setIsDropdownOpen(!isDropdownOpen);
-          }}
-          className={cn(
-            "flex items-center gap-2 px-3 py-2 rounded-md transition-colors",
-            "hover:bg-custom-background-80 text-custom-text-200 hover:text-custom-text-100",
-            isDropdownOpen && "bg-custom-background-80"
-          )}
-          type="button"
-        >
-          <div className="w-6 h-6 rounded-full bg-custom-primary-100 flex items-center justify-center">
-            <User className="w-4 h-4 text-white" />
-          </div>
-          <ChevronDown className={cn(
-            "w-4 h-4 transition-transform",
-            isDropdownOpen && "rotate-180"
-          )} />
-        </button>
+          <button
+            onClick={() => {
+              console.log("User menu clicked");
+              setIsDropdownOpen(!isDropdownOpen);
+            }}
+            className={cn(
+              "flex items-center gap-2 px-3 py-2 rounded-md transition-colors",
+              "hover:bg-custom-background-80 text-custom-text-200 hover:text-custom-text-100",
+              isDropdownOpen && "bg-custom-background-80"
+            )}
+            type="button"
+          >
+            <div className="w-6 h-6 rounded-full bg-custom-primary-100 flex items-center justify-center">
+              <User className="w-4 h-4 text-white" />
+            </div>
+            <ChevronDown className={cn("w-4 h-4 transition-transform", isDropdownOpen && "rotate-180")} />
+          </button>
 
-        {/* Dropdown menu */}
-        {isDropdownOpen && (
-          <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-custom-background-100 border border-custom-border-200 py-1 z-50">
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-2 text-sm text-custom-text-200 hover:bg-custom-background-80 hover:text-custom-text-100 transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>Logout</span>
-            </button>
-          </div>
-        )}
+          {/* Dropdown menu */}
+          {isDropdownOpen && (
+            <div className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-custom-background-100 border border-custom-border-200 py-1 z-50">
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 px-4 py-2 text-sm text-custom-text-200 hover:bg-custom-background-80 hover:text-custom-text-100 transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Logout</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>
