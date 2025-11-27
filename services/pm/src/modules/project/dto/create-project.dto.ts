@@ -1,9 +1,9 @@
 import { IsNotEmpty, IsString, MaxLength, IsUUID, IsOptional } from "class-validator";
 
 export class CreateProjectDto {
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  orgId: string;
+  orgId?: string;
 
   @IsNotEmpty()
   @IsString()

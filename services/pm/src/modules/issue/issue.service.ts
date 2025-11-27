@@ -13,13 +13,16 @@ export class IssueService {
 
   constructor(private prisma: PrismaService) {}
 
-  async create(dto: CreateIssueDto): Promise<IssueResponseDto> {
-    // Validate project exists
-    const project = await this.prisma.project.findUnique({
-      where: { id: dto.projectId },
+  async create(dto: CreateIssueDto, orgId: string): Promise<IssueResponseDto> {
+    // Validate project exists and belongs to organization
+    const project = await this.prisma.project.findFirst({
+      where: { 
+        id: dto.projectId,
+        orgId,
+      },
     });
     if (!project) {
-      throw new NotFoundException(`Project not found: ${dto.projectId}`);
+      throw new NotFoundException(`Project not found in your organization: ${dto.projectId}`);
     }
 
     // Validate sprint if provided
@@ -80,17 +83,33 @@ export class IssueService {
     return this.mapToResponse(issue);
   }
 
-  async findById(id: string): Promise<IssueResponseDto> {
-    const issue = await this.prisma.issue.findUnique({
-      where: { id },
+  async findById(id: string, orgId: string): Promise<IssueResponseDto> {
+    const issue = await this.prisma.issue.findFirst({
+      where: { 
+        id,
+        project: {
+          orgId,
+        },
+      },
     });
     if (!issue) {
-      throw new NotFoundException(`Issue not found: ${id}`);
+      throw new NotFoundException(`Issue not found in your organization: ${id}`);
     }
     return this.mapToResponse(issue);
   }
 
-  async findByProject(projectId: string): Promise<IssueResponseDto[]> {
+  async findByProject(projectId: string, orgId: string): Promise<IssueResponseDto[]> {
+    // Validate project belongs to organization
+    const project = await this.prisma.project.findFirst({
+      where: { 
+        id: projectId,
+        orgId,
+      },
+    });
+    if (!project) {
+      throw new NotFoundException(`Project not found in your organization: ${projectId}`);
+    }
+    
     const issues = await this.prisma.issue.findMany({
       where: { projectId },
       orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
@@ -98,7 +117,20 @@ export class IssueService {
     return issues.map(this.mapToResponse);
   }
 
-  async findBySprint(sprintId: string): Promise<IssueResponseDto[]> {
+  async findBySprint(sprintId: string, orgId: string): Promise<IssueResponseDto[]> {
+    // Validate sprint belongs to organization's project
+    const sprint = await this.prisma.sprint.findFirst({
+      where: { 
+        id: sprintId,
+        project: {
+          orgId,
+        },
+      },
+    });
+    if (!sprint) {
+      throw new NotFoundException(`Sprint not found in your organization: ${sprintId}`);
+    }
+    
     const issues = await this.prisma.issue.findMany({
       where: { sprintId },
       orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
@@ -106,21 +138,29 @@ export class IssueService {
     return issues.map(this.mapToResponse);
   }
 
-  async update(id: string, dto: UpdateIssueDto): Promise<IssueResponseDto> {
-    const issue = await this.prisma.issue.findUnique({
-      where: { id },
+  async update(id: string, dto: UpdateIssueDto, orgId: string): Promise<IssueResponseDto> {
+    const issue = await this.prisma.issue.findFirst({
+      where: { 
+        id,
+        project: {
+          orgId,
+        },
+      },
     });
     if (!issue) {
-      throw new NotFoundException(`Issue not found: ${id}`);
+      throw new NotFoundException(`Issue not found in your organization: ${id}`);
     }
 
     // Validate project if changed
     if (dto.projectId && dto.projectId !== issue.projectId) {
-      const project = await this.prisma.project.findUnique({
-        where: { id: dto.projectId },
+      const project = await this.prisma.project.findFirst({
+        where: { 
+          id: dto.projectId,
+          orgId,
+        },
       });
       if (!project) {
-        throw new NotFoundException(`Project not found: ${dto.projectId}`);
+        throw new NotFoundException(`Project not found in your organization: ${dto.projectId}`);
       }
     }
 
@@ -180,7 +220,18 @@ export class IssueService {
     return this.mapToResponse(updated);
   }
 
-  async reorder(projectId: string, issueId: string, dto: ReorderIssueDto): Promise<void> {
+  async reorder(projectId: string, issueId: string, dto: ReorderIssueDto, orgId: string): Promise<void> {
+    // Validate project belongs to organization
+    const project = await this.prisma.project.findFirst({
+      where: { 
+        id: projectId,
+        orgId,
+      },
+    });
+    if (!project) {
+      throw new NotFoundException(`Project not found in your organization: ${projectId}`);
+    }
+    
     const issue = await this.prisma.issue.findUnique({
       where: { id: issueId },
     });
@@ -222,12 +273,17 @@ export class IssueService {
     });
   }
 
-  async delete(id: string): Promise<void> {
-    const issue = await this.prisma.issue.findUnique({
-      where: { id },
+  async delete(id: string, orgId: string): Promise<void> {
+    const issue = await this.prisma.issue.findFirst({
+      where: { 
+        id,
+        project: {
+          orgId,
+        },
+      },
     });
     if (!issue) {
-      throw new NotFoundException(`Issue not found: ${id}`);
+      throw new NotFoundException(`Issue not found in your organization: ${id}`);
     }
     await this.prisma.issue.delete({
       where: { id },
