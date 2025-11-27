@@ -52,8 +52,21 @@ const ProjectBacklogPage = observer(() => {
     createSprint,
   } = sprintStore;
 
+  const { fetchPartialProjects } = projectStore;
+
   useEffect(() => {
     if (!projectId) return;
+
+    // Fetch projects if not already fetched
+    if (projectStore.fetchStatus === undefined) {
+      fetchPartialProjects(workspaceSlug).catch(() =>
+        setToast({
+          type: TOAST_TYPE.ERROR,
+          title: "Lỗi",
+          message: "Không thể tải danh sách dự án",
+        })
+      );
+    }
 
     if (sprintFetchStatus[projectId] !== "complete") {
       fetchSprintsByProject(projectId).catch(() =>
@@ -74,7 +87,16 @@ const ProjectBacklogPage = observer(() => {
         })
       );
     }
-  }, [projectId, sprintFetchStatus, fetchSprintsByProject, issueFetchStatus, fetchIssuesByProject]);
+  }, [
+    projectId,
+    workspaceSlug,
+    projectStore.fetchStatus,
+    sprintFetchStatus,
+    fetchSprintsByProject,
+    issueFetchStatus,
+    fetchIssuesByProject,
+    fetchPartialProjects,
+  ]);
 
   const project = projectId ? projectStore.getPartialProjectById(projectId) : undefined;
 
