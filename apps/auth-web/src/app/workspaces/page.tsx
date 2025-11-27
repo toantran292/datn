@@ -15,14 +15,14 @@ function WorkspacesPageContent() {
 
   // Check for pending invitation and redirect back to accept page
   useEffect(() => {
-    const pendingToken = localStorage.getItem('pending_invitation_token');
+    const pendingToken = localStorage.getItem("pending_invitation_token");
     if (pendingToken) {
       router.push(routes.inviteAccept(pendingToken));
     }
   }, [router]);
 
-  const handleEnterWorkspace = (orgId: string) => {
-    router.push(routes.enter(orgId));
+  const handleEnterWorkspace = (workspaceSlug: string) => {
+    window.location.href = `http://localhost:3002/${workspaceSlug}`;
   };
 
   const handleJoinInvitation = (token: string) => {
@@ -49,14 +49,22 @@ function WorkspacesPageContent() {
   const getWorkspaceIcon = (index: number) => {
     const icons = [
       <svg key="building" className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-        <path fillRule="evenodd" d="M4 4a2 2 0 012-2h12a2 2 0 012 2v16a1 1 0 01-1 1h-4a1 1 0 01-1-1v-3a1 1 0 00-1-1h-2a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1V4zm4 2h2v2H8V6zm4 0h2v2h-2V6zM8 10h2v2H8v-2zm4 0h2v2h-2v-2z" clipRule="evenodd" />
+        <path
+          fillRule="evenodd"
+          d="M4 4a2 2 0 012-2h12a2 2 0 012 2v16a1 1 0 01-1 1h-4a1 1 0 01-1-1v-3a1 1 0 00-1-1h-2a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1V4zm4 2h2v2H8V6zm4 0h2v2h-2V6zM8 10h2v2H8v-2zm4 0h2v2h-2v-2z"
+          clipRule="evenodd"
+        />
       </svg>,
       <svg key="rocket" className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-        <path fillRule="evenodd" d="M9.315 7.584C12.195 3.883 16.695 1.5 21.75 1.5a.75.75 0 01.75.75c0 5.056-2.383 9.555-6.084 12.436A6.75 6.75 0 019.75 22.5a.75.75 0 01-.75-.75v-4.131A15.838 15.838 0 016.382 15H2.25a.75.75 0 01-.75-.75 6.75 6.75 0 017.815-6.666zM15 6.75a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z" clipRule="evenodd" />
+        <path
+          fillRule="evenodd"
+          d="M9.315 7.584C12.195 3.883 16.695 1.5 21.75 1.5a.75.75 0 01.75.75c0 5.056-2.383 9.555-6.084 12.436A6.75 6.75 0 019.75 22.5a.75.75 0 01-.75-.75v-4.131A15.838 15.838 0 016.382 15H2.25a.75.75 0 01-.75-.75 6.75 6.75 0 017.815-6.666zM15 6.75a2.25 2.25 0 100 4.5 2.25 2.25 0 000-4.5z"
+          clipRule="evenodd"
+        />
       </svg>,
       <svg key="users" className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
         <path d="M4.5 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM14.25 8.625a3.375 3.375 0 116.75 0 3.375 3.375 0 01-6.75 0zM1.5 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM17.25 19.128l-.001.144a2.25 2.25 0 01-.233.96 10.088 10.088 0 005.06-1.01.75.75 0 00.42-.643 4.875 4.875 0 00-6.957-4.611 8.586 8.586 0 011.71 5.157v.003z" />
-      </svg>
+      </svg>,
     ];
     return icons[index % icons.length];
   };
@@ -65,7 +73,14 @@ function WorkspacesPageContent() {
   const UTSLogo = () => (
     <div className="w-12 h-12 bg-gradient-to-br from-[#FF8800] to-[#00C4AB] rounded-xl flex items-center justify-center shadow-lg">
       <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        <path
+          d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+        />
       </svg>
     </div>
   );
@@ -77,7 +92,12 @@ function WorkspacesPageContent() {
       <div className="absolute inset-0 bg-gradient-to-r from-[#FF8800]/10 to-[#00C4AB]/10 rounded-full blur-3xl scale-150" />
       <div className="relative w-24 h-24 bg-gradient-to-br from-[#FF8800] to-[#00C4AB] rounded-2xl flex items-center justify-center shadow-2xl">
         <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+          />
         </svg>
       </div>
     </div>
@@ -104,7 +124,11 @@ function WorkspacesPageContent() {
         <div className="text-center">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <svg className="w-8 h-8 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              <path
+                fillRule="evenodd"
+                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                clipRule="evenodd"
+              />
             </svg>
           </div>
           <p className="text-[#475569] font-medium text-lg">Failed to load workspaces</p>
@@ -117,18 +141,24 @@ function WorkspacesPageContent() {
   const hasWorkspaces = data?.joined && data.joined.length > 0;
   const hasInvitations = data?.invites && data.invites.length > 0;
 
+  console.log("data: ", data!.joined);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F9FAFB] via-[#FFF4E6] to-[#E6FFFB]">
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Header - Compact when workspaces exist */}
-        <header className={`text-center ${hasWorkspaces || hasInvitations ? 'mb-8' : 'mb-16'}`}>
-          <div className={`flex justify-center ${hasWorkspaces || hasInvitations ? 'mb-4' : 'mb-8'}`}>
+        <header className={`text-center ${hasWorkspaces || hasInvitations ? "mb-8" : "mb-16"}`}>
+          <div className={`flex justify-center ${hasWorkspaces || hasInvitations ? "mb-4" : "mb-8"}`}>
             <UTSLogo />
           </div>
-          <h1 className={`font-bold text-[#0F172A] tracking-tight ${hasWorkspaces || hasInvitations ? 'text-2xl mb-2' : 'text-3xl mb-4'}`}>
+          <h1
+            className={`font-bold text-[#0F172A] tracking-tight ${hasWorkspaces || hasInvitations ? "text-2xl mb-2" : "text-3xl mb-4"}`}
+          >
             Choose your workspace
           </h1>
-          <p className={`text-[#64748B] max-w-md mx-auto leading-relaxed ${hasWorkspaces || hasInvitations ? 'text-base' : 'text-lg'}`}>
+          <p
+            className={`text-[#64748B] max-w-md mx-auto leading-relaxed ${hasWorkspaces || hasInvitations ? "text-base" : "text-lg"}`}
+          >
             You can join an existing organization or create a new one.
           </p>
           {!(hasWorkspaces || hasInvitations) && (
@@ -145,7 +175,9 @@ function WorkspacesPageContent() {
             <div className="space-y-6 items-center justify-center flex flex-col">
               <div>
                 <h2 className="text-2xl font-bold text-[#0F172A] mb-3">You&apos;re not part of any workspace yet</h2>
-                <p className="text-[#64748B] text-lg leading-relaxed">Create your first workspace to get started with your team collaboration.</p>
+                <p className="text-[#64748B] text-lg leading-relaxed">
+                  Create your first workspace to get started with your team collaboration.
+                </p>
               </div>
               <Button
                 onClick={handleCreateWorkspace}
@@ -161,9 +193,7 @@ function WorkspacesPageContent() {
         {hasWorkspaces && (
           <section className="mb-12">
             <div className="mb-6">
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-[#64748B] mb-3">
-                Your Workspaces
-              </h2>
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-[#64748B] mb-3">Your Workspaces</h2>
               <div className="w-16 h-0.5 bg-gradient-to-r from-[#FF8800] to-[#00C4AB] rounded-full" />
             </div>
 
@@ -175,9 +205,13 @@ function WorkspacesPageContent() {
                 >
                   <div className="flex flex-col h-full">
                     <div className="flex items-start mb-4">
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center mr-3 shadow-sm ${
-                        index % 2 === 0 ? 'bg-gradient-to-br from-[#FFF4E6] to-[#FFE4CC] text-[#FF8800]' : 'bg-gradient-to-br from-[#E6FFFB] to-[#CCF7F0] text-[#00C4AB]'
-                      }`}>
+                      <div
+                        className={`w-12 h-12 rounded-xl flex items-center justify-center mr-3 shadow-sm ${
+                          index % 2 === 0
+                            ? "bg-gradient-to-br from-[#FFF4E6] to-[#FFE4CC] text-[#FF8800]"
+                            : "bg-gradient-to-br from-[#E6FFFB] to-[#CCF7F0] text-[#00C4AB]"
+                        }`}
+                      >
                         {getWorkspaceIcon(index)}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -191,7 +225,7 @@ function WorkspacesPageContent() {
                     </div>
                     <div className="mt-auto">
                       <Button
-                        onClick={() => handleEnterWorkspace(org.id)}
+                        onClick={() => handleEnterWorkspace(org.slug)}
                         className="w-full bg-gradient-to-r from-[#FF8800] to-[#FF7700] hover:from-[#FF7700] hover:to-[#E56600] active:from-[#E56600] active:to-[#CC5500] text-white font-semibold py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-[#FF8800]/25 text-sm"
                       >
                         Enter workspace
@@ -208,9 +242,7 @@ function WorkspacesPageContent() {
         {hasInvitations && (
           <section className="mb-12">
             <div className="mb-6">
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-[#64748B] mb-3">
-                Invitations
-              </h2>
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-[#64748B] mb-3">Invitations</h2>
               <div className="w-16 h-0.5 bg-gradient-to-r from-[#00C4AB] to-[#FF8800] rounded-full" />
             </div>
 
@@ -223,7 +255,12 @@ function WorkspacesPageContent() {
                   <div className="flex items-center flex-1 min-w-0">
                     <div className="w-11 h-11 bg-gradient-to-br from-[#E6FFFB] to-[#CCF7F0] rounded-xl flex items-center justify-center mr-4 flex-shrink-0">
                       <svg className="w-5 h-5 text-[#00C4AB]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                        />
                       </svg>
                     </div>
                     <div className="flex-1 min-w-0">
@@ -231,7 +268,8 @@ function WorkspacesPageContent() {
                         {invite.inviter_email || "Unknown inviter"}
                       </p>
                       <p className="text-[#64748B] text-sm truncate">
-                        Invited you to join <span className="font-semibold text-[#475569]">{invite.org_name || "an organization"}</span>
+                        Invited you to join{" "}
+                        <span className="font-semibold text-[#475569]">{invite.org_name || "an organization"}</span>
                       </p>
                     </div>
                   </div>
@@ -279,7 +317,14 @@ function LoadingFallback() {
       <div className="text-center">
         <div className="w-12 h-12 bg-gradient-to-br from-[#FF8800] to-[#00C4AB] rounded-xl flex items-center justify-center shadow-lg mx-auto mb-4 animate-pulse">
           <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+            <path
+              d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              fill="none"
+            />
           </svg>
         </div>
         <h1 className="text-2xl font-bold text-[#0F172A] tracking-tight mb-2">Loading...</h1>
