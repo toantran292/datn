@@ -27,9 +27,9 @@ export class CreateIssueDto {
   @IsString()
   descriptionHtml?: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsUUID()
-  statusId: string;
+  statusId?: string;
 
   @IsNotEmpty()
   @IsEnum(IssuePriority)

@@ -2,23 +2,6 @@ import { ICreateIssuePayload, IIssue, IReorderIssuePayload, TIssuePriority, TIss
 
 import { APIService } from "../api.service";
 
-type IssueRequestPayload = {
-  projectId: string;
-  sprintId: string | null;
-  parentId: string | null;
-  name: string;
-  description: string | null;
-  descriptionHtml: string | null;
-  state: TIssueState;
-  priority: TIssuePriority;
-  type: TIssueType;
-  point: number | null;
-  sortOrder: number | null;
-  startDate: string | null;
-  targetDate: string | null;
-  assignees: string[];
-};
-
 export class IssueService extends APIService {
   constructor() {
     super();
@@ -36,14 +19,13 @@ export class IssueService extends APIService {
   }
 
   async createIssue(payload: ICreateIssuePayload): Promise<IIssue> {
-    const body = this.mapToRequestPayload({
+    const body: any = {
       projectId: payload.projectId,
       sprintId: payload.sprintId ?? null,
       parentId: payload.parentId ?? null,
       name: payload.name,
       description: payload.description ?? null,
       descriptionHtml: payload.descriptionHtml ?? null,
-      state: payload.state,
       priority: payload.priority,
       type: payload.type,
       point: payload.point ?? null,
@@ -51,7 +33,12 @@ export class IssueService extends APIService {
       startDate: payload.startDate ?? null,
       targetDate: payload.targetDate ?? null,
       assignees: payload.assignees ?? [],
-    });
+    };
+
+    // Only include statusId if provided
+    if ((payload as any).statusId) {
+      body.statusId = (payload as any).statusId;
+    }
 
     return this.post(`/api/issues`, body)
       .then((response) => this.normalizeIssue(response?.data))
@@ -60,23 +47,26 @@ export class IssueService extends APIService {
       });
   }
 
-  async updateIssue(issue: IIssue): Promise<IIssue> {
-    const body = this.mapToRequestPayload({
-      projectId: issue.projectId,
-      sprintId: issue.sprintId ?? null,
-      parentId: issue.parentId ?? null,
-      name: issue.name,
-      description: issue.description ?? null,
-      descriptionHtml: issue.descriptionHtml ?? null,
-      state: issue.state,
-      priority: issue.priority,
-      type: issue.type,
-      point: issue.point ?? null,
-      sortOrder: issue.sortOrder ?? null,
-      startDate: issue.startDate ?? null,
-      targetDate: issue.targetDate ?? null,
-      assignees: issue.assignees ?? [],
-    });
+  async updateIssue(issue: IIssue | Partial<IIssue> & { id: string }): Promise<IIssue> {
+    const body: any = {
+      statusId: (issue as IIssue).statusId,
+    };
+
+    // Only include fields that are present
+    if ('projectId' in issue) body.projectId = issue.projectId;
+    if ('sprintId' in issue) body.sprintId = issue.sprintId ?? null;
+    if ('parentId' in issue) body.parentId = issue.parentId ?? null;
+    if ('name' in issue) body.name = issue.name;
+    if ('description' in issue) body.description = issue.description ?? null;
+    if ('descriptionHtml' in issue) body.descriptionHtml = issue.descriptionHtml ?? null;
+    if ('state' in issue) body.state = issue.state;
+    if ('priority' in issue) body.priority = issue.priority;
+    if ('type' in issue) body.type = issue.type;
+    if ('point' in issue) body.point = issue.point ?? null;
+    if ('sortOrder' in issue) body.sortOrder = issue.sortOrder ?? null;
+    if ('startDate' in issue) body.startDate = issue.startDate ?? null;
+    if ('targetDate' in issue) body.targetDate = issue.targetDate ?? null;
+    if ('assignees' in issue) body.assignees = issue.assignees ?? [];
 
     return this.put(`/api/issues/${issue.id}`, body)
       .then((response) => this.normalizeIssue(response?.data))
@@ -93,21 +83,6 @@ export class IssueService extends APIService {
     });
   }
 
-  private mapToRequestPayload(issue: IssueRequestPayload): IssueRequestPayload {
-    return {
-      ...issue,
-      sprintId: issue.sprintId,
-      parentId: issue.parentId,
-      description: issue.description,
-      descriptionHtml: issue.descriptionHtml,
-      point: issue.point,
-      sortOrder: issue.sortOrder,
-      startDate: issue.startDate,
-      targetDate: issue.targetDate,
-      assignees: issue.assignees,
-    };
-  }
-
   private normalizeIssue(rawIssue: unknown): IIssue {
     const issue = rawIssue as Record<string, unknown>;
 
@@ -116,6 +91,7 @@ export class IssueService extends APIService {
       projectId: String(issue.projectId ?? ""),
       sprintId: issue.sprintId ? String(issue.sprintId) : null,
       parentId: issue.parentId ? String(issue.parentId) : null,
+      statusId: String(issue.statusId ?? ""),
       name: String(issue.name ?? ""),
       description: (issue.description as string | null | undefined) ?? null,
       descriptionHtml: (issue.descriptionHtml as string | null | undefined) ?? null,

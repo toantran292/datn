@@ -4,7 +4,7 @@ import { CreateIssueStatusDto } from "./dto/create-issue-status.dto";
 import { UpdateIssueStatusDto } from "./dto/update-issue-status.dto";
 import { IssueStatusResponseDto } from "./dto/issue-status-response.dto";
 
-@Controller("issue-statuses")
+@Controller("api/issue-statuses")
 export class IssueStatusController {
   constructor(private readonly issueStatusService: IssueStatusService) {}
 

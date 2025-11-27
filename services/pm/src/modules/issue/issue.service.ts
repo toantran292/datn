@@ -51,15 +51,33 @@ export class IssueService {
       }
     }
 
-    // Validate status exists and belongs to project
-    const status = await this.prisma.issueStatus.findUnique({
-      where: { id: dto.statusId },
-    });
-    if (!status) {
-      throw new NotFoundException(`Status not found: ${dto.statusId}`);
-    }
-    if (status.projectId !== dto.projectId) {
-      throw new BadRequestException("Status does not belong to project");
+    // Get or validate status
+    let statusId = dto.statusId;
+    if (!statusId) {
+      // If no statusId provided, get the first status (order = 0, usually "TO DO")
+      const defaultStatus = await this.prisma.issueStatus.findFirst({
+        where: {
+          projectId: dto.projectId,
+        },
+        orderBy: {
+          order: "asc",
+        },
+      });
+      if (!defaultStatus) {
+        throw new BadRequestException(`No status found for project: ${dto.projectId}`);
+      }
+      statusId = defaultStatus.id;
+    } else {
+      // Validate provided status exists and belongs to project
+      const status = await this.prisma.issueStatus.findUnique({
+        where: { id: statusId },
+      });
+      if (!status) {
+        throw new NotFoundException(`Status not found: ${statusId}`);
+      }
+      if (status.projectId !== dto.projectId) {
+        throw new BadRequestException("Status does not belong to project");
+      }
     }
 
     // Get next sequence ID for this project
@@ -79,7 +97,7 @@ export class IssueService {
         projectId: dto.projectId,
         sprintId: dto.sprintId || null,
         parentId: dto.parentId || null,
-        statusId: dto.statusId,
+        statusId: statusId,
         name: dto.name,
         description: dto.description || null,
         descriptionHtml: dto.descriptionHtml || null,
@@ -430,16 +448,18 @@ export class IssueService {
       sprintId: issue.sprintId,
       parentId: issue.parentId,
       statusId: issue.statusId,
-      status: issue.status ? {
-        id: issue.status.id,
-        projectId: issue.status.projectId,
-        name: issue.status.name,
-        description: issue.status.description,
-        color: issue.status.color,
-        order: issue.status.order,
-        createdAt: issue.status.createdAt,
-        updatedAt: issue.status.updatedAt,
-      } : undefined,
+      status: issue.status
+        ? {
+            id: issue.status.id,
+            projectId: issue.status.projectId,
+            name: issue.status.name,
+            description: issue.status.description,
+            color: issue.status.color,
+            order: issue.status.order,
+            createdAt: issue.status.createdAt,
+            updatedAt: issue.status.updatedAt,
+          }
+        : undefined,
       name: issue.name,
       description: issue.description,
       descriptionHtml: issue.descriptionHtml,

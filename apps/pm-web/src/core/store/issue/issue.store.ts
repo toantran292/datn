@@ -99,7 +99,7 @@ export class IssueStore implements IIssueStore {
     });
 
     try {
-      const saved = await this.issueService.updateIssue({ ...optimistic });
+      const saved = await this.issueService.updateIssue({ id: issueId, ...data });
       runInAction(() => {
         this.issueMap = { ...this.issueMap, [issueId]: saved };
       });

@@ -123,7 +123,6 @@ const ProjectBacklogPage = observer(() => {
         name,
         description: null,
         descriptionHtml: null,
-        state: "TODO",
         priority: "MEDIUM",
         type: "TASK",
         point: null,
