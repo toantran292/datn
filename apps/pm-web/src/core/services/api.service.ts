@@ -20,8 +20,10 @@ export abstract class APIService {
       (response) => response,
       (error) => {
         if (error.response && error.response.status === 401) {
+          // Redirect to auth-web login page
           const currentPath = window.location.pathname;
-          window.location.replace(`/${currentPath ? `?next_path=${currentPath}` : ``}`);
+          const authWebUrl = process.env.NEXT_PUBLIC_AUTH_WEB_URL || 'http://localhost:3000';
+          window.location.href = `${authWebUrl}/login?redirect=${encodeURIComponent(currentPath)}`;
         }
         return Promise.reject(error);
       }

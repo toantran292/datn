@@ -2,6 +2,7 @@
 
 import { ProjectsProvider } from "@/core/contexts/projects-context";
 import { ProjectAppSidebar } from "./_sidebar";
+import { AppHeader } from "@/core/components/header";
 
 export default function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -11,7 +12,10 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
         <div className="relative flex size-full overflow-hidden">
           <ProjectAppSidebar />
           <main className="relative flex h-full w-full flex-col overflow-hidden bg-custom-background-100">
-            {children}
+            <AppHeader />
+            <div className="flex-1 overflow-hidden">
+              {children}
+            </div>
           </main>
         </div>
       </div>

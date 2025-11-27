@@ -21,8 +21,8 @@ function WorkspacesPageContent() {
     }
   }, [router]);
 
-  const handleEnterWorkspace = (workspaceSlug: string) => {
-    window.location.href = `http://localhost:3002/${workspaceSlug}`;
+  const handleEnterWorkspace = (orgId: string, workspaceSlug: string) => {
+    router.push(routes.enter(orgId) + `&slug=${workspaceSlug}`);
   };
 
   const handleJoinInvitation = (token: string) => {
@@ -225,7 +225,7 @@ function WorkspacesPageContent() {
                     </div>
                     <div className="mt-auto">
                       <Button
-                        onClick={() => handleEnterWorkspace(org.slug)}
+                        onClick={() => handleEnterWorkspace(org.id, org.slug)}
                         className="w-full bg-gradient-to-r from-[#FF8800] to-[#FF7700] hover:from-[#FF7700] hover:to-[#E56600] active:from-[#E56600] active:to-[#CC5500] text-white font-semibold py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-[#FF8800]/25 text-sm"
                       >
                         Enter workspace
