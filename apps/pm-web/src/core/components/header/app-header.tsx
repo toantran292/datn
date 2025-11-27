@@ -2,12 +2,20 @@
 
 import { FC, useState, useRef, useEffect } from "react";
 import { observer } from "mobx-react";
-import { LogOut, ChevronDown, User } from "lucide-react";
+import { LogOut, ChevronDown, User, Sun, Moon } from "lucide-react";
 import { cn } from "@uts/fe-utils";
+import { useTheme } from "next-themes";
 
 export const AppHeader: FC = observer(() => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration mismatch for theme
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -20,6 +28,10 @@ export const AppHeader: FC = observer(() => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark");
+  };
 
   const handleLogout = async () => {
     try {
@@ -49,8 +61,28 @@ export const AppHeader: FC = observer(() => {
         <h1 className="text-lg font-semibold text-custom-text-100">Project Management</h1>
       </div>
 
-      {/* Right side - User menu */}
-      <div className="relative" ref={dropdownRef}>
+      {/* Right side - Theme toggle & User menu */}
+      <div className="flex items-center gap-2">
+        {/* Theme Toggle Button */}
+        {mounted && (
+          <button
+            onClick={toggleTheme}
+            className={cn(
+              "flex items-center justify-center w-9 h-9 rounded-md transition-colors",
+              "hover:bg-custom-background-80 text-custom-text-200 hover:text-custom-text-100"
+            )}
+            aria-label="Toggle theme"
+          >
+            {theme === "dark" ? (
+              <Sun className="w-5 h-5" />
+            ) : (
+              <Moon className="w-5 h-5" />
+            )}
+          </button>
+        )}
+
+        {/* User Menu */}
+        <div className="relative" ref={dropdownRef}>
         <button
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           className={cn(
@@ -80,6 +112,7 @@ export const AppHeader: FC = observer(() => {
             </button>
           </div>
         )}
+        </div>
       </div>
     </header>
   );
