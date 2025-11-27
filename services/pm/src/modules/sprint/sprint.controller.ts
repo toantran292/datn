@@ -1,4 +1,16 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, HttpCode, HttpStatus, ParseUUIDPipe, Req } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  HttpCode,
+  HttpStatus,
+  ParseUUIDPipe,
+  Req,
+} from "@nestjs/common";
 import type { RequestWithOrg } from "../../common/interfaces";
 import { Sprint } from "@prisma/client";
 import { SprintService } from "./sprint.service";
@@ -16,20 +28,14 @@ export class SprintController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(
-    @Body() createDto: CreateSprintDto,
-    @Req() request: RequestWithOrg
-  ): Promise<SprintResponseDto> {
+  async create(@Body() createDto: CreateSprintDto, @Req() request: RequestWithOrg): Promise<SprintResponseDto> {
     const orgId = request.orgId;
     const sprint = await this.sprintService.create(createDto, orgId);
     return this.toResponseDto(sprint);
   }
 
   @Get(":id")
-  async findOne(
-    @Param("id", ParseUUIDPipe) id: string,
-    @Req() request: RequestWithOrg
-  ): Promise<SprintResponseDto> {
+  async findOne(@Param("id", ParseUUIDPipe) id: string, @Req() request: RequestWithOrg): Promise<SprintResponseDto> {
     const orgId = request.orgId;
     const sprint = await this.sprintService.findOne(id, orgId);
     return this.toResponseDto(sprint);
@@ -48,10 +54,7 @@ export class SprintController {
 
   @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(
-    @Param("id", ParseUUIDPipe) id: string,
-    @Req() request: RequestWithOrg
-  ): Promise<void> {
+  async remove(@Param("id", ParseUUIDPipe) id: string, @Req() request: RequestWithOrg): Promise<void> {
     const orgId = request.orgId;
     await this.sprintService.remove(id, orgId);
   }

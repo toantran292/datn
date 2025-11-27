@@ -1,2 +1,1 @@
-export * from './org-id.guard';
-
+export * from "./org-id.guard";

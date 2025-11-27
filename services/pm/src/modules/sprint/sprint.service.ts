@@ -11,7 +11,7 @@ export class SprintService {
   async create(createDto: CreateSprintDto, orgId: string) {
     // Validate project exists and belongs to organization
     const project = await this.prisma.project.findFirst({
-      where: { 
+      where: {
         id: createDto.projectId,
         orgId,
       },
@@ -35,7 +35,7 @@ export class SprintService {
 
   async findOne(id: string, orgId: string) {
     const sprint = await this.prisma.sprint.findFirst({
-      where: { 
+      where: {
         id,
         project: {
           orgId,
@@ -60,7 +60,7 @@ export class SprintService {
   async findByProject(projectId: string, orgId: string) {
     // Validate project exists and belongs to organization
     const project = await this.prisma.project.findFirst({
-      where: { 
+      where: {
         id: projectId,
         orgId,
       },
@@ -81,7 +81,7 @@ export class SprintService {
   async update(id: string, updateDto: UpdateSprintDto, orgId: string) {
     // Check if sprint exists and belongs to organization
     const sprint = await this.prisma.sprint.findFirst({
-      where: { 
+      where: {
         id,
         project: {
           orgId,
@@ -108,7 +108,7 @@ export class SprintService {
   async remove(id: string, orgId: string) {
     // Check if sprint exists and belongs to organization
     const sprint = await this.prisma.sprint.findFirst({
-      where: { 
+      where: {
         id,
         project: {
           orgId,

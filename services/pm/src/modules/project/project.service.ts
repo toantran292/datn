@@ -71,7 +71,7 @@ export class ProjectService {
 
   async findOne(id: string, orgId: string) {
     const project = await this.prisma.project.findFirst({
-      where: { 
+      where: {
         id,
         orgId,
       },
@@ -108,7 +108,7 @@ export class ProjectService {
   async update(id: string, updateDto: UpdateProjectDto, orgId: string) {
     // Check if project exists in organization
     const project = await this.prisma.project.findFirst({
-      where: { 
+      where: {
         id,
         orgId,
       },
@@ -179,7 +179,7 @@ export class ProjectService {
   async remove(id: string, orgId: string) {
     // Check if project exists in organization
     const project = await this.prisma.project.findFirst({
-      where: { 
+      where: {
         id,
         orgId,
       },

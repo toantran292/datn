@@ -35,10 +35,7 @@ export class ProjectController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(
-    @Body() createDto: CreateProjectDto,
-    @Req() request: RequestWithOrg
-  ): Promise<ProjectResponseDto> {
+  async create(@Body() createDto: CreateProjectDto, @Req() request: RequestWithOrg): Promise<ProjectResponseDto> {
     const orgId = request.orgId;
     const project = await this.projectService.create(createDto, orgId);
     return this.toResponseDto(project);
@@ -62,10 +59,7 @@ export class ProjectController {
   }
 
   @Get(":id")
-  async findOne(
-    @Param("id", ParseUUIDPipe) id: string,
-    @Req() request: RequestWithOrg
-  ): Promise<ProjectResponseDto> {
+  async findOne(@Param("id", ParseUUIDPipe) id: string, @Req() request: RequestWithOrg): Promise<ProjectResponseDto> {
     const orgId = request.orgId;
     const project = await this.projectService.findOne(id, orgId);
     return this.toResponseDto(project);
@@ -84,10 +78,7 @@ export class ProjectController {
 
   @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(
-    @Param("id", ParseUUIDPipe) id: string,
-    @Req() request: RequestWithOrg
-  ): Promise<void> {
+  async remove(@Param("id", ParseUUIDPipe) id: string, @Req() request: RequestWithOrg): Promise<void> {
     const orgId = request.orgId;
     await this.projectService.remove(id, orgId);
   }

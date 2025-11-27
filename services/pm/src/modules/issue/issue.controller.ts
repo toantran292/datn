@@ -12,19 +12,13 @@ export class IssueController {
 
   @Post("issues")
   @HttpCode(HttpStatus.CREATED)
-  async create(
-    @Body() dto: CreateIssueDto,
-    @Req() request: RequestWithOrg
-  ): Promise<IssueResponseDto> {
+  async create(@Body() dto: CreateIssueDto, @Req() request: RequestWithOrg): Promise<IssueResponseDto> {
     const orgId = request.orgId;
     return this.issueService.create(dto, orgId);
   }
 
   @Get("issues/:id")
-  async findById(
-    @Param("id") id: string,
-    @Req() request: RequestWithOrg
-  ): Promise<IssueResponseDto> {
+  async findById(@Param("id") id: string, @Req() request: RequestWithOrg): Promise<IssueResponseDto> {
     const orgId = request.orgId;
     return this.issueService.findById(id, orgId);
   }
@@ -39,10 +33,7 @@ export class IssueController {
   }
 
   @Get("sprints/:sprintId/issues")
-  async findBySprint(
-    @Param("sprintId") sprintId: string,
-    @Req() request: RequestWithOrg
-  ): Promise<IssueResponseDto[]> {
+  async findBySprint(@Param("sprintId") sprintId: string, @Req() request: RequestWithOrg): Promise<IssueResponseDto[]> {
     const orgId = request.orgId;
     return this.issueService.findBySprint(sprintId, orgId);
   }
@@ -71,10 +62,7 @@ export class IssueController {
 
   @Delete("issues/:id")
   @HttpCode(HttpStatus.NO_CONTENT)
-  async delete(
-    @Param("id") id: string,
-    @Req() request: RequestWithOrg
-  ): Promise<void> {
+  async delete(@Param("id") id: string, @Req() request: RequestWithOrg): Promise<void> {
     const orgId = request.orgId;
     return this.issueService.delete(id, orgId);
   }

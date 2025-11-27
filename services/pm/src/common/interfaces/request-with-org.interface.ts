@@ -1,4 +1,4 @@
-import type { Request } from 'express';
+import type { Request } from "express";
 
 /**
  * Extended Request interface with Organization ID
@@ -7,4 +7,3 @@ import type { Request } from 'express';
 export interface RequestWithOrg extends Request {
   orgId: string;
 }
-
