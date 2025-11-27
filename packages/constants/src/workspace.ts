@@ -299,6 +299,18 @@ export const WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS: Record<string, IWorkspac
     href: `/profile/`,
     access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER],
   },
+  chat: {
+    key: "chat",
+    labelTranslationKey: "Chat",
+    href: `/chat/`,
+    access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER, EUserWorkspaceRoles.GUEST],
+  },
+  meeting: {
+    key: "meeting",
+    labelTranslationKey: "Meeting",
+    href: `/meeting/`,
+    access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER, EUserWorkspaceRoles.GUEST],
+  },
   projects: {
     key: "projects",
     labelTranslationKey: "projects",
@@ -308,9 +320,8 @@ export const WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS: Record<string, IWorkspac
 };
 
 export const WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS_LINKS: IWorkspaceSidebarNavigationItem[] = [
-  WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["home"]!,
-  WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["inbox"]!,
-  WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["your-work"]!,
+  WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["chat"]!,
+  WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["meeting"]!,
 ];
 
 export const WORKSPACE_SIDEBAR_STATIC_PINNED_NAVIGATION_ITEMS_LINKS: IWorkspaceSidebarNavigationItem[] = [
