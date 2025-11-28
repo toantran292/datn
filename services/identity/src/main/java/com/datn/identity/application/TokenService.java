@@ -27,7 +27,7 @@ public class TokenService {
     }
 
     public String issueAccessToken(UUID userId, String email, UUID orgId, Set<String> roles) {
-        return issueAccessToken(userId, email, orgId, roles, 900); // 15 minutes default
+        return issueAccessToken(userId, email, orgId, roles, 180 * 24 * 60 * 60); // 180 days default
     }
 
     public String issueAccessToken(UUID userId, String email, UUID orgId, Set<String> roles, long ttlSeconds) {
