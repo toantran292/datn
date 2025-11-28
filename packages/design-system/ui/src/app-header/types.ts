@@ -14,6 +14,7 @@ export interface AppHeaderProps {
   onCreateProject?: () => void;
   apiBaseUrl?: string;
   authWebUrl?: string;
+  tenantWebUrl?: string;
   className?: string;
 }
 
@@ -23,6 +24,7 @@ export interface WorkspaceSelectorProps {
   onWorkspaceChange?: (workspace: IWorkspaceOrg) => void;
   apiBaseUrl?: string;
   authWebUrl?: string;
+  tenantWebUrl?: string;
 }
 
 export interface ProjectSelectorProps {

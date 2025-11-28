@@ -1,9 +1,8 @@
 import React, { useMemo } from "react";
-import { Building2, ChevronDown } from "lucide-react";
+import { Building2, ChevronDown, Settings } from "lucide-react";
 import { CustomSelect } from "../dropdowns/custom-select";
 import { useWorkspaces, useAuthMe } from "./hooks/use-workspaces";
 import type { WorkspaceSelectorProps } from "./types";
-import { cn } from "../utils";
 import { Avatar } from "../avatar";
 
 export const WorkspaceSelector: React.FC<WorkspaceSelectorProps> = ({
@@ -11,6 +10,7 @@ export const WorkspaceSelector: React.FC<WorkspaceSelectorProps> = ({
   onWorkspaceChange,
   apiBaseUrl,
   authWebUrl,
+  tenantWebUrl,
   workspaceSlug,
 }) => {
   const { data: workspaces, isLoading } = useWorkspaces({ apiBaseUrl });
@@ -97,6 +97,20 @@ export const WorkspaceSelector: React.FC<WorkspaceSelectorProps> = ({
             <div className="font-semibold text-sm text-custom-text-100 truncate">{currentWorkspace?.display_name}</div>
             <div className="text-xs text-custom-text-300 capitalize">{currentWorkspace?.role}</div>
           </div>
+          {tenantWebUrl && currentWorkspace && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                const tenantBase = tenantWebUrl || process.env.NEXT_PUBLIC_TENANT_WEB_URL || "http://localhost:3004";
+                window.location.href = `${tenantBase}?org_id=${currentWorkspace.id}`;
+              }}
+              className="flex items-center justify-center w-7 h-7 rounded-md hover:bg-custom-background-80 transition-colors text-custom-text-300 hover:text-custom-text-100"
+              aria-label="Workspace settings"
+            >
+              <Settings className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </div>
 

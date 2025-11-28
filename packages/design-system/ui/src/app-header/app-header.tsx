@@ -36,8 +36,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   onWorkspaceChange,
   onProjectChange,
   onCreateProject,
-  apiBaseUrl,
-  authWebUrl,
+  apiBaseUrl = "http://localhost:8080",
+  authWebUrl = "http://localhost:3000",
+  tenantWebUrl = "http://localhost:3001",
   className,
 }) => {
   const [isCreateProjectModalOpen, setIsCreateProjectModalOpen] = useState(false);
@@ -70,6 +71,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
             onWorkspaceChange={onWorkspaceChange}
             apiBaseUrl={apiBaseUrl}
             authWebUrl={authWebUrl}
+            tenantWebUrl={tenantWebUrl}
           />
 
           <ProjectSelector
