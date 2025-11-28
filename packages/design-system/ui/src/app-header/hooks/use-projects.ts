@@ -12,7 +12,7 @@ interface UseProjectsOptions {
 }
 
 export function useProjects(options?: UseProjectsOptions) {
-  const apiBase = options?.apiBaseUrl || process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/pm';
+  const apiBase = `${options?.apiBaseUrl}/pm`;
 
   return useQuery({
     queryKey: projectKeys.list(options?.workspaceId),

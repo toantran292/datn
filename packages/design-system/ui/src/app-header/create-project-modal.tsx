@@ -198,7 +198,7 @@ const CreateProjectForm: React.FC<{
 
   const { handleSubmit, reset } = methods;
 
-  const apiBase = apiBaseUrl || process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080/pm";
+  const apiBase = `${apiBaseUrl}/pm`;
 
   const onSubmit = async (formData: ProjectFormData) => {
     const payload = {
