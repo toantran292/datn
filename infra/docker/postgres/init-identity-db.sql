@@ -1,2 +1,3 @@
 CREATE DATABASE identity;
+CREATE DATABASE pm_db;
 
