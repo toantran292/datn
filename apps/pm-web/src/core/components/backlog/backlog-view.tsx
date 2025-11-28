@@ -316,7 +316,7 @@ const BacklogViewComponent: React.FC<BacklogViewProps> = (props) => {
         </div>
       </div>
       {selectedIssue ? (
-        <div className="pointer-events-none fixed inset-y-0 right-0 z-40 flex" style={{ width: detailWidth }}>
+        <div className="pointer-events-none fixed top-[50px] bottom-0 right-0 z-40 flex" style={{ width: detailWidth }}>
           <div className="relative flex h-full min-h-0 w-full pointer-events-auto border-l border-custom-border-200 bg-custom-background-100 shadow-lg">
             <div
               role="separator"
