@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Service - WebSocket Example</title>
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .controls {
+            margin: 20px 0;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .notifications {
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .notification {
+            background: #e7f3ff;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .notification.broadcast {
+            background: #fff3e0;
+            border-left-color: #ff9800;
+        }
+        .notification h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .notification p {
+            margin: 5px 0;
+            color: #666;
+        }
+        .notification .meta {
+            font-size: 12px;
+            color: #999;
+            margin-top: 10px;
+        }
+        .stats {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .stats h3 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Notification Service - WebSocket Demo</h1>
+
+        <div id="status" class="status disconnected">
+            Status: Disconnected
+        </div>
+
+        <div class="controls">
+            <input
+                type="text"
+                id="userId"
+                placeholder="Enter User ID (e.g., user-123)"
+                value="user-demo"
+            />
+            <button id="connectBtn" onclick="connect()">Connect</button>
+            <button id="disconnectBtn" onclick="disconnect()" disabled>Disconnect</button>
+            <button onclick="getStats()">Refresh Stats</button>
+        </div>
+
+        <div class="stats" id="stats">
+            <h3>Connection Statistics</h3>
+            <p>Active Users: <span id="activeUsers">-</span></p>
+            <p>Total Connections: <span id="totalConnections">-</span></p>
+        </div>
+
+        <div class="notifications">
+            <h2>Notifications</h2>
+            <div id="notificationList">
+                <p style="color: #999;">No notifications yet. Connect to start receiving.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let socket = null;
+        let userId = null;
+
+        function connect() {
+            const userIdInput = document.getElementById('userId');
+            userId = userIdInput.value.trim();
+
+            if (!userId) {
+                alert('Please enter a User ID');
+                return;
+            }
+
+            // Connect to notification service
+            socket = io('http://localhost:8080', {
+                path: '/notifications/socket.io',
+                transports: ['websocket'],
+                reconnection: true,
+            });
+
+            socket.on('connect', () => {
+                console.log('Connected to notification service');
+                updateStatus('Connected', true);
+
+                // Register user
+                socket.emit('register', { userId });
+            });
+
+            socket.on('registered', (data) => {
+                console.log('Registered:', data);
+                addSystemMessage(`Registered as ${data.data.userId}`);
+                getStats();
+            });
+
+            socket.on('notification', (notification) => {
+                console.log('New notification:', notification);
+                addNotification(notification);
+            });
+
+            socket.on('broadcast', (notification) => {
+                console.log('Broadcast:', notification);
+                addNotification(notification, true);
+            });
+
+            socket.on('disconnect', () => {
+                console.log('Disconnected');
+                updateStatus('Disconnected', false);
+            });
+
+            socket.on('error', (error) => {
+                console.error('Socket error:', error);
+                addSystemMessage(`Error: ${error.message || error}`, true);
+            });
+
+            document.getElementById('connectBtn').disabled = true;
+            document.getElementById('disconnectBtn').disabled = false;
+        }
+
+        function disconnect() {
+            if (socket) {
+                socket.emit('unregister', { userId });
+                socket.close();
+                socket = null;
+            }
+
+            updateStatus('Disconnected', false);
+            document.getElementById('connectBtn').disabled = false;
+            document.getElementById('disconnectBtn').disabled = true;
+        }
+
+        function updateStatus(text, isConnected) {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = `Status: ${text}`;
+            statusEl.className = `status ${isConnected ? 'connected' : 'disconnected'}`;
+        }
+
+        function addNotification(notification, isBroadcast = false) {
+            const listEl = document.getElementById('notificationList');
+
+            // Clear placeholder
+            if (listEl.querySelector('p')) {
+                listEl.innerHTML = '';
+            }
+
+            const notifEl = document.createElement('div');
+            notifEl.className = `notification ${isBroadcast ? 'broadcast' : ''}`;
+
+            notifEl.innerHTML = `
+                <h3>${isBroadcast ? '[BROADCAST] ' : ''}${notification.title}</h3>
+                <p><strong>Message:</strong> ${notification.message}</p>
+                ${notification.actionUrl ? `<p><strong>Action:</strong> <a href="${notification.actionUrl}" target="_blank">${notification.actionUrl}</a></p>` : ''}
+                ${notification.metadata ? `<p><strong>Metadata:</strong> ${JSON.stringify(notification.metadata)}</p>` : ''}
+                <div class="meta">
+                    ID: ${notification.id} |
+                    Time: ${new Date(notification.timestamp).toLocaleString()}
+                </div>
+            `;
+
+            listEl.insertBefore(notifEl, listEl.firstChild);
+        }
+
+        function addSystemMessage(message, isError = false) {
+            const listEl = document.getElementById('notificationList');
+
+            if (listEl.querySelector('p')) {
+                listEl.innerHTML = '';
+            }
+
+            const msgEl = document.createElement('div');
+            msgEl.className = 'notification';
+            msgEl.style.borderLeftColor = isError ? '#f44336' : '#4caf50';
+            msgEl.style.background = isError ? '#ffebee' : '#e8f5e9';
+
+            msgEl.innerHTML = `
+                <p style="margin: 0;">${message}</p>
+                <div class="meta">
+                    ${new Date().toLocaleString()}
+                </div>
+            `;
+
+            listEl.insertBefore(msgEl, listEl.firstChild);
+        }
+
+        async function getStats() {
+            try {
+                const response = await fetch('http://localhost:8080/notifications/stats');
+                const stats = await response.json();
+
+                document.getElementById('activeUsers').textContent = stats.activeUsers;
+                document.getElementById('totalConnections').textContent = stats.totalConnections;
+            } catch (error) {
+                console.error('Failed to fetch stats:', error);
+            }
+        }
+
+        // Get initial stats
+        getStats();
+
+        // Auto-refresh stats every 30 seconds
+        setInterval(getStats, 30000);
+    </script>
+</body>
+</html>

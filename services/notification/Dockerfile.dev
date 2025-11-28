@@ -1,0 +1,38 @@
+# syntax=docker/dockerfile:1
+FROM node:20-alpine AS base
+WORKDIR /app
+
+# Development environment
+ENV NODE_ENV=development
+
+# Enable corepack for pnpm
+RUN corepack enable
+
+# Copy package files for install
+COPY package.json pnpm-lock.yaml* ./
+
+# ---- Install deps ----
+FROM base AS deps
+RUN pnpm install
+
+# ---- Runtime with hot reload ----
+FROM node:20-alpine AS dev
+WORKDIR /app
+ENV NODE_ENV=development
+
+RUN corepack enable
+
+# Copy node_modules from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copy entire project (will be overridden by volume mount)
+COPY . .
+
+# Expose API port
+EXPOSE 3000
+
+# Install dev tools (nodemon)
+RUN pnpm add -D nodemon
+
+# Default command: run NestJS in watch mode
+CMD ["pnpm", "run", "start:dev"]
