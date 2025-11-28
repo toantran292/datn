@@ -16,6 +16,9 @@ $(ENV).up.build:
 	$(DC) up -d --build
 
 $(ENV).down:
+	$(DC) down
+
+$(ENV).clean:
 	$(DC) down -v
 
 $(ENV).logs:
@@ -64,12 +67,3 @@ $(ENV).setup:
 		fi
 
 	@echo "Setup complete! Run 'make dev.up' to start services"
-
-# ---- DB Setup ----
-$(ENV).setup.db:
-	PGPASSWORD=uts_dev_pw psql -h 127.0.0.1 -p 41000 -U uts -d postgres \
-		-c "CREATE DATABASE identity;" || true
-	PGPASSWORD=uts_dev_pw psql -h 127.0.0.1 -p 41000 -U uts -d postgres \
-			-c "CREATE DATABASE pm_db;" || true
-	PGPASSWORD=uts_dev_pw psql -h 127.0.0.1 -p 41000 -U uts -d pm_db \
-			-c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";" || true

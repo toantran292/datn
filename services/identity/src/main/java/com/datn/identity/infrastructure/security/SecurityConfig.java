@@ -117,6 +117,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/invitations/accept").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers("/internal/**").permitAll()  // Allow internal service-to-service calls
                         .requestMatchers(HttpMethod.POST, "/auth/password/set").authenticated()
                         .anyRequest().authenticated()
                 )

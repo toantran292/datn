@@ -1,7 +1,9 @@
 name: uts-dev
 services:
   postgres:
-    image: postgres:16-alpine
+    build:
+      context: ./postgres
+    image: uts-dev-postgres
     container_name: uts_pg
     restart: unless-stopped
     env_file:
@@ -149,6 +151,46 @@ services:
       retries: 10
     networks: [uts_net]
 
+  cassandra:
+    image: cassandra:latest
+    container_name: uts_cassandra
+    restart: unless-stopped
+    environment:
+      CASSANDRA_CLUSTER_NAME: uts-dev
+      CASSANDRA_DC: dc1
+      CASSANDRA_RACK: rack1
+      CASSANDRA_PASSWORD_SEEDER: "yes"     # tạo user/password lần đầu
+      CASSANDRA_USER: cassandra
+      CASSANDRA_PASSWORD: cassandra
+      CASSANDRA_NUM_TOKENS: "256"
+      CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+    ports:
+      - "41600:9042"
+    healthcheck:
+      test: [ "CMD-SHELL", "cqlsh -e 'DESCRIBE KEYSPACES' 127.0.0.1 9042 >/dev/null 2>&1 || exit 1" ]
+      interval: 15s
+      timeout: 10s
+      retries: 30
+    networks: [ uts_net ]
+
+  cass_init:
+    image: cassandra:latest
+    container_name: uts_cassandra_init
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    entrypoint: [ "/bin/bash","-lc" ]
+    command:
+      - |
+        cqlsh cassandra 9042 -e "
+        CREATE KEYSPACE IF NOT EXISTS chat
+        WITH replication = {'class': 'SimpleStrategy','replication_factor': 1}
+        AND durable_writes = true;"
+    networks: [ uts_net ]
+    restart: "no"
+
   tenant-bff:
     build:
       context: ../../services/tenant-bff
@@ -164,7 +206,7 @@ services:
       BFF_HMAC_SECRET: ${BFF_HMAC_SECRET:-please-change}
       CLOCK_SKEW_SEC: 300
       REPLAY_TTL_SEC: 60
-      IDENTITY_BASE_URL: http://identity:40000
+      IDENTITY_BASE_URL: http://identity:3000
       SERVICE_TIMEOUT_MS: 3500
       CACHE_TTL_SEC: 60
     expose:
@@ -221,6 +263,45 @@ services:
       start_period: 15s
     networks: [uts_net]
 
+  chat-api:
+    build:
+      context: ../../services/chat
+      dockerfile: Dockerfile.dev
+    container_name: uts_chat_api
+    restart: unless-stopped
+    volumes:
+      - ../../services/chat/src:/app/src
+      - ../../services/chat/db:/app/db
+      - ../../services/chat/test:/app/test
+      - /app/node_modules
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      CASSANDRA_CONTACT_POINTS: cassandra
+      CASSANDRA_LOCAL_DATA_CENTER: dc1
+      CASSANDRA_KEYSPACE: chat
+      CASSANDRA_PORT: 9042
+      CASSANDRA_USER: cassandra
+      CASSANDRA_PASSWORD: cassandra
+    depends_on:
+      cassandra: { condition: service_healthy }
+      cass_init: { condition: service_completed_successfully }
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:3000/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 15s
+    networks: [uts_net]
+
   edge:
     # image: openresty/openresty:alpine
     build:
@@ -235,7 +316,8 @@ services:
     depends_on:
       identity: { condition: service_started }
       tenant-bff: { condition: service_started }
-    ports: ["8080:80"]
+      chat-api: { condition: service_started }
+    ports: [ "8080:80" ]
     networks: [uts_net]
 
   identity:
@@ -262,8 +344,6 @@ services:
       - ../../services/identity/src:/app/src:ro
       - ../../services/identity/build.gradle.kts:/app/build.gradle.kts:ro
       - gradle_cache:/home/gradle/.gradle
-    ports:
-      - "${IDENTITY_PORT}:40000"
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
@@ -293,4 +373,5 @@ volumes:
   minio_data:
   os_data:
   gradle_cache:
+  cassandra_data:
   pm_node_modules:
