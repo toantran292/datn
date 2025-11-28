@@ -364,7 +364,7 @@ export const IssueDetailPanel: React.FC<IssueDetailPanelProps> = (props) => {
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-base font-semibold text-custom-text-100">{issueKey}</span>
             {locationLabel ? (
-              <Badge variant="outline-neutral" size="sm" className="gap-1">
+              <Badge variant="outline-neutral" size="sm" className="flex gap-1">
                 <CalendarDays className="size-3" />
                 {locationLabel}
               </Badge>
@@ -487,8 +487,8 @@ export const IssueDetailPanel: React.FC<IssueDetailPanelProps> = (props) => {
                 mentionHandler={mentionHandler}
                 onChange={handleDescriptionChange}
                 placeholder="Nhập mô tả cho công việc này..."
-                containerClassName="border border-custom-border-200 rounded-md bg-custom-background-90 p-4"
-                editorClassName="min-h-[160px] text-sm leading-6"
+                containerClassName="border border-custom-border-200 rounded-md bg-custom-background-90 p-4 !text-sm"
+                editorClassName="min-h-[160px] !text-sm leading-6"
               />
               <div className="flex items-center gap-2">
                 <Button
