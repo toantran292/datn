@@ -42,7 +42,7 @@ services:
   minio:
     image: minio/minio:latest
     container_name: uts_minio
-    command: ["server", "/data", "--console-address", ":9001"]
+    command: ["server", "/data", "--address", ":41200", "--console-address", ":41201"]
     restart: unless-stopped
     env_file:
       - .env.dev
@@ -52,10 +52,10 @@ services:
     volumes:
       - minio_data:/data
     ports:
-      - "${MINIO_API_PORT}:9000"
-      - "${MINIO_CONSOLE_PORT}:9001"
+      - "${MINIO_API_PORT}:41200"
+      - "${MINIO_CONSOLE_PORT}:41201"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      test: ["CMD", "curl", "-f", "http://localhost:41200/minio/health/live"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -140,6 +140,26 @@ services:
       - "${MAILHOG_SMTP_PORT}:1025"
     healthcheck:
       test: ["CMD", "nc", "-z", "localhost", "8025"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [uts_net]
+
+  mongodb:
+    image: mongo:7-jammy
+    container_name: uts_mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: file_storage
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    ports:
+      - "${MONGO_PORT}:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -272,6 +292,38 @@ services:
       start_period: 15s
     networks: [uts_net]
 
+  file-storage-api:
+    build:
+      context: ../../services/file-storage
+      dockerfile: Dockerfile.dev
+    container_name: uts_file_storage_api
+    restart: unless-stopped
+    volumes:
+      - ../../services/file-storage/src:/app/src
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: ${MINIO_PORT}
+      MINIO_USE_SSL: "false"
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      MINIO_DEFAULT_BUCKET: files
+      MINIO_REGION: us-east-1
+      MONGODB_URI: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017/file_storage?authSource=admin
+    depends_on:
+      minio: { condition: service_healthy }
+      mongodb: { condition: service_healthy }
+    ports:
+      - "${FILE_STORAGE_PORT}:3000"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/files/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 15s
+    networks: [uts_net]
+
   edge:
     # image: openresty/openresty:alpine
     build:
@@ -288,6 +340,7 @@ services:
       tenant-bff: { condition: service_started }
       chat-api: { condition: service_started }
       notification-api: { condition: service_started }
+      file-storage-api: { condition: service_started }
     ports: [ "8080:80" ]
     networks: [uts_net]
 
@@ -331,12 +384,15 @@ networks:
   uts_net: {}
 
 volumes:
+  file_storage_node_modules:
   notification_node_modules:
   tenant_bff_node_modules:
   chat_node_modules:
   pg_data:
   redis_data:
   minio_data:
+  mongodb_data:
+  mongodb_config:
   os_data:
   gradle_cache:
   cassandra_data:
