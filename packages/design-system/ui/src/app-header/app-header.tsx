@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { Menu } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Header, EHeaderVariant } from "../header";
 import { WorkspaceSelector } from "./workspace-selector";
@@ -33,6 +34,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   workspaceSlug,
   currentWorkspaceId,
   currentProjectId,
+  showMenuToggle = false,
+  onMenuToggle,
   onWorkspaceChange,
   onProjectChange,
   onCreateProject,
@@ -63,6 +66,18 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
     <>
       <Header variant={EHeaderVariant.PRIMARY} className={cn("border-b border-custom-border-200 px-2", className)}>
         <Header.LeftItem>
+          {/* Collapse/Expand Sidebar Toggle */}
+          {showMenuToggle && (
+            <button
+              type="button"
+              onClick={onMenuToggle}
+              className="flex items-center justify-center size-8 rounded-md hover:bg-custom-background-80 transition-colors"
+              aria-label="Toggle sidebar"
+            >
+              <Menu className="size-4" />
+            </button>
+          )}
+
           <UTSLogo />
 
           <WorkspaceSelector

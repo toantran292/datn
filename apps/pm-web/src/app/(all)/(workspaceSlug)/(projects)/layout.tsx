@@ -37,7 +37,7 @@ function WorkspaceLayoutContent({ children }: { children: React.ReactNode }) {
         workspaceSlug={params.workspaceSlug}
         currentWorkspaceId={currentWorkspaceId}
         currentProjectId={currentProjectId}
-        showMenuToggle
+        showMenuToggle={!!currentProjectId}
         onMenuToggle={toggleSidebar}
         onProjectChange={handleProjectChange}
         className="z-[9999]"
