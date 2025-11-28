@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import type { JitsiTrack } from '@/types/jitsi';
+import { Video } from './Video';
 
 interface RemoteVideoProps {
   name: string;
@@ -8,33 +9,11 @@ interface RemoteVideoProps {
 }
 
 export function RemoteVideo({ name, tracks }: RemoteVideoProps) {
-  const videoRef = useRef<HTMLVideoElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const videoTrack = tracks.find(t => t.getType() === 'video');
   const audioTrack = tracks.find(t => t.getType() === 'audio');
-  const videoTrackId = videoTrack?.getId();
   const audioTrackId = audioTrack?.getId();
-
-  useEffect(() => {
-    if (!videoTrack || !videoRef.current) return;
-
-    try {
-      videoTrack.attach(videoRef.current);
-    } catch (err) {
-      console.error('[RemoteVideo] Error attaching video:', err);
-    }
-
-    return () => {
-      if (videoRef.current && videoTrack) {
-        try {
-          videoTrack.detach(videoRef.current);
-        } catch (err) {
-          console.error('[RemoteVideo] Error detaching video:', err);
-        }
-      }
-    };
-  }, [videoTrackId, name]);
 
   useEffect(() => {
     if (!audioTrack || !audioRef.current) return;
@@ -54,7 +33,7 @@ export function RemoteVideo({ name, tracks }: RemoteVideoProps) {
         }
       }
     };
-  }, [audioTrackId, name]);
+  }, [audioTrack, audioTrackId]);
 
   const hasVideo = videoTrack && !videoTrack.isMuted();
 
@@ -65,16 +44,15 @@ export function RemoteVideo({ name, tracks }: RemoteVideoProps) {
       exit={{ opacity: 0, scale: 0.9 }}
       className="relative w-full h-full bg-gray-900 rounded-xl overflow-hidden shadow-lg"
     >
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
+      <Video
+        videoTrack={videoTrack}
+        className="w-full h-full object-cover"
         muted={true}
-        className={`w-full h-full object-cover ${hasVideo ? 'block' : 'hidden'}`}
+        autoPlay={true}
       />
 
       {!hasVideo && (
-        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-ts-orange/20 to-ts-teal/20">
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-ts-orange/20 to-ts-teal/20">
           <div className="w-24 h-24 rounded-full bg-gradient-to-br from-ts-orange to-ts-teal flex items-center justify-center text-4xl font-bold text-white shadow-xl">
             {name.charAt(0).toUpperCase()}
           </div>

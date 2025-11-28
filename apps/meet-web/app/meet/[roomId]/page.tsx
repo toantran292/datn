@@ -65,8 +65,6 @@ export default function MeetingPage() {
     isConnected ? roomId : null,
     displayName
   );
-  // console.log(participants)
-
   // Handle leave
   const handleLeave = async () => {
     await leaveConference();
@@ -166,7 +164,6 @@ export default function MeetingPage() {
 
           {/* Remote participants */}
           {Array.from(participants.values()).map((participant) => {
-            // console.log("PARTICIPANT:", participant);
             return (
               <RemoteVideo
                 key={participant.id}

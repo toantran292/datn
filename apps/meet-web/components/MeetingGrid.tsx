@@ -61,6 +61,20 @@ export function MeetingGrid({ participants, localParticipant }: MeetingGridProps
   const startIndex = currentPage * config.perPage;
   const endIndex = Math.min(startIndex + config.perPage, allParticipants.length);
   const currentParticipants = allParticipants.slice(startIndex, endIndex);
+  const slideVariants = {
+    initial: (direction: string) => ({
+      opacity: 0,
+      x: direction === 'right' ? 100 : -100,
+    }),
+    animate: {
+      opacity: 1,
+      x: 0,
+    },
+    exit: (direction: string) => ({
+      opacity: 0,
+      x: direction === 'right' ? -100 : 100,
+    }),
+  };
 
   const handlePrevPage = () => {
     if (currentPage > 0) {
@@ -85,22 +99,14 @@ export function MeetingGrid({ participants, localParticipant }: MeetingGridProps
     <div className="w-full h-full flex items-center justify-center p-8 relative">
       {/* Main grid container */}
       <div className="relative w-full max-w-6xl">
-        <AnimatePresence mode="wait" custom={slideDirection}>
+       <AnimatePresence mode="wait" custom={slideDirection}>
           <motion.div
             key={currentPage}
             custom={slideDirection}
-            initial={(direction: string) => ({
-              opacity: 0,
-              x: direction === 'right' ? 100 : -100,
-            })}
-            animate={{
-              opacity: 1,
-              x: 0,
-            }}
-            exit={(direction: string) => ({
-              opacity: 0,
-              x: direction === 'right' ? -100 : 100,
-            })}
+            variants={slideVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
             transition={{ duration: 0.3, ease: 'easeInOut' }}
             className={`grid ${gridColsClass} gap-8 md:gap-12`}
           >
@@ -124,6 +130,7 @@ export function MeetingGrid({ participants, localParticipant }: MeetingGridProps
             ))}
           </motion.div>
         </AnimatePresence>
+
 
         {/* Navigation arrows */}
         {totalPages > 1 && (

@@ -22,6 +22,30 @@ export function initializeJitsi() {
 
   JitsiMeetJS.init(options);
   JitsiMeetJS.setLogLevel(JitsiMeetJS.logLevels.WARN);
+
+  // Suppress specific Jitsi internal errors
+  const originalConsoleError = console.error;
+  console.error = (...args: any[]) => {
+    // Convert all args to strings for checking
+    const fullMessage = args.map((arg: any) => {
+      if (typeof arg === 'string') return arg;
+      if (arg instanceof Error) return arg.message;
+      return String(arg);
+    }).join(' ');
+
+    // Suppress known harmless errors
+    if (
+      fullMessage.includes('ClearedQueueError') ||
+      fullMessage.includes('removeRemoteStreamsOnLeave') ||
+      fullMessage.includes('JingleSessionPC') ||
+      fullMessage.includes('interrupted by a new load request')
+    ) {
+      return; // Suppress these errors
+    }
+
+    originalConsoleError.apply(console, args);
+  };
+
   console.log('[Jitsi] Initialized successfully');
 }
 

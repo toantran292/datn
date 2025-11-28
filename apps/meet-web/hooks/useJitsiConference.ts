@@ -164,6 +164,10 @@ export function useJitsiConference(
         const handleUserLeft = (id: string) => {
           setParticipants(prev => {
             const next = new Map(prev);
+            const participant = next.get(id);
+            if (participant) {
+              console.log(`[Jitsi] ${participant.name} has left the meeting`);
+            }
             next.delete(id);
             return next;
           });
@@ -183,9 +187,17 @@ export function useJitsiConference(
           });
         };
 
-        const handleTrackAdded = async(track: JitsiTrack) => {
+       const handleTrackAdded = async (track: JitsiTrack) => {
           await ensureTrackId(track);
 
+          console.log('[handleTrackAdded] Track added:', {
+            trackId: track.getId(),
+            type: track.getType(),
+            isLocal: track.isLocal(),
+            participantId: track.getParticipantId()
+          });
+
+          // Skip local tracks
           if (track.isLocal()) {
             setLocalTracks(prev => {
               const exists = prev.some(t => t.getId() === track.getId());
@@ -196,47 +208,35 @@ export function useJitsiConference(
           }
 
           const participantId = track.getParticipantId();
+          const trackType = track.getType();
+          const trackId = track.getId();
 
           setParticipants(prev => {
             const next = new Map(prev);
             let participant = next.get(participantId);
-
-
-            if (!participant && conf) {
-              const jitsiParticipant = conf.getParticipantById(participantId);
-              if (jitsiParticipant) {
-                const displayName = jitsiParticipant.getDisplayName() || 'Unknown';
-                participant = {
-                  id: participantId,
-                  name: displayName,
-                  tracks: []
-                };
-                next.set(participantId, participant);
-              }
+            console.log({name: participant});
+            
+            // 🌟 Tạo participant stub nếu chưa có
+            if (!participant) {
+              participant = {
+                id: participantId,
+                name: 'Unknown',
+                tracks: []
+              };
+              next.set(participantId, participant);
+              console.log('[handleTrackAdded] Created stub participant');
             }
 
-            if (participant) {
-              const trackType = track.getType();
-              const trackId = track.getId();
+            // 🌟 Chỉ update track của cùng loại
+            const newTracks = [
+              ...participant.tracks.filter(t => t.getType() !== trackType),
+              track
+            ];
 
-              // Check if this exact track already exists
-              const alreadyExists = participant.tracks.some(t => t.getId() === trackId);
-              if (alreadyExists) {
-                return next;
-              }
-
-              // Replace old track of SAME TYPE (not same ID)
-              // This ensures each participant has max 1 audio + 1 video track
-              const newTracks = [
-                ...participant.tracks.filter(t => t.getType() !== trackType),
-                track
-              ];
-
-              next.set(participantId, {
-                ...participant,
-                tracks: newTracks
-              });
-            }
+            next.set(participantId, {
+              ...participant,
+              tracks: newTracks
+            });
 
             return next;
           });
@@ -307,7 +307,7 @@ export function useJitsiConference(
         conf.setDisplayName(displayName);
 
         // Join conference
-        await conf.join();
+        conf.join();
 
         // Add local tracks to conference
         for (const track of tracks) {
