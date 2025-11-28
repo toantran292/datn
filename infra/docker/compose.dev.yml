@@ -193,7 +193,7 @@ services:
     restart: unless-stopped
     volumes:
       - ../../services/tenant-bff:/app
-      - /app/node_modules
+      - tenant_bff_node_modules:/app/node_modules
     environment:
       NODE_ENV: development
       PORT: 3000
@@ -223,7 +223,7 @@ services:
       - ../../services/chat/src:/app/src
       - ../../services/chat/db:/app/db
       - ../../services/chat/test:/app/test
-      - /app/node_modules
+      - chat_node_modules:/app/node_modules
     environment:
       NODE_ENV: development
       PORT: 3000
@@ -238,6 +238,34 @@ services:
       cass_init: { condition: service_completed_successfully }
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 15s
+    networks: [uts_net]
+
+  notification-api:
+    build:
+      context: ../../services/notification
+      dockerfile: Dockerfile.dev
+    container_name: uts_notification_api
+    restart: unless-stopped
+    volumes:
+      - ../../services/notification/src:/app/src
+      - notification_node_modules:/app/node_modules
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+      SMTP_SECURE: "false"
+      EMAIL_FROM: noreply@uts.local
+    depends_on:
+      mailhog: { condition: service_healthy }
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/notifications/health"]
       interval: 30s
       timeout: 10s
       retries: 10
@@ -259,6 +287,7 @@ services:
       identity: { condition: service_started }
       tenant-bff: { condition: service_started }
       chat-api: { condition: service_started }
+      notification-api: { condition: service_started }
     ports: [ "8080:80" ]
     networks: [uts_net]
 
@@ -302,6 +331,9 @@ networks:
   uts_net: {}
 
 volumes:
+  notification_node_modules:
+  tenant_bff_node_modules:
+  chat_node_modules:
   pg_data:
   redis_data:
   minio_data:
