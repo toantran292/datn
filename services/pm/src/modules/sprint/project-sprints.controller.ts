@@ -1,4 +1,5 @@
-import { Controller, Get, Param, ParseUUIDPipe } from "@nestjs/common";
+import { Controller, Get, Param, ParseUUIDPipe, Req } from "@nestjs/common";
+import type { RequestWithOrg } from "../../common/interfaces";
 import { Sprint } from "@prisma/client";
 import { SprintService } from "./sprint.service";
 import { SprintResponseDto } from "./dto/sprint-response.dto";
@@ -8,8 +9,12 @@ export class ProjectSprintsController {
   constructor(private readonly sprintService: SprintService) {}
 
   @Get()
-  async findByProject(@Param("projectId", ParseUUIDPipe) projectId: string): Promise<SprintResponseDto[]> {
-    const sprints = await this.sprintService.findByProject(projectId);
+  async findByProject(
+    @Param("projectId", ParseUUIDPipe) projectId: string,
+    @Req() request: RequestWithOrg
+  ): Promise<SprintResponseDto[]> {
+    const orgId = request.orgId;
+    const sprints = await this.sprintService.findByProject(projectId, orgId);
     return sprints.map((sprint) => this.toResponseDto(sprint));
   }
 

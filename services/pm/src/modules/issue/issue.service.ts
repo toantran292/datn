@@ -13,13 +13,16 @@ export class IssueService {
 
   constructor(private prisma: PrismaService) {}
 
-  async create(dto: CreateIssueDto): Promise<IssueResponseDto> {
-    // Validate project exists
-    const project = await this.prisma.project.findUnique({
-      where: { id: dto.projectId },
+  async create(dto: CreateIssueDto, orgId: string): Promise<IssueResponseDto> {
+    // Validate project exists and belongs to organization
+    const project = await this.prisma.project.findFirst({
+      where: {
+        id: dto.projectId,
+        orgId,
+      },
     });
     if (!project) {
-      throw new NotFoundException(`Project not found: ${dto.projectId}`);
+      throw new NotFoundException(`Project not found in your organization: ${dto.projectId}`);
     }
 
     // Validate sprint if provided
@@ -48,6 +51,38 @@ export class IssueService {
       }
     }
 
+    // Get or validate status
+    let statusId = dto.statusId;
+    if (!statusId) {
+      // If no statusId provided, get the first status (order = 0, usually "TO DO")
+      const defaultStatus = await this.prisma.issueStatus.findFirst({
+        where: {
+          projectId: dto.projectId,
+        },
+        orderBy: {
+          order: "asc",
+        },
+      });
+      if (!defaultStatus) {
+        throw new BadRequestException(`No status found for project: ${dto.projectId}`);
+      }
+      statusId = defaultStatus.id;
+    } else {
+      // Validate provided status exists and belongs to project
+      const status = await this.prisma.issueStatus.findUnique({
+        where: { id: statusId },
+      });
+      if (!status) {
+        throw new NotFoundException(`Status not found: ${statusId}`);
+      }
+      if (status.projectId !== dto.projectId) {
+        throw new BadRequestException("Status does not belong to project");
+      }
+    }
+
+    // Get next sequence ID for this project
+    const sequenceId = await this.getNextSequenceId(dto.projectId);
+
     // Calculate sortOrder if not provided
     let sortOrder = dto.sortOrder;
     if (!sortOrder) {
@@ -62,65 +97,114 @@ export class IssueService {
         projectId: dto.projectId,
         sprintId: dto.sprintId || null,
         parentId: dto.parentId || null,
+        statusId: statusId,
         name: dto.name,
         description: dto.description || null,
         descriptionHtml: dto.descriptionHtml || null,
-        state: dto.state,
         priority: dto.priority,
         type: dto.type,
         point: dto.point ? new Prisma.Decimal(dto.point) : null,
-        sequenceId: dto.sequenceId ? BigInt(dto.sequenceId) : null,
+        sequenceId,
         sortOrder: new Prisma.Decimal(sortOrder),
         startDate: dto.startDate ? new Date(dto.startDate) : null,
         targetDate: dto.targetDate ? new Date(dto.targetDate) : null,
         assigneesJson: dto.assignees || [],
+      },
+      include: {
+        status: true,
       },
     });
 
     return this.mapToResponse(issue);
   }
 
-  async findById(id: string): Promise<IssueResponseDto> {
-    const issue = await this.prisma.issue.findUnique({
-      where: { id },
+  async findById(id: string, orgId: string): Promise<IssueResponseDto> {
+    const issue = await this.prisma.issue.findFirst({
+      where: {
+        id,
+        project: {
+          orgId,
+        },
+      },
+      include: {
+        status: true,
+      },
     });
     if (!issue) {
-      throw new NotFoundException(`Issue not found: ${id}`);
+      throw new NotFoundException(`Issue not found in your organization: ${id}`);
     }
     return this.mapToResponse(issue);
   }
 
-  async findByProject(projectId: string): Promise<IssueResponseDto[]> {
+  async findByProject(projectId: string, orgId: string): Promise<IssueResponseDto[]> {
+    // Validate project belongs to organization
+    const project = await this.prisma.project.findFirst({
+      where: {
+        id: projectId,
+        orgId,
+      },
+    });
+    if (!project) {
+      throw new NotFoundException(`Project not found in your organization: ${projectId}`);
+    }
+
     const issues = await this.prisma.issue.findMany({
       where: { projectId },
+      include: {
+        status: true,
+      },
       orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
     });
-    return issues.map(this.mapToResponse);
+    return issues.map((issue) => this.mapToResponse(issue));
   }
 
-  async findBySprint(sprintId: string): Promise<IssueResponseDto[]> {
+  async findBySprint(sprintId: string, orgId: string): Promise<IssueResponseDto[]> {
+    // Validate sprint belongs to organization's project
+    const sprint = await this.prisma.sprint.findFirst({
+      where: {
+        id: sprintId,
+        project: {
+          orgId,
+        },
+      },
+    });
+    if (!sprint) {
+      throw new NotFoundException(`Sprint not found in your organization: ${sprintId}`);
+    }
+
     const issues = await this.prisma.issue.findMany({
       where: { sprintId },
+      include: {
+        status: true,
+      },
       orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
     });
-    return issues.map(this.mapToResponse);
+    return issues.map((issue) => this.mapToResponse(issue));
   }
 
-  async update(id: string, dto: UpdateIssueDto): Promise<IssueResponseDto> {
-    const issue = await this.prisma.issue.findUnique({
-      where: { id },
+  async update(id: string, dto: UpdateIssueDto, orgId: string): Promise<IssueResponseDto> {
+    const issue = await this.prisma.issue.findFirst({
+      where: {
+        id,
+        project: {
+          orgId,
+        },
+      },
     });
     if (!issue) {
-      throw new NotFoundException(`Issue not found: ${id}`);
+      throw new NotFoundException(`Issue not found in your organization: ${id}`);
     }
 
     // Validate project if changed
     if (dto.projectId && dto.projectId !== issue.projectId) {
-      const project = await this.prisma.project.findUnique({
-        where: { id: dto.projectId },
+      const project = await this.prisma.project.findFirst({
+        where: {
+          id: dto.projectId,
+          orgId,
+        },
       });
       if (!project) {
-        throw new NotFoundException(`Project not found: ${dto.projectId}`);
+        throw new NotFoundException(`Project not found in your organization: ${dto.projectId}`);
       }
     }
 
@@ -161,26 +245,39 @@ export class IssueService {
         projectId: dto.projectId,
         sprintId: dto.sprintId !== undefined ? dto.sprintId : issue.sprintId,
         parentId: dto.parentId !== undefined ? dto.parentId : issue.parentId,
+        statusId: dto.statusId !== undefined ? dto.statusId : issue.statusId,
         name: dto.name,
         description: dto.description !== undefined ? dto.description : issue.description,
         descriptionHtml: dto.descriptionHtml !== undefined ? dto.descriptionHtml : issue.descriptionHtml,
-        state: dto.state,
         priority: dto.priority,
         type: dto.type,
         point: dto.point !== undefined ? (dto.point ? new Prisma.Decimal(dto.point) : null) : issue.point,
-        sequenceId: dto.sequenceId !== undefined ? (dto.sequenceId ? BigInt(dto.sequenceId) : null) : issue.sequenceId,
         sortOrder: dto.sortOrder !== undefined ? new Prisma.Decimal(dto.sortOrder) : issue.sortOrder,
         startDate: dto.startDate !== undefined ? (dto.startDate ? new Date(dto.startDate) : null) : issue.startDate,
         targetDate:
           dto.targetDate !== undefined ? (dto.targetDate ? new Date(dto.targetDate) : null) : issue.targetDate,
         assigneesJson: dto.assignees !== undefined ? (dto.assignees as any) : (issue.assigneesJson as any),
       },
+      include: {
+        status: true,
+      },
     });
 
     return this.mapToResponse(updated);
   }
 
-  async reorder(projectId: string, issueId: string, dto: ReorderIssueDto): Promise<void> {
+  async reorder(projectId: string, issueId: string, dto: ReorderIssueDto, orgId: string): Promise<void> {
+    // Validate project belongs to organization
+    const project = await this.prisma.project.findFirst({
+      where: {
+        id: projectId,
+        orgId,
+      },
+    });
+    if (!project) {
+      throw new NotFoundException(`Project not found in your organization: ${projectId}`);
+    }
+
     const issue = await this.prisma.issue.findUnique({
       where: { id: issueId },
     });
@@ -222,15 +319,33 @@ export class IssueService {
     });
   }
 
-  async delete(id: string): Promise<void> {
-    const issue = await this.prisma.issue.findUnique({
-      where: { id },
+  async delete(id: string, orgId: string): Promise<void> {
+    const issue = await this.prisma.issue.findFirst({
+      where: {
+        id,
+        project: {
+          orgId,
+        },
+      },
     });
     if (!issue) {
-      throw new NotFoundException(`Issue not found: ${id}`);
+      throw new NotFoundException(`Issue not found in your organization: ${id}`);
     }
     await this.prisma.issue.delete({
       where: { id },
+    });
+  }
+
+  private async getNextSequenceId(projectId: string): Promise<number> {
+    // Use transaction to prevent race conditions
+    return await this.prisma.$transaction(async (tx) => {
+      const maxIssue = await tx.issue.findFirst({
+        where: { projectId },
+        orderBy: { sequenceId: "desc" },
+        select: { sequenceId: true },
+      });
+
+      return Number(maxIssue?.sequenceId || 0) + 1;
     });
   }
 
@@ -332,14 +447,26 @@ export class IssueService {
       projectId: issue.projectId,
       sprintId: issue.sprintId,
       parentId: issue.parentId,
+      statusId: issue.statusId,
+      status: issue.status
+        ? {
+            id: issue.status.id,
+            projectId: issue.status.projectId,
+            name: issue.status.name,
+            description: issue.status.description,
+            color: issue.status.color,
+            order: issue.status.order,
+            createdAt: issue.status.createdAt,
+            updatedAt: issue.status.updatedAt,
+          }
+        : undefined,
       name: issue.name,
       description: issue.description,
       descriptionHtml: issue.descriptionHtml,
-      state: issue.state,
       priority: issue.priority,
       type: issue.type,
       point: issue.point ? Number(issue.point) : null,
-      sequenceId: issue.sequenceId ? Number(issue.sequenceId) : null,
+      sequenceId: Number(issue.sequenceId),
       sortOrder: Number(issue.sortOrder),
       startDate: issue.startDate ? issue.startDate.toISOString().split("T")[0] : null,
       targetDate: issue.targetDate ? issue.targetDate.toISOString().split("T")[0] : null,

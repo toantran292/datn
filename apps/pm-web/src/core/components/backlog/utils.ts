@@ -73,16 +73,9 @@ export const formatDateRange = (startDate: string | null, endDate: string | null
   return "Không có thời gian";
 };
 
-export const formatIssueIdentifier = (sequenceId: number | null | undefined): string => {
-  if (sequenceId === null || sequenceId === undefined) return "#?";
-  return `#${sequenceId}`;
-};
+export const formatIssueIdentifier = (sequenceId: number): string => `#${sequenceId}`;
 
-export const formatIssueKey = (
-  projectIdentifier: string | null | undefined,
-  sequenceId: number | null | undefined
-): string => {
+export const formatIssueKey = (projectIdentifier: string | null | undefined, sequenceId: number): string => {
   if (!projectIdentifier) return formatIssueIdentifier(sequenceId);
-  if (sequenceId === null || sequenceId === undefined) return `${projectIdentifier}-?`;
   return `${projectIdentifier}-${sequenceId}`;
 };

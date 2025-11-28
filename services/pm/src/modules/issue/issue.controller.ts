@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, HttpCode, HttpStatus } from "@nestjs/common";
+import { Controller, Get, Post, Put, Delete, Body, Param, HttpCode, HttpStatus, Req } from "@nestjs/common";
+import type { RequestWithOrg } from "../../common/interfaces";
 import { IssueService } from "./issue.service";
 import { CreateIssueDto } from "./dto/create-issue.dto";
 import { UpdateIssueDto } from "./dto/update-issue.dto";
@@ -11,28 +12,40 @@ export class IssueController {
 
   @Post("issues")
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() dto: CreateIssueDto): Promise<IssueResponseDto> {
-    return this.issueService.create(dto);
+  async create(@Body() dto: CreateIssueDto, @Req() request: RequestWithOrg): Promise<IssueResponseDto> {
+    const orgId = request.orgId;
+    return this.issueService.create(dto, orgId);
   }
 
   @Get("issues/:id")
-  async findById(@Param("id") id: string): Promise<IssueResponseDto> {
-    return this.issueService.findById(id);
+  async findById(@Param("id") id: string, @Req() request: RequestWithOrg): Promise<IssueResponseDto> {
+    const orgId = request.orgId;
+    return this.issueService.findById(id, orgId);
   }
 
   @Get("projects/:projectId/issues")
-  async findByProject(@Param("projectId") projectId: string): Promise<IssueResponseDto[]> {
-    return this.issueService.findByProject(projectId);
+  async findByProject(
+    @Param("projectId") projectId: string,
+    @Req() request: RequestWithOrg
+  ): Promise<IssueResponseDto[]> {
+    const orgId = request.orgId;
+    return this.issueService.findByProject(projectId, orgId);
   }
 
   @Get("sprints/:sprintId/issues")
-  async findBySprint(@Param("sprintId") sprintId: string): Promise<IssueResponseDto[]> {
-    return this.issueService.findBySprint(sprintId);
+  async findBySprint(@Param("sprintId") sprintId: string, @Req() request: RequestWithOrg): Promise<IssueResponseDto[]> {
+    const orgId = request.orgId;
+    return this.issueService.findBySprint(sprintId, orgId);
   }
 
   @Put("issues/:id")
-  async update(@Param("id") id: string, @Body() dto: UpdateIssueDto): Promise<IssueResponseDto> {
-    return this.issueService.update(id, dto);
+  async update(
+    @Param("id") id: string,
+    @Body() dto: UpdateIssueDto,
+    @Req() request: RequestWithOrg
+  ): Promise<IssueResponseDto> {
+    const orgId = request.orgId;
+    return this.issueService.update(id, dto, orgId);
   }
 
   @Post("projects/:projectId/issues/:issueId/reorder")
@@ -40,14 +53,17 @@ export class IssueController {
   async reorder(
     @Param("projectId") projectId: string,
     @Param("issueId") issueId: string,
-    @Body() dto: ReorderIssueDto
+    @Body() dto: ReorderIssueDto,
+    @Req() request: RequestWithOrg
   ): Promise<void> {
-    return this.issueService.reorder(projectId, issueId, dto);
+    const orgId = request.orgId;
+    return this.issueService.reorder(projectId, issueId, dto, orgId);
   }
 
   @Delete("issues/:id")
   @HttpCode(HttpStatus.NO_CONTENT)
-  async delete(@Param("id") id: string): Promise<void> {
-    return this.issueService.delete(id);
+  async delete(@Param("id") id: string, @Req() request: RequestWithOrg): Promise<void> {
+    const orgId = request.orgId;
+    return this.issueService.delete(id, orgId);
   }
 }

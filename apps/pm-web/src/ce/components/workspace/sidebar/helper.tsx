@@ -1,4 +1,4 @@
-import { BarChart2, Briefcase, Home, Inbox, Layers, PenSquare } from "lucide-react";
+import { BarChart2, Briefcase, Home, Inbox, Layers, PenSquare, MessageCircle, Video } from "lucide-react";
 import { cn } from "@uts/fe-utils";
 
 export const getSidebarNavigationItemIcon = (key: string, className: string = "") => {
@@ -11,6 +11,10 @@ export const getSidebarNavigationItemIcon = (key: string, className: string = ""
       return <Briefcase className={cn("size-4 flex-shrink-0", className)} />;
     case "views":
       return <Layers className={cn("size-4 flex-shrink-0", className)} />;
+    case "chat":
+      return <MessageCircle className={cn("size-4 flex-shrink-0", className)} />;
+    case "meeting":
+      return <Video className={cn("size-4 flex-shrink-0", className)} />;
     // case "active_cycles":
     //   return <ContrastIcon className={cn("size-4 flex-shrink-0", className)} />;
     // case "analytics":

@@ -72,14 +72,15 @@ services:
       - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
     ulimits:
       memlock: { soft: -1, hard: -1 }
-      nofile:  { soft: 65536, hard: 65536 }
+      nofile: { soft: 65536, hard: 65536 }
     volumes:
       - os_data:/usr/share/opensearch/data
     ports:
       - "${OPENSEARCH_PORT}:9200"
       - "${OS_NODE_PORT}:9600"
     healthcheck:
-      test: ["CMD-SHELL", "curl --silent --fail http://localhost:9200 >/dev/null"]
+      test:
+        ["CMD-SHELL", "curl --silent --fail http://localhost:9200 >/dev/null"]
       interval: 10s
       timeout: 10s
       retries: 30
@@ -98,7 +99,8 @@ services:
     ports:
       - "${OS_DASHBOARDS_PORT}:5601"
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:5601/api/status >/dev/null"]
+      test:
+        ["CMD-SHELL", "curl -sf http://localhost:5601/api/status >/dev/null"]
       interval: 10s
       timeout: 10s
       retries: 30
@@ -125,7 +127,11 @@ services:
       - "${KAFKA_PORT}:19092"
       - "${PANDAPROXY_PORT}:8082"
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:9644/v1/status/ready >/dev/null || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:9644/v1/status/ready >/dev/null || exit 1",
+        ]
       interval: 10s
       timeout: 5s
       retries: 30
@@ -226,7 +232,49 @@ services:
     expose:
       - "3000"
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:3000/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 15s
+    networks: [uts_net]
+
+  pm:
+    build:
+      context: ../../services/pm
+      dockerfile: Dockerfile.dev
+    container_name: uts_pm
+    restart: unless-stopped
+    volumes:
+      - ../../services/pm:/app
+      - pm_node_modules:/app/node_modules
+    environment:
+      NODE_ENV: development
+      PORT: ${PM_PORT}
+      DATABASE_HOST: ${PM_DATABASE_HOST}
+      DATABASE_PORT: ${PM_DATABASE_PORT}
+      DATABASE_USER: ${PM_DATABASE_USER}
+      DATABASE_PASSWORD: ${PM_DATABASE_PASSWORD}
+      DATABASE_NAME: ${PM_DATABASE_NAME}
+      DATABASE_URL: ${PM_DATABASE_URL}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:${PM_PORT}/health",
+        ]
       interval: 30s
       timeout: 10s
       retries: 10
@@ -257,7 +305,15 @@ services:
       cassandra: { condition: service_healthy }
       cass_init: { condition: service_completed_successfully }
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:3000/health",
+        ]
       interval: 30s
       timeout: 10s
       retries: 10
@@ -373,7 +429,15 @@ services:
       redis: { condition: service_healthy }
       redpanda: { condition: service_healthy }
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/actuator/health"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:40000/actuator/health",
+        ]
       interval: 30s
       timeout: 10s
       retries: 10
@@ -396,3 +460,4 @@ volumes:
   os_data:
   gradle_cache:
   cassandra_data:
+  pm_node_modules:

@@ -8,14 +8,17 @@ import { UpdateSprintDto } from "./dto/update-sprint.dto";
 export class SprintService {
   constructor(private prisma: PrismaService) {}
 
-  async create(createDto: CreateSprintDto) {
-    // Validate project exists
-    const project = await this.prisma.project.findUnique({
-      where: { id: createDto.projectId },
+  async create(createDto: CreateSprintDto, orgId: string) {
+    // Validate project exists and belongs to organization
+    const project = await this.prisma.project.findFirst({
+      where: {
+        id: createDto.projectId,
+        orgId,
+      },
     });
 
     if (!project) {
-      throw new NotFoundException(`Project with ID ${createDto.projectId} not found`);
+      throw new NotFoundException(`Project with ID ${createDto.projectId} not found in your organization`);
     }
 
     return this.prisma.sprint.create({
@@ -30,9 +33,14 @@ export class SprintService {
     });
   }
 
-  async findOne(id: string) {
-    const sprint = await this.prisma.sprint.findUnique({
-      where: { id },
+  async findOne(id: string, orgId: string) {
+    const sprint = await this.prisma.sprint.findFirst({
+      where: {
+        id,
+        project: {
+          orgId,
+        },
+      },
       include: {
         issues: {
           select: {
@@ -43,20 +51,23 @@ export class SprintService {
     });
 
     if (!sprint) {
-      throw new NotFoundException(`Sprint with ID ${id} not found`);
+      throw new NotFoundException(`Sprint with ID ${id} not found in your organization`);
     }
 
     return sprint;
   }
 
-  async findByProject(projectId: string) {
-    // Validate project exists
-    const project = await this.prisma.project.findUnique({
-      where: { id: projectId },
+  async findByProject(projectId: string, orgId: string) {
+    // Validate project exists and belongs to organization
+    const project = await this.prisma.project.findFirst({
+      where: {
+        id: projectId,
+        orgId,
+      },
     });
 
     if (!project) {
-      throw new NotFoundException(`Project with ID ${projectId} not found`);
+      throw new NotFoundException(`Project with ID ${projectId} not found in your organization`);
     }
 
     return this.prisma.sprint.findMany({
@@ -67,14 +78,19 @@ export class SprintService {
     });
   }
 
-  async update(id: string, updateDto: UpdateSprintDto) {
-    // Check if sprint exists
-    const sprint = await this.prisma.sprint.findUnique({
-      where: { id },
+  async update(id: string, updateDto: UpdateSprintDto, orgId: string) {
+    // Check if sprint exists and belongs to organization
+    const sprint = await this.prisma.sprint.findFirst({
+      where: {
+        id,
+        project: {
+          orgId,
+        },
+      },
     });
 
     if (!sprint) {
-      throw new NotFoundException(`Sprint with ID ${id} not found`);
+      throw new NotFoundException(`Sprint with ID ${id} not found in your organization`);
     }
 
     return this.prisma.sprint.update({
@@ -89,14 +105,19 @@ export class SprintService {
     });
   }
 
-  async remove(id: string) {
-    // Check if sprint exists
-    const sprint = await this.prisma.sprint.findUnique({
-      where: { id },
+  async remove(id: string, orgId: string) {
+    // Check if sprint exists and belongs to organization
+    const sprint = await this.prisma.sprint.findFirst({
+      where: {
+        id,
+        project: {
+          orgId,
+        },
+      },
     });
 
     if (!sprint) {
-      throw new NotFoundException(`Sprint with ID ${id} not found`);
+      throw new NotFoundException(`Sprint with ID ${id} not found in your organization`);
     }
 
     await this.prisma.sprint.delete({

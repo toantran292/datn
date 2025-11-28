@@ -10,7 +10,9 @@ import {
   HttpCode,
   HttpStatus,
   ParseUUIDPipe,
+  Req,
 } from "@nestjs/common";
+import type { RequestWithOrg } from "../../common/interfaces";
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from "@nestjs/swagger";
 import { Project } from "@prisma/client";
 import { ProjectService } from "./project.service";
@@ -33,42 +35,52 @@ export class ProjectController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() createDto: CreateProjectDto): Promise<ProjectResponseDto> {
-    const project = await this.projectService.create(createDto);
+  async create(@Body() createDto: CreateProjectDto, @Req() request: RequestWithOrg): Promise<ProjectResponseDto> {
+    const orgId = request.orgId;
+    const project = await this.projectService.create(createDto, orgId);
     return this.toResponseDto(project);
   }
 
   @Get()
-  async findAll(): Promise<ProjectLiteResponseDto[]> {
-    const projects = await this.projectService.findAll();
+  async findAll(@Req() request: RequestWithOrg): Promise<ProjectLiteResponseDto[]> {
+    const orgId = request.orgId;
+    const projects = await this.projectService.findAll(orgId);
     return projects.map((p) => this.toLiteDto(p));
   }
 
   @Get("check-identifier")
-  async checkIdentifier(@Query("identifier") identifier: string): Promise<ProjectIdentifierAvailabilityResponseDto> {
-    const available = await this.projectService.checkIdentifierAvailability(identifier);
+  async checkIdentifier(
+    @Query("identifier") identifier: string,
+    @Req() request: RequestWithOrg
+  ): Promise<ProjectIdentifierAvailabilityResponseDto> {
+    const orgId = request.orgId;
+    const available = await this.projectService.checkIdentifierAvailability(identifier, orgId);
     return { identifier, available };
   }
 
   @Get(":id")
-  async findOne(@Param("id", ParseUUIDPipe) id: string): Promise<ProjectResponseDto> {
-    const project = await this.projectService.findOne(id);
+  async findOne(@Param("id", ParseUUIDPipe) id: string, @Req() request: RequestWithOrg): Promise<ProjectResponseDto> {
+    const orgId = request.orgId;
+    const project = await this.projectService.findOne(id, orgId);
     return this.toResponseDto(project);
   }
 
   @Put(":id")
   async update(
     @Param("id", ParseUUIDPipe) id: string,
-    @Body() updateDto: UpdateProjectDto
+    @Body() updateDto: UpdateProjectDto,
+    @Req() request: RequestWithOrg
   ): Promise<ProjectResponseDto> {
-    const project = await this.projectService.update(id, updateDto);
+    const orgId = request.orgId;
+    const project = await this.projectService.update(id, updateDto, orgId);
     return this.toResponseDto(project);
   }
 
   @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param("id", ParseUUIDPipe) id: string): Promise<void> {
-    await this.projectService.remove(id);
+  async remove(@Param("id", ParseUUIDPipe) id: string, @Req() request: RequestWithOrg): Promise<void> {
+    const orgId = request.orgId;
+    await this.projectService.remove(id, orgId);
   }
 
   private toResponseDto(project: ProjectWithSprints): ProjectResponseDto {

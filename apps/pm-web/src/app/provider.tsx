@@ -5,6 +5,7 @@ import { AppProgressProvider as ProgressProvider } from "@bprogress/next";
 import dynamic from "next/dynamic";
 import { useTheme, ThemeProvider } from "next-themes";
 import { SWRConfig } from "swr";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 // Plane Imports
 import { WEB_SWR_CONFIG } from "@uts/constants";
 import { Toast } from "@uts/design-system/ui";
@@ -12,6 +13,16 @@ import { Toast } from "@uts/design-system/ui";
 import { resolveGeneralTheme } from "@uts/fe-utils";
 // polyfills
 // import "@/lib/polyfills";
+
+// Create React Query client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      retry: 1,
+    },
+  },
+});
 
 export interface IAppProvider {
   children: ReactNode;
@@ -27,17 +38,19 @@ export const AppProvider: FC<IAppProvider> = (props) => {
   // themes
   return (
     <>
-      <ProgressProvider
-        height="4px"
-        color="rgb(var(--color-primary-100))"
-        options={{ showSpinner: false }}
-        shallowRouting
-      >
-        <ThemeProvider themes={["light", "dark", "light-contrast", "dark-contrast", "custom"]} defaultTheme="light">
-          <ToastWithTheme />
-          <SWRConfig value={WEB_SWR_CONFIG}>{children}</SWRConfig>
-        </ThemeProvider>
-      </ProgressProvider>
+      <QueryClientProvider client={queryClient}>
+        <ProgressProvider
+          height="4px"
+          color="rgb(var(--color-primary-100))"
+          options={{ showSpinner: false }}
+          shallowRouting
+        >
+          <ThemeProvider themes={["light", "dark", "light-contrast", "dark-contrast", "custom"]} defaultTheme="light">
+            <ToastWithTheme />
+            <SWRConfig value={WEB_SWR_CONFIG}>{children}</SWRConfig>
+          </ThemeProvider>
+        </ProgressProvider>
+      </QueryClientProvider>
     </>
   );
 };

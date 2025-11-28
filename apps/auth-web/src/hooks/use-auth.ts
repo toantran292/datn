@@ -1,13 +1,13 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'next/navigation';
-import { apiGet, apiPost } from '@/lib/api';
-import { routes } from '@/lib/routes';
-import { toast } from '@/lib/toast';
-import type { EmailAuthRequest, EmailSignUpRequest } from '@/types/identity';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { apiGet, apiPost } from "@/lib/api";
+import { routes } from "@/lib/routes";
+import { toast } from "@/lib/toast";
+import type { EmailAuthRequest, EmailSignUpRequest } from "@/types/identity";
 
 // Query keys for auth
 export const authKeys = {
-  me: ['auth', 'me'] as const,
+  me: ["auth", "me"] as const,
 };
 
 // Hook to check authentication status
@@ -17,10 +17,10 @@ export function useAuthStatus() {
     queryFn: async () => {
       try {
         // Use relative path to match middleware
-        return await apiGet('/auth/me');
+        return await apiGet("/auth/me");
       } catch (error: any) {
         // If it's a 401, treat as unauthenticated (don't throw)
-        if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+        if (error.message?.includes("401") || error.message?.includes("Unauthorized")) {
           return null;
         }
         // For other errors, throw to trigger error state
@@ -46,8 +46,22 @@ export function useEmailAuth() {
 
       // Small delay to ensure cookies are set before redirect
       setTimeout(() => {
-        // Use window.location.href for full page reload to ensure middleware runs with fresh cookies
-        window.location.href = routes.workspaces();
+        // Check for redirect parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectPath = urlParams.get("redirect");
+        const fromApp = urlParams.get("from"); // 'pm' or null
+
+        if (redirectPath && fromApp === "pm") {
+          // Redirect came from pm-web, go back to pm-web
+          const pmWebUrl = process.env.NEXT_PUBLIC_PM_WEB_URL || "http://localhost:3002";
+          window.location.href = `${pmWebUrl}${redirectPath}`;
+        } else if (redirectPath && redirectPath.startsWith("/") && !fromApp) {
+          // Redirect within auth-web (like /invites, /enter)
+          window.location.href = redirectPath;
+        } else {
+          // Default: redirect to workspaces
+          window.location.href = routes.workspaces();
+        }
       }, 200);
     },
     onError: (error: Error) => {
@@ -93,8 +107,7 @@ export function useResetPassword() {
   const router = useRouter();
 
   return useMutation({
-    mutationFn: (data: { token: string; password: string }) =>
-      apiPost(routes.api.resetPassword(), data),
+    mutationFn: (data: { token: string; password: string }) => apiPost(routes.api.resetPassword(), data),
     onSuccess: () => {
       toast.success("Password reset successfully! Please sign in with your new password.");
       router.push(routes.login());

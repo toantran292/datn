@@ -28,7 +28,7 @@ export const SidebarItemBase: FC<Props> = observer(({ item, additionalRender, ad
       <SidebarNavItem isActive={isActive}>
         <div className="flex items-center gap-1.5 py-[1px]">
           {icon}
-          <p className="text-sm leading-5 font-medium">test cuc</p>
+          <p className="text-sm leading-5 font-medium">{item.labelTranslationKey}</p>
         </div>
       </SidebarNavItem>
     </Link>

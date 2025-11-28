@@ -33,53 +33,54 @@ import { cn } from "@uts/fe-utils";
 
 import type { IIssueStore } from "@/core/store/issue/issue.store";
 import type { IIssue } from "@/core/types/issue";
+import type { IIssueStatus } from "@/core/types/issue-status";
 import type { ISprint } from "@/core/types/sprint";
 import { formatIssueKey } from "@/core/components/backlog/utils";
+import { CreateStatusModal } from "@/core/components/issue-status";
+import { useIssueStatus } from "@/core/hooks/store/use-issue-status";
 
 const IssueDetailPanel = dynamic(
   () => import("@/core/components/issue/issue-detail-panel").then((mod) => mod.IssueDetailPanel),
   { ssr: false }
 );
 
-
 type BoardViewProps = {
   projectId: string;
   issues: IIssue[];
   activeSprints: ISprint[];
   issueStore: IIssueStore;
+  issueStatuses: IIssueStatus[];
   projectIdentifier?: string | null;
 };
 
-const COLUMN_ORDER = ["TODO", "IN_PROGRESS", "IN_REVIEW", "DONE"] as const;
-type ColumnKey = (typeof COLUMN_ORDER)[number];
-
-const COLUMN_TITLES: Record<ColumnKey, string> = {
-  TODO: "To Do",
-  IN_PROGRESS: "In Progress",
-  IN_REVIEW: "In Review",
-  DONE: "Done",
-};
-
-export const BoardView = memo(function BoardView({ projectId, issues, activeSprints, issueStore, projectIdentifier }: BoardViewProps) {
+export const BoardView = memo(function BoardView({
+  projectId,
+  issues,
+  activeSprints,
+  issueStore,
+  issueStatuses,
+  projectIdentifier,
+}: BoardViewProps) {
+  const issueStatusStore = useIssueStatus();
+  
   const grouped = useMemo(() => {
-    const map: Record<ColumnKey, IIssue[]> = {
-      TODO: [],
-      IN_PROGRESS: [],
-      IN_REVIEW: [],
-      DONE: [],
-    };
+    const map: Record<string, IIssue[]> = {};
 
-    issues.forEach((issue) => {
-      if (issue.state === "CANCELLED") return;
-      const key =
-        issue.state === "IN_PROGRESS" || issue.state === "IN_REVIEW" || issue.state === "DONE"
-          ? (issue.state as ColumnKey)
-          : "TODO";
-      map[key].push(issue);
+    // Initialize map with all status IDs
+    issueStatuses.forEach((status) => {
+      map[status.id] = [];
     });
 
-    (Object.keys(map) as ColumnKey[]).forEach((key) => {
-      map[key].sort((a, b) => {
+    // Group issues by statusId
+    issues.forEach((issue) => {
+      if (map[issue.statusId]) {
+        map[issue.statusId].push(issue);
+      }
+    });
+
+    // Sort issues within each status
+    Object.keys(map).forEach((statusId) => {
+      map[statusId].sort((a, b) => {
         const orderA = a.sortOrder ?? Number.MAX_SAFE_INTEGER;
         const orderB = b.sortOrder ?? Number.MAX_SAFE_INTEGER;
         if (orderA !== orderB) return orderA - orderB;
@@ -88,14 +89,20 @@ export const BoardView = memo(function BoardView({ projectId, issues, activeSpri
     });
 
     return map;
-  }, [issues]);
+  }, [issues, issueStatuses]);
 
   const [newIssueName, setNewIssueName] = useState("");
   const [isCreatingIssue, setIsCreatingIssue] = useState(false);
   const [draggedIssueId, setDraggedIssueId] = useState<string | null>(null);
-  const [activeColumn, setActiveColumn] = useState<ColumnKey | null>(null);
+  const [activeColumn, setActiveColumn] = useState<string | null>(null);
   const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
-  const selectedIssue = selectedIssueId ? issueStore.getIssueById(selectedIssueId) ?? null : null;
+  const [isCreateStatusModalOpen, setIsCreateStatusModalOpen] = useState(false);
+  const [draggedColumnId, setDraggedColumnId] = useState<string | null>(null);
+  const [dropPosition, setDropPosition] = useState<{ statusId: string; position: "before" | "after" } | null>(null);
+  
+  // Get first status ID for quick create (usually "TO DO")
+  const firstStatusId = issueStatuses.length > 0 ? issueStatuses[0].id : null;
+  const selectedIssue = selectedIssueId ? (issueStore.getIssueById(selectedIssueId) ?? null) : null;
   const locationLabel = activeSprints.length > 0 ? activeSprints[0].name : null;
 
   useEffect(() => {
@@ -107,6 +114,11 @@ export const BoardView = memo(function BoardView({ projectId, issues, activeSpri
   const handleQuickCreate = async () => {
     if (activeSprints.length === 0) {
       setToast({ type: TOAST_TYPE.INFO, title: "Thông báo", message: "Vui lòng bắt đầu sprint trước." });
+      return;
+    }
+
+    if (!firstStatusId) {
+      setToast({ type: TOAST_TYPE.ERROR, title: "Lỗi", message: "Không tìm thấy trạng thái để tạo công việc." });
       return;
     }
 
@@ -125,7 +137,6 @@ export const BoardView = memo(function BoardView({ projectId, issues, activeSpri
         name: trimmed,
         description: null,
         descriptionHtml: null,
-        state: "TODO",
         priority: "MEDIUM",
         type: "TASK",
         point: null,
@@ -134,7 +145,7 @@ export const BoardView = memo(function BoardView({ projectId, issues, activeSpri
         startDate: null,
         targetDate: null,
         assignees: [],
-      });
+      } as any);
       setToast({ type: TOAST_TYPE.SUCCESS, title: "Đã tạo công việc", message: created.name });
       setNewIssueName("");
     } catch (error: any) {
@@ -146,15 +157,15 @@ export const BoardView = memo(function BoardView({ projectId, issues, activeSpri
   };
 
   const handleDropOnColumn = useCallback(
-    async (column: ColumnKey, destinationIssueId: string | null, position: "before" | "after" | "end") => {
+    async (statusId: string, destinationIssueId: string | null, position: "before" | "after" | "end") => {
       if (!draggedIssueId || activeSprints.length === 0) return;
       const issue = issueStore.getIssueById(draggedIssueId);
       if (!issue) return;
 
       try {
         let latestIssue = issue;
-        if (issue.state !== column) {
-          await issueStore.updateIssue(draggedIssueId, { state: column });
+        if (issue.statusId !== statusId) {
+          await issueStore.updateIssue(draggedIssueId, { statusId });
           latestIssue = issueStore.getIssueById(draggedIssueId) ?? issue;
         }
 
@@ -177,8 +188,8 @@ export const BoardView = memo(function BoardView({ projectId, issues, activeSpri
     [draggedIssueId, issueStore, projectId, activeSprints]
   );
 
-  const handleColumnDragEnter = useCallback((column: ColumnKey) => {
-    setActiveColumn(column);
+  const handleColumnDragEnter = useCallback((statusId: string) => {
+    setActiveColumn(statusId);
   }, []);
 
   const handleUpdateIssue = useCallback(
@@ -204,6 +215,79 @@ export const BoardView = memo(function BoardView({ projectId, issues, activeSpri
 
   const handleCloseDetail = useCallback(() => setSelectedIssueId(null), []);
 
+  const handleCreateStatus = useCallback(
+    async (data: { name: string; description: string; color: string }) => {
+      try {
+        await issueStatusStore.createIssueStatus(projectId, {
+          projectId,
+          name: data.name,
+          description: data.description,
+          color: data.color,
+        });
+      } catch (error) {
+        throw error;
+      }
+    },
+    [issueStatusStore, projectId]
+  );
+
+  const handleColumnDrop = useCallback(
+    async (targetStatusId: string, position: "before" | "after") => {
+      if (!draggedColumnId || draggedColumnId === targetStatusId) {
+        setDraggedColumnId(null);
+        setDropPosition(null);
+        return;
+      }
+
+      try {
+        // Create new order array
+        const currentOrder = [...issueStatuses];
+        const draggedIndex = currentOrder.findIndex((s) => s.id === draggedColumnId);
+        const targetIndex = currentOrder.findIndex((s) => s.id === targetStatusId);
+
+        if (draggedIndex === -1 || targetIndex === -1) return;
+
+        // Remove dragged item
+        const [draggedItem] = currentOrder.splice(draggedIndex, 1);
+
+        // Calculate new position
+        let newIndex = targetIndex;
+        if (position === "after") {
+          newIndex = draggedIndex < targetIndex ? targetIndex : targetIndex + 1;
+        } else {
+          newIndex = draggedIndex < targetIndex ? targetIndex - 1 : targetIndex;
+        }
+
+        // Insert at new position
+        currentOrder.splice(newIndex, 0, draggedItem);
+
+        // Create array of status IDs in new order
+        const newStatusIds = currentOrder.map((s) => s.id);
+
+        // Call API to update order
+        await issueStatusStore.reorderIssueStatuses(projectId, newStatusIds);
+
+        setToast({
+          type: TOAST_TYPE.SUCCESS,
+          title: "Đã cập nhật",
+          message: "Thứ tự trạng thái đã được lưu",
+        });
+      } catch (error: any) {
+        const message =
+          error?.response?.data?.message ?? error?.message ?? "Không thể sắp xếp lại trạng thái. Vui lòng thử lại.";
+        setToast({
+          type: TOAST_TYPE.ERROR,
+          title: "Lỗi",
+          message: typeof message === "string" ? message : undefined,
+        });
+      } finally {
+        setDraggedColumnId(null);
+        setDropPosition(null);
+      }
+    },
+    [draggedColumnId, issueStatuses, issueStatusStore, projectId]
+  );
+
   // Group issues by sprint for issue count
   const issuesBySprintId = useMemo(() => {
     const map = new Map<string, number>();
@@ -227,21 +311,18 @@ export const BoardView = memo(function BoardView({ projectId, issues, activeSpri
         </div>
         <div className="flex-shrink-0 flex flex-col gap-4 max-h-[40vh] overflow-y-auto">
           {activeSprints.map((sprint) => (
-            <SprintSummary
-              key={sprint.id}
-              sprint={sprint}
-              issueCount={issuesBySprintId.get(sprint.id) || 0}
-            />
+            <SprintSummary key={sprint.id} sprint={sprint} issueCount={issuesBySprintId.get(sprint.id) || 0} />
           ))}
         </div>
         <div className="flex flex-1 gap-4 overflow-x-auto overflow-y-hidden pb-4 pt-2 min-h-0">
-          {COLUMN_ORDER.map((column) => (
+          {issueStatuses.map((status, index) => (
             <BoardColumn
-              key={column}
-              columnKey={column}
-              title={COLUMN_TITLES[column]}
-              issues={grouped[column]}
-              allowQuickCreate={column === "TODO"}
+              key={status.id}
+              statusId={status.id}
+              title={status.name}
+              color={status.color}
+              issues={grouped[status.id] || []}
+              allowQuickCreate={index === 0}
               quickIssueName={newIssueName}
               onQuickIssueNameChange={setNewIssueName}
               onQuickCreate={handleQuickCreate}
@@ -249,18 +330,37 @@ export const BoardView = memo(function BoardView({ projectId, issues, activeSpri
               onIssueDrop={handleDropOnColumn}
               onIssueDragStart={(issueId) => {
                 setDraggedIssueId(issueId);
-                setActiveColumn(column);
+                setActiveColumn(status.id);
               }}
               onIssueDragEnd={() => {
                 setDraggedIssueId(null);
                 setActiveColumn(null);
               }}
-              isActive={activeColumn === column}
+              isActive={activeColumn === status.id}
               onColumnDragEnter={handleColumnDragEnter}
               onIssueClick={setSelectedIssueId}
               projectIdentifier={projectIdentifier}
+              isDraggingColumn={draggedColumnId !== null}
+              isBeingDragged={draggedColumnId === status.id}
+              dropPosition={dropPosition?.statusId === status.id ? dropPosition.position : null}
+              onColumnDragStart={() => setDraggedColumnId(status.id)}
+              onColumnDragEnd={() => {
+                setDraggedColumnId(null);
+                setDropPosition(null);
+              }}
+              onColumnDragOver={(position) => setDropPosition({ statusId: status.id, position })}
+              onColumnDrop={handleColumnDrop}
             />
           ))}
+          
+          {/* Add Status Button */}
+          <button
+            onClick={() => setIsCreateStatusModalOpen(true)}
+            className="flex h-full w-80 min-w-[20rem] flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-custom-border-200 bg-custom-background-90/30 text-custom-text-300 transition-all hover:border-custom-primary-100 hover:bg-custom-background-90 hover:text-custom-primary-100"
+          >
+            <Plus className="size-8" />
+            <span className="text-sm font-medium">Thêm trạng thái</span>
+          </button>
         </div>
       </div>
 
@@ -274,42 +374,48 @@ export const BoardView = memo(function BoardView({ projectId, issues, activeSpri
           onUpdateIssue={handleUpdateIssue}
         />
       ) : null}
+
+      <CreateStatusModal
+        isOpen={isCreateStatusModalOpen}
+        onClose={() => setIsCreateStatusModalOpen(false)}
+        onSubmit={handleCreateStatus}
+      />
     </>
   );
 });
 
 const BoardToolbar = () => (
-    <div className="flex flex-wrap items-center justify-between gap-3 bg-custom-background-100 rounded-lg p-4 border border-custom-border-200">
-      <div className="flex items-center gap-2">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-custom-text-300" />
-          <Input
-            placeholder="Tìm kiếm công việc..."
-            className="w-72 pl-9 border-custom-border-200 bg-custom-background-90"
-            disabled
-          />
-        </div>
-        <div className="h-6 w-px bg-custom-border-200" />
-        <Button variant="neutral-primary" size="sm" disabled className="gap-2">
-          <Users2 className="size-4" />
-          Thành viên
-        </Button>
-        <Button variant="neutral-primary" size="sm" disabled className="gap-2">
-          <Filter className="size-4" />
-          Bộ lọc
-        </Button>
+  <div className="flex flex-wrap items-center justify-between gap-3 bg-custom-background-100 rounded-lg p-4 border border-custom-border-200">
+    <div className="flex items-center gap-2">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-custom-text-300" />
+        <Input
+          placeholder="Tìm kiếm công việc..."
+          className="w-72 pl-9 border-custom-border-200 bg-custom-background-90"
+          disabled
+        />
       </div>
-      <div className="flex items-center gap-2">
-        <Button variant="primary" size="sm" disabled className="gap-2">
-          <CheckCircle2 className="size-4" />
-          Hoàn thành sprint
-        </Button>
-        <Button variant="neutral-primary" size="sm" disabled className="gap-2">
-          <MoreHorizontal className="size-4" />
-        </Button>
-      </div>
+      <div className="h-6 w-px bg-custom-border-200" />
+      <Button variant="neutral-primary" size="sm" disabled className="gap-2">
+        <Users2 className="size-4" />
+        Thành viên
+      </Button>
+      <Button variant="neutral-primary" size="sm" disabled className="gap-2">
+        <Filter className="size-4" />
+        Bộ lọc
+      </Button>
     </div>
-  );
+    <div className="flex items-center gap-2">
+      <Button variant="primary" size="sm" disabled className="gap-2">
+        <CheckCircle2 className="size-4" />
+        Hoàn thành sprint
+      </Button>
+      <Button variant="neutral-primary" size="sm" disabled className="gap-2">
+        <MoreHorizontal className="size-4" />
+      </Button>
+    </div>
+  </div>
+);
 
 const SprintSummary: React.FC<{ sprint: ISprint; issueCount: number }> = ({ sprint, issueCount }) => {
   const calculateProgress = () => {
@@ -390,24 +496,33 @@ const SprintSummary: React.FC<{ sprint: ISprint; issueCount: number }> = ({ spri
 };
 
 const BoardColumn: React.FC<{
-  columnKey: ColumnKey;
+  statusId: string;
   title: string;
+  color: string;
   issues: IIssue[];
   allowQuickCreate: boolean;
   quickIssueName: string;
   onQuickIssueNameChange: (value: string) => void;
   onQuickCreate: () => void;
   isCreatingIssue: boolean;
-  onIssueDrop: (column: ColumnKey, destinationIssueId: string | null, position: "before" | "after" | "end") => void;
-  onIssueDragStart: (issueId: string, column: ColumnKey) => void;
+  onIssueDrop: (statusId: string, destinationIssueId: string | null, position: "before" | "after" | "end") => void;
+  onIssueDragStart: (issueId: string, statusId: string) => void;
   onIssueDragEnd: () => void;
   isActive: boolean;
-  onColumnDragEnter: (column: ColumnKey) => void;
+  onColumnDragEnter: (statusId: string) => void;
   onIssueClick?: (issueId: string) => void;
   projectIdentifier?: string | null;
+  isDraggingColumn: boolean;
+  isBeingDragged: boolean;
+  dropPosition: "before" | "after" | null;
+  onColumnDragStart: () => void;
+  onColumnDragEnd: () => void;
+  onColumnDragOver: (position: "before" | "after") => void;
+  onColumnDrop: (statusId: string, position: "before" | "after") => void;
 }> = ({
-  columnKey,
+  statusId,
   title,
+  color,
   issues,
   allowQuickCreate,
   quickIssueName,
@@ -421,49 +536,76 @@ const BoardColumn: React.FC<{
   onColumnDragEnter,
   onIssueClick,
   projectIdentifier,
+  isDraggingColumn,
+  isBeingDragged,
+  dropPosition,
+  onColumnDragStart,
+  onColumnDragEnd,
+  onColumnDragOver,
+  onColumnDrop,
 }) => {
   const [hoveredIssueId, setHoveredIssueId] = useState<string | null>(null);
   const [hoveredPosition, setHoveredPosition] = useState<"top" | "bottom" | null>(null);
   const [showQuickCreate, setShowQuickCreate] = useState(false);
 
-  const getColumnColor = (key: ColumnKey) => {
-    switch (key) {
-      case "TODO":
-        return "border-t-slate-400";
-      case "IN_PROGRESS":
-        return "border-t-blue-500";
-      case "IN_REVIEW":
-        return "border-t-yellow-500";
-      case "DONE":
-        return "border-t-green-500";
-      default:
-        return "border-t-custom-border-200";
-    }
-  };
-
   return (
     <div
       className={cn(
-        "flex h-full w-80 min-w-[20rem] flex-col gap-3 rounded-lg border border-custom-border-200 bg-custom-background-90/50 shadow-sm transition-all",
+        "flex h-full w-80 min-w-[20rem] flex-col gap-3 rounded-lg border border-custom-border-200 bg-custom-background-90/50 shadow-sm transition-all relative",
         "border-t-4",
-        getColumnColor(columnKey),
         {
           "ring-2 ring-custom-primary-100 bg-custom-background-90": isActive,
+          "opacity-50": isBeingDragged,
         }
       )}
+      style={{ borderTopColor: color }}
       onDragOver={(event) => {
+        if (!isDraggingColumn) {
+          event.preventDefault();
+          onColumnDragEnter(statusId);
+          return;
+        }
+        
+        // Column drag over
         event.preventDefault();
-        onColumnDragEnter(columnKey);
+        const rect = event.currentTarget.getBoundingClientRect();
+        const midpoint = rect.left + rect.width / 2;
+        const position = event.clientX < midpoint ? "before" : "after";
+        onColumnDragOver(position);
       }}
       onDrop={(event) => {
         event.preventDefault();
-        setHoveredIssueId(null);
-        setHoveredPosition(null);
-        onIssueDrop(columnKey, null, "end");
+        
+        if (isDraggingColumn && dropPosition) {
+          onColumnDrop(statusId, dropPosition);
+        } else {
+          setHoveredIssueId(null);
+          setHoveredPosition(null);
+          onIssueDrop(statusId, null, "end");
+        }
       }}
     >
+      {/* Drop indicator for column reorder */}
+      {dropPosition === "before" && (
+        <div className="absolute left-0 top-0 bottom-0 w-1 bg-custom-primary-100 z-10 rounded-l-lg" />
+      )}
+      {dropPosition === "after" && (
+        <div className="absolute right-0 top-0 bottom-0 w-1 bg-custom-primary-100 z-10 rounded-r-lg" />
+      )}
+      
       {/* Column Header */}
-      <div className="flex items-center justify-between px-4 pt-4 pb-2">
+      <div 
+        className="flex items-center justify-between px-4 pt-4 pb-2 cursor-grab active:cursor-grabbing"
+        draggable={!isDraggingColumn}
+        onDragStart={(e) => {
+          e.stopPropagation();
+          onColumnDragStart();
+        }}
+        onDragEnd={(e) => {
+          e.stopPropagation();
+          onColumnDragEnd();
+        }}
+      >
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-semibold text-custom-text-100">{title}</h3>
           <Badge variant="outline-neutral" size="sm" className="font-medium">
@@ -536,7 +678,7 @@ const BoardColumn: React.FC<{
             key={issue.id}
             issue={issue}
             dragPosition={hoveredIssueId === issue.id ? hoveredPosition : null}
-            onDragStart={() => onIssueDragStart(issue.id, columnKey)}
+            onDragStart={() => onIssueDragStart(issue.id, statusId)}
             onDragEnd={() => {
               setHoveredIssueId(null);
               setHoveredPosition(null);
@@ -560,7 +702,7 @@ const BoardColumn: React.FC<{
               const position = isTop ? "before" : "after";
               setHoveredIssueId(null);
               setHoveredPosition(null);
-              onIssueDrop(columnKey, issue.id, position);
+              onIssueDrop(statusId, issue.id, position);
             }}
             onOpenDetail={() => onIssueClick?.(issue.id)}
             projectIdentifier={projectIdentifier}
