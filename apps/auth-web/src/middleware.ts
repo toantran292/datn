@@ -9,7 +9,7 @@ const authRoutes = ['/login', '/sign-up', '/forgot-password', '/reset-password']
 // Simple authentication check
 async function isAuthenticated(request: NextRequest): Promise<boolean> {
   try {
-    const backendUrl = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:40000';
+    const backendUrl = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080';
 
     console.log('[Middleware] Checking auth with cookies:', request.cookies.getAll().map(c => c.name));
 

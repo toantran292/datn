@@ -10,7 +10,7 @@ export const routes = {
 
   // API routes
   api: {
-    googleOAuth: () => 'http://localhost:40000/oauth2/authorization/google',
+    googleOAuth: () => 'http://localhost:8080/oauth2/authorization/google',
     emailAuth: () => '/auth/token',
     emailSignUp: () => '/auth/register',
     forgotPassword: () => '/auth/forgot-password',

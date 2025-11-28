@@ -24,6 +24,8 @@ public class UserEntity {
     private boolean disabled;
     @Column(name = "must_change_password", nullable = false)
     private boolean mustChangePassword;
+    @Column(name = "display_name")
+    private String displayName;
 
     // getters/setters
     public UUID getId() {
@@ -64,5 +66,13 @@ public class UserEntity {
 
     public void setMustChangePassword(boolean mustChangePassword) {
         this.mustChangePassword = mustChangePassword;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
     }
 }

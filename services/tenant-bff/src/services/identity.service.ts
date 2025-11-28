@@ -9,7 +9,7 @@ export class IdentityService {
   ) {}
 
   async getListMembers(orgId: string) {
-    const url = `http://identity:40000/orgs/${orgId}/members`;
+    const url = `http://identity:3000/orgs/${orgId}/members`;
 
     try {
       const res = await firstValueFrom(
@@ -28,7 +28,7 @@ export class IdentityService {
   }
 
   async inviteMember(orgId: string, email: string, role: string, project_ids?: string[]) {
-    const url = `http://identity:40000/orgs/${orgId}/members/invite`;
+    const url = `http://identity:3000/orgs/${orgId}/members/invite`;
 
     try {
       const res = await firstValueFrom(
@@ -51,7 +51,7 @@ export class IdentityService {
   }
 
   async acceptInvitation(token: string, password?: string) {
-    const url = `http://identity:40000/invitations/accept`;
+    const url = `http://identity:3000/invitations/accept`;
 
     try {
       const res = await firstValueFrom(
