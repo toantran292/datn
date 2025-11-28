@@ -16,14 +16,13 @@ function EnterPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orgId = searchParams.get("org_id");
-  const slug = searchParams.get("slug");
 
   const [progress, setProgress] = useState(0);
   const [currentStage, setCurrentStage] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!orgId || !slug) {
+    if (!orgId) {
       router.replace(routes.workspaces());
       return;
     }
@@ -53,22 +52,22 @@ function EnterPageContent() {
           try {
             // Quick verification that session is active
             const verifyResponse = await fetch(`${apiBase}/auth/me`, {
-              method: 'GET',
-              credentials: 'include',
+              method: "GET",
+              credentials: "include",
             });
 
             if (verifyResponse.ok) {
               // Session verified, safe to redirect
-              window.location.href = `http://localhost:3002/${slug}`;
+              window.location.href = `http://localhost:3002`;
             } else {
               // Session not ready, wait a bit longer
               setTimeout(() => {
-                window.location.href = `http://localhost:3002/${slug}`;
+                window.location.href = `http://localhost:3002`;
               }, 500);
             }
           } catch (err) {
             // On error, still redirect (might be network issue)
-            window.location.href = `http://localhost:3002/${slug}`;
+            window.location.href = `http://localhost:3002`;
           }
         };
 
@@ -105,7 +104,7 @@ function EnterPageContent() {
         clearInterval(progressInterval);
       }
     };
-  }, [orgId, slug, router]);
+  }, [orgId, router]);
 
   const currentStageData = stages[currentStage] || stages[0];
 

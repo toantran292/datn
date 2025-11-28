@@ -245,8 +245,6 @@ services:
       DATABASE_PASSWORD: ${PM_DATABASE_PASSWORD}
       DATABASE_NAME: ${PM_DATABASE_NAME}
       DATABASE_URL: ${PM_DATABASE_URL}
-    expose:
-      - "${PM_PORT}"
     healthcheck:
       test:
         [

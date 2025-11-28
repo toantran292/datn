@@ -29,15 +29,15 @@ export abstract class APIService {
             this.isRetrying = true;
             originalRequest._retry = true;
 
-            console.log('[API] 401 detected, retrying in 1s to allow cookies to settle...');
+            console.log("[API] 401 detected, retrying in 1s to allow cookies to settle...");
 
             // Wait for cookies to settle
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise((resolve) => setTimeout(resolve, 1000));
 
             try {
               // Retry the request
               const result = await this.axiosInstance.request(originalRequest);
-              console.log('[API] Retry successful!');
+              console.log("[API] Retry successful!");
               this.isRetrying = false;
               return result;
             } catch (retryError: any) {
@@ -45,7 +45,7 @@ export abstract class APIService {
 
               // Still 401 after retry, redirect to login
               if (retryError.response?.status === 401) {
-                console.log('[API] Still 401 after retry, redirecting to login...');
+                console.log("[API] Still 401 after retry, redirecting to login...");
                 const currentPath = window.location.pathname + window.location.search;
                 const authWebUrl = process.env.NEXT_PUBLIC_AUTH_WEB_URL || "http://localhost:3000";
                 window.location.href = `${authWebUrl}/login?redirect=${encodeURIComponent(currentPath)}&from=pm`;
