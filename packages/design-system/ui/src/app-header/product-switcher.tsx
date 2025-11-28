@@ -1,5 +1,5 @@
 import React from "react";
-import { LayoutGrid, MessageSquare, Video } from "lucide-react";
+import { LayoutGrid, MessageSquare } from "lucide-react";
 import { Tooltip } from "../tooltip";
 import type { ProductSwitcherProps, TAppType } from "./types";
 
@@ -13,13 +13,11 @@ interface Product {
 const PRODUCTS: Product[] = [
   { id: "pm", name: "Project Management", icon: LayoutGrid, urlKey: "NEXT_PUBLIC_PM_WEB_URL" },
   { id: "chat", name: "Chat", icon: MessageSquare, urlKey: "NEXT_PUBLIC_CHAT_WEB_URL" },
-  { id: "meeting", name: "Meeting", icon: Video, urlKey: "NEXT_PUBLIC_MEETING_WEB_URL" },
 ];
 
 const DEFAULT_URLS: Record<TAppType, string> = {
   pm: "http://localhost:3002",
-  chat: "http://localhost:3004",
-  meeting: "http://localhost:3003",
+  chat: "http://localhost:3003"
 };
 
 export const ProductSwitcher: React.FC<ProductSwitcherProps> = ({ currentApp, workspaceSlug }) => {

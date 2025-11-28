@@ -5,7 +5,7 @@
   "scripts": {
     "prepare": "husky install || true",
     "build": "turbo run build",
-    "build:packages": "turbo run build --filter=./packages/*",
+    "build:packages": "turbo run build --filter=./packages/*/**",
     "dev":   "turbo run dev   --parallel --filter=./apps/*",
     "start": "turbo run start --parallel --filter=./apps/*",
 

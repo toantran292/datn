@@ -1,6 +1,6 @@
 import type { IWorkspaceOrg, TPartialProject } from '@uts/types';
 
-export type TAppType = 'pm' | 'chat' | 'meeting';
+export type TAppType = 'pm' | 'chat';
 
 export interface AppHeaderProps {
   currentApp: TAppType;

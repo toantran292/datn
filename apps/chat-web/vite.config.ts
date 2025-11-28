@@ -15,7 +15,7 @@ export default defineConfig({
     outDir: 'build',
   },
   server: {
-    port: 3004,
+    port: 3003,
     open: true,
     proxy: {
       // Proxy API requests to backend
