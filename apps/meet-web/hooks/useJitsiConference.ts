@@ -21,6 +21,17 @@ export function useJitsiConference(
   const [isVideoMuted, setIsVideoMuted] = useState(false);
   const conferenceRef = useRef<JitsiConference | null>(null);
   const initializedRef = useRef(false);
+  function ensureTrackId(track: JitsiTrack) {
+    return new Promise(resolve => {
+      if (track.getId()) return resolve(track.getId());
+      const interval = setInterval(() => {
+        if (track.getId()) {
+          clearInterval(interval);
+          resolve(track.getId());
+        }
+      }, 10);
+    });
+  }
 
   // Toggle audio mute
   const toggleAudio = useCallback(async () => {
@@ -87,7 +98,7 @@ export function useJitsiConference(
 
   useEffect(() => {
     if (!connection || !roomName) return;
-    if (initializedRef.current) return;
+    // if (conferenceRef.current) return;
     let conf: JitsiConference | null = null;
     let tracks: JitsiTrack[] = [];
 
@@ -107,9 +118,6 @@ export function useJitsiConference(
         const handleConferenceJoined = () => {
           setIsJoined(true);
 
-          // Get all existing participants when we join
-          // Note: We don't set their tracks here because tracks are added via TRACK_ADDED events
-          // This ensures we don't miss any tracks that are added asynchronously
           if (conf) {
             const existingParticipants = conf.getParticipants();
 
@@ -120,7 +128,6 @@ export function useJitsiConference(
                 const id = participant.getId();
                 const displayName = participant.getDisplayName() || 'Unknown';
 
-                // Only create the participant entry, tracks will be added via TRACK_ADDED events
                 next.set(id, {
                   id,
                   name: displayName,
@@ -139,14 +146,17 @@ export function useJitsiConference(
 
         const handleUserJoined = (id: string, user: JitsiParticipant) => {
           const displayName = user.getDisplayName() || 'Unknown';
+
           setParticipants(prev => {
             const next = new Map(prev);
             const existing = next.get(id);
+
             next.set(id, {
               id,
               name: displayName,
               tracks: existing ? [...existing.tracks] : [],
             });
+
             return next;
           });
         };
@@ -173,11 +183,11 @@ export function useJitsiConference(
           });
         };
 
-        const handleTrackAdded = (track: JitsiTrack) => {
+        const handleTrackAdded = async(track: JitsiTrack) => {
+          await ensureTrackId(track);
+
           if (track.isLocal()) {
-            // Update local tracks
             setLocalTracks(prev => {
-              // Check if track already exists
               const exists = prev.some(t => t.getId() === track.getId());
               if (exists) return prev;
               return [...prev, track];
@@ -191,7 +201,7 @@ export function useJitsiConference(
             const next = new Map(prev);
             let participant = next.get(participantId);
 
-            // If participant doesn't exist yet, create them
+
             if (!participant && conf) {
               const jitsiParticipant = conf.getParticipantById(participantId);
               if (jitsiParticipant) {
@@ -206,17 +216,28 @@ export function useJitsiConference(
             }
 
             if (participant) {
+              const trackType = track.getType();
+              const trackId = track.getId();
+
+              // Check if this exact track already exists
+              const alreadyExists = participant.tracks.some(t => t.getId() === trackId);
+              if (alreadyExists) {
+                return next;
+              }
+
+              // Replace old track of SAME TYPE (not same ID)
+              // This ensures each participant has max 1 audio + 1 video track
               const newTracks = [
-                ...participant.tracks.filter(t => t.getId() !== track.getId()),
+                ...participant.tracks.filter(t => t.getType() !== trackType),
                 track
               ];
 
-              // Create new participant object with new tracks array
               next.set(participantId, {
                 ...participant,
                 tracks: newTracks
               });
             }
+
             return next;
           });
         };
@@ -286,17 +307,19 @@ export function useJitsiConference(
         conf.setDisplayName(displayName);
 
         // Join conference
-        conf.join();
-        
+        await conf.join();
+
         // Add local tracks to conference
         for (const track of tracks) {
+          await ensureTrackId(track);
           await conf.addTrack(track);
         }
+
+        // await conf.join();
       } catch (err) {
         console.error('[Jitsi] Error initializing conference:', err);
       }
     };
-    initializedRef.current = true;
     initConference();
 
     return () => {

@@ -47,12 +47,13 @@ export async function createLocalTracks(options?: { audio?: boolean; video?: boo
   if (options?.video !== false) devices.push('video');
 
   try {
-    return await JitsiMeetJS.createLocalTracks({
+    const tracks = await JitsiMeetJS.createLocalTracks({
       devices,
       resolution: 720,
     });
+    return tracks;
   } catch (error) {
-    console.error('Failed to create local tracks:', error);
+    console.error('[Jitsi] Failed to create local tracks:', error);
     return [];
   }
 }

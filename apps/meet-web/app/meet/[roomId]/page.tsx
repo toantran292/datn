@@ -6,7 +6,8 @@ import { useJitsiConnection } from '@/hooks/useJitsiConnection';
 import { useJitsiConference } from '@/hooks/useJitsiConference';
 import { WaitingState } from '@/components/WaitingState';
 import { ControlsToolbar } from '@/components/ControlsToolbar';
-import { ParticipantVideo } from '@/components/ParticipantVideo';
+import { LocalVideo } from '@/components/LocalVideo';
+import { RemoteVideo } from '@/components/RemoteVideo';
 import { motion } from 'motion/react';
 
 export default function MeetingPage() {
@@ -64,6 +65,7 @@ export default function MeetingPage() {
     isConnected ? roomId : null,
     displayName
   );
+  // console.log(participants)
 
   // Handle leave
   const handleLeave = async () => {
@@ -157,20 +159,22 @@ export default function MeetingPage() {
           }}
         >
           {/* Local video */}
-          <ParticipantVideo
+          <LocalVideo
             name={displayName}
             tracks={localTracks}
-            isLocal={true}
           />
 
           {/* Remote participants */}
-          {Array.from(participants.values()).map((participant) => (
-            <ParticipantVideo
-              key={participant.id}
-              name={participant.name}
-              tracks={participant.tracks}
-            />
-          ))}
+          {Array.from(participants.values()).map((participant) => {
+            // console.log("PARTICIPANT:", participant);
+            return (
+              <RemoteVideo
+                key={participant.id}
+                name={participant.name}
+                tracks={participant.tracks}
+              />
+            );
+          })}
         </div>
       </div>
 
