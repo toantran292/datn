@@ -2,12 +2,12 @@ import { observer } from "mobx-react";
 import { WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS_LINKS } from "@uts/constants";
 import { SidebarItem } from "@/ce/components/workspace/sidebar/sidebar-item";
 
-export const SidebarMenuItems = observer(() => (
-    <>
-      <div className="flex flex-col gap-0.5">
-        {WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS_LINKS.map((item, _index) => (
-          <SidebarItem key={`static_${_index}`} item={item} />
-        ))}
-      </div>
-    </>
-  ));
+export const SidebarMenuItems = observer(() => {
+  return (
+    <div className="flex flex-col gap-0.5">
+      {WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS_LINKS.map((item, _index) => (
+        <SidebarItem key={`static_${_index}`} item={item} />
+      ))}
+    </div>
+  );
+});

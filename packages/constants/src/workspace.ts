@@ -281,52 +281,33 @@ export const WORKSPACE_SIDEBAR_DYNAMIC_NAVIGATION_ITEMS_LINKS: IWorkspaceSidebar
 ];
 
 export const WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS: Record<string, IWorkspaceSidebarNavigationItem> = {
-  home: {
-    key: "home",
-    labelTranslationKey: "home.title",
-    href: `/`,
+  backlog: {
+    key: "backlog",
+    labelTranslationKey: "Backlog",
+    href: `/backlog/`,
     access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER, EUserWorkspaceRoles.GUEST],
   },
-  inbox: {
-    key: "inbox",
-    labelTranslationKey: "notification.label",
-    href: `/notifications/`,
+  board: {
+    key: "board",
+    labelTranslationKey: "Board",
+    href: `/board/`,
     access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER, EUserWorkspaceRoles.GUEST],
   },
-  "your-work": {
-    key: "your_work",
-    labelTranslationKey: "your_work",
-    href: `/profile/`,
-    access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER],
-  },
-  chat: {
-    key: "chat",
-    labelTranslationKey: "Chat",
-    href: `/chat/`,
-    access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER, EUserWorkspaceRoles.GUEST],
-  },
-  meeting: {
-    key: "meeting",
-    labelTranslationKey: "Meeting",
-    href: `/meeting/`,
-    access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER, EUserWorkspaceRoles.GUEST],
-  },
-  projects: {
-    key: "projects",
-    labelTranslationKey: "projects",
-    href: `/projects/`,
+  summary: {
+    key: "summary",
+    labelTranslationKey: "Summary",
+    href: `/summary/`,
     access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER, EUserWorkspaceRoles.GUEST],
   },
 };
 
 export const WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS_LINKS: IWorkspaceSidebarNavigationItem[] = [
-  WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["chat"]!,
-  WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["meeting"]!,
+  WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["backlog"]!,
+  WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["board"]!,
+  WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["summary"]!,
 ];
 
-export const WORKSPACE_SIDEBAR_STATIC_PINNED_NAVIGATION_ITEMS_LINKS: IWorkspaceSidebarNavigationItem[] = [
-  WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["projects"]!,
-];
+export const WORKSPACE_SIDEBAR_STATIC_PINNED_NAVIGATION_ITEMS_LINKS: IWorkspaceSidebarNavigationItem[] = [];
 
 export const IS_FAVORITE_MENU_OPEN = "is_favorite_menu_open";
 export const WORKSPACE_DEFAULT_SEARCH_RESULT: IWorkspaceSearchResults = {

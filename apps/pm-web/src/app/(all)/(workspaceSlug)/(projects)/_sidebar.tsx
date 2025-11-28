@@ -1,12 +1,19 @@
 "use client";
 import { FC } from "react";
 import { observer } from "mobx-react";
+import { useParams } from "next/navigation";
 import { cn } from "@uts/fe-utils";
 import { useSidebar } from "@/core/contexts/sidebar-context";
 import { AppSidebar } from "./sidebar";
 
 export const ProjectAppSidebar: FC = observer(() => {
   const { isSidebarCollapsed } = useSidebar();
+  const params = useParams<{ projectId?: string }>();
+
+  // Don't render sidebar at all if no projectId
+  if (!params?.projectId) {
+    return null;
+  }
 
   return (
     <div
