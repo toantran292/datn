@@ -19,6 +19,10 @@ import { UploadFileDto } from '../dto/upload-file.dto';
 import { QueryFilesDto } from '../dto/query-files.dto';
 import { CreatePresignedUrlDto } from '../dto/create-presigned-url.dto';
 import { ConfirmUploadDto } from '../dto/confirm-upload.dto';
+import {
+  PresignedGetUrlDto,
+  PresignedGetUrlsDto,
+} from '../dto/presigned-get-url.dto';
 
 @Controller('files')
 export class FileStorageController {
@@ -50,6 +54,40 @@ export class FileStorageController {
       statusCode: HttpStatus.OK,
       data: metadata,
       message: 'Upload confirmed successfully',
+    };
+  }
+
+  /**
+   * Generate presigned GET URL for a single file by ID
+   */
+  @Post('presigned-get-url')
+  async getPresignedGetUrl(@Body() dto: PresignedGetUrlDto) {
+    const result = await this.fileStorageService.getPresignedGetUrl(
+      dto.id,
+      dto.expirySeconds || 3600,
+    );
+
+    return {
+      statusCode: HttpStatus.OK,
+      data: result,
+      message: 'Presigned GET URL generated successfully',
+    };
+  }
+
+  /**
+   * Generate presigned GET URLs for multiple files by IDs
+   */
+  @Post('presigned-get-urls')
+  async getPresignedGetUrls(@Body() dto: PresignedGetUrlsDto) {
+    const result = await this.fileStorageService.getPresignedGetUrls(
+      dto.ids,
+      dto.expirySeconds || 3600,
+    );
+
+    return {
+      statusCode: HttpStatus.OK,
+      data: result,
+      message: 'Presigned GET URLs generated successfully',
     };
   }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Badge, Card } from "@uts/design-system/ui";
 import { routes } from "@/lib/routes";
@@ -12,6 +12,7 @@ function WorkspacesPageContent() {
   const router = useRouter();
   const { data, isLoading: loading, error } = useTenants();
   const acceptInviteMutation = useAcceptInvite();
+  const [logoErrors, setLogoErrors] = useState<Set<string>>(new Set());
 
   // Check for pending invitation and redirect back to accept page
   useEffect(() => {
@@ -205,15 +206,29 @@ function WorkspacesPageContent() {
                 >
                   <div className="flex flex-col h-full">
                     <div className="flex items-start mb-4">
-                      <div
-                        className={`w-12 h-12 rounded-xl flex items-center justify-center mr-3 shadow-sm ${
-                          index % 2 === 0
-                            ? "bg-gradient-to-br from-[#FFF4E6] to-[#FFE4CC] text-[#FF8800]"
-                            : "bg-gradient-to-br from-[#E6FFFB] to-[#CCF7F0] text-[#00C4AB]"
-                        }`}
-                      >
-                        {getWorkspaceIcon(index)}
-                      </div>
+                      {org.logo_url && org.logo_url.trim() && !logoErrors.has(org.id) ? (
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center mr-3 shadow-sm overflow-hidden bg-white border border-gray-200 flex-shrink-0">
+                          <img
+                            src={org.logo_url}
+                            alt={org.display_name}
+                            className="w-full h-full object-cover"
+                            onError={() => {
+                              // Mark this logo as failed to load
+                              setLogoErrors(prev => new Set(prev).add(org.id));
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div
+                          className={`w-12 h-12 rounded-xl flex items-center justify-center mr-3 shadow-sm flex-shrink-0 ${
+                            index % 2 === 0
+                              ? "bg-gradient-to-br from-[#FFF4E6] to-[#FFE4CC] text-[#FF8800]"
+                              : "bg-gradient-to-br from-[#E6FFFB] to-[#CCF7F0] text-[#00C4AB]"
+                          }`}
+                        >
+                          {getWorkspaceIcon(index)}
+                        </div>
+                      )}
                       <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-base text-[#0F172A] mb-2 truncate group-hover:text-[#FF8800] transition-colors leading-tight">
                           {org.display_name}

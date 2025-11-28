@@ -19,5 +19,8 @@ export const routes = {
     createOrg: () => '/orgs',
     acceptInvite: () => '/tenant/public/invitations/accept',
     orgAvailability: (slug: string) => `/orgs/availability?slug=${slug}`,
+    orgLogoPresignedUrl: (orgId: string) => `/orgs/${orgId}/logo/presigned-url`,
+    orgLogo: (orgId: string) => `/orgs/${orgId}/logo`,
+    fileStorageConfirmUpload: () => '/files/confirm-upload',
   }
 } as const;

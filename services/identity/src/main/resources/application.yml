@@ -68,3 +68,6 @@ uts:
     access-ttl-seconds: 900   # 15 minutes
     refresh-enabled: true     # Enable refresh tokens
     refresh-ttl-seconds: 2592000  # 30 days
+
+file-storage:
+  base-url: ${FILE_STORAGE_BASE_URL:http://file-storage-api:3000}  # For Docker: http://file-storage-api:3000

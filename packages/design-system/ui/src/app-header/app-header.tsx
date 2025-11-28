@@ -10,6 +10,7 @@ import { CreateProjectModal } from "./create-project-modal";
 import { projectKeys } from "./hooks/use-projects";
 import type { AppHeaderProps } from "./types";
 import { cn } from "../utils";
+import { UserMenu } from "./user-menu";
 
 // UTS Brand Logo Component
 const UTSLogo: React.FC = () => (
@@ -81,10 +82,10 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           />
         </Header.LeftItem>
 
-        <Header.RightItem>
+        <Header.RightItem className="flex items-center gap-2">
           <ProductSwitcher currentApp={currentApp} workspaceSlug={workspaceSlug} />
 
-          {/* <UserMenu /> */}
+          <UserMenu apiBaseUrl={apiBaseUrl} authWebUrl={authWebUrl} />
         </Header.RightItem>
       </Header>
 

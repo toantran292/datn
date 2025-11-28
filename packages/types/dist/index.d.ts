@@ -1644,6 +1644,7 @@ interface IWorkspaceOrg {
     display_name: string;
     slug: string;
     role: TWorkspaceRole;
+    logo_url?: string;
 }
 interface IWorkspaceTenants {
     joined: IWorkspaceOrg[];

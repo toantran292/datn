@@ -1,10 +1,9 @@
 import React, { useMemo } from "react";
 import { Building2, ChevronDown } from "lucide-react";
 import { CustomSelect } from "../dropdowns/custom-select";
-import { useWorkspaces } from "./hooks/use-workspaces";
+import { useWorkspaces, useAuthMe } from "./hooks/use-workspaces";
 import type { WorkspaceSelectorProps } from "./types";
 import { cn } from "../utils";
-import { getOrgIdFromToken } from "./utils/decode-jwt";
 import { Avatar } from "../avatar";
 
 export const WorkspaceSelector: React.FC<WorkspaceSelectorProps> = ({
@@ -15,12 +14,13 @@ export const WorkspaceSelector: React.FC<WorkspaceSelectorProps> = ({
   workspaceSlug,
 }) => {
   const { data: workspaces, isLoading } = useWorkspaces({ apiBaseUrl });
+  const { data: authMe } = useAuthMe({ apiBaseUrl });
 
-  // Get org_id from JWT token
-  const orgIdFromToken = useMemo(() => getOrgIdFromToken(), []);
+  // Get org_id from API /auth/me
+  const orgIdFromApi = authMe?.org_id || null;
 
   // Find current workspace by:
-  // 1. org_id from JWT token (most reliable)
+  // 1. org_id from API /auth/me (most reliable)
   // 2. currentWorkspaceId prop
   // 3. workspaceSlug prop
   // 4. Default to first workspace
@@ -28,12 +28,12 @@ export const WorkspaceSelector: React.FC<WorkspaceSelectorProps> = ({
     if (!workspaces || workspaces.length === 0) return null;
 
     return (
-      workspaces.find((w) => w.id === orgIdFromToken) ||
+      (orgIdFromApi && workspaces.find((w) => w.id === orgIdFromApi)) ||
       workspaces.find((w) => w.id === currentWorkspaceId) ||
       workspaces.find((w) => w.slug === workspaceSlug) ||
       workspaces[0]
     );
-  }, [workspaces, orgIdFromToken, currentWorkspaceId, workspaceSlug]);
+  }, [workspaces, orgIdFromApi, currentWorkspaceId, workspaceSlug]);
 
   // Get other workspaces (exclude current)
   const otherWorkspaces = useMemo(() => {
@@ -68,7 +68,12 @@ export const WorkspaceSelector: React.FC<WorkspaceSelectorProps> = ({
       onChange={handleWorkspaceSelect}
       customButton={
         <div className="flex items-center gap-2 px-3 py-1.5">
-          <Avatar shape="square" size="sm" name={currentWorkspace?.display_name} />
+          <Avatar
+            shape="square"
+            size="sm"
+            name={currentWorkspace?.display_name}
+            src={currentWorkspace?.logo_url || undefined}
+          />
           <span className="text-sm font-medium truncate max-w-[120px]">
             {currentWorkspace?.display_name || "Select workspace"}
           </span>
@@ -82,7 +87,12 @@ export const WorkspaceSelector: React.FC<WorkspaceSelectorProps> = ({
       {/* Current Workspace Header */}
       <div className="px-4 py-3 border-b border-custom-border-200">
         <div className="flex items-center gap-3">
-          <Avatar shape="square" size="md" name={currentWorkspace?.display_name} />
+          <Avatar
+            shape="square"
+            size="md"
+            name={currentWorkspace?.display_name}
+            src={currentWorkspace?.logo_url || undefined}
+          />
           <div className="flex-1 min-w-0">
             <div className="font-semibold text-sm text-custom-text-100 truncate">{currentWorkspace?.display_name}</div>
             <div className="text-xs text-custom-text-300 capitalize">{currentWorkspace?.role}</div>
@@ -101,7 +111,12 @@ export const WorkspaceSelector: React.FC<WorkspaceSelectorProps> = ({
             {otherWorkspaces.map((workspace) => (
               <CustomSelect.Option key={workspace.id} value={workspace} className="!z-[9999]">
                 <div className="flex items-center gap-3 w-full">
-                  <Avatar shape="square" size="sm" name={workspace.display_name} />
+                  <Avatar
+                    shape="square"
+                    size="sm"
+                    name={workspace.display_name}
+                    src={workspace.logo_url || undefined}
+                  />
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm truncate">{workspace.display_name}</div>
                   </div>

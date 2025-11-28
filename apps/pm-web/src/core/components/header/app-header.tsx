@@ -58,7 +58,7 @@ export const AppHeader: FC = observer(() => {
   const handleLogout = async () => {
     try {
       const authWebUrl = process.env.NEXT_PUBLIC_AUTH_WEB_URL || "http://localhost:3000";
-      const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/pm", "") || "http://localhost:40000";
+      const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL?.replace("/pm", "") || "http://localhost:8080";
 
       // Call logout API
       await fetch(`${apiBase}/auth/logout`, {

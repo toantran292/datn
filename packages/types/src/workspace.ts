@@ -19,6 +19,7 @@ export interface IWorkspaceOrg {
   display_name: string;
   slug: string;
   role: TWorkspaceRole;
+  logo_url?: string;
 }
 
 export interface IWorkspaceTenants {

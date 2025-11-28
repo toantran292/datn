@@ -43,4 +43,12 @@ public class Dtos {
 
     // Me
     public record MeRes(UUID userId, String email) {}
+
+    // Logo
+    public record LogoPresignedUrlReq(
+            @NotBlank String originalName,
+            @NotBlank String mimeType,
+            Long size
+    ) {}
+    public record UpdateLogoReq(@NotBlank String assetId) {}
 }

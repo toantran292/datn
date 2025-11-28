@@ -10,7 +10,7 @@ export function useAuthReady() {
   useEffect(() => {
     const checkAuthReady = async () => {
       try {
-        const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL?.replace('/pm', '') || 'http://localhost:40000';
+        const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL?.replace('/pm', '') || 'http://localhost:8080';
 
         // Quick ping to auth service to ensure session is active
         const response = await fetch(`${apiBase}/auth/me`, {

@@ -27,25 +27,24 @@ const UserMenuItem: React.FC<UserMenuItemProps> = ({ icon: Icon, label, onClick,
   </button>
 );
 
-export const UserMenu: React.FC<UserMenuProps> = ({ className }) => {
+export const UserMenu: React.FC<UserMenuProps> = ({ className, apiBaseUrl, authWebUrl }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useOutsideClickDetector(menuRef, () => setIsOpen(false));
 
   const handleLogout = async () => {
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:40000";
 
     try {
-      await fetch(`${apiBase}/auth/logout`, {
+      // Call logout API to invalidate JWT token
+      await fetch(`${apiBaseUrl}/auth/logout`, {
         method: "POST",
         credentials: "include",
       });
-
-      // Redirect to login page
-      window.location.href = "/login";
+      window.location.href = `${authWebUrl}/login`;
     } catch (error) {
       console.error("Logout failed:", error);
+      window.location.href = `${authWebUrl}/login`;
     }
   };
 

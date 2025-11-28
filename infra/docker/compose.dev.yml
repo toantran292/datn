@@ -420,6 +420,7 @@ services:
       - GOOGLE_CLIENT_ID=${IDENTITY_GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${IDENTITY_GOOGLE_CLIENT_SECRET}
       - SPRING_OUTPUT_ANSI_ENABLED=ALWAYS
+      - FILE_STORAGE_BASE_URL=${FILE_STORAGE_BASE_URL:-http://file-storage-api:3000}
     volumes:
       - ../../services/identity/src:/app/src:ro
       - ../../services/identity/build.gradle.kts:/app/build.gradle.kts:ro
@@ -436,7 +437,7 @@ services:
           "--no-verbose",
           "--tries=1",
           "--spider",
-          "http://localhost:40000/actuator/health",
+          "http://localhost:8080/actuator/health",
         ]
       interval: 30s
       timeout: 10s

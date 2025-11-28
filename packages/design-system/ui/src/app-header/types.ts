@@ -45,4 +45,6 @@ export interface ThemeToggleProps {
 
 export interface UserMenuProps {
   className?: string;
+  apiBaseUrl?: string;
+  authWebUrl?: string;
 }

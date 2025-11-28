@@ -4,7 +4,15 @@ import type { IWorkspaceOrg, IWorkspaceTenants } from "@uts/types";
 export const workspaceKeys = {
   all: ["workspaces"] as const,
   list: () => [...workspaceKeys.all, "list"] as const,
+  me: () => [...workspaceKeys.all, "me"] as const,
 };
+
+export interface AuthMeResponse {
+  user_id: string;
+  org_id: string | null;
+  email: string;
+  roles: string[];
+}
 
 interface UseWorkspacesOptions {
   apiBaseUrl?: string;
@@ -38,7 +46,7 @@ interface UseWorkspaceSwitchOptions {
 }
 
 export function useWorkspaceSwitch(options?: UseWorkspaceSwitchOptions) {
-  const apiBase = options?.apiBaseUrl || process.env.NEXT_PUBLIC_API_BASE || "http://localhost:40000";
+  const apiBase = options?.apiBaseUrl || process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -61,8 +69,41 @@ export function useWorkspaceSwitch(options?: UseWorkspaceSwitchOptions) {
     onSuccess: (data) => {
       // Invalidate workspaces query to refetch
       queryClient.invalidateQueries({ queryKey: workspaceKeys.all });
+      // Invalidate auth/me query to refetch org_id
+      queryClient.invalidateQueries({ queryKey: workspaceKeys.me() });
       options?.onSuccess?.(data);
     },
     onError: options?.onError,
+  });
+}
+
+interface UseAuthMeOptions {
+  apiBaseUrl?: string;
+}
+
+export function useAuthMe(options?: UseAuthMeOptions) {
+  const apiBase = options?.apiBaseUrl || process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
+
+  return useQuery({
+    queryKey: workspaceKeys.me(),
+    queryFn: async (): Promise<AuthMeResponse> => {
+      const res = await fetch(`${apiBase}/auth/me`, {
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch auth info");
+      }
+
+      const data = await res.json();
+      return {
+        user_id: data.user_id || "",
+        org_id: data.org_id || null,
+        email: data.email || "",
+        roles: data.roles || [],
+      };
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: false,
   });
 }

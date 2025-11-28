@@ -4,12 +4,14 @@ import com.datn.identity.application.InvitationApplicationService;
 import com.datn.identity.application.OrganizationApplicationService;
 import com.datn.identity.domain.org.MemberType;
 import com.datn.identity.infrastructure.security.SecurityUtils;
+import com.datn.identity.infrastructure.web.FileStorageClient;
 import com.datn.identity.interfaces.api.dto.Dtos.*;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -21,10 +23,12 @@ import java.util.Locale;
 public class OrganizationsController {
     private final OrganizationApplicationService orgs;
     private final InvitationApplicationService invites;
+    private final FileStorageClient fileStorageClient;
 
-    public OrganizationsController(OrganizationApplicationService orgs, InvitationApplicationService invites) {
+    public OrganizationsController(OrganizationApplicationService orgs, InvitationApplicationService invites, FileStorageClient fileStorageClient) {
         this.orgs = orgs;
         this.invites = invites;
+        this.fileStorageClient = fileStorageClient;
     }
 
     @PostMapping
@@ -192,6 +196,77 @@ public class OrganizationsController {
             return ResponseEntity.ok(Map.of("organizations", userOrgs));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", "invalid_user_id"));
+        }
+    }
+
+    /**
+     * Get presigned URL for logo upload
+     */
+    @PostMapping("/{orgId}/logo/presigned-url")
+    public ResponseEntity<?> getLogoPresignedUrl(
+            @PathVariable String orgId,
+            @Valid @RequestBody LogoPresignedUrlReq req) {
+        UUID userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "not_authenticated"));
+        }
+
+        // Verify user is member of org
+        if (!orgs.isMember(userId, UUID.fromString(orgId))) {
+            return ResponseEntity.status(403).body(Map.of("error", "forbidden"));
+        }
+
+        try {
+            var response = fileStorageClient.createPresignedUrl(
+                    new FileStorageClient.CreatePresignedUrlRequest(
+                            req.originalName(),
+                            req.mimeType(),
+                            req.size(),
+                            "identity",
+                            "Organization",
+                            orgId,
+                            userId.toString(),
+                            List.of("logo"),
+                            Map.of("orgId", orgId)
+                    )
+            );
+
+            return ResponseEntity.ok(Map.of(
+                    "assetId", response.assetId(),
+                    "presignedUrl", response.presignedUrl(),
+                    "objectKey", response.objectKey(),
+                    "expiresIn", response.expiresIn()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "failed_to_create_presigned_url", "message", e.getMessage()));
+        }
+    }
+
+    /**
+     * Update organization logo with asset ID
+     */
+    @PatchMapping("/{orgId}/logo")
+    public ResponseEntity<?> updateLogo(
+            @PathVariable String orgId,
+            @Valid @RequestBody UpdateLogoReq req) {
+        UUID userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "not_authenticated"));
+        }
+
+        // Verify user is member of org
+        if (!orgs.isMember(userId, UUID.fromString(orgId))) {
+            return ResponseEntity.status(403).body(Map.of("error", "forbidden"));
+        }
+
+        try {
+            orgs.updateLogo(UUID.fromString(orgId), req.assetId());
+            return ResponseEntity.ok(Map.of("status", "success", "assetId", req.assetId()));
+        } catch (IllegalStateException e) {
+            if ("org_not_found".equals(e.getMessage())) {
+                return ResponseEntity.status(404).body(Map.of("error", "org_not_found"));
+            }
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
         }
     }
 

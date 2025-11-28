@@ -27,12 +27,12 @@ function EnterPageContent() {
       return;
     }
 
-    let progressInterval: NodeJS.Timeout;
+    let progressInterval: any;
 
     // Call switch-org API first
     const switchOrganization = async () => {
       try {
-        const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:40000";
+        const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
         const response = await fetch(`${apiBase}/auth/switch-org`, {
           method: "POST",
           credentials: "include",

@@ -58,3 +58,13 @@ export interface FileListQuery {
   page?: number;
   limit?: number;
 }
+
+export interface PresignedGetUrlResponse {
+  id: string;
+  presignedUrl: string;
+  expiresIn: number; // seconds
+}
+
+export interface PresignedGetUrlsResponse {
+  urls: PresignedGetUrlResponse[];
+}

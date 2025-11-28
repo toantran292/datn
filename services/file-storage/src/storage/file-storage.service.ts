@@ -276,6 +276,75 @@ export class FileStorageService {
     return hoursSinceUpdate > 144;
   }
 
+  /**
+   * Generate presigned GET URL for a single file by ID
+   */
+  async getPresignedGetUrl(
+    fileId: string,
+    expirySeconds: number = 3600,
+  ): Promise<{ id: string; presignedUrl: string; expiresIn: number }> {
+    this.logger.log(`Generating presigned GET URL for file ${fileId}`);
+
+    const metadata = await this.metadataService.findById(fileId);
+
+    if (metadata.uploadStatus !== 'completed') {
+      throw new NotFoundException(
+        `File ${fileId} is not available (status: ${metadata.uploadStatus})`,
+      );
+    }
+
+    const presignedUrl = await this.minioService.getFileUrl(
+      metadata.objectKey,
+      metadata.bucket,
+      expirySeconds,
+    );
+
+    this.logger.log(
+      `Presigned GET URL generated for file ${fileId} (expires in ${expirySeconds}s)`,
+    );
+
+    return {
+      id: fileId,
+      presignedUrl,
+      expiresIn: expirySeconds,
+    };
+  }
+
+  /**
+   * Generate presigned GET URLs for multiple files by IDs
+   */
+  async getPresignedGetUrls(
+    fileIds: string[],
+    expirySeconds: number = 3600,
+  ): Promise<{ urls: Array<{ id: string; presignedUrl: string; expiresIn: number }> }> {
+    this.logger.log(
+      `Generating presigned GET URLs for ${fileIds.length} files`,
+    );
+
+    const results = await Promise.allSettled(
+      fileIds.map((id) => this.getPresignedGetUrl(id, expirySeconds)),
+    );
+
+    const urls = results
+      .map((result, index) => {
+        if (result.status === 'fulfilled') {
+          return result.value;
+        } else {
+          this.logger.warn(
+            `Failed to generate presigned URL for file ${fileIds[index]}: ${result.reason?.message}`,
+          );
+          return null;
+        }
+      })
+      .filter((url): url is { id: string; presignedUrl: string; expiresIn: number } => url !== null);
+
+    this.logger.log(
+      `Generated ${urls.length}/${fileIds.length} presigned GET URLs`,
+    );
+
+    return { urls };
+  }
+
   private generateObjectKey(originalName: string): string {
     const timestamp = Date.now();
     const uuid = uuidv4();

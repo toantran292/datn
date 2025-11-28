@@ -4,9 +4,13 @@ import com.datn.identity.common.Slug;
 
 import java.util.UUID;
 
-public record Organization(UUID id, Slug slug, String displayName) {
+public record Organization(UUID id, Slug slug, String displayName, String logoAssetId) {
     public static Organization create(Slug slug, String displayName){
         if (displayName == null || displayName.isBlank()) throw new IllegalArgumentException("org_display_name_required");
-        return new Organization(UUID.randomUUID(), slug, displayName.trim());
+        return new Organization(UUID.randomUUID(), slug, displayName.trim(), null);
+    }
+
+    public Organization withLogoAssetId(String logoAssetId) {
+        return new Organization(id, slug, displayName, logoAssetId);
     }
 }

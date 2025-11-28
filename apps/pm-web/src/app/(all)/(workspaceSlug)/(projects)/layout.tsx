@@ -41,6 +41,8 @@ function WorkspaceLayoutContent({ children }: { children: React.ReactNode }) {
         onMenuToggle={toggleSidebar}
         onProjectChange={handleProjectChange}
         className="z-[9999]"
+        apiBaseUrl={process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080"}
+        authWebUrl={process.env.NEXT_PUBLIC_AUTH_WEB_URL || "http://localhost:3000"}
       />
       <div className="relative flex size-full overflow-hidden">
         <ProjectAppSidebar />

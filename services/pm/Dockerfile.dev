@@ -26,5 +26,7 @@ CMD sh -c "\
     echo 'Generating Prisma Client...' && \
     pnpm prisma generate; \
   fi && \
+  echo 'Migrating database...' && \
+  pnpm prisma migrate deploy && \
   echo 'Starting application...' && \
   pnpm run start:dev"
