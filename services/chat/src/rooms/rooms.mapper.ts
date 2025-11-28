@@ -10,6 +10,7 @@ export function toRoomResponseDto(row: RoomEntity) {
       orgId: row.orgId?.toString(),
       isPrivate: row.isPrivate,
       name: row.name,
+      type: row.type || 'channel', // Default to 'channel' for backward compatibility
     },
     { excludeExtraneousValues: true },
   );

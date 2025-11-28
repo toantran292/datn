@@ -84,4 +84,20 @@ export class MessagesRepository {
 
     return { items, pageState: (rs as any).pageState ?? undefined };
   }
+
+  async countRepliesByThreadId(
+    roomId: types.TimeUuid,
+    threadId: types.TimeUuid,
+  ): Promise<number> {
+    // Simple count query - in production, consider caching this
+    const rs = await this.model.find({ roomId }, {
+      fetchSize: 10000, // Get all to filter
+    } as any);
+
+    const count = rs.toArray().filter(row =>
+      row.threadId?.toString() === threadId.toString()
+    ).length;
+
+    return count;
+  }
 }

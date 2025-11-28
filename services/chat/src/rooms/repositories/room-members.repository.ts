@@ -108,4 +108,32 @@ export class RoomMembersRepository {
       await this.updateLastSeen(roomId, userId, messageId);
     }
   }
+
+  /**
+   * Find all members of a room
+   */
+  async findMembersByRoom(
+    roomId: types.TimeUuid,
+    opts: { limit?: number; pagingState?: string } = {},
+  ): Promise<{ items: RoomMemberEntity[]; pagingState?: string }> {
+    // Use raw query since mapper.find doesn't support pagination well
+    const query = 'SELECT room_id, user_id, org_id, last_seen_message_id FROM chat.room_members WHERE room_id = ?';
+    const rs = await this.client.execute(query, [roomId], {
+      prepare: true,
+      fetchSize: opts.limit ?? 100,
+      pageState: opts.pagingState,
+    });
+
+    const items: RoomMemberEntity[] = rs.rows.map(row => ({
+      roomId: row['room_id'] as types.TimeUuid,
+      userId: row['user_id'] as types.Uuid,
+      orgId: row['org_id'] as types.Uuid,
+      lastSeenMessageId: row['last_seen_message_id'] as types.TimeUuid | undefined,
+    }));
+
+    return {
+      items,
+      pagingState: rs.pageState ?? undefined
+    };
+  }
 }

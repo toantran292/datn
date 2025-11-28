@@ -1,8 +1,9 @@
 export interface Room {
   id: string;
-  name: string | null;
+  name?: string | null; // Backend may return undefined
   orgId: string;
   isPrivate: boolean;
+  type: 'channel' | 'dm';
 }
 
 export interface Message {
@@ -13,6 +14,8 @@ export interface Message {
   type: string;
   content: string;
   sentAt: string;
+  threadId?: string | null; // null = main message, string = reply in thread
+  replyCount?: number; // Number of replies in thread (for main messages)
 }
 
 export interface User {

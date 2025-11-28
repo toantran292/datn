@@ -3,6 +3,13 @@
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
   "compilerOptions": {
-    "deleteOutDir": true
+    "deleteOutDir": true,
+    "assets": [
+      {
+        "include": "../node_modules/iconv-lite/encodings/**/*",
+        "outDir": "dist",
+        "watchAssets": true
+      }
+    ]
   }
 }

@@ -25,6 +25,9 @@ export class RequestContextGuard implements CanActivate {
 
     const req = ctx.switchToHttp().getRequest();
     const headers = req.headers;
+    const body = req.body;
+
+    console.log({body});
 
     const dto = plainToInstance(HeadersContextDto, headers, {
       exposeDefaultValues: true,

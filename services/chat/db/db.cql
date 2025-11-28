@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS chat.rooms (
   org_id      uuid,
   is_private  boolean,
   name        text,
+  type        text,  -- 'channel' or 'dm'
 
   PRIMARY KEY ((org_id), id)
 ) WITH CLUSTERING ORDER BY (id DESC);

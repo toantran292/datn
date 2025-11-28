@@ -2,11 +2,14 @@ import { Inject, Injectable } from '@nestjs/common';
 import { mapping, types, Client } from 'cassandra-driver';
 import { CASS_MAPPER, CASS_CLIENT } from '../../cassandra/cassandra.module';
 
+export type RoomType = 'channel' | 'dm';
+
 export interface RoomEntity {
   id: types.TimeUuid;
   orgId: types.Uuid;
   isPrivate: boolean;
   name: string | undefined;
+  type: RoomType;
 }
 
 @Injectable()
@@ -19,12 +22,13 @@ export class RoomsRepository {
     this.model = mapper.forModel<RoomEntity>('Room');
   }
 
-  async create(orgId: types.Uuid, isPrivate: boolean, name: string | undefined) {
+  async create(orgId: types.Uuid, isPrivate: boolean, name: string | undefined, type: RoomType = 'channel') {
     const entity: RoomEntity = {
       id: types.TimeUuid.now(),
       orgId: orgId,
       isPrivate: isPrivate,
-      name: name
+      name: name,
+      type: type,
     };
     await this.model.insert(entity);
     return entity;
@@ -50,7 +54,7 @@ export class RoomsRepository {
     orgId: types.Uuid,
     opts: { limit?: number; pagingState?: string } = {},
   ): Promise<{ items: RoomEntity[]; pagingState?: string }> {
-    const q = 'SELECT org_id, id, is_private, name FROM chat.rooms WHERE org_id = ?';
+    const q = 'SELECT org_id, id, is_private, name, type FROM chat.rooms WHERE org_id = ?';
     const rs = await this.client.execute(q, [orgId], {
       prepare: true,
       fetchSize: opts.limit ?? 50,
@@ -61,6 +65,7 @@ export class RoomsRepository {
       id: r['id'] as types.TimeUuid,
       isPrivate: r['is_private'] as boolean,
       name: r['name'] as string | undefined,
+      type: (r['type'] as RoomType) || 'channel', // Default to 'channel' for existing rows
     }));
     return { items, pagingState: rs.pageState ?? undefined };
   }

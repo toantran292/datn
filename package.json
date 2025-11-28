@@ -4,8 +4,8 @@
   "version": "1.0.0",
   "scripts": {
     "prepare": "husky install || true",
-    "postinstall": "pnpm -r --filter=!infra --filter=!imgs install --ignore-scripts",
     "build": "turbo run build",
+    "build:packages": "turbo run build --filter=./packages/*",
     "dev":   "turbo run dev   --parallel --filter=./apps/*",
     "start": "turbo run start --parallel --filter=./apps/*",
 

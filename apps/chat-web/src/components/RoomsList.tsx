@@ -1,79 +1,134 @@
-import { useState } from 'react';
 import type { Room } from '../types';
 
 interface RoomsListProps {
   rooms: Room[];
   selectedRoomId: string | null;
   onSelectRoom: (roomId: string) => void;
-  onCreateRoom: (name: string, isPrivate: boolean) => void;
+  onCreateChannel: () => void;
+  onCreateDM: () => void;
+  onBrowseChannels: () => void;
+  getDMName: (room: Room) => string;
 }
 
-export function RoomsList({ rooms, selectedRoomId, onSelectRoom, onCreateRoom }: RoomsListProps) {
-  const [showCreateForm, setShowCreateForm] = useState(false);
-  const [roomName, setRoomName] = useState('');
-  const [isPrivate, setIsPrivate] = useState(false);
+export function RoomsList({
+  rooms,
+  selectedRoomId,
+  onSelectRoom,
+  onCreateChannel,
+  onCreateDM,
+  onBrowseChannels,
+  getDMName,
+}: RoomsListProps) {
+  // Split rooms into channels and DMs
+  const channels = rooms.filter(r => r.type === 'channel');
+  const dms = rooms.filter(r => r.type === 'dm');
 
-  const handleCreate = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!roomName.trim()) return;
-    onCreateRoom(roomName, isPrivate);
-    setRoomName('');
-    setIsPrivate(false);
-    setShowCreateForm(false);
+  const renderRoom = (room: Room) => {
+    const displayName = room.type === 'dm' ? getDMName(room) : (room.name || 'Unnamed Channel');
+    const icon = room.type === 'dm' ? '💬' : (room.isPrivate ? '🔒' : '#');
+
+    return (
+      <div
+        key={room.id}
+        onClick={() => onSelectRoom(room.id)}
+        style={{
+          padding: '8px 12px',
+          cursor: 'pointer',
+          borderRadius: '4px',
+          backgroundColor: selectedRoomId === room.id ? '#e3f2fd' : 'transparent',
+          fontWeight: selectedRoomId === room.id ? '600' : '400',
+        }}
+      >
+        <span style={{ marginRight: '8px' }}>{icon}</span>
+        {displayName}
+      </div>
+    );
   };
 
   return (
-    <div style={{ width: '300px', borderRight: '1px solid #ccc', padding: '16px', overflowY: 'auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <h2 style={{ margin: 0 }}>Rooms</h2>
-        <button onClick={() => setShowCreateForm(!showCreateForm)}>
-          {showCreateForm ? 'Cancel' : '+ New'}
-        </button>
+    <div style={{ width: '280px', borderRight: '1px solid #ddd', display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: '#f8f9fa' }}>
+      <div style={{ padding: '16px', borderBottom: '1px solid #ddd' }}>
+        <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 'bold' }}>Chat</h2>
       </div>
 
-      {showCreateForm && (
-        <form onSubmit={handleCreate} style={{ marginBottom: '16px', padding: '12px', border: '1px solid #ddd', borderRadius: '4px' }}>
-          <input
-            type="text"
-            placeholder="Room name"
-            value={roomName}
-            onChange={(e) => setRoomName(e.target.value)}
-            style={{ width: '100%', padding: '8px', marginBottom: '8px' }}
-          />
-          <label style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-            <input
-              type="checkbox"
-              checked={isPrivate}
-              onChange={(e) => setIsPrivate(e.target.checked)}
-              style={{ marginRight: '8px' }}
-            />
-            Private
-          </label>
-          <button type="submit" style={{ width: '100%', padding: '8px' }}>Create</button>
-        </form>
-      )}
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
+        {/* Channels Section */}
+        <div style={{ marginBottom: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <div style={{ fontSize: '12px', fontWeight: '600', color: '#666', textTransform: 'uppercase' }}>
+              Channels
+            </div>
+            <button
+              onClick={onCreateChannel}
+              style={{
+                background: 'none',
+                border: 'none',
+                fontSize: '18px',
+                cursor: 'pointer',
+                padding: '2px 6px',
+                color: '#666',
+              }}
+              title="Create channel"
+            >
+              +
+            </button>
+          </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        {rooms.length === 0 && <p style={{ color: '#999' }}>No rooms yet</p>}
-        {rooms.map((room) => (
-          <div
-            key={room.id}
-            onClick={() => onSelectRoom(room.id)}
+          {/* Browse Channels Button */}
+          <button
+            onClick={onBrowseChannels}
             style={{
-              padding: '12px',
-              cursor: 'pointer',
+              width: '100%',
+              padding: '8px',
+              marginBottom: '8px',
+              backgroundColor: 'transparent',
+              border: '1px solid #ddd',
               borderRadius: '4px',
-              backgroundColor: selectedRoomId === room.id ? '#e3f2fd' : '#f5f5f5',
-              border: selectedRoomId === room.id ? '2px solid #2196f3' : '1px solid #ddd',
+              color: '#666',
+              cursor: 'pointer',
+              fontSize: '13px',
+              textAlign: 'left',
             }}
           >
-            <div style={{ fontWeight: 'bold' }}>
-              {room.name || 'Unnamed Room'}
-              {room.isPrivate && ' 🔒'}
+            🔍 Browse channels
+          </button>
+
+          {channels.length === 0 && (
+            <p style={{ color: '#999', fontSize: '13px', fontStyle: 'italic', marginLeft: '12px' }}>
+              No channels yet
+            </p>
+          )}
+          {channels.map(renderRoom)}
+        </div>
+
+        {/* Direct Messages Section */}
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <div style={{ fontSize: '12px', fontWeight: '600', color: '#666', textTransform: 'uppercase' }}>
+              Direct Messages
             </div>
-            <div style={{ fontSize: '12px', color: '#666' }}>ID: {room.id.slice(0, 8)}...</div>
+            <button
+              onClick={onCreateDM}
+              style={{
+                background: 'none',
+                border: 'none',
+                fontSize: '18px',
+                cursor: 'pointer',
+                padding: '2px 6px',
+                color: '#666',
+              }}
+              title="Start a conversation"
+            >
+              +
+            </button>
           </div>
-        ))}
+          {dms.length === 0 && (
+            <p style={{ color: '#999', fontSize: '13px', fontStyle: 'italic', marginLeft: '12px' }}>
+              No messages yet
+            </p>
+          )}
+          {dms.map(renderRoom)}
+        </div>
       </div>
     </div>
   );

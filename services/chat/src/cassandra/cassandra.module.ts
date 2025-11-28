@@ -14,11 +14,11 @@ export const CASS_MAPPER = Symbol('CASS_MAPPER');
       inject: [ConfigService],
       useFactory: async (cfg: ConfigService) => {
         const client = new Client({
-          contactPoints: (cfg.get<string>('CASS_CONTACT_POINTS') || '127.0.0.1').split(','),
-          localDataCenter: cfg.get<string>('CASS_DC') || 'dc1',
-          keyspace: cfg.get<string>('CASS_KEYSPACE') || 'chat',
+          contactPoints: (cfg.get<string>('CASSANDRA_CONTACT_POINTS') || '127.0.0.1').split(','),
+          localDataCenter: cfg.get<string>('CASSANDRA_LOCAL_DATA_CENTER') || 'dc1',
+          keyspace: cfg.get<string>('CASSANDRA_KEYSPACE') || 'chat',
           protocolOptions: {
-            port: Number(cfg.get('CASS_PORT') || 9042),
+            port: Number(cfg.get('CASSANDRA_PORT') || 9042),
           },
           credentials: cfg.get('CASS_USERNAME') && cfg.get('CASS_PASSWORD')
             ? { username: cfg.get('CASS_USERNAME')!, password: cfg.get('CASS_PASSWORD')! }

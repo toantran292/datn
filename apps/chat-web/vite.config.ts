@@ -15,13 +15,27 @@ export default defineConfig({
     outDir: 'build',
   },
   server: {
-    port: 40503,
+    port: 3004,
     open: true,
     proxy: {
-      '/api': {
+      // Proxy API requests to backend
+      '/chat': {
         target: 'http://localhost:8080',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
+        secure: false,
+        // rewrite: (path) => path.replace(/^\/chat/, ''),
+      },
+      // Proxy auth endpoints to backend (for /auth/me, etc.)
+      '/auth': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
+      },
+      // Proxy OAuth endpoints
+      '/oauth2': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false,
       },
     },
   },
