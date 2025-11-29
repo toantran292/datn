@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import type { Message, Room } from '../types';
+import type { Message, Room } from '../../types';
 
 interface ChatWindowProps {
   room: Room | null;
@@ -158,7 +158,7 @@ export function ChatWindow({ room, messages, currentUserId, onSendMessage, onLoa
               )}
 
               {/* Thread Reply Count */}
-              {msg.replyCount && msg.replyCount > 0 && (
+              {msg.replyCount && msg.replyCount > 0 ? (
                 <button
                   onClick={() => onOpenThread(msg)}
                   style={{
@@ -177,7 +177,7 @@ export function ChatWindow({ room, messages, currentUserId, onSendMessage, onLoa
                 >
                   💬 {msg.replyCount} {msg.replyCount === 1 ? 'reply' : 'replies'}
                 </button>
-              )}
+              ) : null}
             </div>
           );
         })}

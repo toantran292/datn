@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { Room } from '../types';
+import type { Room } from '../../../types';
 
 interface BrowseChannelsModalProps {
   onClose: () => void;
