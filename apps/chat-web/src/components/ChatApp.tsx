@@ -50,10 +50,7 @@ export function ChatApp() {
   };
 
   // Helper to load files
-  const loadFiles = async () => {
-    // TODO: Implement API call to load files
-    return [];
-  };
+  const loadFiles = async () => [];
 
   return (
     <>
@@ -105,7 +102,7 @@ export function ChatApp() {
                 />
               ) : (
                 <div style={{ padding: '32px', textAlign: 'center', color: '#999' }}>
-                  Click "Reply" on a message to start a thread
+                  Click &quot;Reply&quot; on a message to start a thread
                 </div>
               )
             }

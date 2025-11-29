@@ -35,17 +35,11 @@ export function RoomsList({
   const [dmMenuOpen, setDmMenuOpen] = useState(false);
 
   // Split rooms into channels and DMs
-  const orgChannels = useMemo(() => {
-    return orgLevelRooms.filter(r => r.type === 'channel');
-  }, [orgLevelRooms]);
+  const orgChannels = useMemo(() =>  orgLevelRooms.filter(r => r.type === 'channel'), [orgLevelRooms]);
 
-  const projectChannels = useMemo(() => {
-    return projectRooms.filter(r => r.type === 'channel');
-  }, [projectRooms]);
+  const projectChannels = useMemo(() => projectRooms.filter(r => r.type === 'channel'), [projectRooms]);
 
-  const dms = useMemo(() => {
-    return rooms.filter(r => r.type === 'dm');
-  }, [rooms]);
+  const dms = useMemo(() => rooms.filter(r => r.type === 'dm'), [rooms]);
 
   const renderRoom = (room: Room) => {
     const displayName = room.type === 'dm' ? getDMName(room) : (room.name || 'Unnamed Channel');

@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
-import type { Room, Message } from '../types';
-import type { SidebarTab } from '../components/right-sidebar/RightSidebar';
-import { api } from '../services/api';
-import { socketService } from '../services/socket';
-import { useAppHeaderContext } from '@uts/design-system/ui';
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
+import type { Room, Message } from "../types";
+import type { SidebarTab } from "../components/right-sidebar/RightSidebar";
+import { api } from "../services/api";
+import { socketService } from "../services/socket";
+import { useAppHeaderContext } from "@uts/design-system/ui";
 
 // ============= Types =============
 interface ChatContextValue {
@@ -33,10 +33,10 @@ interface ChatContextValue {
   showCreateDMModal: boolean;
 
   // Browse scope
-  browseScope: 'org' | 'project';
+  browseScope: "org" | "project";
 
   // Create channel scope
-  createChannelScope: 'org' | 'project';
+  createChannelScope: "org" | "project";
 
   // Actions - Rooms
   loadRooms: () => Promise<void>;
@@ -64,8 +64,8 @@ interface ChatContextValue {
   setShowBrowseModal: (show: boolean) => void;
   setShowCreateChannelModal: (show: boolean) => void;
   setShowCreateDMModal: (show: boolean) => void;
-  setBrowseScope: (scope: 'org' | 'project') => void;
-  setCreateChannelScope: (scope: 'org' | 'project') => void;
+  setBrowseScope: (scope: "org" | "project") => void;
+  setCreateChannelScope: (scope: "org" | "project") => void;
 
   // User
   currentUserId: string;
@@ -81,11 +81,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [connectionStatus, setConnectionStatus] = useState('disconnected');
+  const [connectionStatus, setConnectionStatus] = useState("disconnected");
 
   // Right Sidebar state
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarTab, setSidebarTab] = useState<SidebarTab>('thread');
+  const [sidebarTab, setSidebarTab] = useState<SidebarTab>("thread");
   const [activeThread, setActiveThread] = useState<Message | null>(null);
   const [threadMessages, setThreadMessages] = useState<Message[]>([]);
 
@@ -93,13 +93,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [showBrowseModal, setShowBrowseModal] = useState(false);
   const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
   const [showCreateDMModal, setShowCreateDMModal] = useState(false);
-  const [browseScope, setBrowseScope] = useState<'org' | 'project'>('org');
-  const [createChannelScope, setCreateChannelScope] = useState<'org' | 'project'>('org');
+  const [browseScope, setBrowseScope] = useState<"org" | "project">("org");
+  const [createChannelScope, setCreateChannelScope] = useState<"org" | "project">("org");
 
   // Refs to access latest values in WebSocket callbacks
   const selectedRoomIdRef = useRef<string | null>(null);
   const activeThreadRef = useRef<Message | null>(null);
-  const userIdRef = useRef<string>('');
+  const userIdRef = useRef<string>("");
 
   useEffect(() => {
     selectedRoomIdRef.current = selectedRoomId;
@@ -119,7 +119,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!user) return;
 
-    console.log('[ChatContext] User authenticated:', user);
+    console.log("[ChatContext] User authenticated:", user);
 
     let isMounted = true;
 
@@ -130,26 +130,26 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           api.setAuth(user.user_id, user.org_id);
         }
 
-        console.log('[ChatContext] Connecting socket...');
+        console.log("[ChatContext] Connecting socket...");
         // Connect socket
-        socketService.connect(user.user_id, user.org_id || '', {
+        socketService.connect(user.user_id, user.org_id || "", {
           onConnect: () => {
-            setConnectionStatus('connected');
-            console.log('Socket connected');
+            setConnectionStatus("connected");
+            console.log("Socket connected");
           },
           onDisconnect: () => {
-            setConnectionStatus('disconnected');
+            setConnectionStatus("disconnected");
           },
           onRoomsBootstrap: (bootstrapRooms) => {
-            const roomsWithType = bootstrapRooms.map(room => ({
+            const roomsWithType = bootstrapRooms.map((room) => ({
               ...room,
-              type: room.type || 'channel',
+              type: room.type || "channel",
             }));
-            console.log('[ChatContext] Rooms bootstrap:', roomsWithType.length, 'rooms');
+            console.log("[ChatContext] Rooms bootstrap:", roomsWithType.length, "rooms");
             setRooms(roomsWithType);
           },
           onRoomCreated: (room) => {
-            console.log('[ChatContext] Room created:', room);
+            console.log("[ChatContext] Room created:", room);
           },
           onRoomMemberJoined: (data) => {
             if (data.userId === userIdRef.current) {
@@ -158,18 +158,18 @@ export function ChatProvider({ children }: { children: ReactNode }) {
                 name: data.name || null,
                 orgId: data.orgId,
                 isPrivate: data.isPrivate,
-                type: 'channel',
+                type: "channel",
               };
               setRooms((prev) => {
-                if (prev.some(r => r.id === room.id)) return prev;
+                if (prev.some((r) => r.id === room.id)) return prev;
                 return [room, ...prev];
               });
             }
           },
           onRoomUpdated: (payload) => {
             setRooms((prev) => {
-              const updated = prev.filter(r => r.id !== payload.roomId);
-              const room = prev.find(r => r.id === payload.roomId);
+              const updated = prev.filter((r) => r.id !== payload.roomId);
+              const room = prev.find((r) => r.id === payload.roomId);
               if (room) return [room, ...updated];
               return prev;
             });
@@ -183,15 +183,17 @@ export function ChatProvider({ children }: { children: ReactNode }) {
                 }
 
                 // Update reply count for parent message
-                setMessages((prev) => prev.map(msg => {
-                  if (msg.id === message.threadId) {
-                    return {
-                      ...msg,
-                      replyCount: (msg.replyCount || 0) + 1
-                    };
-                  }
-                  return msg;
-                }));
+                setMessages((prev) =>
+                  prev.map((msg) => {
+                    if (msg.id === message.threadId) {
+                      return {
+                        ...msg,
+                        replyCount: (msg.replyCount || 0) + 1,
+                      };
+                    }
+                    return msg;
+                  })
+                );
               } else {
                 // Main message - add to messages list
                 setMessages((prev) => [...prev, message]);
@@ -199,31 +201,31 @@ export function ChatProvider({ children }: { children: ReactNode }) {
             }
           },
           onJoinedRoom: (data) => {
-            console.log('Joined room:', data);
+            console.log("Joined room:", data);
           },
           onUserOnline: (data) => {
-            console.log('[ChatContext] User online:', data.userId);
+            console.log("[ChatContext] User online:", data.userId);
           },
           onUserOffline: (data) => {
-            console.log('[ChatContext] User offline:', data.userId);
+            console.log("[ChatContext] User offline:", data.userId);
           },
         });
 
         // Load rooms
         if (isMounted) {
-          console.log('[ChatContext] Loading rooms...');
+          console.log("[ChatContext] Loading rooms...");
           await loadRooms();
-          console.log('[ChatContext] Rooms loaded successfully');
+          console.log("[ChatContext] Rooms loaded successfully");
         }
       } catch (error) {
-        console.error('[ChatContext] Initialization failed:', error);
+        console.error("[ChatContext] Initialization failed:", error);
       }
     };
 
     initialize();
 
     return () => {
-      console.log('[ChatContext] Component unmounting');
+      console.log("[ChatContext] Component unmounting");
       isMounted = false;
     };
   }, [user]);
@@ -246,7 +248,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         const result = await api.listMessages(selectedRoomId, 50);
         setMessages(result.items);
       } catch (error) {
-        console.error('Failed to load messages:', error);
+        console.error("Failed to load messages:", error);
       }
     };
 
@@ -254,16 +256,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   }, [selectedRoomId]);
 
   // Cleanup
-  useEffect(() => {
-    return () => {
-      socketService.disconnect();
-    };
-  }, []);
+  useEffect(() => () => socketService.disconnect(), []);
 
   // Reload rooms when project changes
   useEffect(() => {
     if (user) {
-      console.log('[ChatContext] Project changed, reloading rooms. ProjectId:', currentProjectId);
+      console.log("[ChatContext] Project changed, reloading rooms. ProjectId:", currentProjectId);
       loadRooms();
     }
   }, [currentProjectId, user]);
@@ -271,54 +269,52 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   // ===== Actions - Rooms =====
   const loadRooms = async () => {
     try {
-      console.log('[ChatContext] loadRooms: Loading rooms for projectId:', currentProjectId);
+      console.log("[ChatContext] loadRooms: Loading rooms for projectId:", currentProjectId);
 
       let allRooms: Room[] = [];
 
       if (currentProjectId) {
         // In project context: Load org channels + project channels + DMs
-        console.log('[ChatContext] Loading rooms for project:', currentProjectId);
+        console.log("[ChatContext] Loading rooms for project:", currentProjectId);
         const [orgChannels, projectChannels, dms] = await Promise.all([
           api.listOrgChannels(50),
           api.listProjectChannels(currentProjectId, 50),
           api.listDms(50),
         ]);
 
-        allRooms = [
-          ...orgChannels.items,
-          ...projectChannels.items,
-          ...dms.items,
-        ];
-        console.log('[ChatContext] Loaded:', orgChannels.items.length, 'org channels,', projectChannels.items.length, 'project channels,', dms.items.length, 'DMs');
+        allRooms = [...orgChannels.items, ...projectChannels.items, ...dms.items];
+        console.log(
+          "[ChatContext] Loaded:",
+          orgChannels.items.length,
+          "org channels,",
+          projectChannels.items.length,
+          "project channels,",
+          dms.items.length,
+          "DMs"
+        );
       } else {
         // In org context: Load org channels + DMs only
-        console.log('[ChatContext] Loading rooms for org (no project)');
-        const [orgChannels, dms] = await Promise.all([
-          api.listOrgChannels(50),
-          api.listDms(50),
-        ]);
+        console.log("[ChatContext] Loading rooms for org (no project)");
+        const [orgChannels, dms] = await Promise.all([api.listOrgChannels(50), api.listDms(50)]);
 
-        allRooms = [
-          ...orgChannels.items,
-          ...dms.items,
-        ];
-        console.log('[ChatContext] Loaded:', orgChannels.items.length, 'org channels,', dms.items.length, 'DMs');
+        allRooms = [...orgChannels.items, ...dms.items];
+        console.log("[ChatContext] Loaded:", orgChannels.items.length, "org channels,", dms.items.length, "DMs");
       }
 
-      const roomsWithType = allRooms.map(room => ({
+      const roomsWithType = allRooms.map((room) => ({
         ...room,
-        type: room.type || 'channel',
+        type: room.type || "channel",
       }));
       setRooms(roomsWithType);
     } catch (error) {
-      console.error('[ChatContext] Failed to load rooms:', error);
+      console.error("[ChatContext] Failed to load rooms:", error);
     }
   };
 
   const handleBrowsePublicRooms = async (): Promise<Room[]> => {
     try {
       // Browse public rooms based on current browse scope
-      if (browseScope === 'project' && currentProjectId) {
+      if (browseScope === "project" && currentProjectId) {
         const result = await api.browseProjectPublicRooms(currentProjectId, 100);
         return result.items;
       }
@@ -327,7 +323,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       const result = await api.browseOrgPublicRooms(100);
       return result.items;
     } catch (error) {
-      console.error('Failed to browse public rooms:', error);
+      console.error("Failed to browse public rooms:", error);
       return [];
     }
   };
@@ -339,27 +335,26 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       setShowBrowseModal(false);
       setSelectedRoomId(roomId);
     } catch (error) {
-      console.error('Failed to join room:', error);
-      alert('Failed to join room');
+      console.error("Failed to join room:", error);
+      alert("Failed to join room");
     }
   };
 
   const handleCreateChannel = async (name: string, isPrivate: boolean) => {
     try {
       // Decide whether to create org-level or project-level channel based on scope
-      const projectIdForChannel =
-        createChannelScope === 'project' ? currentProjectId : null;
+      const projectIdForChannel = createChannelScope === "project" ? currentProjectId : null;
 
-      console.log('[ChatContext] Creating channel with projectId:', projectIdForChannel, 'scope:', createChannelScope);
+      console.log("[ChatContext] Creating channel with projectId:", projectIdForChannel, "scope:", createChannelScope);
 
       const room = await api.createChannel(name, isPrivate, projectIdForChannel);
-      console.log('[ChatContext] Channel created response:', room);
+      console.log("[ChatContext] Channel created response:", room);
 
       // Verify backend returned expected projectId (if any)
       if (projectIdForChannel && room.projectId !== projectIdForChannel) {
-        console.warn('[ChatContext] Backend returned different projectId!', {
+        console.warn("[ChatContext] Backend returned different projectId!", {
           expected: projectIdForChannel,
-          received: room.projectId
+          received: room.projectId,
         });
       }
 
@@ -368,21 +363,21 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         name: room.name || null,
         orgId: room.orgId,
         isPrivate: room.isPrivate,
-        type: 'channel',
+        type: "channel",
         projectId: room.projectId, // Backend should return this
       };
 
-      console.log('[ChatContext] Adding new room to list:', newRoom);
+      console.log("[ChatContext] Adding new room to list:", newRoom);
 
       setRooms((prev) => {
-        if (prev.some(r => r.id === newRoom.id)) return prev;
+        if (prev.some((r) => r.id === newRoom.id)) return prev;
         return [newRoom, ...prev];
       });
 
       setSelectedRoomId(room.id);
       socketService.joinRoom(room.id);
     } catch (error) {
-      console.error('Failed to create channel:', error);
+      console.error("Failed to create channel:", error);
       throw error;
     }
   };
@@ -390,15 +385,15 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const handleCreateDM = async (userIds: string[]) => {
     try {
       const room = await api.createDM(userIds);
-      console.log('DM created:', room);
+      console.log("DM created:", room);
       setSelectedRoomId(room.id);
 
       setRooms((prev) => {
-        if (prev.some(r => r.id === room.id)) return prev;
+        if (prev.some((r) => r.id === room.id)) return prev;
         return [room, ...prev];
       });
     } catch (error) {
-      console.error('Failed to create DM:', error);
+      console.error("Failed to create DM:", error);
       throw error;
     }
   };
@@ -424,7 +419,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       const result = await api.listMessages(selectedRoomId, 50);
       setMessages(result.items);
     } catch (error) {
-      console.error('Failed to load messages:', error);
+      console.error("Failed to load messages:", error);
     }
   };
 
@@ -436,33 +431,33 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   // ===== Actions - Threads =====
   const handleOpenThread = (message: Message) => {
     // If the same thread is already open in the sidebar, do nothing
-    if (activeThread?.id === message.id && sidebarOpen && sidebarTab === 'thread') {
+    if (activeThread?.id === message.id && sidebarOpen && sidebarTab === "thread") {
       return;
     }
 
     setActiveThread(message);
     setThreadMessages([]);
-    setSidebarTab('thread');
+    setSidebarTab("thread");
     setSidebarOpen(true);
   };
 
   const handleLoadThread = async (messageId: string) => {
     if (!selectedRoomId) return;
     try {
-      console.log('Load thread messages for:', messageId, 'in room:', selectedRoomId);
+      console.log("Load thread messages for:", messageId, "in room:", selectedRoomId);
       // Load thread replies from backend so we always get full history,
       // not only messages received while the thread sidebar was open.
       const result = await api.listThreadMessages(selectedRoomId, messageId, 50);
       setThreadMessages(result.items);
     } catch (error) {
-      console.error('Failed to load thread:', error);
+      console.error("Failed to load thread:", error);
     }
   };
 
   const handleSendThreadReply = (content: string) => {
     if (!selectedRoomId || !activeThread) return;
     socketService.sendMessage(selectedRoomId, content, activeThread.id);
-    console.log('Send thread reply to message:', activeThread.id);
+    console.log("Send thread reply to message:", activeThread.id);
   };
 
   // ===== Actions - Sidebar =====
@@ -481,17 +476,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   };
 
   // ===== Computed Values =====
-  const selectedRoom = rooms.find(r => r.id === selectedRoomId) || null;
-  const currentUserId = user?.user_id || '';
+  const selectedRoom = rooms.find((r) => r.id === selectedRoomId) || null;
+  const currentUserId = user?.user_id || "";
 
   // Separate rooms by type for UI rendering
   // Backend returns different room types via separate API calls
-  const orgLevelRooms = rooms.filter(r =>
-    (r.type === 'channel' && !r.projectId) || r.type === 'dm'
-  );
-  const projectRooms = rooms.filter(r =>
-    r.type === 'channel' && !!r.projectId
-  );
+  const orgLevelRooms = rooms.filter((r) => (r.type === "channel" && !r.projectId) || r.type === "dm");
+  const projectRooms = rooms.filter((r) => r.type === "channel" && !!r.projectId);
 
   const value: ChatContextValue = {
     // State
@@ -563,7 +554,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 export function useChatContext() {
   const context = useContext(ChatContext);
   if (!context) {
-    throw new Error('useChatContext must be used within ChatProvider');
+    throw new Error("useChatContext must be used within ChatProvider");
   }
   return context;
 }

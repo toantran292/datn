@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import '../styles/globals.css';
-import { AppProvider } from './provider';
 import { MainLayout } from './MainLayout';
+import { AppProvider } from './provider';
 
 export const metadata: Metadata = {
   title: 'Unified TeamSpace - Chat',
