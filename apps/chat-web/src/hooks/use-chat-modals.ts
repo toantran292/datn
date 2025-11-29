@@ -13,17 +13,33 @@ export function useChatModals() {
     setShowBrowseModal,
     setShowCreateChannelModal,
     setShowCreateDMModal,
+    setBrowseScope,
+    setCreateChannelScope,
   } = useChatContext();
 
   return {
     browse: {
       isOpen: showBrowseModal,
-      open: () => setShowBrowseModal(true),
+      openOrg: () => {
+        setBrowseScope('org');
+        setShowBrowseModal(true);
+      },
+      openProject: () => {
+        setBrowseScope('project');
+        setShowBrowseModal(true);
+      },
       close: () => setShowBrowseModal(false),
     },
     createChannel: {
       isOpen: showCreateChannelModal,
-      open: () => setShowCreateChannelModal(true),
+      openOrg: () => {
+        setCreateChannelScope('org');
+        setShowCreateChannelModal(true);
+      },
+      openProject: () => {
+        setCreateChannelScope('project');
+        setShowCreateChannelModal(true);
+      },
       close: () => setShowCreateChannelModal(false),
     },
     createDM: {

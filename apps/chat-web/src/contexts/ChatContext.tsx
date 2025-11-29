@@ -32,6 +32,12 @@ interface ChatContextValue {
   showCreateChannelModal: boolean;
   showCreateDMModal: boolean;
 
+  // Browse scope
+  browseScope: 'org' | 'project';
+
+  // Create channel scope
+  createChannelScope: 'org' | 'project';
+
   // Actions - Rooms
   loadRooms: () => Promise<void>;
   handleSelectRoom: (roomId: string) => Promise<void>;
@@ -58,6 +64,8 @@ interface ChatContextValue {
   setShowBrowseModal: (show: boolean) => void;
   setShowCreateChannelModal: (show: boolean) => void;
   setShowCreateDMModal: (show: boolean) => void;
+  setBrowseScope: (scope: 'org' | 'project') => void;
+  setCreateChannelScope: (scope: 'org' | 'project') => void;
 
   // User
   currentUserId: string;
@@ -85,6 +93,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [showBrowseModal, setShowBrowseModal] = useState(false);
   const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
   const [showCreateDMModal, setShowCreateDMModal] = useState(false);
+  const [browseScope, setBrowseScope] = useState<'org' | 'project'>('org');
+  const [createChannelScope, setCreateChannelScope] = useState<'org' | 'project'>('org');
 
   // Refs to access latest values in WebSocket callbacks
   const selectedRoomIdRef = useRef<string | null>(null);
@@ -220,7 +230,16 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   // Auto-load messages when room is selected
   useEffect(() => {
-    if (!selectedRoomId) return;
+    if (!selectedRoomId) {
+      // When no room is selected, also clear thread state
+      setActiveThread(null);
+      setThreadMessages([]);
+      return;
+    }
+
+    // Whenever room changes, reset thread state so sidebar shows empty thread
+    setActiveThread(null);
+    setThreadMessages([]);
 
     const loadMessages = async () => {
       try {
@@ -252,11 +271,41 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   // ===== Actions - Rooms =====
   const loadRooms = async () => {
     try {
-      console.log('[ChatContext] loadRooms: Calling api.listJoinedRooms...');
-      // Load ALL rooms (no filter) to get both org-level and project-specific
-      const result = await api.listJoinedRooms(50);
-      console.log('[ChatContext] loadRooms: Got', result.items.length, 'rooms');
-      const roomsWithType = result.items.map(room => ({
+      console.log('[ChatContext] loadRooms: Loading rooms for projectId:', currentProjectId);
+
+      let allRooms: Room[] = [];
+
+      if (currentProjectId) {
+        // In project context: Load org channels + project channels + DMs
+        console.log('[ChatContext] Loading rooms for project:', currentProjectId);
+        const [orgChannels, projectChannels, dms] = await Promise.all([
+          api.listOrgChannels(50),
+          api.listProjectChannels(currentProjectId, 50),
+          api.listDms(50),
+        ]);
+
+        allRooms = [
+          ...orgChannels.items,
+          ...projectChannels.items,
+          ...dms.items,
+        ];
+        console.log('[ChatContext] Loaded:', orgChannels.items.length, 'org channels,', projectChannels.items.length, 'project channels,', dms.items.length, 'DMs');
+      } else {
+        // In org context: Load org channels + DMs only
+        console.log('[ChatContext] Loading rooms for org (no project)');
+        const [orgChannels, dms] = await Promise.all([
+          api.listOrgChannels(50),
+          api.listDms(50),
+        ]);
+
+        allRooms = [
+          ...orgChannels.items,
+          ...dms.items,
+        ];
+        console.log('[ChatContext] Loaded:', orgChannels.items.length, 'org channels,', dms.items.length, 'DMs');
+      }
+
+      const roomsWithType = allRooms.map(room => ({
         ...room,
         type: room.type || 'channel',
       }));
@@ -268,8 +317,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   const handleBrowsePublicRooms = async (): Promise<Room[]> => {
     try {
-      // Browse rooms for current project context
-      const result = await api.browsePublicRooms(100, currentProjectId);
+      // Browse public rooms based on current browse scope
+      if (browseScope === 'project' && currentProjectId) {
+        const result = await api.browseProjectPublicRooms(currentProjectId, 100);
+        return result.items;
+      }
+
+      // Default: browse org-level public channels
+      const result = await api.browseOrgPublicRooms(100);
       return result.items;
     } catch (error) {
       console.error('Failed to browse public rooms:', error);
@@ -291,15 +346,19 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   const handleCreateChannel = async (name: string, isPrivate: boolean) => {
     try {
-      // Create channel with current project context
-      console.log('[ChatContext] Creating channel with projectId:', currentProjectId);
-      const room = await api.createChannel(name, isPrivate, currentProjectId);
+      // Decide whether to create org-level or project-level channel based on scope
+      const projectIdForChannel =
+        createChannelScope === 'project' ? currentProjectId : null;
+
+      console.log('[ChatContext] Creating channel with projectId:', projectIdForChannel, 'scope:', createChannelScope);
+
+      const room = await api.createChannel(name, isPrivate, projectIdForChannel);
       console.log('[ChatContext] Channel created response:', room);
 
-      // Verify backend returned projectId
-      if (currentProjectId && room.projectId !== currentProjectId) {
+      // Verify backend returned expected projectId (if any)
+      if (projectIdForChannel && room.projectId !== projectIdForChannel) {
         console.warn('[ChatContext] Backend returned different projectId!', {
-          expected: currentProjectId,
+          expected: projectIdForChannel,
           received: room.projectId
         });
       }
@@ -345,9 +404,17 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   };
 
   const handleSelectRoom = async (roomId: string) => {
-    setSelectedRoomId(roomId);
-    setMessages([]);
-    socketService.joinRoom(roomId);
+    // If user selects the same room again, do nothing to avoid clearing messages
+    setSelectedRoomId((prev) => {
+      if (prev === roomId) {
+        return prev;
+      }
+
+      // Switch to a different room: clear messages and join new room
+      setMessages([]);
+      socketService.joinRoom(roomId);
+      return roomId;
+    });
   };
 
   // ===== Actions - Messages =====
@@ -368,6 +435,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   // ===== Actions - Threads =====
   const handleOpenThread = (message: Message) => {
+    // If the same thread is already open in the sidebar, do nothing
+    if (activeThread?.id === message.id && sidebarOpen && sidebarTab === 'thread') {
+      return;
+    }
+
     setActiveThread(message);
     setThreadMessages([]);
     setSidebarTab('thread');
@@ -377,9 +449,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const handleLoadThread = async (messageId: string) => {
     if (!selectedRoomId) return;
     try {
-      console.log('Load thread messages for:', messageId);
-      const threadReplies = messages.filter(m => m.threadId === messageId);
-      setThreadMessages(threadReplies);
+      console.log('Load thread messages for:', messageId, 'in room:', selectedRoomId);
+      // Load thread replies from backend so we always get full history,
+      // not only messages received while the thread sidebar was open.
+      const result = await api.listThreadMessages(selectedRoomId, messageId, 50);
+      setThreadMessages(result.items);
     } catch (error) {
       console.error('Failed to load thread:', error);
     }
@@ -410,16 +484,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const selectedRoom = rooms.find(r => r.id === selectedRoomId) || null;
   const currentUserId = user?.user_id || '';
 
-  // Separate rooms by project context
-  // Org-level rooms: channels without projectId (org channels) + all DMs
-  // DMs always belong to org, never to project
+  // Separate rooms by type for UI rendering
+  // Backend returns different room types via separate API calls
   const orgLevelRooms = rooms.filter(r =>
     (r.type === 'channel' && !r.projectId) || r.type === 'dm'
   );
-
-  // Project rooms: channels belonging to current project (excluding DMs)
   const projectRooms = rooms.filter(r =>
-    r.type === 'channel' && r.projectId === currentProjectId
+    r.type === 'channel' && !!r.projectId
   );
 
   const value: ChatContextValue = {
@@ -445,6 +516,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     showBrowseModal,
     showCreateChannelModal,
     showCreateDMModal,
+
+    // Browse scope
+    browseScope,
+    // Create channel scope
+    createChannelScope,
 
     // Actions - Rooms
     loadRooms,
@@ -472,6 +548,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setShowBrowseModal,
     setShowCreateChannelModal,
     setShowCreateDMModal,
+
+    setBrowseScope,
+    setCreateChannelScope,
 
     // User
     currentUserId,

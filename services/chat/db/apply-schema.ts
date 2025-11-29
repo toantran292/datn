@@ -65,14 +65,34 @@ function parseMigrations(migrationsDir: string): Migration[] {
   });
 }
 
-async function applyMigration(client: Client, keyspace: string, migrationPath: string) {
-  const cql = fs.readFileSync(migrationPath, "utf8");
+function normalizeCqlForKeyspace(rawCql: string, keyspace: string): string {
+  // Normalize CQL so it always targets the configured keyspace instead of a hard-coded one.
+  // This lets us keep the *.cql files simple (using 'chat') but still support custom keyspaces.
+  return rawCql
+    // CREATE KEYSPACE IF NOT EXISTS chat → CREATE KEYSPACE IF NOT EXISTS <keyspace>
+    .replace(/\bKEYSPACE IF NOT EXISTS chat\b/gi, `KEYSPACE IF NOT EXISTS ${keyspace}`)
+    // chat.<table> → <keyspace>.<table>
+    .replace(/\bchat\./gi, `${keyspace}.`);
+}
 
-  // Split by semicolon and filter out comments and empty statements
+function stripCommentLines(rawCql: string): string {
+  // Remove full-line comments that start with `--` (after trimming).
+  // This avoids dropping whole statements just because the first line is a comment.
+  return rawCql
+    .split("\n")
+    .filter(line => !line.trim().startsWith("--"))
+    .join("\n");
+}
+
+async function applyMigration(client: Client, keyspace: string, migrationPath: string) {
+  const rawCql = fs.readFileSync(migrationPath, "utf8");
+  const cql = stripCommentLines(normalizeCqlForKeyspace(rawCql, keyspace));
+
   const statements = cql
     .split(";")
     .map(s => s.trim())
     .filter(s => s && !s.startsWith('--'));
+  console.log(`  Executing ${statements.length} statements...`);
 
   for (const stmt of statements) {
     if (stmt.toLowerCase().startsWith('alter table') ||
@@ -132,7 +152,8 @@ async function applyMigration(client: Client, keyspace: string, migrationPath: s
     // Step 1: Apply base schema (create keyspace and tables)
     console.log("\n📋 Step 1: Applying base schema...");
     const schemaPath = path.resolve(__dirname, "db.cql");
-    const cql = fs.readFileSync(schemaPath, "utf8");
+    const rawSchemaCql = fs.readFileSync(schemaPath, "utf8");
+    const cql = stripCommentLines(normalizeCqlForKeyspace(rawSchemaCql, keyspace));
 
     for (const stmt of cql.split(";").map(s => s.trim()).filter(Boolean)) {
       console.log(`  Executing: ${stmt.substring(0, 80)}...`);

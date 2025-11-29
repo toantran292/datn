@@ -27,7 +27,12 @@ export class RoomsService {
       roomType
     );
 
-    await this.roomMembersRepo.addMember(room.id, userId, orgId);
+    await this.roomMembersRepo.addMember(room.id, userId, orgId, {
+      roomType: room.type,
+      roomName: room.name,
+      isPrivate: room.isPrivate,
+      projectId: room.projectId,
+    });
 
     this.chatsGateway.notifyRoomCreated(orgId.toString(), {
       id: room.id.toString(),
@@ -81,9 +86,14 @@ export class RoomsService {
       'dm'
     );
 
-    // Add all members
+    // Add all members with room data for denormalized tables
     for (const userId of allUserIds) {
-      await this.roomMembersRepo.addMember(room.id, types.Uuid.fromString(userId), orgId);
+      await this.roomMembersRepo.addMember(room.id, types.Uuid.fromString(userId), orgId, {
+        roomType: 'dm',
+        roomName: room.name,
+        isPrivate: true,
+        projectId: null,
+      });
     }
 
     // Notify all members about the new DM
@@ -120,8 +130,13 @@ export class RoomsService {
       projectId
     );
 
-    // Add creator as a member
-    await this.roomMembersRepo.addMember(room.id, userId, orgId);
+    // Add creator as a member with room data for denormalized tables
+    await this.roomMembersRepo.addMember(room.id, userId, orgId, {
+      roomType: 'channel',
+      roomName: room.name,
+      isPrivate: room.isPrivate,
+      projectId: projectId,
+    });
 
     // Notify creator that they joined the room (for WebSocket subscription)
     this.chatsGateway.notifyRoomJoined(orgId.toString(), {
@@ -173,17 +188,155 @@ export class RoomsService {
    * List rooms that user has JOINED
    * - Shows in sidebar
    * - User receives notifications
+   * - Uses optimized denormalized table for fast lookup
    */
   async listJoinedRooms(
     userId: types.Uuid,
     orgId: types.Uuid,
+    opts: { limit?: number; pagingState?: string; projectId?: string } = {},
+  ) {
+    // If projectId is specified, use project-specific query
+    if (opts.projectId) {
+      const projectUuid = types.Uuid.fromString(opts.projectId);
+      const result = await this.roomsRepo.listJoinedRoomsByUserAndProject(userId, orgId, projectUuid, {
+        limit: opts.limit,
+        pagingState: opts.pagingState,
+      });
+
+      // Convert UserRoomEntity to RoomEntity format
+      return {
+        items: result.items.map(ur => ({
+          id: ur.roomId,
+          orgId: ur.orgId,
+          isPrivate: ur.isPrivate,
+          name: ur.roomName,
+          type: ur.roomType,
+          projectId: ur.projectId,
+        })),
+        pagingState: result.pagingState ?? null,
+      };
+    }
+
+    // Otherwise use general user_rooms query and filter for org-level only
+    const result = await this.roomsRepo.listJoinedRoomsByUser(userId, orgId, {
+      limit: opts.limit ? opts.limit * 2 : 100, // Fetch more to account for filtering
+      pagingState: opts.pagingState,
+    });
+
+    // Filter to only org-level rooms (projectId = null) and DMs
+    const orgLevelRooms = result.items.filter(ur => ur.projectId === null || ur.projectId === undefined);
+
+    // Convert UserRoomEntity to RoomEntity format
+    return {
+      items: orgLevelRooms.slice(0, opts.limit ?? 50).map(ur => ({
+        id: ur.roomId,
+        orgId: ur.orgId,
+        isPrivate: ur.isPrivate,
+        name: ur.roomName,
+        type: ur.roomType,
+        projectId: ur.projectId,
+      })),
+      pagingState: result.pagingState ?? null,
+    };
+  }
+
+  /**
+   * List DMs for a user in an org
+   * - Uses optimized user_dms table
+   */
+  async listDms(
+    userId: types.Uuid,
+    orgId: types.Uuid,
     opts: { limit?: number; pagingState?: string } = {},
   ) {
-    const pageSize = opts.limit ?? 50;
+    const result = await this.roomsRepo.listDmsByUser(userId, orgId, {
+      limit: opts.limit,
+      pagingState: opts.pagingState,
+    });
 
-    // Get rooms where user is a member
-    const memberIds = await this.roomMembersRepo.findRoomIdsByUserOrg(userId, orgId, { limit: 10_000 });
-    const memberSet = new Set(memberIds.items.map(id => id.toString()));
+    // Convert UserRoomEntity to RoomEntity format
+    return {
+      items: result.items.map(ur => ({
+        id: ur.roomId,
+        orgId: ur.orgId,
+        isPrivate: true,
+        name: ur.roomName,
+        type: 'dm' as const,
+        projectId: null,
+      })),
+      pagingState: result.pagingState ?? null,
+    };
+  }
+
+  /**
+   * List org-level channels (channels without projectId)
+   * - Uses user_rooms table and filters for projectId = null
+   */
+  async listOrgChannels(
+    userId: types.Uuid,
+    orgId: types.Uuid,
+    opts: { limit?: number; pagingState?: string } = {},
+  ) {
+    const result = await this.roomsRepo.listJoinedRoomsByUser(userId, orgId, {
+      limit: opts.limit ? opts.limit * 2 : 100, // Fetch more to account for filtering
+      pagingState: opts.pagingState,
+    });
+
+    // Filter to only org-level channels (projectId = null AND type = 'channel')
+    const orgChannels = result.items.filter(ur =>
+      ur.roomType === 'channel' && (ur.projectId === null || ur.projectId === undefined)
+    );
+
+    return {
+      items: orgChannels.slice(0, opts.limit ?? 50).map(ur => ({
+        id: ur.roomId,
+        orgId: ur.orgId,
+        isPrivate: ur.isPrivate,
+        name: ur.roomName,
+        type: ur.roomType,
+        projectId: null,
+      })),
+      pagingState: result.pagingState ?? null,
+    };
+  }
+
+  /**
+   * List project-specific channels
+   * - Uses user_project_rooms table for fast lookup
+   */
+  async listProjectChannels(
+    userId: types.Uuid,
+    orgId: types.Uuid,
+    projectId: string,
+    opts: { limit?: number; pagingState?: string } = {},
+  ) {
+    const projectUuid = types.Uuid.fromString(projectId);
+    const result = await this.roomsRepo.listJoinedRoomsByUserAndProject(userId, orgId, projectUuid, {
+      limit: opts.limit,
+      pagingState: opts.pagingState,
+    });
+
+    return {
+      items: result.items.map(ur => ({
+        id: ur.roomId,
+        orgId: ur.orgId,
+        isPrivate: ur.isPrivate,
+        name: ur.roomName,
+        type: ur.roomType,
+        projectId: ur.projectId,
+      })),
+      pagingState: result.pagingState ?? null,
+    };
+  }
+
+  /**
+   * Browse PUBLIC org-level channels (channels not in any project)
+   */
+  async browseOrgPublicRooms(
+    orgId: types.Uuid,
+    opts: { limit?: number; pagingState?: string } = {},
+  ) {
+    const pageSize = opts.limit ?? 100;
 
     let cursor = opts.pagingState;
     const picked: RoomEntity[] = [];
@@ -193,8 +346,8 @@ export class RoomsService {
       const { items, pagingState } = await this.roomsRepo.listByOrg(orgId, { limit: pageSize, pagingState: cursor });
 
       for (const room of items) {
-        // Only include rooms where user is a member
-        if (memberSet.has(room.id.toString())) {
+        // Only include PUBLIC org-level channels (not in any project)
+        if (!room.isPrivate && room.type === 'channel' && !room.projectId) {
           picked.push(room);
         }
 
@@ -212,6 +365,44 @@ export class RoomsService {
   }
 
   /**
+   * Browse PUBLIC project-specific channels
+   */
+  async browseProjectPublicRooms(
+    orgId: types.Uuid,
+    projectId: string,
+    opts: { limit?: number; pagingState?: string } = {},
+  ) {
+    const projectUuid = types.Uuid.fromString(projectId);
+    const pageSize = opts.limit ?? 100;
+
+    let cursor = opts.pagingState;
+    const picked: RoomEntity[] = [];
+
+    // Paginate through org rooms
+    do {
+      const { items, pagingState } = await this.roomsRepo.listByOrg(orgId, { limit: pageSize, pagingState: cursor });
+
+      for (const room of items) {
+        // Only include PUBLIC channels in the specified project
+        if (!room.isPrivate && room.type === 'channel' && room.projectId?.toString() === projectUuid.toString()) {
+          picked.push(room);
+        }
+
+        if (picked.length >= pageSize) break;
+      }
+
+      if (picked.length >= pageSize || !pagingState) {
+        cursor = pagingState ?? undefined;
+        break;
+      }
+      cursor = pagingState;
+    } while (true);
+
+    return { items: picked, pagingState: cursor ?? null };
+  }
+
+  /**
+   * DEPRECATED: Use browseOrgPublicRooms or browseProjectPublicRooms instead
    * Browse PUBLIC channels to join (like Slack's "Browse Channels")
    * - Only shows public rooms
    * - Does NOT include private rooms
@@ -266,7 +457,12 @@ export class RoomsService {
     if (!room) throw new NotFoundException('Room not found');
     const isMember = await this.roomMembersRepo.isMember(roomTid, userId);
     if (!isMember) {
-      await this.roomMembersRepo.addMember(roomTid, userId, orgId);
+      await this.roomMembersRepo.addMember(roomTid, userId, orgId, {
+        roomType: room.type,
+        roomName: room.name,
+        isPrivate: room.isPrivate,
+        projectId: room.projectId,
+      });
       this.chatsGateway.notifyRoomJoined(orgId.toString(), {
         id: room.id.toString(),
         name: room.name,

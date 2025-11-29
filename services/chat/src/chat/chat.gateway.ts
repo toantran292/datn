@@ -153,7 +153,7 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       });
     }
 
-    await this.roomMembersRepo.updateLastSeen(roomUuid, userUuid, types.TimeUuid.fromString(message.id));
+    await this.roomMembersRepo.updateLastSeen(roomUuid, userUuid, types.TimeUuid.fromString(message.id), orgUuid);
   }
 
   @SubscribeMessage('join_room')

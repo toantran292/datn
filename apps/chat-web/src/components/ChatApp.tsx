@@ -66,9 +66,11 @@ export function ChatApp() {
           currentProjectId={rooms.currentProjectId}
           selectedRoomId={rooms.selectedRoomId}
           onSelectRoom={rooms.selectRoom}
-          onCreateChannel={modals.createChannel.open}
+          onCreateOrgChannel={modals.createChannel.openOrg}
+          onCreateProjectChannel={modals.createChannel.openProject}
           onCreateDM={modals.createDM.open}
-          onBrowseChannels={modals.browse.open}
+          onBrowseOrgChannels={modals.browse.openOrg}
+          onBrowseProjectChannels={modals.browse.openProject}
           getDMName={getDMName}
         />
 

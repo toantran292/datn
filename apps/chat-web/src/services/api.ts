@@ -87,12 +87,73 @@ class ApiService {
     return response.json();
   }
 
+  /**
+   * List org-level channels (channels that belong to org, not any specific project)
+   */
+  async listOrgChannels(limit?: number): Promise<{ items: Room[]; pagingState: string | null }> {
+    const params = new URLSearchParams();
+    if (limit) params.append('limit', limit.toString());
+
+    const response = await fetch(`${this.baseURL}/rooms/org-channels?${params}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
+    if (!response.ok) throw new Error('Failed to list org channels');
+    return response.json();
+  }
+
+  /**
+   * List project-specific channels
+   */
+  async listProjectChannels(projectId: string, limit?: number): Promise<{ items: Room[]; pagingState: string | null }> {
+    const params = new URLSearchParams();
+    params.append('projectId', projectId);
+    if (limit) params.append('limit', limit.toString());
+
+    const response = await fetch(`${this.baseURL}/rooms/project-channels?${params}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
+    if (!response.ok) throw new Error('Failed to list project channels');
+    return response.json();
+  }
+
+  /**
+   * List DMs for user in org (optimized query)
+   */
+  async listDms(limit?: number): Promise<{ items: Room[]; pagingState: string | null }> {
+    const params = new URLSearchParams();
+    if (limit) params.append('limit', limit.toString());
+
+    const response = await fetch(`${this.baseURL}/rooms/dms?${params}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
+    if (!response.ok) throw new Error('Failed to list DMs');
+    return response.json();
+  }
+
+  /**
+   * DEPRECATED: Use listOrgChannels, listProjectChannels, and listDms instead
+   * List all joined rooms for user in org
+   * - If projectId provided: returns rooms in that project only
+   * - Otherwise: returns org-level channels only (no DMs)
+   */
   async listJoinedRooms(limit?: number, projectId?: string | null): Promise<{ items: Room[]; pagingState: string | null }> {
     const params = new URLSearchParams();
     if (limit) params.append('limit', limit.toString());
-    if (projectId !== undefined) {
-      // null means org-level only, string means project-specific only
-      params.append('project_id', projectId || '');
+    if (projectId !== undefined && projectId !== null) {
+      // Only append if projectId is a non-null string
+      params.append('projectId', projectId);
     }
 
     const response = await fetch(`${this.baseURL}/rooms?${params}`, {
@@ -106,6 +167,46 @@ class ApiService {
     return response.json();
   }
 
+  /**
+   * Browse PUBLIC org-level channels
+   */
+  async browseOrgPublicRooms(limit?: number): Promise<{ items: Room[]; pagingState: string | null }> {
+    const params = new URLSearchParams();
+    if (limit) params.append('limit', limit.toString());
+
+    const response = await fetch(`${this.baseURL}/rooms/browse/org?${params}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
+    if (!response.ok) throw new Error('Failed to browse org public rooms');
+    return response.json();
+  }
+
+  /**
+   * Browse PUBLIC project-specific channels
+   */
+  async browseProjectPublicRooms(projectId: string, limit?: number): Promise<{ items: Room[]; pagingState: string | null }> {
+    const params = new URLSearchParams();
+    params.append('projectId', projectId);
+    if (limit) params.append('limit', limit.toString());
+
+    const response = await fetch(`${this.baseURL}/rooms/browse/project?${params}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
+    if (!response.ok) throw new Error('Failed to browse project public rooms');
+    return response.json();
+  }
+
+  /**
+   * DEPRECATED: Use browseOrgPublicRooms or browseProjectPublicRooms instead
+   */
   async browsePublicRooms(limit?: number, projectId?: string | null): Promise<{ items: Room[]; pagingState: string | null }> {
     const params = new URLSearchParams();
     if (limit) params.append('limit', limit.toString());
@@ -151,8 +252,6 @@ class ApiService {
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        'X-User-ID': this.userId,
-        'X-Org-ID': this.orgId,
       },
     });
     if (!response.ok) {
