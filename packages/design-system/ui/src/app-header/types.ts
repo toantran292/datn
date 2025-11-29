@@ -1,39 +1,21 @@
 import type { IWorkspaceOrg, TPartialProject } from '@uts/types';
 
-export type TAppType = 'pm' | 'chat';
+export type TAppType = 'pm' | 'chat' | 'tenant-web';
 
+// AppHeader hiện phụ thuộc hoàn toàn vào AppHeaderProvider để lấy data & hành vi.
+// App không còn truyền handler vào AppHeader nữa; toàn bộ logic chuyển workspace/project thuộc về lib.
 export interface AppHeaderProps {
-  currentApp: TAppType;
-  workspaceSlug?: string;
-  currentWorkspaceId?: string;
-  currentProjectId?: string;
-  showMenuToggle?: boolean;
-  onMenuToggle?: () => void;
-  onWorkspaceChange?: (workspace: IWorkspaceOrg) => void;
-  onProjectChange?: (project: TPartialProject | null) => void;
-  onCreateProject?: () => void;
-  apiBaseUrl?: string;
-  authWebUrl?: string;
-  tenantWebUrl?: string;
   className?: string;
 }
 
 export interface WorkspaceSelectorProps {
-  currentWorkspaceId?: string;
-  workspaceSlug?: string;
-  onWorkspaceChange?: (workspace: IWorkspaceOrg) => void;
-  apiBaseUrl?: string;
-  authWebUrl?: string;
-  tenantWebUrl?: string;
+  className?: string;
 }
 
 export interface ProjectSelectorProps {
-  currentProjectId?: string;
-  workspaceId?: string;
-  workspaceSlug?: string;
-  onProjectChange?: (project: TPartialProject | null) => void;
+  // Chỉ cần callback để mở modal tạo project, phần còn lại dùng context
   onCreateProject?: () => void;
-  apiBaseUrl?: string;
+  className?: string;
 }
 
 export interface ProductSwitcherProps {

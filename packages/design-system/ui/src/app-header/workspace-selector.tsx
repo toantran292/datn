@@ -4,15 +4,11 @@ import { CustomSelect } from "../dropdowns/custom-select";
 import { useWorkspaces, useAuthMe } from "./hooks/use-workspaces";
 import type { WorkspaceSelectorProps } from "./types";
 import { Avatar } from "../avatar";
+import { useAppHeaderContext } from "./hooks/app-header-provider";
 
-export const WorkspaceSelector: React.FC<WorkspaceSelectorProps> = ({
-  currentWorkspaceId,
-  onWorkspaceChange,
-  apiBaseUrl,
-  authWebUrl,
-  tenantWebUrl,
-  workspaceSlug,
-}) => {
+export const WorkspaceSelector: React.FC<WorkspaceSelectorProps> = () => {
+  const { currentWorkspaceId, workspaceSlug, apiBaseUrl, authWebUrl, tenantWebUrl } = useAppHeaderContext();
+
   const { data: workspaces, isLoading } = useWorkspaces({ apiBaseUrl });
   const { data: authMe } = useAuthMe({ apiBaseUrl });
 
@@ -42,15 +38,10 @@ export const WorkspaceSelector: React.FC<WorkspaceSelectorProps> = ({
   }, [workspaces, currentWorkspace]);
 
   const handleWorkspaceSelect = (workspace: any) => {
-    if (onWorkspaceChange) {
-      // Custom handler provided by parent
-      onWorkspaceChange(workspace);
-    } else {
-      // Default behavior: redirect to auth-web /enter page
-      // This follows the same pattern as workspaces page in auth-web
-      const authBase = authWebUrl || process.env.NEXT_PUBLIC_AUTH_WEB_URL || "http://localhost:3000";
-      window.location.href = `${authBase}/enter?org_id=${workspace.id}&slug=${workspace.slug}`;
-    }
+    // Default behavior: redirect to auth-web /enter page
+    // This follows the same pattern as workspaces page in auth-web
+    const authBase = authWebUrl || process.env.NEXT_PUBLIC_AUTH_WEB_URL || "http://localhost:3000";
+    window.location.href = `${authBase}/enter?org_id=${workspace.id}&slug=${workspace.slug}`;
   };
 
   if (isLoading) {

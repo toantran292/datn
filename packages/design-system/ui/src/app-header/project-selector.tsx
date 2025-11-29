@@ -3,39 +3,23 @@ import { FolderKanban, ChevronDown, Plus, Home } from "lucide-react";
 import { CustomSelect } from "../dropdowns/custom-select";
 import { useProjects } from "./hooks/use-projects";
 import type { ProjectSelectorProps } from "./types";
+import { useAppHeaderContext } from "./hooks/app-header-provider";
 
-const PROJECT_ID_STORAGE_KEY = "project_id";
+export const ProjectSelector: React.FC<ProjectSelectorProps> = ({ onCreateProject }) => {
+  const { currentWorkspaceId, currentProjectId, apiBaseUrl, setProjectFromHeader } = useAppHeaderContext();
 
-export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
-  currentProjectId,
-  workspaceId,
-  workspaceSlug,
-  onProjectChange,
-  onCreateProject,
-  apiBaseUrl,
-}) => {
-  const { data: projects, isLoading } = useProjects({ workspaceId, apiBaseUrl });
+  const { data: projects, isLoading } = useProjects({ workspaceId: currentWorkspaceId, apiBaseUrl });
 
-  // Track selected project locally for immediate UI update
+  // Track selected project locally cho UI, ưu tiên:
+  // 1. selectedProjectId (state tại chỗ)
+  // 2. currentProjectId từ context (đọc từ URL / initial)
   const [selectedProjectId, setSelectedProjectId] = React.useState<string | null>(null);
 
-  // Load saved project ID from localStorage
-  const savedProjectId = useMemo(() => {
-    if (typeof window === "undefined") return null;
-    return localStorage.getItem(PROJECT_ID_STORAGE_KEY);
-  }, []);
-
-  // Find current project by:
-  // 1. selectedProjectId (local state - for immediate update)
-  // 2. currentProjectId prop
-  // 3. savedProjectId from localStorage
-  // 4. Default to null (no selection)
   const currentProject = useMemo(() => {
     if (!projects || projects.length === 0) return null;
-
-    const projectId = selectedProjectId || currentProjectId || savedProjectId;
+    const projectId = selectedProjectId || currentProjectId || null;
     return projects.find((p) => p.id === projectId) || null;
-  }, [projects, selectedProjectId, currentProjectId, savedProjectId]);
+  }, [projects, selectedProjectId, currentProjectId]);
 
   // Get other projects (exclude current)
   const otherProjects = useMemo(() => {
@@ -44,54 +28,27 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({
     return projects.filter((p) => p.id !== currentProject.id);
   }, [projects, currentProject]);
 
-  // Sync selectedProjectId with currentProjectId prop when it changes
+  // Sync selectedProjectId với currentProjectId trong context khi nó thay đổi
   useEffect(() => {
     if (currentProjectId !== undefined) {
       setSelectedProjectId(currentProjectId || null);
     }
   }, [currentProjectId]);
 
-  // Save to localStorage when project changes
-  useEffect(() => {
-    if (currentProject?.id && typeof window !== "undefined") {
-      localStorage.setItem(PROJECT_ID_STORAGE_KEY, currentProject.id);
-    }
-  }, [currentProject?.id]);
-
   const handleProjectSelect = (project: any) => {
-    // Update local state immediately for instant UI update
+    // Update local state immediately cho UI
     setSelectedProjectId(project.id);
 
-    // Save to localStorage
-    if (typeof window !== "undefined") {
-      localStorage.setItem(PROJECT_ID_STORAGE_KEY, project.id);
-    }
-
-    if (onProjectChange) {
-      // Custom handler provided by parent
-      onProjectChange(project);
-    } else {
-      // Default behavior: navigate to project board
-      window.location.href = `/project/${project.id}/board`;
-    }
+    // Cập nhật context chung cho toàn app-header -> provider sẽ điều hướng /project/:id
+    setProjectFromHeader(project);
   };
 
   const handleHomeSelect = () => {
-    // Update local state immediately for instant UI update
+    // Update local state immediately cho UI
     setSelectedProjectId(null);
 
-    // Clear project selection from localStorage
-    if (typeof window !== "undefined") {
-      localStorage.removeItem(PROJECT_ID_STORAGE_KEY);
-    }
-
-    if (onProjectChange) {
-      // Custom handler with null project to indicate "Home"
-      onProjectChange(null);
-    } else {
-      // Default behavior: navigate to home
-      window.location.href = `/`;
-    }
+    // Thông báo cho context là đang ở "Home" (không thuộc project nào) -> provider redirect về "/"
+    setProjectFromHeader(null);
   };
 
   const handleCreateProject = () => {

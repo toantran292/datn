@@ -101,22 +101,44 @@ export class RoomsService {
 
   /**
    * Create a Channel (public or private)
+   * - Creator is automatically added as a member
+   * - Creator is notified via room:member_joined event
+   * - Can be org-level (projectId = null) or project-specific (projectId = uuid)
    */
-  async createChannel(name: string, isPrivate: boolean, orgId: types.Uuid, userId: types.Uuid) {
+  async createChannel(
+    name: string,
+    isPrivate: boolean,
+    orgId: types.Uuid,
+    userId: types.Uuid,
+    projectId?: types.Uuid | null
+  ) {
     const room = await this.roomsRepo.create(
       orgId,
       isPrivate,
       name,
-      'channel'
+      'channel',
+      projectId
     );
 
+    // Add creator as a member
     await this.roomMembersRepo.addMember(room.id, userId, orgId);
 
+    // Notify creator that they joined the room (for WebSocket subscription)
+    this.chatsGateway.notifyRoomJoined(orgId.toString(), {
+      id: room.id.toString(),
+      name: room.name,
+      isPrivate: room.isPrivate,
+      orgId: room.orgId.toString(),
+      projectId: room.projectId?.toString() || null,
+    }, userId.toString());
+
+    // Also notify org about new room creation (for other users to see in browse)
     this.chatsGateway.notifyRoomCreated(orgId.toString(), {
       id: room.id.toString(),
       name: room.name,
       isPrivate: room.isPrivate,
       orgId: room.orgId.toString(),
+      projectId: room.projectId?.toString() || null,
     });
 
     return room;

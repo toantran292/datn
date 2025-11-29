@@ -22,6 +22,7 @@ type RoomSummaryPayload = {
   name?: string | null;
   orgId: string;
   isPrivate: boolean;
+  projectId?: string | null; // null = org-level, string = project-specific
 };
 
 @WebSocketGateway({namespace: 'chat'})
@@ -62,6 +63,8 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       orgId: room.orgId.toString(),
       name: room.name ?? null,
       isPrivate: room.isPrivate,
+      type: room.type || 'channel', // Include type field
+      projectId: room.projectId?.toString() || null, // Include projectId
     }));
 
     client.emit('rooms:bootstrap', rooms);

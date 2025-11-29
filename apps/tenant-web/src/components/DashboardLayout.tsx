@@ -1,6 +1,6 @@
 import React from "react";
 import { ReactNode } from "react";
-import { TopBar } from "./TopBar";
+import { AppHeader } from "@uts/design-system/ui";
 import {
   Users,
   FolderKanban,
@@ -27,6 +27,7 @@ import {
 
 interface User {
   user_id: string;
+  org_id?: string;
   email: string;
   display_name?: string;
   avatar_url?: string;
@@ -95,7 +96,7 @@ export function DashboardLayout({ children, currentPage, onNavigate, user }: Das
         </Sidebar>
 
         <div className="flex-1 flex flex-col min-w-0">
-          <TopBar user={user} />
+          <AppHeader currentApp="tenant-web" />
           <main className="flex-1 overflow-auto">
             {children}
           </main>

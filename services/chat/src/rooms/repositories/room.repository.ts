@@ -10,6 +10,7 @@ export interface RoomEntity {
   isPrivate: boolean;
   name: string | undefined;
   type: RoomType;
+  projectId?: types.Uuid | null; // null = org-level, uuid = project-specific
 }
 
 @Injectable()
@@ -22,13 +23,20 @@ export class RoomsRepository {
     this.model = mapper.forModel<RoomEntity>('Room');
   }
 
-  async create(orgId: types.Uuid, isPrivate: boolean, name: string | undefined, type: RoomType = 'channel') {
+  async create(
+    orgId: types.Uuid,
+    isPrivate: boolean,
+    name: string | undefined,
+    type: RoomType = 'channel',
+    projectId?: types.Uuid | null
+  ) {
     const entity: RoomEntity = {
       id: types.TimeUuid.now(),
       orgId: orgId,
       isPrivate: isPrivate,
       name: name,
       type: type,
+      projectId: projectId || null,
     };
     await this.model.insert(entity);
     return entity;
@@ -54,7 +62,7 @@ export class RoomsRepository {
     orgId: types.Uuid,
     opts: { limit?: number; pagingState?: string } = {},
   ): Promise<{ items: RoomEntity[]; pagingState?: string }> {
-    const q = 'SELECT org_id, id, is_private, name, type FROM chat.rooms WHERE org_id = ?';
+    const q = 'SELECT org_id, id, is_private, name, type, project_id FROM chat.rooms WHERE org_id = ?';
     const rs = await this.client.execute(q, [orgId], {
       prepare: true,
       fetchSize: opts.limit ?? 50,
@@ -66,6 +74,7 @@ export class RoomsRepository {
       isPrivate: r['is_private'] as boolean,
       name: r['name'] as string | undefined,
       type: (r['type'] as RoomType) || 'channel', // Default to 'channel' for existing rows
+      projectId: r['project_id'] as types.Uuid | null | undefined,
     }));
     return { items, pagingState: rs.pageState ?? undefined };
   }

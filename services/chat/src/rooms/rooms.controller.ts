@@ -3,6 +3,7 @@ import { RoomsService } from './rooms.service';
 import { Ctx, type RequestContext } from '../common/context/context.decorator';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { CreateDmDto } from './dto/create-dm.dto';
+import { toRoomResponseDto } from './rooms.mapper';
 import { types } from 'cassandra-driver';
 
 @Controller('rooms')
@@ -56,14 +57,26 @@ export class RoomsController {
     @Ctx() ctx: RequestContext,
     @Body('name') name: string,
     @Body('is_private') isPrivate: boolean = false,
+    @Body('project_id') projectId?: string | null,
   ) {
-    const room = await this.roomsService.createChannel(name, isPrivate, ctx.orgId, ctx.userId);
+    // Convert projectId string to UUID if provided
+    const projectUuid = projectId ? types.Uuid.fromString(projectId) : null;
+
+    const room = await this.roomsService.createChannel(
+      name,
+      isPrivate,
+      ctx.orgId,
+      ctx.userId,
+      projectUuid
+    );
+
     return {
       id: room.id.toString(),
       orgId: room.orgId.toString(),
       isPrivate: room.isPrivate,
       name: room.name,
       type: room.type,
+      projectId: room.projectId?.toString() || null, // Return projectId to frontend
     };
   }
 
@@ -84,6 +97,10 @@ export class RoomsController {
     @Query('pagingState') pagingState?: string,
   ) {
     // List rooms that user has JOINED (shows in sidebar)
-    return this.roomsService.listJoinedRooms(ctx.userId, ctx.orgId, { limit, pagingState });
+    const result = await this.roomsService.listJoinedRooms(ctx.userId, ctx.orgId, { limit, pagingState });
+    return {
+      items: result.items.map(toRoomResponseDto),
+      pagingState: result.pagingState,
+    };
   }
 }

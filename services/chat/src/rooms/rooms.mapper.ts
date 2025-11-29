@@ -11,6 +11,7 @@ export function toRoomResponseDto(row: RoomEntity) {
       isPrivate: row.isPrivate,
       name: row.name,
       type: row.type || 'channel', // Default to 'channel' for backward compatibility
+      projectId: row.projectId?.toString() || null,
     },
     { excludeExtraneousValues: true },
   );

@@ -92,7 +92,10 @@ export function useAuthMe(options?: UseAuthMeOptions) {
       });
 
       if (!res.ok) {
-        throw new Error("Failed to fetch auth info");
+        // Đánh dấu lỗi 401 để provider có thể redirect sang AuthWeb
+        const error: any = new Error("Failed to fetch auth info");
+        error.status = res.status;
+        throw error;
       }
 
       const data = await res.json();

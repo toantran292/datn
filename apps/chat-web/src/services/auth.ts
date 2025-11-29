@@ -6,12 +6,14 @@ export interface MeResponse {
 }
 
 class AuthService {
+  private baseURL: string = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/chat';
+
   async getMe(): Promise<MeResponse | null> {
     try {
       console.log('[Auth] Fetching /auth/me...');
 
       // Use relative path to leverage Vite proxy which will forward cookies properly
-      const response = await fetch('/auth/me', {
+      const response = await fetch(`${this.baseURL}/auth/me`, {
         method: 'GET',
         credentials: 'include', // Important: send cookies
         headers: {
@@ -43,7 +45,7 @@ class AuthService {
 
   redirectToLogin() {
     // Redirect to auth-web login page
-    const authWebUrl = import.meta.env.VITE_AUTH_WEB_URL || 'http://localhost:3000';
+    const authWebUrl = process.env.NEXT_PUBLIC_AUTH_WEB_URL || 'http://localhost:3000';
     const currentUrl = window.location.href;
     window.location.href = `${authWebUrl}/login?redirect=${encodeURIComponent(currentUrl)}`;
   }

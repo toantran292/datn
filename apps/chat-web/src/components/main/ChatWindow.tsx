@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import type { Message, Room } from '../types';
+import type { Message, Room } from '../../types';
 
 interface ChatWindowProps {
   room: Room | null;

@@ -6,4 +6,5 @@ export class RoomResponseDto {
   @Expose() isPrivate: boolean;
   @Expose() name: string | null;
   @Expose() type: 'channel' | 'dm';
+  @Expose() projectId: string | null; // null = org-level, string = project-specific
 }

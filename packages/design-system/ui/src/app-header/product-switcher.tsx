@@ -15,7 +15,7 @@ const PRODUCTS: Product[] = [
   { id: "chat", name: "Chat", icon: MessageSquare, urlKey: "NEXT_PUBLIC_CHAT_WEB_URL" },
 ];
 
-const DEFAULT_URLS: Record<TAppType, string> = {
+const DEFAULT_URLS: Record<Exclude<TAppType, 'tenant-web'>, string> = {
   pm: "http://localhost:3002",
   chat: "http://localhost:3003"
 };
@@ -27,7 +27,7 @@ export const ProductSwitcher: React.FC<ProductSwitcherProps> = ({ currentApp, wo
     const baseUrl =
       (typeof window !== "undefined" && (window as any).ENV?.[product.urlKey]) ||
       process.env[product.urlKey] ||
-      DEFAULT_URLS[product.id];
+      DEFAULT_URLS[product.id as Exclude<TAppType, 'tenant-web'>];
 
     const targetUrl = workspaceSlug ? `${baseUrl}/${workspaceSlug}` : baseUrl;
 

@@ -11,6 +11,7 @@ import { projectKeys } from "./hooks/use-projects";
 import type { AppHeaderProps } from "./types";
 import { cn } from "../utils";
 import { UserMenu } from "./user-menu";
+import { useAppHeaderContext } from "./hooks/app-header-provider";
 
 // UTS Brand Logo Component
 const UTSLogo: React.FC = () => (
@@ -28,30 +29,21 @@ const UTSLogo: React.FC = () => (
   </div>
 );
 
-export const AppHeader: React.FC<AppHeaderProps> = ({
-  currentApp,
-  workspaceSlug,
-  currentWorkspaceId,
-  currentProjectId,
-  onWorkspaceChange,
-  onProjectChange,
-  onCreateProject,
-  apiBaseUrl = "http://localhost:8080",
-  authWebUrl = "http://localhost:3000",
-  tenantWebUrl = "http://localhost:3001",
-  className,
-}) => {
+export const AppHeader: React.FC<AppHeaderProps> = ({ className }) => {
+  const {
+    currentApp,
+    workspaceSlug,
+    currentWorkspaceId,
+    apiBaseUrl,
+    authWebUrl,
+  } = useAppHeaderContext();
+
   const [isCreateProjectModalOpen, setIsCreateProjectModalOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const handleOpenCreateProject = () => {
-    if (onCreateProject) {
-      // Use custom handler if provided
-      onCreateProject();
-    } else {
-      // Default: open built-in modal
-      setIsCreateProjectModalOpen(true);
-    }
+    // Luôn dùng modal tạo project mặc định của lib
+    setIsCreateProjectModalOpen(true);
   };
 
   const handleCreateProjectSuccess = () => {
@@ -65,22 +57,10 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         <Header.LeftItem>
           <UTSLogo />
 
-          <WorkspaceSelector
-            currentWorkspaceId={currentWorkspaceId}
-            workspaceSlug={workspaceSlug}
-            onWorkspaceChange={onWorkspaceChange}
-            apiBaseUrl={apiBaseUrl}
-            authWebUrl={authWebUrl}
-            tenantWebUrl={tenantWebUrl}
-          />
+          <WorkspaceSelector />
 
           <ProjectSelector
-            currentProjectId={currentProjectId}
-            workspaceId={currentWorkspaceId}
-            workspaceSlug={workspaceSlug}
-            onProjectChange={onProjectChange}
             onCreateProject={handleOpenCreateProject}
-            apiBaseUrl={apiBaseUrl}
           />
         </Header.LeftItem>
 
