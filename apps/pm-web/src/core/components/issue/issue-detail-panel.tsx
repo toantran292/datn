@@ -55,6 +55,7 @@ export const IssueDetailPanel: React.FC<IssueDetailPanelProps> = (props) => {
 
             <IssueDescription
               issueId={issue.id}
+              projectId={issue.projectId}
               initialValue={issue.descriptionHtml || issue.description || ""}
               disabled={disabled}
               onSubmit={handleUpdateDescription}
@@ -66,6 +67,7 @@ export const IssueDetailPanel: React.FC<IssueDetailPanelProps> = (props) => {
               locationLabel={locationLabel}
               disabled={disabled}
               onUpdateIssue={onUpdateIssue}
+              projectIdentifier={projectIdentifier ?? null}
             />
 
             <IssueDetailActivity issueId={issue.id} projectId={issue.projectId} disabled={disabled} />

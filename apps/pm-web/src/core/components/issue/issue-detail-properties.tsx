@@ -8,6 +8,7 @@ import { useIssueStatus } from "@/core/hooks/store/use-issue-status";
 import { IdentityService } from "@/core/services/identity/identity.service";
 import { ProjectService } from "@/core/services/project/project.service";
 import { useIssue } from "@/core/hooks/store/use-issue";
+import { formatIssueKey } from "@/core/components/backlog/utils";
 import {
   ISSUE_PRIORITY_BADGE_VARIANT,
   ISSUE_PRIORITY_LABELS,
@@ -23,6 +24,7 @@ interface IssueDetailPropertiesProps {
   locationLabel?: string | null;
   disabled?: boolean;
   onUpdateIssue?: (issueId: string, data: Partial<IIssue>) => Promise<void>;
+  projectIdentifier?: string | null;
 }
 
 type TMemberInfo = { id: string; name: string; email?: string };
@@ -32,6 +34,7 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
   locationLabel,
   disabled = false,
   onUpdateIssue,
+  projectIdentifier = null,
 }) => {
   const [assignees, setAssignees] = useState<string[]>(issue.assignees ?? []);
   const [members, setMembers] = useState<TMemberInfo[]>([]);
@@ -226,6 +229,15 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
         console.error("Failed to update parent:", error);
         setParentValue(issue.parentId);
       }
+    }
+  };
+
+  const childIssues = issueStore.getIssuesForProject(issue.projectId).filter((i) => i.parentId === issue.id);
+  const childIssueKey = (child: IIssue) => formatIssueKey(projectIdentifier || null, child.sequenceId);
+  const handleOpenChild = (child: IIssue) => {
+    const key = childIssueKey(child);
+    if (key) {
+      window.open(`/issue/${key}`, "_self");
     }
   };
 
@@ -566,6 +578,30 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
             )}
           </div>
         </div>
+
+        {/* children list */}
+        {childIssues.length > 0 && (
+          <div className="flex w-full items-start gap-3">
+            <div className="flex items-center gap-1 w-1/4 flex-shrink-0 text-sm text-custom-text-300">
+              <Hash className="h-4 w-4 flex-shrink-0" />
+              <span>Subtasks</span>
+            </div>
+            <div className="w-3/4 flex-grow">
+              <div className="flex flex-col gap-1">
+                {childIssues.map((child) => (
+                  <button
+                    key={child.id}
+                    className="flex items-center justify-between rounded px-2 py-1 text-sm text-custom-text-200 hover:bg-custom-background-80"
+                    onClick={() => handleOpenChild(child)}
+                  >
+                    <span className="truncate">{child.name}</span>
+                    <span className="text-xs text-custom-text-300">{childIssueKey(child)}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
