@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Mic, MicOff } from 'lucide-react';
 import type { JitsiTrack } from '@/types/jitsi';
@@ -34,19 +34,70 @@ export function ParticipantAvatar({
     loadedmetadata?: () => void;
     playing?: () => void;
     canplay?: () => void;
+    trackMute?: () => void;
+    trackUnmute?: () => void;
   }>({});
+  const isPlayingRef = useRef(false);
+  const playPromiseRef = useRef<Promise<void> | null>(null);
+
+  // Helper function to safely play video
+  const safePlayVideo = useCallback(async (videoElement: HTMLVideoElement) => {
+    // If already playing or play in progress, skip
+    if (!videoElement || (!videoElement.paused && !isPlayingRef.current)) {
+      return;
+    }
+
+    // If play is already in progress, wait for it
+    if (playPromiseRef.current) {
+      try {
+        await playPromiseRef.current;
+      } catch {
+        // Ignore errors from previous play
+      }
+      return;
+    }
+
+    try {
+      // Wait a bit to ensure video element is ready
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      if (videoElement && videoElement.paused && videoElement.srcObject) {
+        // Check MediaStream before play
+        const stream = videoElement.srcObject as MediaStream;
+        const videoTracks = stream.getVideoTracks();
+
+        isPlayingRef.current = true;
+        playPromiseRef.current = videoElement.play();
+        await playPromiseRef.current;
+        playPromiseRef.current = null;
+      } else {
+        isPlayingRef.current = false;
+      }
+    } catch (err: any) {
+      playPromiseRef.current = null;
+      isPlayingRef.current = false;
+      // Ignore AbortError - it's expected when video is interrupted
+    }
+  }, [name]);
 
   useEffect(() => {
     const videoTrack = tracks.find(t => t.getType() === 'video');
     const audioTrack = tracks.find(t => t.getType() === 'audio');
 
-    console.log('[ParticipantAvatar]', name, 'tracks:', tracks.length, 'video:', !!videoTrack, 'audio:', !!audioTrack, 'isLocal:', isLocal);
+    // Track video track changes silently
 
     // Handle video track
     if (videoRef.current) {
       // Detach previous track if different
       if (attachedVideoTrackRef.current && attachedVideoTrackRef.current !== videoTrack) {
         try {
+          // Cancel any pending play promise
+          if (playPromiseRef.current) {
+            playPromiseRef.current.catch(() => { }); // Ignore cancellation errors
+            playPromiseRef.current = null;
+          }
+          isPlayingRef.current = false;
+
           // Remove old mute listener
           if (muteChangeHandlerRef.current && attachedVideoTrackRef.current) {
             try {
@@ -56,10 +107,25 @@ export function ParticipantAvatar({
               // Ignore
             }
           }
+          // Remove MediaStreamTrack event listeners before detach
+          if (videoRef.current && videoRef.current.srcObject) {
+            const stream = videoRef.current.srcObject as MediaStream;
+            const videoTracks = stream.getVideoTracks();
+            videoTracks.forEach(t => {
+              if (videoEventHandlersRef.current.trackMute) {
+                t.removeEventListener('mute', videoEventHandlersRef.current.trackMute);
+              }
+              if (videoEventHandlersRef.current.trackUnmute) {
+                t.removeEventListener('unmute', videoEventHandlersRef.current.trackUnmute);
+              }
+            });
+            videoEventHandlersRef.current.trackMute = undefined;
+            videoEventHandlersRef.current.trackUnmute = undefined;
+          }
+
           attachedVideoTrackRef.current.detach(videoRef.current);
-          console.log('[ParticipantAvatar]', name, 'detached old video track');
         } catch (err: any) {
-          console.error('[ParticipantAvatar] Error detaching old video:', err);
+          // Ignore detach errors
         }
         attachedVideoTrackRef.current = null;
         muteChangeHandlerRef.current = null;
@@ -70,19 +136,238 @@ export function ParticipantAvatar({
         const attachVideo = async () => {
           try {
             // Ensure video element is ready
-            if (!videoRef.current) {
-              console.warn('[ParticipantAvatar]', name, 'video element not ready');
-              return;
-            }
+            if (!videoRef.current) return;
 
             // Attach track (returns Promise)
+            // CRITICAL: Ensure we're attaching to the correct video element for this participant
+            if (!videoRef.current) return;
+
             await videoTrack.attach(videoRef.current);
             attachedVideoTrackRef.current = videoTrack;
             const isVideoMuted = videoTrack.isMuted();
-            console.log('[ParticipantAvatar]', name, 'video track attached, muted:', isVideoMuted);
+
+            // Check MediaStreamTrack state immediately after attach
+            if (videoRef.current && videoRef.current.srcObject) {
+              const stream = videoRef.current.srcObject as MediaStream;
+              const videoTracks = stream.getVideoTracks();
+              videoTracks.forEach(t => {
+                // Listen for mute/unmute events on MediaStreamTrack
+                const handleTrackMute = () => {
+                  // Track muted event
+                };
+
+                const handleTrackUnmute = () => {
+                  // Try to play when unmuted
+                  if (videoRef.current && !videoTrack.isMuted()) {
+                    setTimeout(() => {
+                      safePlayVideo(videoRef.current!).catch(() => { });
+                    }, 200);
+                  }
+                };
+
+                t.addEventListener('mute', handleTrackMute);
+                t.addEventListener('unmute', handleTrackUnmute);
+
+                // Store handlers for cleanup
+                if (!videoEventHandlersRef.current.trackMute) {
+                  videoEventHandlersRef.current.trackMute = handleTrackMute;
+                  videoEventHandlersRef.current.trackUnmute = handleTrackUnmute;
+                }
+              });
+            }
+
+            // Debug: Check MediaStream and tracks
+            if (videoRef.current && videoRef.current.srcObject) {
+              const stream = videoRef.current.srcObject as MediaStream;
+              const videoTracks = stream.getVideoTracks();
+              const audioTracks = stream.getAudioTracks();
+
+              // Also check track's stream if available
+              let trackStreamInfo = null;
+              try {
+                // @ts-ignore - JitsiTrack might have getOriginalStream or getStream
+                const originalStream = (videoTrack as any).getOriginalStream?.() || (videoTrack as any).getStream?.();
+                if (originalStream) {
+                  const origVideoTracks = originalStream.getVideoTracks();
+                  trackStreamInfo = {
+                    originalStreamId: originalStream.id,
+                    originalVideoTracks: origVideoTracks.map((t: MediaStreamTrack) => ({
+                      id: t.id,
+                      enabled: t.enabled,
+                      readyState: t.readyState,
+                      muted: t.muted
+                    }))
+                  };
+                }
+              } catch (e) {
+                // Ignore
+              }
+
+              // CRITICAL: Check MediaStreamTrack readyState
+              // If readyState is "ended", track has no data
+              const trackReadyStates = videoTracks.map(t => ({
+                id: t.id,
+                enabled: t.enabled,
+                readyState: t.readyState, // "live" or "ended"
+                muted: t.muted,
+                kind: t.kind
+              }));
+
+              const hasLiveTrack = videoTracks.some(t => t.readyState === 'live');
+
+              // If no live track, wait for it
+              if (!hasLiveTrack && !isLocal) {
+
+                // Listen for track to become live
+                const checkTrackLive = () => {
+                  if (videoRef.current && videoRef.current.srcObject) {
+                    const currentStream = videoRef.current.srcObject as MediaStream;
+                    const currentTracks = currentStream.getVideoTracks();
+                    const nowHasLive = currentTracks.some(t => t.readyState === 'live');
+
+                    if (nowHasLive) {
+                      // Track became live, attempting play
+                      if (videoRef.current && !videoRef.current.paused) {
+                        safePlayVideo(videoRef.current).catch(() => { });
+                      }
+                    } else {
+                      // Check again after delay
+                      setTimeout(checkTrackLive, 500);
+                    }
+                  }
+                };
+
+                // Check after a delay
+                setTimeout(checkTrackLive, 500);
+              }
+            }
+
+            // Track attached successfully
 
             // Wait a bit for stream to be attached to video element
-            await new Promise(resolve => setTimeout(resolve, 200));
+            // For remote tracks, wait longer to ensure WebRTC data is received
+            const waitTime = isLocal ? 200 : 500;
+            await new Promise(resolve => setTimeout(resolve, waitTime));
+
+            // For remote tracks, check if video element can decode the stream
+            if (!isLocal && videoRef.current && videoRef.current.srcObject) {
+              const stream = videoRef.current.srcObject as MediaStream;
+              const videoTracks = stream.getVideoTracks();
+
+              // Check video codec support and wait for actual video frames
+              videoTracks.forEach(track => {
+                const settings = track.getSettings();
+                const hasVideoDimensions = settings.width && settings.height;
+
+                // CRITICAL: If track is live but has no video dimensions, wait for frames
+                if (!isLocal && track.readyState === 'live' && !hasVideoDimensions) {
+                  // Check if track is muted (remote peer might have muted video)
+                  const jitsiTrackMuted = videoTrack.isMuted();
+                  const mediaTrackMuted = track.muted;
+
+                  // CRITICAL: If MediaStreamTrack.muted = true, no frames will be sent
+                  if (mediaTrackMuted) {
+                    // Don't wait for dimensions if track is muted - it will never come
+                    return;
+                  }
+
+                  // Check WebRTC receiver stats to see if packets are being received
+                  const checkWebRTCStats = async () => {
+                    try {
+                      // Try to get RTCRtpReceiver from the stream's peer connection
+                      // Note: MediaStream doesn't have getReceivers(), need to access via RTCPeerConnection
+                      const pc = (stream as any)._pc || (stream as any).peerConnection;
+                      if (pc && pc.getReceivers) {
+                        const receivers = pc.getReceivers();
+                        const receiver = receivers.find((r: RTCRtpReceiver) => {
+                          return r.track && r.track.id === track.id;
+                        });
+
+                        if (receiver) {
+                          const stats = await receiver.getStats();
+                          stats.forEach((report: any) => {
+                            if (report.type === 'inbound-rtp' && report.mediaType === 'video') {
+                              // Check WebRTC stats silently
+                            }
+                          });
+                        }
+                      }
+                    } catch (err: any) {
+                      // Ignore stats errors
+                    }
+                  };
+
+                  // Check stats after a delay
+                  setTimeout(checkWebRTCStats, 1000);
+
+                  // Poll for video dimensions
+                  let dimensionCheckCount = 0;
+                  const maxDimensionChecks = 20; // 10 seconds max
+                  const checkForDimensions = () => {
+                    if (videoRef.current && videoRef.current.srcObject) {
+                      const currentStream = videoRef.current.srcObject as MediaStream;
+                      const currentTracks = currentStream.getVideoTracks();
+                      const currentTrack = currentTracks.find(t => t.id === track.id);
+
+                      if (currentTrack) {
+                        const currentSettings = currentTrack.getSettings();
+                        const nowHasDimensions = currentSettings.width && currentSettings.height;
+
+                        if (nowHasDimensions) {
+                          // Video dimensions received - will try to play
+
+                          // Now try to play
+                          if (videoRef.current && videoRef.current.paused && !videoTrack.isMuted()) {
+                            setTimeout(() => {
+                              safePlayVideo(videoRef.current!).catch(() => { });
+                            }, 200);
+                          }
+                        } else {
+                          dimensionCheckCount++;
+                          if (dimensionCheckCount < maxDimensionChecks) {
+                            // Check again after delay
+                            setTimeout(checkForDimensions, 500);
+                          }
+                        }
+                      }
+                    }
+                  };
+
+                  // Start checking after a delay
+                  setTimeout(checkForDimensions, 500);
+                }
+              });
+
+              // If track is live but video element readyState is still 0 after delay,
+              // try to force video element to process stream
+              setTimeout(() => {
+                if (videoRef.current && videoRef.current.srcObject) {
+                  const currentStream = videoRef.current.srcObject as MediaStream;
+                  const currentTracks = currentStream.getVideoTracks();
+                  const tracksLive = currentTracks.some(t => t.readyState === 'live');
+                  const videoReady = videoRef.current.readyState >= 2; // HAVE_CURRENT_DATA
+
+                  if (tracksLive && !videoReady) {
+
+                    // Method: Try to trigger video load by setting currentTime
+                    try {
+                      if (videoRef.current.currentTime === 0) {
+                        videoRef.current.currentTime = 0.1;
+                      }
+                    } catch (e) {
+                      // Ignore
+                    }
+
+                    // Method: Try to play with longer delay
+                    setTimeout(() => {
+                      if (videoRef.current && !videoRef.current.paused === false) {
+                        safePlayVideo(videoRef.current).catch(() => { });
+                      }
+                    }, 1000);
+                  }
+                }
+              }, 1000);
+            }
 
             // Check if stream is now available - retry if needed
             let retryCount = 0;
@@ -92,39 +377,104 @@ export function ParticipantAvatar({
 
               const hasStream = videoRef.current.srcObject !== null;
               const readyState = videoRef.current.readyState;
-              console.log('[ParticipantAvatar]', name, `after attach (retry ${retryCount}) - srcObject:`, hasStream, 'readyState:', readyState);
+              const srcObjectType = videoRef.current.srcObject ? (videoRef.current.srcObject.constructor?.name || 'MediaStream') : 'null';
+
+              // Debug: Check MediaStream tracks in detail
+              let streamDebug = null;
+              let trackReadyStateInfo = null;
+              if (hasStream && videoRef.current.srcObject) {
+                const stream = videoRef.current.srcObject as MediaStream;
+                const videoTracks = stream.getVideoTracks();
+                streamDebug = {
+                  streamId: stream.id,
+                  active: stream.active,
+                  videoTracks: videoTracks.map(t => ({
+                    id: t.id,
+                    enabled: t.enabled,
+                    readyState: t.readyState, // "live" or "ended"
+                    muted: t.muted,
+                    kind: t.kind
+                  }))
+                };
+
+                // CRITICAL: Check if tracks are "live"
+                const allTracksLive = videoTracks.every(t => t.readyState === 'live');
+                const anyTrackLive = videoTracks.some(t => t.readyState === 'live');
+                trackReadyStateInfo = {
+                  allTracksLive,
+                  anyTrackLive,
+                  tracksCount: videoTracks.length,
+                  trackStates: videoTracks.map(t => t.readyState)
+                };
+
+                // If remote and tracks are not live, this is the problem!
+                // Track state silently
+              }
+
+              // Check stream state
+
+              // IMPORTANT: If we have srcObject, set hasVideo immediately (don't wait for readyState)
+              // readyState can be 0 even when stream is attached
+              if (hasStream && !isVideoMuted) {
+                // srcObject exists, setting hasVideo
+                setHasVideo(true);
+
+                // For remote tracks with live MediaStreamTrack but videoElement.readyState = 0,
+                // try to force video element to process the stream
+                if (!isLocal && videoRef.current && videoRef.current.readyState === 0) {
+                  const stream = videoRef.current.srcObject as MediaStream;
+                  const videoTracks = stream.getVideoTracks();
+
+                  // If tracks are live but video element is not ready, try to force reload
+                  if (videoTracks.some(t => t.readyState === 'live')) {
+
+                    // Method 1: Try to reload by setting srcObject again
+                    try {
+                      const currentStream = videoRef.current.srcObject;
+                      videoRef.current.srcObject = null;
+                      await new Promise(resolve => setTimeout(resolve, 50));
+                      videoRef.current.srcObject = currentStream;
+                      // Reset srcObject to force reload
+
+                      // Wait longer for remote streams
+                      await new Promise(resolve => setTimeout(resolve, 500));
+
+                      // Try play again
+                      if (videoRef.current && videoRef.current.srcObject) {
+                        await safePlayVideo(videoRef.current);
+                      }
+                    } catch (err: any) {
+                      // Ignore reset errors
+                    }
+                  }
+                } else {
+                  // Normal play for local or if readyState > 0
+                  if (videoRef.current) {
+                    await safePlayVideo(videoRef.current);
+                  }
+                }
+                return; // Exit early if we have stream
+              }
 
               if (!hasStream && retryCount < maxRetries) {
                 // Stream not attached yet, try re-attach
                 retryCount++;
-                console.log('[ParticipantAvatar]', name, `retrying attach (${retryCount}/${maxRetries})`);
+                // Retrying attach
                 try {
                   await videoTrack.attach(videoRef.current);
                   await new Promise(resolve => setTimeout(resolve, 200));
                   checkAndRetry();
                 } catch (err: any) {
-                  console.error('[ParticipantAvatar]', name, 'retry attach failed:', err);
+                  // Ignore retry errors
                 }
                 return;
               }
 
-              // Set hasVideo based on whether track exists, is not muted, and has stream
-              if (!isVideoMuted && hasStream) {
-                setHasVideo(true);
-                console.log('[ParticipantAvatar]', name, 'hasVideo set to true after attach');
-              } else {
+              // No stream after retries
+              if (!hasStream) {
                 setHasVideo(false);
-                console.log('[ParticipantAvatar]', name, 'hasVideo set to false - muted:', isVideoMuted, 'hasStream:', hasStream);
-              }
-
-              // Try to play video
-              if (videoRef.current && !isVideoMuted && hasStream) {
-                try {
-                  await videoRef.current.play();
-                  console.log('[ParticipantAvatar]', name, 'video play started');
-                } catch (playErr: any) {
-                  console.warn('[ParticipantAvatar]', name, 'video play failed:', playErr);
-                }
+              } else if (isVideoMuted) {
+                setHasVideo(false);
               }
             };
 
@@ -134,7 +484,7 @@ export function ParticipantAvatar({
             const handleMuteChange = () => {
               if (videoTrack && videoRef.current) {
                 const muted = videoTrack.isMuted();
-                console.log('[ParticipantAvatar]', name, 'video mute changed:', muted);
+                // Video mute state changed
 
                 if (!muted) {
                   // When unmuted, check if stream is available
@@ -143,15 +493,13 @@ export function ParticipantAvatar({
 
                   if (hasStream) {
                     setHasVideo(true);
-                    console.log('[ParticipantAvatar]', name, 'video unmuted and stream available');
+                    // Video unmuted, stream available
 
-                    // Try to play video
-                    videoRef.current.play().catch((err: any) => {
-                      console.warn('[ParticipantAvatar]', name, 'video play after unmute failed:', err);
-                    });
+                    // Try to play video safely
+                    safePlayVideo(videoRef.current).catch(() => { });
                   } else {
                     // Stream not ready yet, wait for it
-                    console.log('[ParticipantAvatar]', name, 'video unmuted but stream not ready yet');
+                    // Video unmuted but stream not ready
                     setHasVideo(false);
 
                     // Wait for stream to be ready
@@ -161,8 +509,8 @@ export function ParticipantAvatar({
                           videoRef.current.readyState >= 2;
                         if (streamReady) {
                           setHasVideo(true);
-                          console.log('[ParticipantAvatar]', name, 'video stream ready after unmute');
-                          videoRef.current.play().catch(() => { });
+                          // Video stream ready after unmute
+                          safePlayVideo(videoRef.current).catch(() => { });
                         } else {
                           setTimeout(checkStream, 100);
                         }
@@ -183,7 +531,7 @@ export function ParticipantAvatar({
               const JitsiMeetJS = getJitsiMeetJS();
               videoTrack.addEventListener(JitsiMeetJS.events.track.TRACK_MUTE_CHANGED, handleMuteChange);
             } catch (err: any) {
-              console.warn('[ParticipantAvatar] Could not add mute listener:', err);
+              // Ignore listener errors
             }
 
             // Try to play video and check for stream
@@ -191,14 +539,12 @@ export function ParticipantAvatar({
               // Check if video has stream
               const checkVideoStream = () => {
                 if (videoRef.current && videoTrack) {
-                  const hasStream = videoRef.current.srcObject !== null ||
-                    videoRef.current.readyState >= 2; // HAVE_CURRENT_DATA
+                  // Check srcObject first - this is the most reliable indicator
+                  const hasStream = videoRef.current.srcObject !== null;
+                  const readyState = videoRef.current.readyState;
                   const currentlyMuted = videoTrack.isMuted();
                   if (hasStream && !currentlyMuted) {
                     setHasVideo(true);
-                    console.log('[ParticipantAvatar]', name, 'video stream detected, muted:', currentlyMuted);
-                  } else if (!hasStream) {
-                    console.log('[ParticipantAvatar]', name, 'video stream not ready yet, readyState:', videoRef.current.readyState);
                   }
                 }
               };
@@ -208,21 +554,20 @@ export function ParticipantAvatar({
 
               // Listen for video events
               const handleLoadedMetadata = () => {
-                console.log('[ParticipantAvatar]', name, 'video loadedmetadata');
                 checkVideoStream();
               };
 
               const handlePlaying = () => {
-                console.log('[ParticipantAvatar]', name, 'video playing');
-                // Check current mute state, not the old one
-                if (videoTrack && !videoTrack.isMuted()) {
-                  setHasVideo(true);
-                  console.log('[ParticipantAvatar]', name, 'video playing and not muted, showing video');
+                // Check current mute state and stream
+                if (videoTrack && videoRef.current && !videoTrack.isMuted()) {
+                  const hasStream = videoRef.current.srcObject !== null;
+                  if (hasStream) {
+                    setHasVideo(true);
+                  }
                 }
               };
 
               const handleCanPlay = () => {
-                console.log('[ParticipantAvatar]', name, 'video canplay');
                 checkVideoStream();
               };
 
@@ -240,14 +585,11 @@ export function ParticipantAvatar({
               // Try to play after a short delay to ensure stream is attached
               setTimeout(() => {
                 if (videoRef.current && !videoTrack.isMuted()) {
-                  videoRef.current.play().catch((err: any) => {
-                    console.warn('[ParticipantAvatar]', name, 'video play failed:', err);
-                  });
+                  safePlayVideo(videoRef.current).catch(() => { });
                 }
               }, 200);
             }
           } catch (err: any) {
-            console.error('[ParticipantAvatar] Error attaching video:', err);
             setHasVideo(false);
           }
         };
@@ -267,7 +609,7 @@ export function ParticipantAvatar({
 
           // If stream is missing but track is attached, re-attach
           if (!hasStream && !isVideoMuted) {
-            console.log('[ParticipantAvatar]', name, 'stream missing, re-attaching track');
+            // Stream missing, re-attaching track
             videoTrack.attach(videoRef.current).then(() => {
               if (videoRef.current) {
                 setTimeout(() => {
@@ -280,18 +622,14 @@ export function ParticipantAvatar({
                   }
                 }, 100);
               }
-            }).catch((err: any) => {
-              console.error('[ParticipantAvatar]', name, 're-attach failed:', err);
-            });
+            }).catch(() => { });
           }
 
           setHasVideo(!isVideoMuted && hasStream);
 
           // If not muted but no stream yet, try to play
           if (!isVideoMuted && !hasStream) {
-            videoRef.current.play().catch((err: any) => {
-              console.warn('[ParticipantAvatar]', name, 'video play failed:', err);
-            });
+            videoRef.current.play().catch(() => { });
           }
         } else {
           setHasVideo(!isVideoMuted);
@@ -305,9 +643,8 @@ export function ParticipantAvatar({
       if (attachedAudioTrackRef.current && attachedAudioTrackRef.current !== audioTrack) {
         try {
           attachedAudioTrackRef.current.detach(audioRef.current);
-          console.log('[ParticipantAvatar]', name, 'detached old audio track');
         } catch (err: any) {
-          console.error('[ParticipantAvatar] Error detaching old audio:', err);
+          // Ignore detach errors
         }
         attachedAudioTrackRef.current = null;
       }
@@ -317,16 +654,13 @@ export function ParticipantAvatar({
         try {
           audioTrack.attach(audioRef.current);
           attachedAudioTrackRef.current = audioTrack;
-          console.log('[ParticipantAvatar]', name, 'audio track attached');
 
           // Try to play audio
           if (audioRef.current) {
-            audioRef.current.play().catch((err: any) => {
-              console.warn('[ParticipantAvatar]', name, 'audio play failed:', err);
-            });
+            audioRef.current.play().catch(() => { });
           }
         } catch (err: any) {
-          console.error('[ParticipantAvatar] Error attaching audio:', err);
+          // Ignore attach errors
         }
       }
     }
@@ -361,14 +695,14 @@ export function ParticipantAvatar({
         try {
           attachedVideoTrackRef.current.detach(videoRef.current);
         } catch (err: any) {
-          console.error('[ParticipantAvatar] Error detaching video:', err);
+          // Ignore detach errors
         }
       }
       if (audioRef.current && attachedAudioTrackRef.current) {
         try {
           attachedAudioTrackRef.current.detach(audioRef.current);
         } catch (err: any) {
-          console.error('[ParticipantAvatar] Error detaching audio:', err);
+          // Ignore detach errors
         }
       }
     };
@@ -397,22 +731,20 @@ export function ParticipantAvatar({
 
       // If stream is missing but track is not muted, re-attach
       if (!hasStream && !isMuted) {
-        console.log('[ParticipantAvatar]', name, 'stream missing in periodic check, re-attaching');
+        // Stream missing, re-attaching
         videoTrack.attach(videoElement).then(() => {
           setTimeout(() => {
             if (videoElement && !videoTrack.isMuted()) {
               const streamNow = videoElement.srcObject !== null;
               if (streamNow) {
                 setHasVideo(true);
-                videoElement.play().catch(() => { });
+                safePlayVideo(videoElement).catch(() => { });
               }
             }
           }, 100);
-        }).catch((err: any) => {
-          console.error('[ParticipantAvatar]', name, 'periodic re-attach failed:', err);
-        });
+        }).catch(() => { });
       } else if (hasStream && !isMuted && !hasVideo) {
-        console.log('[ParticipantAvatar]', name, 'video stream detected in periodic check');
+        // Video stream detected
         setHasVideo(true);
         clearInterval(checkInterval);
       }
@@ -451,14 +783,32 @@ export function ParticipantAvatar({
     const videoTrack = tracks.find(t => t.getType() === 'video');
     if (videoTrack) {
       const isMuted = videoTrack.isMuted();
-      console.log('[ParticipantAvatar]', name, 'hasVideo state:', hasVideo, 'track muted:', isMuted, 'hasTrack:', !!videoTrack);
       if (videoRef.current) {
-        console.log('[ParticipantAvatar]', name, 'video element state:', {
-          srcObject: !!videoRef.current.srcObject,
-          readyState: videoRef.current.readyState,
-          paused: videoRef.current.paused,
-          muted: videoRef.current.muted
-        });
+        const srcObject = videoRef.current.srcObject;
+        const hasStream = srcObject !== null;
+        // If we have srcObject but hasVideo is false and track is not muted, force update
+        if (hasStream && !isMuted && !hasVideo) {
+          // Force hasVideo=true
+          setHasVideo(true);
+
+          // Also try to play if paused
+          if (videoRef.current && videoRef.current.paused) {
+            const stream = videoRef.current.srcObject as MediaStream;
+            const videoTracks = stream.getVideoTracks();
+            // Force play
+            safePlayVideo(videoRef.current).catch(() => { });
+          }
+        }
+
+        // Check if video is stuck and try to fix
+        if (hasStream && !isMuted && hasVideo && videoRef.current && videoRef.current.paused && videoRef.current.readyState === 0) {
+          const stream = videoRef.current.srcObject as MediaStream;
+          const videoTracks = stream.getVideoTracks();
+          // Try to play if stuck
+          if (videoTracks.length > 0) {
+            safePlayVideo(videoRef.current).catch(() => { });
+          }
+        }
       }
     }
   }, [hasVideo, tracks, name]);
@@ -469,39 +819,8 @@ export function ParticipantAvatar({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Speaking ring animation */}
+      {/* Speaking ring animation - positioned around video container */}
       <div className="relative">
-        <AnimatePresence>
-          {isSpeaking && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              className={`absolute inset-0 -m-2 ${ringSize[size]} left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2`}
-            >
-              <motion.div
-                animate={{
-                  boxShadow: [
-                    '0 0 0 0px rgba(255, 136, 0, 0.4)',
-                    '0 0 0 8px rgba(255, 136, 0, 0)',
-                    '0 0 0 0px rgba(255, 136, 0, 0)',
-                  ],
-                }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Infinity,
-                  ease: 'easeOut',
-                }}
-                className={`${ringSize[size]} rounded-full border-[3px]`}
-                style={{
-                  borderColor: 'var(--ts-orange)',
-                  boxShadow: '0 0 20px rgba(255, 136, 0, 0.3)',
-                }}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         {/* Avatar/Video container */}
         <motion.div
           animate={isSpeaking ? { scale: [1, 1.05, 1] } : isHovered ? { scale: 1.1 } : { scale: 1 }}
@@ -513,9 +832,43 @@ export function ParticipantAvatar({
             boxShadow: isHovered ? '0 0 20px rgba(0, 196, 171, 0.4)' : undefined,
           }}
         >
+          {/* Speaking ring - positioned directly around the video container */}
+          <AnimatePresence>
+            {isSpeaking && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="absolute inset-0 -m-2 rounded-full pointer-events-none z-10"
+                style={{
+                  boxShadow: '0 0 0 0px rgba(255, 136, 0, 0.4), 0 0 20px rgba(255, 136, 0, 0.3)',
+                }}
+              >
+                <motion.div
+                  animate={{
+                    boxShadow: [
+                      '0 0 0 0px rgba(255, 136, 0, 0.4)',
+                      '0 0 0 8px rgba(255, 136, 0, 0)',
+                      '0 0 0 0px rgba(255, 136, 0, 0)',
+                    ],
+                  }}
+                  transition={{
+                    duration: 1.5,
+                    repeat: Infinity,
+                    ease: 'easeOut',
+                  }}
+                  className="w-full h-full rounded-full border-[3px]"
+                  style={{
+                    borderColor: 'var(--ts-orange)',
+                  }}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
           {/* Always render video element to allow track attachment */}
           <video
             ref={videoRef}
+            key={`video-${name}`}
             autoPlay
             playsInline
             muted={isLocal}
@@ -523,6 +876,7 @@ export function ParticipantAvatar({
             style={{
               zIndex: hasVideo ? 10 : 0,
               opacity: hasVideo ? 1 : 0,
+              visibility: hasVideo ? 'visible' : 'hidden',
               position: 'absolute',
               top: 0,
               left: 0,
@@ -532,22 +886,20 @@ export function ParticipantAvatar({
             }}
             onLoadedMetadata={() => {
               if (videoRef.current && attachedVideoTrackRef.current) {
-                const hasStream = videoRef.current.srcObject !== null ||
-                  videoRef.current.readyState >= 2;
+                const hasStream = videoRef.current.srcObject !== null;
+                const readyState = videoRef.current.readyState;
                 const isMuted = attachedVideoTrackRef.current.isMuted();
-                console.log('[ParticipantAvatar]', name, 'onLoadedMetadata - hasStream:', hasStream, 'isMuted:', isMuted, 'readyState:', videoRef.current.readyState);
                 if (hasStream && !isMuted) {
-                  console.log('[ParticipantAvatar]', name, 'onLoadedMetadata: showing video');
                   setHasVideo(true);
+                  // Force play safely
+                  safePlayVideo(videoRef.current).catch(() => { });
                 }
               }
             }}
             onPlaying={() => {
               if (videoRef.current && attachedVideoTrackRef.current) {
                 const isMuted = attachedVideoTrackRef.current.isMuted();
-                console.log('[ParticipantAvatar]', name, 'onPlaying - isMuted:', isMuted);
                 if (!isMuted) {
-                  console.log('[ParticipantAvatar]', name, 'onPlaying: showing video');
                   setHasVideo(true);
                 }
               }
@@ -555,20 +907,24 @@ export function ParticipantAvatar({
             onCanPlay={() => {
               if (videoRef.current && attachedVideoTrackRef.current) {
                 const hasStream = videoRef.current.srcObject !== null;
+                const readyState = videoRef.current.readyState;
                 const isMuted = attachedVideoTrackRef.current.isMuted();
-                console.log('[ParticipantAvatar]', name, 'onCanPlay - hasStream:', hasStream, 'isMuted:', isMuted);
                 if (hasStream && !isMuted) {
                   setHasVideo(true);
+                  // Force play safely
+                  safePlayVideo(videoRef.current).catch(() => { });
                 }
               }
             }}
             onLoadedData={() => {
               if (videoRef.current && attachedVideoTrackRef.current) {
                 const hasStream = videoRef.current.srcObject !== null;
+                const readyState = videoRef.current.readyState;
                 const isMuted = attachedVideoTrackRef.current.isMuted();
-                console.log('[ParticipantAvatar]', name, 'onLoadedData - hasStream:', hasStream, 'isMuted:', isMuted);
                 if (hasStream && !isMuted) {
                   setHasVideo(true);
+                  // Force play safely
+                  safePlayVideo(videoRef.current).catch(() => { });
                 }
               }
             }}

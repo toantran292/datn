@@ -7,6 +7,9 @@ import { useJitsiConference } from '@/hooks/useJitsiConference';
 import { WaitingState } from '@/components/WaitingState';
 import { ControlsToolbar } from '@/components/ControlsToolbar';
 import { MeetingGrid } from '@/components/MeetingGrid';
+import { ScreenShareView } from '@/components/ScreenShareView';
+import type { JitsiTrack } from '@/types/jitsi';
+import { Video } from 'lucide-react';
 
 export default function MeetingPage() {
   const params = useParams();
@@ -57,8 +60,14 @@ export default function MeetingPage() {
     localTracks,
     isAudioMuted,
     isVideoMuted,
+    isScreenSharing,
+    screenSharingParticipantId,
+    dominantSpeakerId,
+    localIsSpeaking,
+    screenShareTrack,
     toggleAudio,
     toggleVideo,
+    toggleScreenShare,
     leaveConference,
   } = useJitsiConference(
     connection,
@@ -116,53 +125,138 @@ export default function MeetingPage() {
   // Convert participants Map to array
   const participantsArray = Array.from(participants.values());
 
+  // Get local participant speaking state (from hook)
+  const localIsMuted = isAudioMuted;
+
+  // Filter local tracks - only filter when LOCAL user is sharing
+  // When remote is sharing, local should always show camera
+  const isLocalSharing = screenSharingParticipantId === 'local' || (screenShareTrack && screenShareTrack.isLocal());
+  const filteredLocalTracks: JitsiTrack[] = isScreenSharing && isLocalSharing && screenShareTrack
+    ? localTracks.filter((t: JitsiTrack) => {
+      const type = t.getType();
+      if (type === 'video') {
+        // When local is sharing screen, only include desktop track, exclude camera
+        const tAny = t as any;
+        const isDesktop = tAny.getVideoType?.() === 'desktop' || tAny.videoType === 'desktop';
+        return isDesktop;
+      }
+      // Keep audio track
+      return true;
+    })
+    : localTracks.filter((t: JitsiTrack) => {
+      // When not sharing or remote is sharing, exclude desktop track, only show camera
+      const type = t.getType();
+      if (type === 'video') {
+        const tAny = t as any;
+        const isDesktop = tAny.getVideoType?.() === 'desktop' || tAny.videoType === 'desktop';
+        return !isDesktop;
+      }
+      // Keep audio track
+      return true;
+    });
+
+  // Get screen share track - either local or from remote participant
+  let activeScreenShareTrack = screenShareTrack;
+  let screenSharerName = displayName;
+
+  if (isScreenSharing && screenSharingParticipantId) {
+    if (screenShareTrack && screenShareTrack.isLocal()) {
+      // Local screen share
+      screenSharerName = displayName;
+      activeScreenShareTrack = screenShareTrack;
+    } else {
+      // Remote participant is sharing screen
+      const sharingParticipant = participants.get(screenSharingParticipantId);
+      if (sharingParticipant) {
+        screenSharerName = sharingParticipant.name;
+        // Find desktop track from this participant - try multiple detection methods
+        activeScreenShareTrack = sharingParticipant.tracks.find((t: any) => {
+          const type = t.getType();
+          if (type !== 'video') return false;
+          // Try multiple ways to detect desktop track
+          const tAny = t as any;
+          return (
+            tAny.getVideoType?.() === 'desktop' ||
+            tAny.videoType === 'desktop' ||
+            tAny.videoType === 'screen' ||
+            (tAny.getOriginalStream && tAny.getOriginalStream().getVideoTracks()[0]?.getSettings().displaySurface)
+          );
+        }) || null;
+      }
+    }
+  }
+
   return (
     <div className="w-screen h-screen flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--ts-bg-dark)' }}>
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b" style={{ backgroundColor: 'var(--ts-card-surface)', borderColor: 'var(--ts-border)' }}>
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, var(--ts-orange) 0%, var(--ts-teal) 100%)' }}>
-            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M15.5 2v6h3l-6 6-6-6h3V2h6zm-6 14h6v6h-6v-6z" stroke="currentColor" strokeWidth="2" />
-            </svg>
+      {/* Header - Only show when not in screen share mode */}
+      {!isScreenSharing && (
+        <div className="flex items-center justify-between px-6 py-4 border-b" style={{ backgroundColor: 'var(--ts-card-surface)', borderColor: 'var(--ts-border)' }}>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, var(--ts-orange) 0%, var(--ts-teal) 100%)' }}>
+              {/* <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M15.5 2v6h3l-6 6-6-6h3V2h6zm-6 14h6v6h-6v-6z" stroke="currentColor" strokeWidth="2" />
+              </svg> */}
+              <Video />
+            </div>
+            <div>
+              <h1 className="text-white font-semibold">UTS Meet</h1>
+              <p className="text-sm" style={{ color: 'var(--ts-text-secondary)' }}>{roomId}</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-white font-semibold">UTS Meet</h1>
-            <p className="text-sm" style={{ color: 'var(--ts-text-secondary)' }}>{roomId}</p>
+
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 px-4 py-2 rounded-lg border" style={{ backgroundColor: 'rgba(34, 197, 94, 0.2)', borderColor: 'rgba(34, 197, 94, 0.3)' }}>
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <span className="text-green-400 text-sm font-medium">Connected</span>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-lg" style={{ backgroundColor: 'var(--ts-bg-dark)' }}>
+              <svg className="w-4 h-4" style={{ color: 'var(--ts-text-secondary)' }} fill="currentColor" viewBox="0 0 20 20">
+                <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+              </svg>
+              <span className="text-white font-medium">{participantsArray.length + 1}</span>
+            </div>
           </div>
         </div>
+      )}
 
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 px-4 py-2 rounded-lg border" style={{ backgroundColor: 'rgba(34, 197, 94, 0.2)', borderColor: 'rgba(34, 197, 94, 0.3)' }}>
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            <span className="text-green-400 text-sm font-medium">Connected</span>
-          </div>
-          <div className="flex items-center gap-2 px-4 py-2 rounded-lg" style={{ backgroundColor: 'var(--ts-bg-dark)' }}>
-            <svg className="w-4 h-4" style={{ color: 'var(--ts-text-secondary)' }} fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
-            </svg>
-            <span className="text-white font-medium">{participantsArray.length + 1}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Video Grid */}
+      {/* Video Grid or Screen Share View */}
       <div className="flex-1 overflow-hidden">
-        <MeetingGrid
-          participants={participantsArray}
-          localParticipant={{
-            name: displayName,
-            tracks: localTracks,
-          }}
-        />
+        {isScreenSharing && screenSharingParticipantId ? (
+          <ScreenShareView
+            participants={participantsArray}
+            localParticipant={{
+              name: displayName,
+              tracks: filteredLocalTracks,
+              isSpeaking: localIsSpeaking,
+              isMuted: localIsMuted,
+            }}
+            sharerName={screenSharerName}
+            screenShareTrack={activeScreenShareTrack}
+            screenSharingParticipantId={screenSharingParticipantId}
+            dominantSpeakerId={dominantSpeakerId}
+            roomId={roomId}
+          />
+        ) : (
+          <MeetingGrid
+            participants={participantsArray}
+            localParticipant={{
+              name: displayName,
+              tracks: filteredLocalTracks,
+              isSpeaking: localIsSpeaking,
+              isMuted: localIsMuted,
+            }}
+          />
+        )}
       </div>
 
       {/* Controls */}
       <ControlsToolbar
         isMicOn={!isAudioMuted}
         isVideoOn={!isVideoMuted}
+        isScreenSharing={isScreenSharing}
         onToggleMic={toggleAudio}
         onToggleVideo={toggleVideo}
+        onToggleScreenShare={toggleScreenShare}
         onLeave={handleLeave}
       />
     </div>

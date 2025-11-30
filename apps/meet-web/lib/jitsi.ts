@@ -111,3 +111,18 @@ export async function createLocalTracks(options?: { audio?: boolean; video?: boo
     return [];
   }
 }
+
+export async function createDesktopTrack() {
+  const JitsiMeetJS = await waitForJitsiMeetJS();
+
+  try {
+    const tracks = await JitsiMeetJS.createLocalTracks({
+      devices: ['desktop'],
+      resolution: 1080,
+    });
+    return tracks;
+  } catch (error) {
+    console.error('[Jitsi] Failed to create desktop track:', error);
+    throw error;
+  }
+}

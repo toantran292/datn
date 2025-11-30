@@ -17,6 +17,8 @@ interface MeetingGridProps {
   localParticipant: {
     name: string;
     tracks: JitsiTrack[];
+    isSpeaking?: boolean;
+    isMuted?: boolean;
   };
 }
 
@@ -30,15 +32,15 @@ export function MeetingGrid({ participants, localParticipant }: MeetingGridProps
       id: 'local',
       name: localParticipant.name,
       tracks: localParticipant.tracks,
-      isSpeaking: false,
-      isMuted: localParticipant.tracks.find(t => t.getType() === 'audio')?.isMuted() || false,
+      isSpeaking: localParticipant.isSpeaking || false,
+      isMuted: localParticipant.isMuted ?? (localParticipant.tracks.find(t => t.getType() === 'audio')?.isMuted() || false),
     },
     ...Array.from(participants).map(p => ({
       id: p.id,
       name: p.name,
       tracks: p.tracks,
-      isSpeaking: false,
-      isMuted: p.tracks.find(t => t.getType() === 'audio')?.isMuted() || false,
+      isSpeaking: p.isSpeaking || false,
+      isMuted: p.isMuted ?? (p.tracks.find(t => t.getType() === 'audio')?.isMuted() || false),
     }))
   ], [localParticipant, participants]);
 
