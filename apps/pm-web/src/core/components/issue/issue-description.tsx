@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useMemo, useCallback, useEffect } from "react";
+import { useRef, useMemo, useCallback, useEffect, useState } from "react";
 import debounce from "lodash/debounce";
 import {
   LiteTextEditorWithRef,
@@ -9,9 +9,13 @@ import {
   type TFileHandler,
   type TMentionHandler,
 } from "@uts/design-system/editor";
+import { IdentityService } from "@/core/services/identity/identity.service";
+import { ProjectService } from "@/core/services/project/project.service";
+import { Avatar } from "@uts/design-system/ui";
 
 interface IssueDescriptionProps {
   issueId: string;
+  projectId?: string;
   initialValue?: string;
   disabled?: boolean;
   onSubmit?: (value: string) => Promise<void>;
@@ -33,12 +37,18 @@ const convertPlainTextToHtml = (value: string | null | undefined): string => {
 
 export const IssueDescription: React.FC<IssueDescriptionProps> = ({
   issueId,
+  projectId,
   initialValue = "",
   disabled = false,
   onSubmit,
   containerClassName = "",
 }) => {
   const editorRef = useRef<EditorRefApi | null>(null);
+  const [orgId, setOrgId] = useState<string | null>(null);
+  const [members, setMembers] = useState<{ id: string; name: string }[]>([]);
+  const [membersLoaded, setMembersLoaded] = useState(false);
+  const identityService = useMemo(() => new IdentityService(), []);
+  const projectService = useMemo(() => new ProjectService(), []);
 
   const editorValue = useMemo(() => {
     if (!initialValue || initialValue.trim().length === 0) return "<p></p>";
@@ -74,14 +84,76 @@ export const IssueDescription: React.FC<IssueDescriptionProps> = ({
     };
   }, []);
 
-  const mentionHandler = useMemo<TMentionHandler>(
-    () => ({
-      renderComponent: () => null,
-      searchCallback: async () => [],
-      getMentionedEntityDetails: () => ({ display_name: "" }),
-    }),
-    []
-  );
+  useEffect(() => {
+    const loadOrg = async () => {
+      if (!projectId) return;
+      try {
+        const project = await projectService.getProjectById(projectId);
+        setOrgId(project.orgId);
+      } catch (error) {
+        console.error("Failed to load project for mentions:", error);
+      }
+    };
+    loadOrg();
+  }, [projectId, projectService]);
+
+  useEffect(() => {
+    const loadMembers = async () => {
+      if (!orgId) return;
+      try {
+        const res = await identityService.getOrgMembers(orgId, 0, 200);
+        const mappedMembers =
+          res.items?.map((m) => ({
+            id: m.id,
+            name: m.display_name || m.email || "User",
+          })) ?? [];
+        setMembers(mappedMembers);
+        setMembersLoaded(true);
+      } catch (error) {
+        console.error("Failed to load members for mentions:", error);
+        setMembersLoaded(true); // Still mark as loaded even on error
+      }
+    };
+    loadMembers();
+  }, [identityService, orgId]);
+
+  const mentionHandler = useMemo<TMentionHandler>(() => {
+    const toSuggestion = (member: { id: string; name: string }) => ({
+      id: member.id,
+      title: member.name,
+      entity_identifier: member.id,
+      entity_name: "user_mention" as const,
+      icon: <Avatar name={member.name} size="sm" />,
+    });
+
+    return {
+      searchCallback: async (query: string) => {
+        const q = query?.toLowerCase?.() ?? "";
+        const list = !q ? members : members.filter((m) => m.name.toLowerCase().includes(q));
+        return [
+          {
+            key: "users",
+            title: "Users",
+            items: list.map(toSuggestion),
+          },
+        ];
+      },
+      renderComponent: (props: { entity_identifier: string; entity_name: string }) => {
+        // Đơn giản: tìm member từ state
+        const member = members.find((m) => m.id === props.entity_identifier);
+        const displayName = member?.name || props.entity_identifier;
+        return (
+          <span className="not-prose inline px-1 py-0.5 rounded bg-custom-primary-100/20 text-custom-primary-500">
+            @{displayName}
+          </span>
+        );
+      },
+      getMentionedEntityDetails: (id: string) => {
+        const member = members.find((m) => m.id === id);
+        return { display_name: member?.name ?? id };
+      },
+    };
+  }, [members]);
 
   const saveDescription = useCallback(
     async (value: string) => {
@@ -107,12 +179,24 @@ export const IssueDescription: React.FC<IssueDescriptionProps> = ({
     [debouncedSave]
   );
 
-  const handleDescriptionChange = useCallback((_json: any, html: string) => {
-    if (disabled || !onSubmit) return;
-    if (html === lastSavedValueRef.current) return;
+  const handleDescriptionChange = useCallback(
+    (_json: any, html: string) => {
+      if (disabled || !onSubmit) return;
+      if (html === lastSavedValueRef.current) return;
 
-    debouncedSave(html);
-  }, [debouncedSave, disabled, onSubmit]);
+      debouncedSave(html);
+    },
+    [debouncedSave, disabled, onSubmit]
+  );
+
+  // Chờ members load xong (hoặc không có projectId) rồi mới render editor
+  if (projectId && !membersLoaded) {
+    return (
+      <div className={containerClassName}>
+        <div className="flex items-center justify-center p-4 text-sm text-custom-text-300">Đang tải...</div>
+      </div>
+    );
+  }
 
   return (
     <div className={containerClassName}>
@@ -129,7 +213,7 @@ export const IssueDescription: React.FC<IssueDescriptionProps> = ({
         onChange={handleDescriptionChange}
         placeholder="Thêm mô tả..."
         containerClassName="border-none !text-sm"
-        editorClassName="min-h-[150px] !text-sm"
+        editorClassName="!text-sm"
       />
     </div>
   );
