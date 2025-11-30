@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import { MoreVertical, Edit2, Trash2 } from "lucide-react";
-import { Button } from "@uts/design-system/ui";
+import { Avatar, Button } from "@uts/design-system/ui";
 import {
   LiteTextEditorWithRef,
   type EditorRefApi,
@@ -19,6 +19,8 @@ interface CommentCardProps {
   onDelete?: (commentId: string) => Promise<void>;
   disabled?: boolean;
   currentUserId?: string;
+  authorEmail?: string;
+  authorName?: string;
 }
 
 export const CommentCard: React.FC<CommentCardProps> = ({
@@ -27,6 +29,8 @@ export const CommentCard: React.FC<CommentCardProps> = ({
   onDelete,
   disabled = false,
   currentUserId,
+  authorEmail,
+  authorName,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -112,19 +116,20 @@ export const CommentCard: React.FC<CommentCardProps> = ({
     return date.toLocaleDateString("vi-VN");
   };
 
+  const authorLabel = authorName || authorEmail || "User";
+  const avatarText = (authorName || authorEmail || comment.createdBy || "U").charAt(0).toUpperCase();
+
   return (
-    <div className="group flex gap-3 border-b border-custom-border-200 py-4 last:border-0">
+    <div className="group flex gap-3 border-b border-custom-border-200 p-4 last:border-0">
       {/* Avatar */}
-      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-custom-primary-100 text-xs font-semibold text-white">
-        {comment.createdBy.charAt(0).toUpperCase()}
-      </div>
+      <Avatar name={authorName || authorEmail || comment.createdBy || "U"} size={25} className="flex-shrink-0" />
 
       {/* Content */}
       <div className="flex-1 min-w-0">
         {/* Header */}
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-custom-text-100">User</span>
+            <span className="text-sm font-medium text-custom-text-100">{authorLabel}</span>
             <span className="text-xs text-custom-text-400">{formatDate(comment.createdAt)}</span>
             {comment.updatedAt !== comment.createdAt && (
               <span className="text-xs text-custom-text-400">(đã chỉnh sửa)</span>
@@ -132,28 +137,24 @@ export const CommentCard: React.FC<CommentCardProps> = ({
           </div>
 
           {/* Actions */}
-          {(canEdit || canDelete) && !isEditing && (
-            <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-              {canEdit && (
-                <button
-                  onClick={handleEdit}
-                  className="rounded p-1 text-custom-text-300 hover:bg-custom-background-80 hover:text-custom-text-100"
-                  title="Chỉnh sửa"
-                >
-                  <Edit2 className="h-4 w-4" />
-                </button>
-              )}
-              {canDelete && (
-                <button
-                  onClick={handleDelete}
-                  className="rounded p-1 text-custom-text-300 hover:bg-custom-background-80 hover:text-red-500"
-                  title="Xóa"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-          )}
+
+          <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+            <button
+              onClick={handleEdit}
+              className="rounded p-1 text-custom-text-300 hover:bg-custom-background-80 hover:text-custom-text-100"
+              title="Chỉnh sửa"
+            >
+              <Edit2 className="h-4 w-4" />
+            </button>
+
+            <button
+              onClick={handleDelete}
+              className="rounded p-1 text-custom-text-300 hover:bg-custom-background-80 hover:text-red-500"
+              title="Xóa"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
         {/* Body */}

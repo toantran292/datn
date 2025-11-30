@@ -6,6 +6,8 @@ import type { IComment } from "@/core/types/comment";
 import { CommentCard } from "./comment-card";
 import { CommentCreate } from "./comment-create";
 import { CommentService } from "@/core/services/comment/comment.service";
+import { IdentityService } from "@/core/services/identity/identity.service";
+import { ProjectService } from "@/core/services/project/project.service";
 
 interface CommentListProps {
   issueId: string;
@@ -15,11 +17,16 @@ interface CommentListProps {
 }
 
 const commentService = new CommentService();
+const identityService = new IdentityService();
+const projectService = new ProjectService();
 
 export const CommentList: React.FC<CommentListProps> = ({ issueId, projectId, disabled = false, currentUserId }) => {
   const [comments, setComments] = useState<IComment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [orgId, setOrgId] = useState<string | null>(null);
+  const [authors, setAuthors] = useState<Record<string, { email?: string; displayName?: string }>>({});
+  const [, setIsLoadingAuthors] = useState(false);
 
   const loadComments = async () => {
     setIsLoading(true);
@@ -38,6 +45,64 @@ export const CommentList: React.FC<CommentListProps> = ({ issueId, projectId, di
   useEffect(() => {
     loadComments();
   }, [issueId]);
+
+  useEffect(() => {
+    const fetchOrgId = async () => {
+      try {
+        const project = await projectService.getProjectById(projectId);
+        setOrgId(project.orgId);
+      } catch (err) {
+        console.error("Failed to load project info for comments:", err);
+      }
+    };
+
+    fetchOrgId();
+  }, [projectId]);
+
+  useEffect(() => {
+    const fetchAuthors = async () => {
+      if (!orgId || comments.length === 0) return;
+
+      const uniqueUserIds = Array.from(new Set(comments.map((c) => c.createdBy).filter(Boolean)));
+      const missingUserIds = uniqueUserIds.filter((id) => !authors[id]);
+
+      if (missingUserIds.length === 0) return;
+
+      setIsLoadingAuthors(true);
+
+      try {
+        const missingSet = new Set(missingUserIds);
+        const found: Record<string, { email?: string; displayName?: string }> = {};
+        let page = 0;
+        const size = 200;
+        let totalPages = 1;
+
+        while (page < totalPages && Object.keys(found).length < missingSet.size) {
+          const response = await identityService.getOrgMembers(orgId, page, size);
+          totalPages = response.totalPages || 1;
+
+          response.items?.forEach((member) => {
+            if (missingSet.has(member.id)) {
+              found[member.id] = {
+                email: member.email,
+                displayName: member.display_name || member.email?.split("@")[0] || "",
+              };
+            }
+          });
+
+          page += 1;
+        }
+
+        setAuthors((prev) => ({ ...prev, ...found }));
+      } catch (err) {
+        console.error("Failed to load comment authors:", err);
+      } finally {
+        setIsLoadingAuthors(false);
+      }
+    };
+
+    fetchAuthors();
+  }, [orgId, comments]);
 
   const handleCreateComment = async (commentHtml: string) => {
     try {
@@ -105,6 +170,8 @@ export const CommentList: React.FC<CommentListProps> = ({ issueId, projectId, di
                 onDelete={handleDeleteComment}
                 disabled={disabled}
                 currentUserId={currentUserId}
+                authorEmail={authors[comment.createdBy]?.email}
+                authorName={authors[comment.createdBy]?.displayName}
               />
             ))}
           </div>
