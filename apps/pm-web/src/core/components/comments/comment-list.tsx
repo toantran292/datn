@@ -27,6 +27,8 @@ export const CommentList: React.FC<CommentListProps> = ({ issueId, projectId, di
   const [orgId, setOrgId] = useState<string | null>(null);
   const [authors, setAuthors] = useState<Record<string, { email?: string; displayName?: string }>>({});
   const [, setIsLoadingAuthors] = useState(false);
+  const [members, setMembers] = useState<{ id: string; name: string }[]>([]);
+  const [membersLoaded, setMembersLoaded] = useState(false);
 
   const loadComments = async () => {
     setIsLoading(true);
@@ -60,48 +62,61 @@ export const CommentList: React.FC<CommentListProps> = ({ issueId, projectId, di
   }, [projectId]);
 
   useEffect(() => {
-    const fetchAuthors = async () => {
-      if (!orgId || comments.length === 0) return;
-
-      const uniqueUserIds = Array.from(new Set(comments.map((c) => c.createdBy).filter(Boolean)));
-      const missingUserIds = uniqueUserIds.filter((id) => !authors[id]);
-
-      if (missingUserIds.length === 0) return;
+    const fetchMembers = async () => {
+      if (!orgId) return;
 
       setIsLoadingAuthors(true);
-
       try {
-        const missingSet = new Set(missingUserIds);
-        const found: Record<string, { email?: string; displayName?: string }> = {};
         let page = 0;
         const size = 200;
         let totalPages = 1;
+        const collected: { id: string; name: string; email?: string }[] = [];
 
-        while (page < totalPages && Object.keys(found).length < missingSet.size) {
+        while (page < totalPages) {
           const response = await identityService.getOrgMembers(orgId, page, size);
           totalPages = response.totalPages || 1;
 
           response.items?.forEach((member) => {
-            if (missingSet.has(member.id)) {
-              found[member.id] = {
-                email: member.email,
-                displayName: member.display_name || member.email?.split("@")[0] || "",
-              };
-            }
+            collected.push({
+              id: member.id,
+              name: member.display_name || member.email || "User",
+              email: member.email,
+            });
           });
 
           page += 1;
         }
 
-        setAuthors((prev) => ({ ...prev, ...found }));
+        const uniqueMembersMap: Record<string, { id: string; name: string; email?: string }> = {};
+        collected.forEach((m) => {
+          uniqueMembersMap[m.id] = m;
+        });
+
+        setMembers(Object.values(uniqueMembersMap));
+
+        // update authors for any known IDs in comments
+        const commentUserIds = new Set(comments.map((c) => c.createdBy).filter(Boolean));
+        const foundAuthors: Record<string, { email?: string; displayName?: string }> = {};
+        Object.values(uniqueMembersMap).forEach((m) => {
+          if (commentUserIds.has(m.id)) {
+            foundAuthors[m.id] = {
+              email: m.email,
+              displayName: m.name,
+            };
+          }
+        });
+        if (Object.keys(foundAuthors).length > 0) {
+          setAuthors((prev) => ({ ...prev, ...foundAuthors }));
+        }
       } catch (err) {
-        console.error("Failed to load comment authors:", err);
+        console.error("Failed to load members/authors:", err);
       } finally {
         setIsLoadingAuthors(false);
+        setMembersLoaded(true);
       }
     };
 
-    fetchAuthors();
+    fetchMembers();
   }, [orgId, comments]);
 
   const handleCreateComment = async (commentHtml: string) => {
@@ -137,10 +152,10 @@ export const CommentList: React.FC<CommentListProps> = ({ issueId, projectId, di
     }
   };
 
-  if (isLoading) {
+  if (isLoading || !membersLoaded) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="text-sm text-custom-text-400">Đang tải bình luận...</div>
+        <div className="text-sm text-custom-text-400">Đang tải...</div>
       </div>
     );
   }
@@ -156,7 +171,7 @@ export const CommentList: React.FC<CommentListProps> = ({ issueId, projectId, di
   return (
     <div className="space-y-4">
       {/* Create comment */}
-      {!disabled && <CommentCreate onSubmit={handleCreateComment} disabled={disabled} />}
+      {!disabled && <CommentCreate onSubmit={handleCreateComment} disabled={disabled} members={members} />}
 
       {/* Comments list */}
       {comments.length > 0 ? (
@@ -172,6 +187,7 @@ export const CommentList: React.FC<CommentListProps> = ({ issueId, projectId, di
                 currentUserId={currentUserId}
                 authorEmail={authors[comment.createdBy]?.email}
                 authorName={authors[comment.createdBy]?.displayName}
+                members={members}
               />
             ))}
           </div>

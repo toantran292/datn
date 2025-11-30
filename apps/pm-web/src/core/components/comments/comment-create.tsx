@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Button } from "@uts/design-system/ui";
+import { useMemo, useRef, useState } from "react";
+import { Avatar, Button } from "@uts/design-system/ui";
 import {
   LiteTextEditorWithRef,
   type EditorRefApi,
@@ -14,9 +14,10 @@ import { CommentToolbar } from "./comment-toolbar";
 interface CommentCreateProps {
   onSubmit: (commentHtml: string) => Promise<void>;
   disabled?: boolean;
+  members?: { id: string; name: string }[];
 }
 
-export const CommentCreate: React.FC<CommentCreateProps> = ({ onSubmit, disabled = false }) => {
+export const CommentCreate: React.FC<CommentCreateProps> = ({ onSubmit, disabled = false, members = [] }) => {
   const editorRef = useRef<EditorRefApi | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [commentHtml, setCommentHtml] = useState("<p></p>");
@@ -35,11 +36,42 @@ export const CommentCreate: React.FC<CommentCreateProps> = ({ onSubmit, disabled
     validation: { maxFileSize: 10 * 1024 * 1024 },
   };
 
-  const mentionHandler: TMentionHandler = {
-    renderComponent: () => null,
-    searchCallback: async () => [],
-    getMentionedEntityDetails: () => ({ display_name: "" }),
-  };
+  const mentionHandler: TMentionHandler = useMemo(() => {
+    const toSuggestion = (member: { id: string; name: string }) => ({
+      id: member.id,
+      title: member.name,
+      entity_identifier: member.id,
+      entity_name: "user_mention" as const,
+      icon: <Avatar name={member.name} size="sm" />,
+    });
+
+    return {
+      searchCallback: async (query: string) => {
+        const q = query?.toLowerCase?.() ?? "";
+        const list = !q ? members : members.filter((m) => m.name.toLowerCase().includes(q));
+        return [
+          {
+            key: "users",
+            title: "Users",
+            items: list.map(toSuggestion),
+          },
+        ];
+      },
+      renderComponent: (props) => {
+        const member = members.find((m) => m.id === props.entity_identifier);
+        const displayName = member?.name || props.entity_identifier;
+        return (
+          <span className="not-prose inline px-1 py-0.5 rounded bg-custom-primary-100/20 text-custom-primary-500">
+            @{displayName}
+          </span>
+        );
+      },
+      getMentionedEntityDetails: (id: string) => {
+        const member = members.find((m) => m.id === id);
+        return { display_name: member?.name ?? id };
+      },
+    };
+  }, [members]);
 
   const handleSubmit = async () => {
     const editorDocument = editorRef.current?.getDocument();

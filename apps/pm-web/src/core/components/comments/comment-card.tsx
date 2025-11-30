@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useMemo, useState, useRef } from "react";
 import { MoreVertical, Edit2, Trash2 } from "lucide-react";
 import { Avatar, Button } from "@uts/design-system/ui";
 import {
@@ -21,6 +21,7 @@ interface CommentCardProps {
   currentUserId?: string;
   authorEmail?: string;
   authorName?: string;
+  members?: { id: string; name: string }[];
 }
 
 export const CommentCard: React.FC<CommentCardProps> = ({
@@ -31,6 +32,7 @@ export const CommentCard: React.FC<CommentCardProps> = ({
   currentUserId,
   authorEmail,
   authorName,
+  members = [],
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -55,11 +57,66 @@ export const CommentCard: React.FC<CommentCardProps> = ({
     validation: { maxFileSize: 10 * 1024 * 1024 },
   };
 
-  const mentionHandler: TMentionHandler = {
-    renderComponent: () => null,
-    searchCallback: async () => [],
-    getMentionedEntityDetails: () => ({ display_name: "" }),
-  };
+  const mentionHandler: TMentionHandler = useMemo(() => {
+    const toSuggestion = (member: { id: string; name: string }) => ({
+      id: member.id,
+      title: member.name,
+      entity_identifier: member.id,
+      entity_name: "user_mention" as const,
+      icon: <Avatar name={member.name} size="sm" />,
+    });
+
+    return {
+      searchCallback: async (query: string) => {
+        const q = query?.toLowerCase?.() ?? "";
+        const list = !q ? members : members.filter((m) => m.name.toLowerCase().includes(q));
+        return [
+          {
+            key: "users",
+            title: "Users",
+            items: list.map(toSuggestion),
+          },
+        ];
+      },
+      renderComponent: (props) => {
+        const member = members.find((m) => m.id === props.entity_identifier);
+        const displayName = member?.name || props.entity_identifier;
+        return (
+          <span className="not-prose inline px-1 py-0.5 rounded bg-custom-primary-100/20 text-custom-primary-500">
+            @{displayName}
+          </span>
+        );
+      },
+      getMentionedEntityDetails: (id: string) => {
+        const member = members.find((m) => m.id === id);
+        return { display_name: member?.name ?? id };
+      },
+    };
+  }, [members]);
+
+  const renderedCommentHtml = useMemo(() => {
+    if (!comment.commentHtml) return null;
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(comment.commentHtml, "text/html");
+      doc.querySelectorAll("mention-component").forEach((mentionEl) => {
+        const entityId = mentionEl.getAttribute("entity_identifier") || mentionEl.getAttribute("id") || "";
+        const displayName =
+          members.find((m) => m.id === entityId)?.name ||
+          mentionEl.getAttribute("label") ||
+          entityId ||
+          "user";
+        const span = doc.createElement("span");
+        span.className = "not-prose inline px-1 py-0.5 rounded bg-custom-primary-100/20 text-custom-primary-500";
+        span.textContent = `@${displayName}`;
+        mentionEl.replaceWith(span);
+      });
+      return doc.body.innerHTML;
+    } catch (error) {
+      console.error("Failed to render mentions in comment:", error);
+      return comment.commentHtml;
+    }
+  }, [comment.commentHtml, members]);
 
   const handleEdit = () => {
     setEditedHtml(comment.commentHtml || "");
@@ -190,8 +247,8 @@ export const CommentCard: React.FC<CommentCardProps> = ({
           </div>
         ) : (
           <div className="prose prose-sm mt-2 max-w-none text-custom-text-200">
-            {comment.commentHtml ? (
-              <div dangerouslySetInnerHTML={{ __html: comment.commentHtml }} />
+            {renderedCommentHtml ? (
+              <div dangerouslySetInnerHTML={{ __html: renderedCommentHtml }} />
             ) : (
               <p>{comment.comment || "Không có nội dung"}</p>
             )}
