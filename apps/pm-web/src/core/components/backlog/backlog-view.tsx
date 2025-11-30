@@ -75,6 +75,7 @@ interface BacklogViewProps {
   onCompleteSprint?: (sprintId: string) => void;
   onStartSprint?: (sprintId: string, issueCount: number) => void;
   onUpdateIssue?: (issueId: string, data: Partial<IIssue>) => Promise<void>;
+  workspaceSlug?: string | null;
 }
 
 export type BacklogIssueDropPayload = IReorderIssuePayload;
@@ -89,12 +90,13 @@ const BacklogViewComponent: React.FC<BacklogViewProps> = (props) => {
     projectIdentifier,
     isLoading,
     onCreateIssue,
-    onIssueDrop,
-    onCompleteSprint,
-    onCreateSprint,
-    onStartSprint,
-    onUpdateIssue,
-  } = props;
+  onIssueDrop,
+  onCompleteSprint,
+  onCreateSprint,
+  onStartSprint,
+  onUpdateIssue,
+  workspaceSlug = null,
+} = props;
 
   const [draftSectionId, setDraftSectionId] = useState<string | null>(null);
   const [draftName, setDraftName] = useState<string>("");
@@ -334,6 +336,7 @@ const BacklogViewComponent: React.FC<BacklogViewProps> = (props) => {
                 issue={selectedIssue}
                 projectIdentifier={projectIdentifier}
                 locationLabel={selectedIssueLocationLabel}
+                workspaceSlug={workspaceSlug}
                 onClose={handleCloseDetail}
                 onUpdateIssue={onUpdateIssue}
               />

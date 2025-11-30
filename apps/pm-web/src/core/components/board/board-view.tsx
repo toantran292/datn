@@ -51,6 +51,7 @@ type BoardViewProps = {
   issueStore: IIssueStore;
   issueStatuses: IIssueStatus[];
   projectIdentifier?: string | null;
+  workspaceSlug?: string | null;
 };
 
 export const BoardView = memo(function BoardView({
@@ -60,6 +61,7 @@ export const BoardView = memo(function BoardView({
   issueStore,
   issueStatuses,
   projectIdentifier,
+  workspaceSlug,
 }: BoardViewProps) {
   const issueStatusStore = useIssueStatus();
 
@@ -951,6 +953,7 @@ const IssueDetailModal: React.FC<{
         issue={issue}
         projectIdentifier={projectIdentifier}
         locationLabel={locationLabel}
+        workspaceSlug={workspaceSlug}
         onClose={onClose}
         onUpdateIssue={onUpdateIssue}
       />

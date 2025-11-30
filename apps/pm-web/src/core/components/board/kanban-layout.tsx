@@ -14,8 +14,10 @@ import { BoardView } from "./board-view";
 export const KanbanLayout = observer(() => {
   const params = useParams<{ workspaceSlug?: string | string[]; projectId?: string | string[] }>();
   const projectIdParam = params?.projectId;
+  const workspaceSlugParam = params?.workspaceSlug;
 
   const projectId = Array.isArray(projectIdParam) ? (projectIdParam[0] ?? "") : (projectIdParam ?? "");
+  const workspaceSlug = Array.isArray(workspaceSlugParam) ? (workspaceSlugParam[0] ?? "") : (workspaceSlugParam ?? "");
 
   const issueStore = useIssue();
   const issueStatusStore = useIssueStatus();
@@ -57,6 +59,7 @@ export const KanbanLayout = observer(() => {
       issueStore={issueStore}
       issueStatuses={issueStatuses}
       projectIdentifier={project?.identifier ?? null}
+      workspaceSlug={workspaceSlug}
     />
   );
 });

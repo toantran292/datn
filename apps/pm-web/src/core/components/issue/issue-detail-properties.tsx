@@ -25,6 +25,7 @@ interface IssueDetailPropertiesProps {
   disabled?: boolean;
   onUpdateIssue?: (issueId: string, data: Partial<IIssue>) => Promise<void>;
   projectIdentifier?: string | null;
+  workspaceSlug?: string | null;
 }
 
 type TMemberInfo = { id: string; name: string; email?: string };
@@ -35,6 +36,7 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
   disabled = false,
   onUpdateIssue,
   projectIdentifier = null,
+  workspaceSlug = null,
 }) => {
   const [assignees, setAssignees] = useState<string[]>(issue.assignees ?? []);
   const [members, setMembers] = useState<TMemberInfo[]>([]);
@@ -235,10 +237,16 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
   const childIssues = issueStore.getIssuesForProject(issue.projectId).filter((i) => i.parentId === issue.id);
   const childIssueKey = (child: IIssue) => formatIssueKey(projectIdentifier || null, child.sequenceId);
   const handleOpenChild = (child: IIssue) => {
-    const key = childIssueKey(child);
-    if (key) {
-      window.open(`/issue/${key}`, "_self");
-    }
+    const resolvedWorkspaceSlug =
+      workspaceSlug ??
+      (() => {
+        if (typeof window === "undefined") return "";
+        const parts = window.location.pathname.split("/").filter(Boolean);
+        return parts[0] ?? "";
+      })();
+    const workspaceSegment = resolvedWorkspaceSlug ? `/${resolvedWorkspaceSlug}` : "";
+    const path = `${workspaceSegment}/project/${issue.projectId}/issue/${child.id}`;
+    window.open(path, "_self");
   };
 
   const renderAssignees = () => {

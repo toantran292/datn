@@ -351,6 +351,7 @@ const ProjectBacklogPage = observer(() => {
         onCreateSprint={handleCreateSprint}
         onStartSprint={handleOpenStartSprint}
         onUpdateIssue={handleUpdateIssue}
+        workspaceSlug={workspaceSlug}
       />
 
       <StartSprintModal

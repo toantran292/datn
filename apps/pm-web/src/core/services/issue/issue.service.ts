@@ -18,6 +18,14 @@ export class IssueService extends APIService {
       });
   }
 
+  async getIssueById(issueId: string): Promise<IIssue> {
+    return this.get(`/api/issues/${issueId}`)
+      .then((response) => this.normalizeIssue(response?.data))
+      .catch((error) => {
+        throw error?.response?.data ?? error;
+      });
+  }
+
   async createIssue(payload: ICreateIssuePayload): Promise<IIssue> {
     const body: any = {
       projectId: payload.projectId,

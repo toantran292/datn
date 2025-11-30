@@ -12,18 +12,28 @@ export interface IssueDetailPanelProps {
   issue: IIssue;
   projectIdentifier?: string | null;
   locationLabel?: string | null;
+  workspaceSlug?: string | null;
   onClose: () => void;
   onUpdateIssue?: (issueId: string, data: Partial<IIssue>) => Promise<void>;
 }
 
 export const IssueDetailPanel: React.FC<IssueDetailPanelProps> = (props) => {
-  const { issue, projectIdentifier, locationLabel, onClose, onUpdateIssue } = props;
+  const { issue, projectIdentifier, locationLabel, workspaceSlug, onClose, onUpdateIssue } = props;
 
   const issueKey = formatIssueKey(projectIdentifier, issue.sequenceId);
   const disabled = !onUpdateIssue;
 
   const handleCopyLink = () => {
-    const link = `${window.location.origin}/issue/${issueKey}`;
+    const resolvedWorkspaceSlug =
+      workspaceSlug ??
+      (() => {
+        if (typeof window === "undefined") return "";
+        const parts = window.location.pathname.split("/").filter(Boolean);
+        return parts[0] ?? "";
+      })();
+    const workspaceSegment = resolvedWorkspaceSlug ? `/${resolvedWorkspaceSlug}` : "";
+    const path = `${workspaceSegment}/project/${issue.projectId}/issue/${issue.id}`;
+    const link = `${window.location.origin}${path}`;
     navigator.clipboard.writeText(link);
   };
 
@@ -68,6 +78,7 @@ export const IssueDetailPanel: React.FC<IssueDetailPanelProps> = (props) => {
               disabled={disabled}
               onUpdateIssue={onUpdateIssue}
               projectIdentifier={projectIdentifier ?? null}
+              workspaceSlug={workspaceSlug ?? null}
             />
 
             <IssueDetailActivity issueId={issue.id} projectId={issue.projectId} disabled={disabled} />
