@@ -1,19 +1,19 @@
 "use client";
 
-import { MessageSquare } from "lucide-react";
+import { CommentList } from "@/core/components/comments";
 
 interface IssueDetailActivityProps {
   issueId: string;
+  projectId: string;
   disabled?: boolean;
-  workspaceSlug?: string;
-  projectId?: string;
+  currentUserId?: string;
 }
 
 export const IssueDetailActivity: React.FC<IssueDetailActivityProps> = ({
   issueId,
-  disabled = false,
-  workspaceSlug,
   projectId,
+  disabled = false,
+  currentUserId,
 }) => {
   return (
     <div className="space-y-4 pt-3">
@@ -26,31 +26,7 @@ export const IssueDetailActivity: React.FC<IssueDetailActivityProps> = ({
       {/* rendering activity */}
       <div className="space-y-3">
         <div className="min-h-[200px]">
-          <div className="space-y-3">
-            {/* Comment creation box */}
-            {!disabled && (
-              <div className="rounded-md border border-custom-border-200 bg-custom-background-100">
-                <div className="p-3">
-                  <textarea
-                    className="w-full resize-none border-0 bg-transparent text-sm text-custom-text-200 placeholder-custom-text-400 outline-none focus:outline-none"
-                    placeholder="Thêm bình luận..."
-                    rows={3}
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Empty state */}
-            <div className="flex flex-col items-center justify-center rounded-md border border-custom-border-200 bg-custom-background-100 p-6">
-              <MessageSquare className="mb-2 h-8 w-8 text-custom-text-400" />
-              <p className="text-sm text-custom-text-400">Chưa có hoạt động nào</p>
-              {!disabled && (
-                <p className="mt-1 text-xs text-custom-text-400">
-                  Hãy là người đầu tiên bình luận về công việc này
-                </p>
-              )}
-            </div>
-          </div>
+          <CommentList issueId={issueId} projectId={projectId} disabled={disabled} currentUserId={currentUserId} />
         </div>
       </div>
     </div>

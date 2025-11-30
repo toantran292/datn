@@ -63,7 +63,7 @@ export const IssueDetailPanel: React.FC<IssueDetailPanelProps> = (props) => {
 
             <IssueDetailProperties issue={issue} locationLabel={locationLabel} disabled={disabled} />
 
-            <IssueDetailActivity issueId={issue.id} disabled={disabled} />
+            <IssueDetailActivity issueId={issue.id} projectId={issue.projectId} disabled={disabled} />
           </div>
         </div>
       </div>
