@@ -36,11 +36,13 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
   const [isLoadingMembers, setIsLoadingMembers] = useState(false);
   const [isAssigneeOpen, setIsAssigneeOpen] = useState(false);
   const [assigneeSearch, setAssigneeSearch] = useState("");
+  const [isPriorityOpen, setIsPriorityOpen] = useState(false);
   const identityService = useMemo(() => new IdentityService(), []);
   const projectService = useMemo(() => new ProjectService(), []);
   const issueStatusStore = useIssueStatus();
   const status = issueStatusStore.getIssueStatusById(issue.statusId);
   const assigneeDropdownRef = useRef<HTMLDivElement>(null);
+  const priorityDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const loader = issueStatusStore.getLoaderForProject(issue.projectId);
@@ -59,6 +61,9 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
     const handleClickOutside = (event: MouseEvent) => {
       if (assigneeDropdownRef.current && !assigneeDropdownRef.current.contains(event.target as Node)) {
         setIsAssigneeOpen(false);
+      }
+      if (priorityDropdownRef.current && !priorityDropdownRef.current.contains(event.target as Node)) {
+        setIsPriorityOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -131,6 +136,13 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
         ))}
       </div>
     );
+
+  const PRIORITY_OPTIONS: { value: IIssue["priority"]; label: string }[] = [
+    { value: "LOW", label: ISSUE_PRIORITY_LABELS.LOW },
+    { value: "MEDIUM", label: ISSUE_PRIORITY_LABELS.MEDIUM },
+    { value: "HIGH", label: ISSUE_PRIORITY_LABELS.HIGH },
+    { value: "CRITICAL", label: ISSUE_PRIORITY_LABELS.CRITICAL },
+  ];
 
   const formattedStartDate = formatDate(issue.startDate);
   const formattedDueDate = formatDate(issue.targetDate);
@@ -271,9 +283,41 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
             <span>Priority</span>
           </div>
           <div className="w-3/4 flex-grow">
-            <Badge variant={ISSUE_PRIORITY_BADGE_VARIANT[issue.priority]} size="sm">
-              {ISSUE_PRIORITY_LABELS[issue.priority]}
-            </Badge>
+            {disabled ? (
+              <Badge variant={ISSUE_PRIORITY_BADGE_VARIANT[issue.priority]} size="sm">
+                {ISSUE_PRIORITY_LABELS[issue.priority]}
+              </Badge>
+            ) : (
+              <div className="relative" ref={priorityDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsPriorityOpen((prev) => !prev)}
+                  className="flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-custom-background-80 transition-colors w-full"
+                >
+                  <Badge variant={ISSUE_PRIORITY_BADGE_VARIANT[issue.priority]} size="sm">
+                    {ISSUE_PRIORITY_LABELS[issue.priority]}
+                  </Badge>
+                </button>
+                {isPriorityOpen && (
+                  <div className="absolute z-20 mt-1 w-40 rounded-md border border-custom-border-200 bg-custom-background-100 shadow-lg">
+                    {PRIORITY_OPTIONS.map((option) => (
+                      <button
+                        key={option.value}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-sm text-custom-text-200 hover:bg-custom-background-80"
+                        onClick={() => {
+                          setIsPriorityOpen(false);
+                          onUpdateIssue?.(issue.id, { priority: option.value });
+                        }}
+                      >
+                        <Badge variant={ISSUE_PRIORITY_BADGE_VARIANT[option.value]} size="sm">
+                          {option.label}
+                        </Badge>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
