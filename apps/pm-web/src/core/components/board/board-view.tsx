@@ -28,6 +28,7 @@ import {
   EModalPosition,
   setToast,
   TOAST_TYPE,
+  Avatar,
 } from "@uts/design-system/ui";
 import { cn } from "@uts/fe-utils";
 
@@ -38,6 +39,9 @@ import type { ISprint } from "@/core/types/sprint";
 import { formatIssueKey } from "@/core/components/backlog/utils";
 import { CreateStatusModal } from "@/core/components/issue-status";
 import { useIssueStatus } from "@/core/hooks/store/use-issue-status";
+import { IdentityService } from "@/core/services/identity/identity.service";
+import { ProjectService } from "@/core/services/project/project.service";
+import { render } from "react-dom";
 
 const IssueDetailPanel = dynamic(
   () => import("@/core/components/issue/issue-detail-panel").then((mod) => mod.IssueDetailPanel),
@@ -52,6 +56,7 @@ type BoardViewProps = {
   issueStatuses: IIssueStatus[];
   projectIdentifier?: string | null;
   workspaceSlug?: string | null;
+  members?: { id: string; name: string; email?: string }[];
 };
 
 export const BoardView = memo(function BoardView({
@@ -62,8 +67,13 @@ export const BoardView = memo(function BoardView({
   issueStatuses,
   projectIdentifier,
   workspaceSlug,
+  members = [],
 }: BoardViewProps) {
   const issueStatusStore = useIssueStatus();
+  const identityService = useMemo(() => new IdentityService(), []);
+  const projectService = useMemo(() => new ProjectService(), []);
+  const [orgId, setOrgId] = useState<string | null>(null);
+  const [memberState, setMemberState] = useState<{ id: string; name: string; email?: string }[]>(members);
 
   const grouped = useMemo(() => {
     const map: Record<string, IIssue[]> = {};
@@ -101,6 +111,65 @@ export const BoardView = memo(function BoardView({
   const [isCreateStatusModalOpen, setIsCreateStatusModalOpen] = useState(false);
   const [draggedColumnId, setDraggedColumnId] = useState<string | null>(null);
   const [dropPosition, setDropPosition] = useState<{ statusId: string; position: "before" | "after" } | null>(null);
+  const memberMap = useMemo(() => {
+    const map = new Map<string, { id: string; name: string; email?: string }>();
+    (memberState ?? []).forEach((m) => map.set(m.id, m));
+    return map;
+  }, [memberState]);
+
+  useEffect(() => {
+    if (!members || members.length === 0) return;
+    setMemberState((prev) => {
+      if (prev.length === members.length && prev.every((m, idx) => m.id === members[idx]?.id)) {
+        return prev;
+      }
+      return members;
+    });
+  }, [members]);
+
+  useEffect(() => {
+    if (!projectId) return;
+    const loadOrg = async () => {
+      try {
+        const project = await projectService.getProjectById(projectId);
+        setOrgId(project.orgId);
+      } catch (error) {
+        console.error("Failed to load project for board member map:", error);
+      }
+    };
+    loadOrg();
+  }, [projectId, projectService]);
+
+  useEffect(() => {
+    const fetchMembers = async () => {
+      if (memberState.length > 0) return;
+      if (!orgId) return;
+      try {
+        let page = 0;
+        const size = 200;
+        let totalPages = 1;
+        const collected: { id: string; name: string; email?: string }[] = [];
+        while (page < totalPages) {
+          const res = await identityService.getOrgMembers(orgId, page, size);
+          totalPages = res.totalPages || 1;
+          res.items?.forEach((m) =>
+            collected.push({
+              id: m.id,
+              name: m.display_name || m.email || "User",
+              email: m.email,
+            })
+          );
+          page += 1;
+        }
+        if (collected.length > 0) {
+          setMemberState(collected);
+        }
+      } catch (error) {
+        console.error("Failed to fetch members for board:", error);
+      }
+    };
+    fetchMembers();
+  }, [identityService, memberState.length, orgId]);
 
   // Get first status ID for quick create (usually "TO DO")
   const firstStatusId = issueStatuses.length > 0 ? issueStatuses[0].id : null;
@@ -352,6 +421,7 @@ export const BoardView = memo(function BoardView({
               }}
               onColumnDragOver={(position) => setDropPosition({ statusId: status.id, position })}
               onColumnDrop={handleColumnDrop}
+              memberMap={memberMap}
             />
           ))}
 
@@ -522,6 +592,7 @@ const BoardColumn: React.FC<{
   onColumnDragEnd: () => void;
   onColumnDragOver: (position: "before" | "after") => void;
   onColumnDrop: (statusId: string, position: "before" | "after") => void;
+  memberMap: Map<string, { id: string; name: string; email?: string }>;
 }> = ({
   statusId,
   title,
@@ -546,6 +617,7 @@ const BoardColumn: React.FC<{
   onColumnDragEnd,
   onColumnDragOver,
   onColumnDrop,
+  memberMap,
 }) => {
   const [hoveredIssueId, setHoveredIssueId] = useState<string | null>(null);
   const [hoveredPosition, setHoveredPosition] = useState<"top" | "bottom" | null>(null);
@@ -709,6 +781,7 @@ const BoardColumn: React.FC<{
             }}
             onOpenDetail={() => onIssueClick?.(issue.id)}
             projectIdentifier={projectIdentifier}
+            memberMap={memberMap}
           />
         ))}
         {issues.length === 0 && !showQuickCreate ? (
@@ -732,6 +805,7 @@ const BoardIssueCard: React.FC<{
   dragPosition?: "top" | "bottom" | null;
   onOpenDetail?: () => void;
   projectIdentifier?: string | null;
+  memberMap: Map<string, { id: string; name: string; email?: string }>;
 }> = ({
   issue,
   onDragStart,
@@ -742,6 +816,7 @@ const BoardIssueCard: React.FC<{
   dragPosition,
   onOpenDetail,
   projectIdentifier,
+  memberMap,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isDraggingCard, setIsDraggingCard] = useState(false);
@@ -894,15 +969,15 @@ const BoardIssueCard: React.FC<{
       {/* Assignees */}
       {issue.assignees && issue.assignees.length > 0 ? (
         <div className="flex items-center gap-1 -space-x-2">
-          {issue.assignees.slice(0, 3).map((assignee, index) => (
-            <div
-              key={assignee || index}
-              className="size-6 rounded-full bg-custom-primary-100 border-2 border-custom-background-100 flex items-center justify-center text-[10px] font-medium text-white"
-              title={assignee || "Assignee"}
-            >
-              {(assignee || "U").charAt(0).toUpperCase()}
-            </div>
-          ))}
+          {issue.assignees.slice(0, 3).map((assigneeId, index) => {
+            const assignee = memberMap.get(assigneeId);
+            const displayName = assignee?.name || assignee?.email || "User";
+            return (
+              <div key={assigneeId || index} className="shrink-0" title={displayName}>
+                <Avatar name={displayName} size={24} className="ring-2 ring-custom-background-100 text-[10px]" />
+              </div>
+            );
+          })}
           {issue.assignees.length > 3 ? (
             <div className="size-6 rounded-full bg-custom-background-80 border-2 border-custom-background-100 flex items-center justify-center text-[10px] font-medium text-custom-text-200">
               +{issue.assignees.length - 3}
