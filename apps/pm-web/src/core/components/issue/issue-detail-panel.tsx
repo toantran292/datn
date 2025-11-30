@@ -61,7 +61,12 @@ export const IssueDetailPanel: React.FC<IssueDetailPanelProps> = (props) => {
               containerClassName="-pl-3 border-none"
             />
 
-            <IssueDetailProperties issue={issue} locationLabel={locationLabel} disabled={disabled} />
+            <IssueDetailProperties
+              issue={issue}
+              locationLabel={locationLabel}
+              disabled={disabled}
+              onUpdateIssue={onUpdateIssue}
+            />
 
             <IssueDetailActivity issueId={issue.id} projectId={issue.projectId} disabled={disabled} />
           </div>
