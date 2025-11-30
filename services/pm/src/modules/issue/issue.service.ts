@@ -13,7 +13,7 @@ export class IssueService {
 
   constructor(private prisma: PrismaService) {}
 
-  async create(dto: CreateIssueDto, orgId: string): Promise<IssueResponseDto> {
+  async create(dto: CreateIssueDto, orgId: string, userId: string): Promise<IssueResponseDto> {
     // Validate project exists and belongs to organization
     const project = await this.prisma.project.findFirst({
       where: {
@@ -109,6 +109,7 @@ export class IssueService {
         startDate: dto.startDate ? new Date(dto.startDate) : null,
         targetDate: dto.targetDate ? new Date(dto.targetDate) : null,
         assigneesJson: dto.assignees || [],
+        createdBy: userId || null,
       },
       include: {
         status: true,
@@ -473,6 +474,7 @@ export class IssueService {
       assignees: Array.isArray(issue.assigneesJson) ? issue.assigneesJson : [],
       createdAt: issue.createdAt,
       updatedAt: issue.updatedAt,
+      createdBy: issue.createdBy || null,
     };
   }
 }

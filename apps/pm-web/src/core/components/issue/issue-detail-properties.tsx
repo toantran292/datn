@@ -24,6 +24,8 @@ interface IssueDetailPropertiesProps {
   onUpdateIssue?: (issueId: string, data: Partial<IIssue>) => Promise<void>;
 }
 
+type TMemberInfo = { id: string; name: string; email?: string };
+
 export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
   issue,
   locationLabel,
@@ -31,18 +33,20 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
   onUpdateIssue,
 }) => {
   const [assignees, setAssignees] = useState<string[]>(issue.assignees ?? []);
-  const [members, setMembers] = useState<{ id: string; name: string }[]>([]);
+  const [members, setMembers] = useState<TMemberInfo[]>([]);
   const [orgId, setOrgId] = useState<string | null>(null);
   const [isLoadingMembers, setIsLoadingMembers] = useState(false);
   const [isAssigneeOpen, setIsAssigneeOpen] = useState(false);
   const [assigneeSearch, setAssigneeSearch] = useState("");
   const [isPriorityOpen, setIsPriorityOpen] = useState(false);
+  const [isStatusOpen, setIsStatusOpen] = useState(false);
   const identityService = useMemo(() => new IdentityService(), []);
   const projectService = useMemo(() => new ProjectService(), []);
   const issueStatusStore = useIssueStatus();
   const status = issueStatusStore.getIssueStatusById(issue.statusId);
   const assigneeDropdownRef = useRef<HTMLDivElement>(null);
   const priorityDropdownRef = useRef<HTMLDivElement>(null);
+  const statusDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const loader = issueStatusStore.getLoaderForProject(issue.projectId);
@@ -64,6 +68,9 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
       }
       if (priorityDropdownRef.current && !priorityDropdownRef.current.contains(event.target as Node)) {
         setIsPriorityOpen(false);
+      }
+      if (statusDropdownRef.current && !statusDropdownRef.current.contains(event.target as Node)) {
+        setIsStatusOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -88,7 +95,13 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
       setIsLoadingMembers(true);
       try {
         const res = await identityService.getOrgMembers(orgId, 0, 200);
-        setMembers(res.items?.map((m) => ({ id: m.id, name: m.display_name || m.email || "User" })) ?? []);
+        setMembers(
+          res.items?.map((m) => ({
+            id: m.id,
+            name: m.display_name || m.email || "User",
+            email: m.email,
+          })) ?? []
+        );
       } catch (error) {
         console.error("Failed to load members for assignees:", error);
       } finally {
@@ -122,7 +135,10 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
     }
   };
 
-  const filteredMembers = members.filter((member) => member.name.toLowerCase().includes(assigneeSearch.toLowerCase()));
+  const filteredMembers = members.filter((member) => {
+    const haystack = `${member.name} ${member.email ?? ""}`.toLowerCase();
+    return haystack.includes(assigneeSearch.toLowerCase());
+  });
 
   const renderAssigneePills = () =>
     assignees.length === 0 ? (
@@ -144,11 +160,16 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
     { value: "CRITICAL", label: ISSUE_PRIORITY_LABELS.CRITICAL },
   ];
 
+  const statusOptions = issueStatusStore.getIssueStatusesForProject(issue.projectId);
+
   const formattedStartDate = formatDate(issue.startDate);
   const formattedDueDate = formatDate(issue.targetDate);
   const formattedCreatedAt = formatDate(issue.createdAt);
 
   const sprintLabel = issue.sprintId ? (locationLabel ?? "Không xác định") : (locationLabel ?? "Backlog");
+  const creator = members.find((m) => m.id === issue.createdBy);
+  const creatorDisplay = creator?.name || creator?.email || issue.createdBy || "User";
+  const creatorInitial = creatorDisplay.charAt(0).toUpperCase();
 
   const renderAssignees = () => {
     if (!issue.assignees.length) {
@@ -179,13 +200,54 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
             <span>Status</span>
           </div>
           <div className="w-3/4 flex-grow">
-            <Badge
-              variant={ISSUE_STATE_BADGE_VARIANT[issue.state]}
-              size="sm"
-              style={status?.color ? { backgroundColor: status.color, color: "#fff", borderColor: status.color } : {}}
-            >
-              {status?.name ?? ISSUE_STATE_LABELS[issue.state]}
-            </Badge>
+            {disabled ? (
+              <Badge
+                variant={ISSUE_STATE_BADGE_VARIANT[issue.state]}
+                size="sm"
+                style={status?.color ? { backgroundColor: status.color, color: "#fff", borderColor: status.color } : {}}
+              >
+                {status?.name ?? ISSUE_STATE_LABELS[issue.state]}
+              </Badge>
+            ) : (
+              <div className="relative" ref={statusDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsStatusOpen((prev) => !prev)}
+                  className="flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-custom-background-80 transition-colors w-full"
+                >
+                  <Badge
+                    variant={ISSUE_STATE_BADGE_VARIANT[issue.state]}
+                    size="sm"
+                    style={status?.color ? { backgroundColor: status.color, color: "#fff", borderColor: status.color } : {}}
+                  >
+                    {status?.name ?? ISSUE_STATE_LABELS[issue.state]}
+                  </Badge>
+                </button>
+                {isStatusOpen && (
+                  <div className="absolute z-20 mt-1 w-56 rounded-md border border-custom-border-200 bg-custom-background-100 shadow-lg">
+                    {statusOptions.map((opt) => (
+                      <button
+                        key={opt.id}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-sm text-custom-text-200 hover:bg-custom-background-80"
+                        onClick={() => {
+                          setIsStatusOpen(false);
+                          onUpdateIssue?.(issue.id, { statusId: opt.id });
+                        }}
+                      >
+                        <span
+                          className="inline-block h-2.5 w-2.5 rounded-full border border-custom-border-200"
+                          style={{ backgroundColor: opt.color }}
+                        />
+                        <span className="truncate">{opt.name}</span>
+                      </button>
+                    ))}
+                    {statusOptions.length === 0 && (
+                      <div className="px-3 py-2 text-sm text-custom-text-400">Chưa có trạng thái</div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -329,9 +391,9 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
           </div>
           <div className="w-full h-full flex items-center gap-1.5 rounded px-2 py-0.5 text-sm justify-between cursor-not-allowed">
             <div className="flex h-5 w-5 items-center justify-center rounded-full bg-custom-primary-100 text-xs font-semibold text-white">
-              U
+              {creatorInitial}
             </div>
-            <span className="flex-grow truncate leading-5">User</span>
+            <span className="flex-grow truncate leading-5">{creatorDisplay}</span>
           </div>
         </div>
 

@@ -106,6 +106,7 @@ export class IssueService extends APIService {
       assignees: Array.isArray(issue.assignees)
         ? (issue.assignees as unknown[]).map((assignee) => String(assignee))
         : [],
+      createdBy: String(issue.createdBy ?? ""),
       createdAt: String(issue.createdAt ?? ""),
       updatedAt: String(issue.updatedAt ?? ""),
     };

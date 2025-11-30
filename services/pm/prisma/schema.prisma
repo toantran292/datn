@@ -90,6 +90,7 @@ model Issue {
   startDate       DateTime? @map("start_date") @db.Date
   targetDate      DateTime? @map("target_date") @db.Date
   assigneesJson   Json     @default("[]") @map("assignees_json") @db.JsonB
+  createdBy       String?  @map("created_by") @db.Uuid
   createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
@@ -106,6 +107,7 @@ model Issue {
   @@index([sprintId])
   @@index([statusId])
   @@index([parentId])
+  @@index([createdBy])
   @@unique([projectId, sequenceId], name: "unique_project_sequence_id")
   @@map("issue")
 }

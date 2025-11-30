@@ -22,6 +22,7 @@ export interface IIssue {
   startDate: string | null;
   targetDate: string | null;
   assignees: string[];
+  createdBy: string;
   createdAt: string;
   updatedAt: string;
 }

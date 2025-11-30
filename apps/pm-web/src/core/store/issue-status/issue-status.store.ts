@@ -189,9 +189,8 @@ export class IssueStatusStore implements IIssueStatusStore {
    */
   getLoaderForProject = (projectId: string): TLoader => {
     const status = this.projectFetchStatus[projectId];
-    if (status === "init-loader") return "init-loader";
+    if (status === undefined || status === "init-loader") return "init-loader";
     if (status === "fetching") return "mutation-loader";
     return "loaded";
   };
 }
-
