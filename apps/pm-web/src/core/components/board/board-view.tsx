@@ -373,6 +373,7 @@ export const BoardView = memo(function BoardView({
           onClose={handleCloseDetail}
           projectIdentifier={projectIdentifier}
           locationLabel={locationLabel}
+          workspaceSlug={workspaceSlug}
           onUpdateIssue={handleUpdateIssue}
         />
       ) : null}
@@ -939,8 +940,9 @@ const IssueDetailModal: React.FC<{
   onClose: () => void;
   projectIdentifier?: string | null;
   locationLabel?: string | null;
+  workspaceSlug?: string | null;
   onUpdateIssue?: (issueId: string, data: Partial<IIssue>) => Promise<void>;
-}> = ({ issue, isOpen, onClose, projectIdentifier, locationLabel, onUpdateIssue }) => (
+}> = ({ issue, isOpen, onClose, projectIdentifier, locationLabel, workspaceSlug, onUpdateIssue }) => (
   <ModalCore
     isOpen={isOpen}
     handleClose={onClose}
