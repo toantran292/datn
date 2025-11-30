@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import {
   Circle,
   Users,
@@ -13,6 +14,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@uts/design-system/ui";
 import { IIssue } from "@/core/types/issue";
+import { useIssueStatus } from "@/core/hooks/store/use-issue-status";
 import {
   ISSUE_PRIORITY_BADGE_VARIANT,
   ISSUE_PRIORITY_LABELS,
@@ -34,6 +36,18 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
   locationLabel,
   disabled = false,
 }) => {
+  const issueStatusStore = useIssueStatus();
+  const status = issueStatusStore.getIssueStatusById(issue.statusId);
+
+  useEffect(() => {
+    const loader = issueStatusStore.getLoaderForProject(issue.projectId);
+    if (loader === "init-loader") {
+      issueStatusStore.fetchIssueStatusesByProject(issue.projectId).catch((error) => {
+        console.error("Failed to load statuses for properties:", error);
+      });
+    }
+  }, [issue.projectId, issueStatusStore]);
+
   const formattedStartDate = formatDate(issue.startDate);
   const formattedDueDate = formatDate(issue.targetDate);
   const formattedCreatedAt = formatDate(issue.createdAt);
@@ -62,15 +76,19 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
     <div>
       <h6 className="text-sm font-medium">Properties</h6>
       <div className={`w-full space-y-2 mt-3 ${disabled ? "opacity-60" : ""}`}>
-        {/* state */}
+        {/* status */}
         <div className="flex w-full items-center gap-3 h-8">
           <div className="flex items-center gap-1 w-1/4 flex-shrink-0 text-sm text-custom-text-300">
             <Circle className="h-4 w-4 flex-shrink-0" />
-            <span>State</span>
+            <span>Status</span>
           </div>
           <div className="w-3/4 flex-grow">
-            <Badge variant={ISSUE_STATE_BADGE_VARIANT[issue.state]} size="sm">
-              {ISSUE_STATE_LABELS[issue.state]}
+            <Badge
+              variant={ISSUE_STATE_BADGE_VARIANT[issue.state]}
+              size="sm"
+              style={status?.color ? { backgroundColor: status.color, color: "#fff", borderColor: status.color } : {}}
+            >
+              {status?.name ?? ISSUE_STATE_LABELS[issue.state]}
             </Badge>
           </div>
         </div>
