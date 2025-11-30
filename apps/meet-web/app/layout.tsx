@@ -16,7 +16,7 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <Script
-          src="https://meet.jit.si/libs/lib-jitsi-meet.min.js"
+          src="/lib-jitsi-meet.min.js"
           strategy="beforeInteractive"
         />
       </head>

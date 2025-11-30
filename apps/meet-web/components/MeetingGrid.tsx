@@ -99,7 +99,7 @@ export function MeetingGrid({ participants, localParticipant }: MeetingGridProps
     <div className="w-full h-full flex items-center justify-center p-8 relative">
       {/* Main grid container */}
       <div className="relative w-full max-w-6xl">
-       <AnimatePresence mode="wait" custom={slideDirection}>
+        <AnimatePresence mode="wait" custom={slideDirection}>
           <motion.div
             key={currentPage}
             custom={slideDirection}
@@ -142,13 +142,14 @@ export function MeetingGrid({ participants, localParticipant }: MeetingGridProps
                 whileHover={{ scale: 1.1, x: -5 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handlePrevPage}
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-16 p-3 rounded-full backdrop-blur-md border border-gray-700"
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-16 p-3 rounded-full backdrop-blur-md border"
                 style={{
                   background: 'rgba(17, 24, 39, 0.95)',
+                  borderColor: 'var(--ts-border)',
                   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
                 }}
               >
-                <ChevronLeft className="w-6 h-6 text-ts-teal" />
+                <ChevronLeft className="w-6 h-6" style={{ color: 'var(--ts-teal)' }} />
               </motion.button>
             )}
 
@@ -159,13 +160,14 @@ export function MeetingGrid({ participants, localParticipant }: MeetingGridProps
                 whileHover={{ scale: 1.1, x: 5 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleNextPage}
-                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-16 p-3 rounded-full backdrop-blur-md border border-gray-700"
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-16 p-3 rounded-full backdrop-blur-md border"
                 style={{
                   background: 'rgba(17, 24, 39, 0.95)',
+                  borderColor: 'var(--ts-border)',
                   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
                 }}
               >
-                <ChevronRight className="w-6 h-6 text-ts-teal" />
+                <ChevronRight className="w-6 h-6" style={{ color: 'var(--ts-teal)' }} />
               </motion.button>
             )}
           </>
@@ -177,13 +179,14 @@ export function MeetingGrid({ participants, localParticipant }: MeetingGridProps
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="fixed bottom-32 right-8 px-4 py-2 rounded-xl backdrop-blur-md border border-gray-700"
+          className="fixed bottom-32 right-8 px-4 py-2 rounded-xl backdrop-blur-md border"
           style={{
             background: 'rgba(17, 24, 39, 0.95)',
+            borderColor: 'var(--ts-border)',
             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
           }}
         >
-          <p className="text-ts-text-secondary text-sm">
+          <p className="text-sm" style={{ color: 'var(--ts-text-secondary)' }}>
             Page {currentPage + 1} of {totalPages}
           </p>
         </motion.div>
@@ -194,9 +197,10 @@ export function MeetingGrid({ participants, localParticipant }: MeetingGridProps
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="fixed bottom-32 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 rounded-xl backdrop-blur-md border border-gray-700"
+          className="fixed bottom-32 left-1/2 -translate-x-1/2 flex items-center gap-2 px-4 py-2 rounded-xl backdrop-blur-md border"
           style={{
             background: 'rgba(17, 24, 39, 0.95)',
+            borderColor: 'var(--ts-border)',
             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
           }}
         >

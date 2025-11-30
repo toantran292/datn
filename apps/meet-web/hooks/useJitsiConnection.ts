@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { createConnection, getJitsiMeetJS } from '@/lib/jitsi';
+import { createConnection, getJitsiMeetJS, waitForJitsiMeetJS } from '@/lib/jitsi';
 import type { JitsiConnection } from '@/types/jitsi';
 
 export function useJitsiConnection(websocketUrl: string | null, jwt: string | null) {
@@ -30,30 +30,34 @@ export function useJitsiConnection(websocketUrl: string | null, jwt: string | nu
       setIsConnected(false);
     };
 
-    try {
-      const JitsiMeetJS = getJitsiMeetJS();
-      conn = createConnection(websocketUrl, jwt);
-      connectionRef.current = conn;
+    const initConnection = async () => {
+      try {
+        const JitsiMeetJS = await waitForJitsiMeetJS();
+        conn = await createConnection(websocketUrl, jwt);
+        connectionRef.current = conn;
 
-      conn.addEventListener(
-        JitsiMeetJS.events.connection.CONNECTION_ESTABLISHED,
-        handleConnectionEstablished
-      );
-      conn.addEventListener(
-        JitsiMeetJS.events.connection.CONNECTION_FAILED,
-        handleConnectionFailed
-      );
-      conn.addEventListener(
-        JitsiMeetJS.events.connection.CONNECTION_DISCONNECTED,
-        handleConnectionDisconnected
-      );
+        conn.addEventListener(
+          JitsiMeetJS.events.connection.CONNECTION_ESTABLISHED,
+          handleConnectionEstablished
+        );
+        conn.addEventListener(
+          JitsiMeetJS.events.connection.CONNECTION_FAILED,
+          handleConnectionFailed
+        );
+        conn.addEventListener(
+          JitsiMeetJS.events.connection.CONNECTION_DISCONNECTED,
+          handleConnectionDisconnected
+        );
 
-      conn.connect();
-      setConnection(conn);
-    } catch (err) {
-      console.error('[Jitsi] Failed to create connection:', err);
-      setError('Failed to create connection');
-    }
+        conn.connect();
+        setConnection(conn);
+      } catch (err) {
+        console.error('[Jitsi] Failed to create connection:', err);
+        setError('Failed to create connection');
+      }
+    };
+
+    initConnection();
 
     return () => {
       if (conn) {

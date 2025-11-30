@@ -6,9 +6,7 @@ import { useJitsiConnection } from '@/hooks/useJitsiConnection';
 import { useJitsiConference } from '@/hooks/useJitsiConference';
 import { WaitingState } from '@/components/WaitingState';
 import { ControlsToolbar } from '@/components/ControlsToolbar';
-import { LocalVideo } from '@/components/LocalVideo';
-import { RemoteVideo } from '@/components/RemoteVideo';
-import { motion } from 'motion/react';
+import { MeetingGrid } from '@/components/MeetingGrid';
 
 export default function MeetingPage() {
   const params = useParams();
@@ -24,7 +22,9 @@ export default function MeetingPage() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    initializeJitsi();
+    initializeJitsi().catch(err => {
+      console.error('[Meeting] Failed to initialize Jitsi:', err);
+    });
 
     // Load meeting info from localStorage
     const token = localStorage.getItem('jwtToken');
@@ -113,66 +113,48 @@ export default function MeetingPage() {
     );
   }
 
-  // Calculate grid layout
-  const totalParticipants = participants.size + 1; // +1 for local user
-  const gridCols = Math.ceil(Math.sqrt(totalParticipants));
+  // Convert participants Map to array
+  const participantsArray = Array.from(participants.values());
 
   return (
-    <div className="w-screen h-screen bg-ts-bg-dark flex flex-col overflow-hidden">
+    <div className="w-screen h-screen flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--ts-bg-dark)' }}>
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 bg-ts-bg-card border-b border-gray-800">
+      <div className="flex items-center justify-between px-6 py-4 border-b" style={{ backgroundColor: 'var(--ts-card-surface)', borderColor: 'var(--ts-border)' }}>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-ts-orange to-ts-teal rounded-xl flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, var(--ts-orange) 0%, var(--ts-teal) 100%)' }}>
             <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
               <path d="M15.5 2v6h3l-6 6-6-6h3V2h6zm-6 14h6v6h-6v-6z" stroke="currentColor" strokeWidth="2" />
             </svg>
           </div>
           <div>
             <h1 className="text-white font-semibold">UTS Meet</h1>
-            <p className="text-ts-text-secondary text-sm">{roomId}</p>
+            <p className="text-sm" style={{ color: 'var(--ts-text-secondary)' }}>{roomId}</p>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 px-4 py-2 bg-green-500/20 rounded-lg border border-green-500/30">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-lg border" style={{ backgroundColor: 'rgba(34, 197, 94, 0.2)', borderColor: 'rgba(34, 197, 94, 0.3)' }}>
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
             <span className="text-green-400 text-sm font-medium">Connected</span>
           </div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-ts-bg-dark rounded-lg">
-            <svg className="w-4 h-4 text-ts-text-secondary" fill="currentColor" viewBox="0 0 20 20">
+          <div className="flex items-center gap-2 px-4 py-2 rounded-lg" style={{ backgroundColor: 'var(--ts-bg-dark)' }}>
+            <svg className="w-4 h-4" style={{ color: 'var(--ts-text-secondary)' }} fill="currentColor" viewBox="0 0 20 20">
               <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
             </svg>
-            <span className="text-white font-medium">{totalParticipants}</span>
+            <span className="text-white font-medium">{participantsArray.length + 1}</span>
           </div>
         </div>
       </div>
 
       {/* Video Grid */}
-      <div className="flex-1 p-6 overflow-auto">
-        <div
-          className="grid gap-4 h-full"
-          style={{
-            gridTemplateColumns: `repeat(${gridCols}, 1fr)`,
-            gridAutoRows: '1fr',
+      <div className="flex-1 overflow-hidden">
+        <MeetingGrid
+          participants={participantsArray}
+          localParticipant={{
+            name: displayName,
+            tracks: localTracks,
           }}
-        >
-          {/* Local video */}
-          <LocalVideo
-            name={displayName}
-            tracks={localTracks}
-          />
-
-          {/* Remote participants */}
-          {Array.from(participants.values()).map((participant) => {
-            return (
-              <RemoteVideo
-                key={participant.id}
-                name={participant.name}
-                tracks={participant.tracks}
-              />
-            );
-          })}
-        </div>
+        />
       </div>
 
       {/* Controls */}

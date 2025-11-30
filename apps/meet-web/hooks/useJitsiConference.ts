@@ -113,6 +113,7 @@ export function useJitsiConference(
         conf = connection.initJitsiConference(roomName, confOptions);
         conferenceRef.current = conf;
         setConference(conf);
+        
 
         // Event handlers
         const handleConferenceJoined = () => {
@@ -145,21 +146,23 @@ export function useJitsiConference(
         };
 
         const handleUserJoined = (id: string, user: JitsiParticipant) => {
-          const displayName = user.getDisplayName() || 'Unknown';
+          const name = user.getDisplayName() || 'Unknown';
 
           setParticipants(prev => {
             const next = new Map(prev);
             const existing = next.get(id);
 
-            next.set(id, {
-              id,
-              name: displayName,
-              tracks: existing ? [...existing.tracks] : [],
-            });
+            if (existing) {
+              next.set(id, { ...existing, name });
+              return next;
+            }
 
+            // Khi chưa có participant → tạo với tracks rỗng
+            next.set(id, { id, name, tracks: [] });
             return next;
           });
         };
+
 
         const handleUserLeft = (id: string) => {
           setParticipants(prev => {
@@ -190,52 +193,64 @@ export function useJitsiConference(
        const handleTrackAdded = async (track: JitsiTrack) => {
           await ensureTrackId(track);
 
-          console.log('[handleTrackAdded] Track added:', {
-            trackId: track.getId(),
-            type: track.getType(),
-            isLocal: track.isLocal(),
-            participantId: track.getParticipantId()
-          });
-
-          // Skip local tracks
           if (track.isLocal()) {
             setLocalTracks(prev => {
               const exists = prev.some(t => t.getId() === track.getId());
-              if (exists) return prev;
-              return [...prev, track];
+              return exists ? prev : [...prev, track];
             });
             return;
           }
 
-          const participantId = track.getParticipantId();
-          const trackType = track.getType();
+          const pid = track.getParticipantId();
+          const type = track.getType();
           const trackId = track.getId();
+
+          console.log('[handleTrackAdded] Processing track:', {
+            trackId,
+            type,
+            pid,
+            isLocal: track.isLocal()
+          });
 
           setParticipants(prev => {
             const next = new Map(prev);
-            let participant = next.get(participantId);
-            console.log({name: participant});
-            
-            // 🌟 Tạo participant stub nếu chưa có
-            if (!participant) {
-              participant = {
-                id: participantId,
-                name: 'Unknown',
-                tracks: []
-              };
-              next.set(participantId, participant);
-              console.log('[handleTrackAdded] Created stub participant');
+            let p = next.get(pid);
+
+            console.log('[handleTrackAdded] Current participant:', {
+              pid,
+              name: p?.name || 'NOT_FOUND',
+              existingTracks: p?.tracks.map(t => t.getId()) || []
+            });
+
+            if (!p) {
+              // create stub but don't overwrite later!
+              p = { id: pid, name: 'Unknown', tracks: [] };
             }
 
-            // 🌟 Chỉ update track của cùng loại
+            // Check if track already exists (by ID)
+            const existingTrack = p.tracks.find(t => t.getId() === trackId);
+            if (existingTrack) {
+              console.log('[handleTrackAdded] Track already exists, skipping:', trackId);
+              return prev; // Return same reference to avoid re-render
+            }
+
             const newTracks = [
-              ...participant.tracks.filter(t => t.getType() !== trackType),
+              ...p.tracks.filter(t => t.getType() !== type),
               track
             ];
 
-            next.set(participantId, {
-              ...participant,
-              tracks: newTracks
+            console.log('[handleTrackAdded] Updated participant:', {
+              pid,
+              name: p.name,
+              newTracks: newTracks.map(t => `${t.getType()}:${t.getId()}`)
+            });
+
+            next.set(pid, { ...p, tracks: newTracks });
+
+            // Log all participants after update
+            console.log('[handleTrackAdded] All participants after update:');
+            next.forEach((participant, id) => {
+              console.log(`  - ${participant.name} (${id}):`, participant.tracks.map(t => `${t.getType()}:${t.getId()}`));
             });
 
             return next;

@@ -85,7 +85,7 @@ export interface JitsiTrack {
   isLocal(): boolean;
   getId(): string;
   getParticipantId(): string;
-  attach(container: HTMLElement): void;
+  attach(container: HTMLElement): Promise<void>;
   detach(container: HTMLElement): void;
   dispose(): void;
   mute(): Promise<void>;
@@ -100,4 +100,4 @@ declare global {
   }
 }
 
-export {};
+export { };

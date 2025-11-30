@@ -5,9 +5,11 @@
 :root {
   --ts-orange: #FF8800;
   --ts-teal: #00C4AB;
-  --ts-bg-dark: #0F172A;
-  --ts-bg-card: #1E293B;
-  --ts-text-primary: #F8FAFC;
+  --ts-accent: #FF3B69;
+  --ts-bg-dark: #0B1220;
+  --ts-card-surface: #111827;
+  --ts-border: #1E293B;
+  --ts-text-primary: #F9FAFB;
   --ts-text-secondary: #94A3B8;
 }
 
@@ -21,4 +23,14 @@ body {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+/* Hide scrollbar but keep scrolling functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
