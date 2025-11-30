@@ -62,7 +62,7 @@ export const BoardView = memo(function BoardView({
   projectIdentifier,
 }: BoardViewProps) {
   const issueStatusStore = useIssueStatus();
-  
+
   const grouped = useMemo(() => {
     const map: Record<string, IIssue[]> = {};
 
@@ -99,7 +99,7 @@ export const BoardView = memo(function BoardView({
   const [isCreateStatusModalOpen, setIsCreateStatusModalOpen] = useState(false);
   const [draggedColumnId, setDraggedColumnId] = useState<string | null>(null);
   const [dropPosition, setDropPosition] = useState<{ statusId: string; position: "before" | "after" } | null>(null);
-  
+
   // Get first status ID for quick create (usually "TO DO")
   const firstStatusId = issueStatuses.length > 0 ? issueStatuses[0].id : null;
   const selectedIssue = selectedIssueId ? (issueStore.getIssueById(selectedIssueId) ?? null) : null;
@@ -352,7 +352,7 @@ export const BoardView = memo(function BoardView({
               onColumnDrop={handleColumnDrop}
             />
           ))}
-          
+
           {/* Add Status Button */}
           <button
             onClick={() => setIsCreateStatusModalOpen(true)}
@@ -565,7 +565,7 @@ const BoardColumn: React.FC<{
           onColumnDragEnter(statusId);
           return;
         }
-        
+
         // Column drag over
         event.preventDefault();
         const rect = event.currentTarget.getBoundingClientRect();
@@ -575,7 +575,7 @@ const BoardColumn: React.FC<{
       }}
       onDrop={(event) => {
         event.preventDefault();
-        
+
         if (isDraggingColumn && dropPosition) {
           onColumnDrop(statusId, dropPosition);
         } else {
@@ -592,9 +592,9 @@ const BoardColumn: React.FC<{
       {dropPosition === "after" && (
         <div className="absolute right-0 top-0 bottom-0 w-1 bg-custom-primary-100 z-10 rounded-r-lg" />
       )}
-      
+
       {/* Column Header */}
-      <div 
+      <div
         className="flex items-center justify-between px-4 pt-4 pb-2 cursor-grab active:cursor-grabbing"
         draggable={!isDraggingColumn}
         onDragStart={(e) => {
@@ -943,10 +943,10 @@ const IssueDetailModal: React.FC<{
     isOpen={isOpen}
     handleClose={onClose}
     position={EModalPosition.CENTER}
-    width={EModalWidth.XXL}
+    width={EModalWidth.XXXL}
     className="max-h-[90vh]"
   >
-    <div className="max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="max-h-[90vh] overflow-hidden flex flex-col w-full">
       <IssueDetailPanel
         issue={issue}
         projectIdentifier={projectIdentifier}
