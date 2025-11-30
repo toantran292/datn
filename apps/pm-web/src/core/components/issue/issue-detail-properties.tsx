@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Circle, Users, Signal, User, Calendar, CalendarClock, Tag, Network, Hash } from "lucide-react";
+import { Circle, Users, Signal, User, Calendar, CalendarClock, Network, Hash } from "lucide-react";
 import { Badge } from "@uts/design-system/ui";
 import { IIssue } from "@/core/types/issue";
 import { useIssueStatus } from "@/core/hooks/store/use-issue-status";
 import { IdentityService } from "@/core/services/identity/identity.service";
 import { ProjectService } from "@/core/services/project/project.service";
+import { useIssue } from "@/core/hooks/store/use-issue";
 import {
   ISSUE_PRIORITY_BADGE_VARIANT,
   ISSUE_PRIORITY_LABELS,
@@ -40,13 +41,16 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
   const [assigneeSearch, setAssigneeSearch] = useState("");
   const [isPriorityOpen, setIsPriorityOpen] = useState(false);
   const [isStatusOpen, setIsStatusOpen] = useState(false);
+  const [isParentOpen, setIsParentOpen] = useState(false);
   const identityService = useMemo(() => new IdentityService(), []);
   const projectService = useMemo(() => new ProjectService(), []);
   const issueStatusStore = useIssueStatus();
+  const issueStore = useIssue();
   const status = issueStatusStore.getIssueStatusById(issue.statusId);
   const assigneeDropdownRef = useRef<HTMLDivElement>(null);
   const priorityDropdownRef = useRef<HTMLDivElement>(null);
   const statusDropdownRef = useRef<HTMLDivElement>(null);
+  const parentDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const loader = issueStatusStore.getLoaderForProject(issue.projectId);
@@ -71,6 +75,9 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
       }
       if (statusDropdownRef.current && !statusDropdownRef.current.contains(event.target as Node)) {
         setIsStatusOpen(false);
+      }
+      if (parentDropdownRef.current && !parentDropdownRef.current.contains(event.target as Node)) {
+        setIsParentOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -161,6 +168,10 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
   ];
 
   const statusOptions = issueStatusStore.getIssueStatusesForProject(issue.projectId);
+  const issueOptions = issueStore
+    .getIssuesForProject(issue.projectId)
+    .filter((i) => i.id !== issue.id)
+    .sort((a, b) => a.sequenceId - b.sequenceId);
 
   const formattedStartDate = formatDate(issue.startDate);
   const formattedDueDate = formatDate(issue.targetDate);
@@ -170,6 +181,53 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
   const creator = members.find((m) => m.id === issue.createdBy);
   const creatorDisplay = creator?.name || creator?.email || issue.createdBy || "User";
   const creatorInitial = creatorDisplay.charAt(0).toUpperCase();
+  const [startDateValue, setStartDateValue] = useState<string | null>(issue.startDate);
+  const [dueDateValue, setDueDateValue] = useState<string | null>(issue.targetDate);
+  const [parentValue, setParentValue] = useState<string | null>(issue.parentId);
+
+  useEffect(() => {
+    setStartDateValue(issue.startDate);
+    setDueDateValue(issue.targetDate);
+    setParentValue(issue.parentId);
+  }, [issue.startDate, issue.targetDate, issue.parentId]);
+
+  const handleStartDateChange = async (value: string) => {
+    const next = value || null;
+    setStartDateValue(next);
+    if (onUpdateIssue) {
+      try {
+        await onUpdateIssue(issue.id, { startDate: next });
+      } catch (error) {
+        console.error("Failed to update start date:", error);
+        setStartDateValue(issue.startDate);
+      }
+    }
+  };
+
+  const handleDueDateChange = async (value: string) => {
+    const next = value || null;
+    setDueDateValue(next);
+    if (onUpdateIssue) {
+      try {
+        await onUpdateIssue(issue.id, { targetDate: next });
+      } catch (error) {
+        console.error("Failed to update due date:", error);
+        setDueDateValue(issue.targetDate);
+      }
+    }
+  };
+
+  const handleParentChange = async (parentId: string | null) => {
+    setParentValue(parentId);
+    if (onUpdateIssue) {
+      try {
+        await onUpdateIssue(issue.id, { parentId });
+      } catch (error) {
+        console.error("Failed to update parent:", error);
+        setParentValue(issue.parentId);
+      }
+    }
+  };
 
   const renderAssignees = () => {
     if (!issue.assignees.length) {
@@ -404,10 +462,20 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
             <span>Start date</span>
           </div>
           <div className="w-3/4 flex-grow">
-            {formattedStartDate ? (
-              <span className="text-sm">{formattedStartDate}</span>
+            {disabled ? (
+              formattedStartDate ? (
+                <span className="text-sm">{formattedStartDate}</span>
+              ) : (
+                <span className="text-sm text-custom-text-400">Add start date</span>
+              )
             ) : (
-              <span className="text-sm text-custom-text-400">Add start date</span>
+              <input
+                type="date"
+                value={startDateValue ?? ""}
+                onChange={(e) => handleStartDateChange(e.target.value)}
+                className="w-full rounded border border-custom-border-200 bg-custom-background-100 px-2 py-1 text-sm text-custom-text-200 focus:outline-none focus:ring-1 focus:ring-custom-primary-100"
+                placeholder="Add start date"
+              />
             )}
           </div>
         </div>
@@ -418,11 +486,21 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
             <CalendarClock className="h-4 w-4 flex-shrink-0" />
             <span>Due date</span>
           </div>
-          <div className="flex items-center gap-2">
-            {formattedDueDate ? (
-              <span className="text-sm">{formattedDueDate}</span>
+          <div className="w-3/4 flex-grow">
+            {disabled ? (
+              formattedDueDate ? (
+                <span className="text-sm">{formattedDueDate}</span>
+              ) : (
+                <span className="text-sm text-custom-text-400">Add due date</span>
+              )
             ) : (
-              <span className="text-sm text-custom-text-400">Add due date</span>
+              <input
+                type="date"
+                value={dueDateValue ?? ""}
+                onChange={(e) => handleDueDateChange(e.target.value)}
+                className="w-full rounded border border-custom-border-200 bg-custom-background-100 px-2 py-1 text-sm text-custom-text-200 focus:outline-none focus:ring-1 focus:ring-custom-primary-100"
+                placeholder="Add due date"
+              />
             )}
           </div>
         </div>
@@ -434,18 +512,58 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
             <span>Parent</span>
           </div>
           <div className="w-3/4 flex-grow">
-            <span className="text-sm text-custom-text-400">Add parent work item</span>
-          </div>
-        </div>
-
-        {/* label */}
-        <div className="flex w-full items-center gap-3 min-h-8">
-          <div className="flex items-center gap-1 w-1/4 flex-shrink-0 text-sm text-custom-text-300">
-            <Tag className="h-4 w-4 flex-shrink-0" />
-            <span>Labels</span>
-          </div>
-          <div className="flex w-full flex-col gap-3 truncate">
-            <span className="text-sm text-custom-text-400">Select label</span>
+            {disabled ? (
+              parentValue ? (
+                <span className="text-sm text-custom-text-100">
+                  {issueOptions.find((i) => i.id === parentValue)?.name ?? parentValue}
+                </span>
+              ) : (
+                <span className="text-sm text-custom-text-400">Add parent work item</span>
+              )
+            ) : (
+              <div className="relative" ref={parentDropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsParentOpen((prev) => !prev)}
+                  className="flex w-full items-center justify-between rounded px-2 py-1 text-sm hover:bg-custom-background-80 transition-colors"
+                >
+                  <span className="truncate text-custom-text-200">
+                    {parentValue
+                      ? issueOptions.find((i) => i.id === parentValue)?.name ?? parentValue
+                      : "Add parent work item"}
+                  </span>
+                  <Hash className="h-4 w-4 text-custom-text-300" />
+                </button>
+                {isParentOpen && (
+                  <div className="absolute z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-md border border-custom-border-200 bg-custom-background-100 shadow-lg">
+                    <button
+                      className="w-full px-3 py-2 text-left text-sm text-custom-text-200 hover:bg-custom-background-80"
+                      onClick={() => {
+                        setIsParentOpen(false);
+                        handleParentChange(null);
+                      }}
+                    >
+                      (None)
+                    </button>
+                    {issueOptions.map((opt) => (
+                      <button
+                        key={opt.id}
+                        className="w-full px-3 py-2 text-left text-sm text-custom-text-200 hover:bg-custom-background-80"
+                        onClick={() => {
+                          setIsParentOpen(false);
+                          handleParentChange(opt.id);
+                        }}
+                      >
+                        {opt.name}
+                      </button>
+                    ))}
+                    {issueOptions.length === 0 && (
+                      <div className="px-3 py-2 text-sm text-custom-text-400">No other work items</div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
