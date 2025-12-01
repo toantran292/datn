@@ -11,6 +11,7 @@ import {
   IBacklogSectionData,
   StartSprintModal,
 } from "@/core/components/backlog";
+import { CompleteSprintModal } from "@/core/components/sprint/complete-sprint-modal";
 import { ProjectTabs } from "@/core/components/project/project-tabs";
 import { IdentityService } from "@/core/services/identity/identity.service";
 import { ProjectService } from "@/core/services/project/project.service";
@@ -44,6 +45,8 @@ const ProjectBacklogPage = observer(() => {
   const [members, setMembers] = useState<{ id: string; name: string; email?: string }[]>([]);
   const [startSprintState, setStartSprintState] = useState<{ sprintId: string; issueCount: number } | null>(null);
   const [isStartModalOpen, setIsStartModalOpen] = useState(false);
+  const [completeSprintId, setCompleteSprintId] = useState<string | null>(null);
+  const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
 
   const {
     fetchIssuesByProject,
@@ -302,6 +305,11 @@ const ProjectBacklogPage = observer(() => {
     setIsStartModalOpen(true);
   };
 
+  const handleOpenCompleteSprint = (sprintId: string) => {
+    setCompleteSprintId(sprintId);
+    setIsCompleteModalOpen(true);
+  };
+
   const handleCloseStartSprint = () => {
     setIsStartModalOpen(false);
     setStartSprintState(null);
@@ -419,13 +427,14 @@ const ProjectBacklogPage = observer(() => {
         isLoading={isLoading}
         onCreateIssue={handleCreateIssue}
         onIssueDrop={handleIssueDrop}
-        onCompleteSprint={handleUnimplemented}
+        onCompleteSprint={handleOpenCompleteSprint}
         onCreateSprint={handleCreateSprint}
         onStartSprint={handleOpenStartSprint}
         onUpdateIssue={handleUpdateIssue}
         workspaceSlug={workspaceSlug}
         members={members}
         issueStatuses={issueStatuses}
+        sprints={getSprintsForProject(projectId)}
       />
 
       <StartSprintModal
@@ -437,6 +446,15 @@ const ProjectBacklogPage = observer(() => {
         initialEndDate={sprintToStart?.endDate ?? null}
         onClose={handleCloseStartSprint}
         onConfirm={handleConfirmStartSprint}
+      />
+
+      <CompleteSprintModal
+        projectId={projectId}
+        activeSprints={getSprintsForProject(projectId)}
+        issues={projectIssues}
+        isOpen={isCompleteModalOpen}
+        onClose={() => setIsCompleteModalOpen(false)}
+        members={members}
       />
     </div>
   );

@@ -78,6 +78,7 @@ interface BacklogViewProps {
   workspaceSlug?: string | null;
   members?: { id: string; name: string; email?: string }[];
   issueStatuses?: { id: string; name: string; color?: string }[];
+  sprints?: { id: string; status: string }[];
 }
 
 export type BacklogIssueDropPayload = IReorderIssuePayload;
@@ -96,11 +97,12 @@ const BacklogViewComponent: React.FC<BacklogViewProps> = (props) => {
     onCompleteSprint,
     onCreateSprint,
     onStartSprint,
-    onUpdateIssue,
-    workspaceSlug = null,
-    members = [],
-    issueStatuses = [],
-  } = props;
+  onUpdateIssue,
+  workspaceSlug = null,
+  members = [],
+  issueStatuses = [],
+  sprints = [],
+} = props;
 
   const [draftSectionId, setDraftSectionId] = useState<string | null>(null);
   const [draftName, setDraftName] = useState<string>("");

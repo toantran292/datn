@@ -38,10 +38,10 @@ import type { IIssueStatus } from "@/core/types/issue-status";
 import type { ISprint } from "@/core/types/sprint";
 import { formatIssueKey } from "@/core/components/backlog/utils";
 import { CreateStatusModal } from "@/core/components/issue-status";
+import { CompleteSprintModal } from "@/core/components/sprint/complete-sprint-modal";
 import { useIssueStatus } from "@/core/hooks/store/use-issue-status";
 import { IdentityService } from "@/core/services/identity/identity.service";
 import { ProjectService } from "@/core/services/project/project.service";
-import { render } from "react-dom";
 
 const IssueDetailPanel = dynamic(
   () => import("@/core/components/issue/issue-detail-panel").then((mod) => mod.IssueDetailPanel),
@@ -74,6 +74,7 @@ export const BoardView = memo(function BoardView({
   const projectService = useMemo(() => new ProjectService(), []);
   const [orgId, setOrgId] = useState<string | null>(null);
   const [memberState, setMemberState] = useState<{ id: string; name: string; email?: string }[]>(members);
+  const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
 
   const grouped = useMemo(() => {
     const map: Record<string, IIssue[]> = {};
@@ -378,7 +379,7 @@ export const BoardView = memo(function BoardView({
     <>
       <div className="flex h-full flex-col gap-4 overflow-hidden">
         <div className="flex-shrink-0">
-          <BoardToolbar />
+          <BoardToolbar onCompleteSprint={() => setIsCompleteModalOpen(true)} canComplete={activeSprints.length > 0} />
         </div>
         <div className="flex-shrink-0 flex flex-col gap-4 max-h-[40vh] overflow-y-auto">
           {activeSprints.map((sprint) => (
@@ -453,11 +454,23 @@ export const BoardView = memo(function BoardView({
         onClose={() => setIsCreateStatusModalOpen(false)}
         onSubmit={handleCreateStatus}
       />
+
+      <CompleteSprintModal
+        projectId={projectId}
+        activeSprints={activeSprints}
+        issues={issues}
+        isOpen={isCompleteModalOpen}
+        onClose={() => setIsCompleteModalOpen(false)}
+        members={memberState}
+      />
     </>
   );
 });
 
-const BoardToolbar = () => (
+const BoardToolbar: React.FC<{ onCompleteSprint?: () => void; canComplete?: boolean }> = ({
+  onCompleteSprint,
+  canComplete = false,
+}) => (
   <div className="flex flex-wrap items-center justify-between gap-3 bg-custom-background-100 rounded-lg p-4 border border-custom-border-200">
     <div className="flex items-center gap-2">
       <div className="relative">
@@ -479,7 +492,7 @@ const BoardToolbar = () => (
       </Button>
     </div>
     <div className="flex items-center gap-2">
-      <Button variant="primary" size="sm" disabled className="gap-2">
+      <Button variant="primary" size="sm" className="gap-2" onClick={onCompleteSprint} disabled={!canComplete}>
         <CheckCircle2 className="size-4" />
         Hoàn thành sprint
       </Button>
