@@ -26,7 +26,7 @@ import dynamic from "next/dynamic";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { observer } from "mobx-react";
-import { Badge, Button, Checkbox, Input, Loader } from "@uts/design-system/ui";
+import { Avatar, Badge, Button, Checkbox, Input, Loader } from "@uts/design-system/ui";
 import { cn } from "@uts/fe-utils";
 
 import { IIssue, IReorderIssuePayload } from "@/core/types/issue";
@@ -75,6 +75,10 @@ interface BacklogViewProps {
   onCompleteSprint?: (sprintId: string) => void;
   onStartSprint?: (sprintId: string, issueCount: number) => void;
   onUpdateIssue?: (issueId: string, data: Partial<IIssue>) => Promise<void>;
+  workspaceSlug?: string | null;
+  members?: { id: string; name: string; email?: string }[];
+  issueStatuses?: { id: string; name: string; color?: string }[];
+  sprints?: { id: string; status: string }[];
 }
 
 export type BacklogIssueDropPayload = IReorderIssuePayload;
@@ -93,8 +97,12 @@ const BacklogViewComponent: React.FC<BacklogViewProps> = (props) => {
     onCompleteSprint,
     onCreateSprint,
     onStartSprint,
-    onUpdateIssue,
-  } = props;
+  onUpdateIssue,
+  workspaceSlug = null,
+  members = [],
+  issueStatuses = [],
+  sprints = [],
+} = props;
 
   const [draftSectionId, setDraftSectionId] = useState<string | null>(null);
   const [draftName, setDraftName] = useState<string>("");
@@ -107,18 +115,45 @@ const BacklogViewComponent: React.FC<BacklogViewProps> = (props) => {
   const [isResizingDetail, setIsResizingDetail] = useState(false);
   const detailResizeStateRef = useRef<{ startX: number; startWidth: number } | null>(null);
 
-  const sprintCount = useMemo(() => sections.filter((section) => section.type === "sprint").length, [sections]);
+  const allowedSprintIds = useMemo(() => {
+    const ids = new Set<string>();
+    sprints.forEach((s) => {
+      if (s.status !== "CLOSED") ids.add(s.id);
+    });
+    return ids;
+  }, [sprints]);
+
+  const filteredSections = useMemo(() => {
+    return sections.filter((section) => section.type !== "sprint" || allowedSprintIds.has(section.id));
+  }, [allowedSprintIds, sections]);
+
+  const sprintCount = useMemo(
+    () => filteredSections.filter((section) => section.type === "sprint").length,
+    [filteredSections]
+  );
   const defaultSprintName = useMemo(() => `Sprint ${sprintCount + 1}`, [sprintCount]);
 
   const issueLookup = useMemo(() => {
     const map = new Map<string, { issue: IIssue; section: IBacklogSectionData }>();
-    sections.forEach((section) => {
+    filteredSections.forEach((section) => {
       section.issues.forEach((issue) => {
         map.set(issue.id, { issue, section });
       });
     });
     return map;
-  }, [sections]);
+  }, [filteredSections]);
+
+  const memberMap = useMemo(() => {
+    const map = new Map<string, { id: string; name: string; email?: string }>();
+    (members ?? []).forEach((m) => map.set(m.id, m));
+    return map;
+  }, [members]);
+
+  const statusMap = useMemo(() => {
+    const map = new Map<string, { id: string; name: string; color?: string }>();
+    (issueStatuses ?? []).forEach((s) => map.set(s.id, s));
+    return map;
+  }, [issueStatuses]);
 
   const selectedIssueEntry = selectedIssueId ? (issueLookup.get(selectedIssueId) ?? null) : null;
   const selectedIssue = selectedIssueEntry?.issue ?? null;
@@ -279,15 +314,15 @@ const BacklogViewComponent: React.FC<BacklogViewProps> = (props) => {
 
     return (
       <div className="flex flex-col overflow-y-auto h-full">
-        {sections.map((section) => (
+        {filteredSections.map((section) => (
           <BacklogSection
             key={section.id}
             data={section}
             projectIdentifier={projectIdentifier}
             onStartCreate={handleStartDraft}
-            onSubmitDraft={handleSubmitDraft}
-            onCancelDraft={handleCancelDraft}
-            onDraftNameChange={setDraftName}
+        onSubmitDraft={handleSubmitDraft}
+        onCancelDraft={handleCancelDraft}
+        onDraftNameChange={setDraftName}
             draftName={draftSectionId === section.id ? draftName : ""}
             isCreating={draftSectionId === section.id}
             isSubmitting={isSubmitting}
@@ -295,15 +330,17 @@ const BacklogViewComponent: React.FC<BacklogViewProps> = (props) => {
             onCompleteSprint={onCompleteSprint}
             onCreateAvailable={Boolean(onCreateIssue)}
             onIssueDrop={onIssueDrop}
-            onCreateSprint={section.type === "backlog" ? handleSprintQuickCreate : undefined}
-            isSprintCreating={isSprintSubmitting}
-            onStartSprint={onStartSprint}
-            onIssueSelect={handleSelectIssue}
-            selectedIssueId={selectedIssueId}
-          />
-        ))}
-      </div>
-    );
+        onCreateSprint={section.type === "backlog" ? handleSprintQuickCreate : undefined}
+        isSprintCreating={isSprintSubmitting}
+        onStartSprint={onStartSprint}
+        onIssueSelect={handleSelectIssue}
+        selectedIssueId={selectedIssueId}
+        memberMap={memberMap}
+        statusMap={statusMap}
+      />
+    ))}
+  </div>
+);
   };
 
   return (
@@ -316,7 +353,7 @@ const BacklogViewComponent: React.FC<BacklogViewProps> = (props) => {
         </div>
       </div>
       {selectedIssue ? (
-        <div className="pointer-events-none fixed inset-y-0 right-0 z-40 flex" style={{ width: detailWidth }}>
+        <div className="pointer-events-none fixed top-[50px] bottom-0 right-0 z-40 flex" style={{ width: detailWidth }}>
           <div className="relative flex h-full min-h-0 w-full pointer-events-auto border-l border-custom-border-200 bg-custom-background-100 shadow-lg">
             <div
               role="separator"
@@ -334,6 +371,7 @@ const BacklogViewComponent: React.FC<BacklogViewProps> = (props) => {
                 issue={selectedIssue}
                 projectIdentifier={projectIdentifier}
                 locationLabel={selectedIssueLocationLabel}
+                workspaceSlug={workspaceSlug}
                 onClose={handleCloseDetail}
                 onUpdateIssue={onUpdateIssue}
               />
@@ -364,6 +402,8 @@ interface BacklogSectionProps {
   onStartSprint?: (sprintId: string, issueCount: number) => void;
   onIssueSelect?: (issueId: string) => void;
   selectedIssueId: string | null;
+  memberMap: Map<string, { id: string; name: string; email?: string }>;
+  statusMap: Map<string, { id: string; name: string; color?: string }>;
 }
 
 const BacklogSection: React.FC<BacklogSectionProps> = (props) => {
@@ -381,12 +421,14 @@ const BacklogSection: React.FC<BacklogSectionProps> = (props) => {
     onCompleteSprint,
     onCreateAvailable,
     onIssueDrop,
-    onCreateSprint,
-    isSprintCreating,
-    onStartSprint,
-    onIssueSelect,
-    selectedIssueId,
-  } = props;
+  onCreateSprint,
+  isSprintCreating,
+  onStartSprint,
+  onIssueSelect,
+  selectedIssueId,
+  memberMap,
+  statusMap,
+} = props;
   const { id, name, type, issues, startDate, endDate, goal } = data;
 
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -510,6 +552,8 @@ const BacklogSection: React.FC<BacklogSectionProps> = (props) => {
                   onDropIssue={onIssueDrop}
                   onSelectIssue={onIssueSelect}
                   isSelected={selectedIssueId === issue.id}
+                  memberMap={memberMap}
+                  statusMap={statusMap}
                 />
               ))}
             </div>
@@ -595,7 +639,9 @@ const BacklogIssueRow: React.FC<{
   onDropIssue?: (payload: BacklogIssueDropPayload) => void;
   onSelectIssue?: (issueId: string) => void;
   isSelected?: boolean;
-}> = ({ issue, projectIdentifier, sectionId, onDropIssue, onSelectIssue, isSelected }) => {
+  memberMap: Map<string, { id: string; name: string; email?: string }>;
+  statusMap: Map<string, { id: string; name: string; color?: string }>;
+}> = ({ issue, projectIdentifier, sectionId, onDropIssue, onSelectIssue, isSelected, memberMap, statusMap }) => {
   const rowRef = useRef<HTMLDivElement | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dropPosition, setDropPosition] = useState<"before" | "after" | null>(null);
@@ -687,6 +733,7 @@ const BacklogIssueRow: React.FC<{
   const priorityConfig = getPriorityConfig(issue.priority);
   const PriorityIcon = priorityConfig.icon;
   const TypeIcon = getTypeIcon(issue.type);
+  const status = statusMap.get(issue.statusId);
 
   const handleRowClick = () => {
     onSelectIssue?.(issue.id);
@@ -743,8 +790,13 @@ const BacklogIssueRow: React.FC<{
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <Badge variant={ISSUE_STATE_BADGE_VARIANT[issue.state]} size="sm" className="min-w-[100px] justify-center">
-            {ISSUE_STATE_LABELS[issue.state]}
+          <Badge
+            variant={status?.color ? "accent-primary" : ISSUE_STATE_BADGE_VARIANT[issue.state]}
+            size="sm"
+            className="min-w-[100px] justify-center"
+            style={status?.color ? { backgroundColor: status.color, color: "#fff", borderColor: status.color } : {}}
+          >
+            {status?.name ?? ISSUE_STATE_LABELS[issue.state]}
           </Badge>
 
           <button
@@ -761,15 +813,15 @@ const BacklogIssueRow: React.FC<{
           <div className="flex items-center -space-x-2">
             {issue.assignees.length > 0 ? (
               <>
-                {issue.assignees.slice(0, 3).map((assignee, index) => (
-                  <div
-                    key={assignee || index}
-                    className="size-7 rounded-full bg-custom-primary-100 border-2 border-custom-background-100 flex items-center justify-center text-[10px] font-medium text-white"
-                    title={assignee || "Assignee"}
-                  >
-                    {(assignee || "U").charAt(0).toUpperCase()}
-                  </div>
-                ))}
+                {issue.assignees.slice(0, 3).map((assigneeId, index) => {
+                  const assignee = memberMap?.get(assigneeId);
+                  const displayName = assignee?.name || assignee?.email || "User";
+                  return (
+                    <div key={assigneeId || index} className="shrink-0" title={displayName}>
+                      <Avatar name={displayName} size={28} className="ring-2 ring-custom-background-100 text-[10px]" />
+                    </div>
+                  );
+                })}
                 {issue.assignees.length > 3 && (
                   <div className="size-7 rounded-full bg-custom-background-80 border-2 border-custom-background-100 flex items-center justify-center text-[10px] font-medium text-custom-text-200">
                     +{issue.assignees.length - 3}

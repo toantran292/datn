@@ -22,4 +22,5 @@ export class IssueResponseDto {
   assignees: string[];
   createdAt: Date;
   updatedAt: Date;
+  createdBy: string | null;
 }

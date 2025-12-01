@@ -18,6 +18,22 @@ export class IssueService extends APIService {
       });
   }
 
+  async getProjectAnalytics(projectId: string): Promise<{ counts: any; timeline: any[] }> {
+    return this.get(`/api/projects/${projectId}/analytics`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data ?? error;
+      });
+  }
+
+  async getIssueById(issueId: string): Promise<IIssue> {
+    return this.get(`/api/issues/${issueId}`)
+      .then((response) => this.normalizeIssue(response?.data))
+      .catch((error) => {
+        throw error?.response?.data ?? error;
+      });
+  }
+
   async createIssue(payload: ICreateIssuePayload): Promise<IIssue> {
     const body: any = {
       projectId: payload.projectId,
@@ -106,6 +122,7 @@ export class IssueService extends APIService {
       assignees: Array.isArray(issue.assignees)
         ? (issue.assignees as unknown[]).map((assignee) => String(assignee))
         : [],
+      createdBy: String(issue.createdBy ?? ""),
       createdAt: String(issue.createdAt ?? ""),
       updatedAt: String(issue.updatedAt ?? ""),
     };

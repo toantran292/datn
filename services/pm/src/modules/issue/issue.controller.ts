@@ -14,7 +14,8 @@ export class IssueController {
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() dto: CreateIssueDto, @Req() request: RequestWithOrg): Promise<IssueResponseDto> {
     const orgId = request.orgId;
-    return this.issueService.create(dto, orgId);
+    const userId = (request.headers["x-user-id"] as string) || "00000000-0000-0000-0000-000000000000";
+    return this.issueService.create(dto, orgId, userId);
   }
 
   @Get("issues/:id")
@@ -30,6 +31,15 @@ export class IssueController {
   ): Promise<IssueResponseDto[]> {
     const orgId = request.orgId;
     return this.issueService.findByProject(projectId, orgId);
+  }
+
+  @Get("projects/:projectId/analytics")
+  async getProjectAnalytics(
+    @Param("projectId") projectId: string,
+    @Req() request: RequestWithOrg
+  ): Promise<any> {
+    const orgId = request.orgId;
+    return this.issueService.getProjectAnalytics(projectId, orgId);
   }
 
   @Get("sprints/:sprintId/issues")

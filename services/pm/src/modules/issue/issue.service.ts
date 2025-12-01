@@ -13,7 +13,7 @@ export class IssueService {
 
   constructor(private prisma: PrismaService) {}
 
-  async create(dto: CreateIssueDto, orgId: string): Promise<IssueResponseDto> {
+  async create(dto: CreateIssueDto, orgId: string, userId: string): Promise<IssueResponseDto> {
     // Validate project exists and belongs to organization
     const project = await this.prisma.project.findFirst({
       where: {
@@ -109,6 +109,7 @@ export class IssueService {
         startDate: dto.startDate ? new Date(dto.startDate) : null,
         targetDate: dto.targetDate ? new Date(dto.targetDate) : null,
         assigneesJson: dto.assignees || [],
+        createdBy: userId,
       },
       include: {
         status: true,
@@ -473,6 +474,74 @@ export class IssueService {
       assignees: Array.isArray(issue.assigneesJson) ? issue.assigneesJson : [],
       createdAt: issue.createdAt,
       updatedAt: issue.updatedAt,
+      createdBy: issue.createdBy || null,
+    };
+  }
+
+  async getProjectAnalytics(projectId: string, orgId: string) {
+    const normalizeStatus = (name?: string | null) => (name || "").trim().toUpperCase();
+
+    const issues = await this.prisma.issue.findMany({
+      where: {
+        projectId,
+        project: { orgId },
+      },
+      select: {
+        id: true,
+        sprintId: true,
+        createdAt: true,
+        updatedAt: true,
+        status: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+
+    const total = issues.length;
+    const completed = issues.filter((i) => normalizeStatus(i.status?.name) === "DONE").length;
+    const started = issues.filter(
+      (i) => {
+        const statusName = normalizeStatus(i.status?.name);
+        return statusName === "IN PROGRESS" || statusName === "IN REVIEW";
+      }
+    ).length;
+    const unstarted = issues.filter((i) => normalizeStatus(i.status?.name) === "TO DO").length;
+    const backlog = issues.filter((i) => !i.sprintId).length;
+
+    const now = new Date();
+    const labels: string[] = [];
+    const buckets: Record<string, { created: number; resolved: number }> = {};
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const key = `${d.getFullYear()}-${d.getMonth() + 1}`;
+      labels.push(key);
+      buckets[key] = { created: 0, resolved: 0 };
+    }
+
+    issues.forEach((issue) => {
+      const cDate = issue.createdAt ? new Date(issue.createdAt) : null;
+      if (cDate) {
+        const key = `${cDate.getFullYear()}-${cDate.getMonth() + 1}`;
+        if (buckets[key]) buckets[key].created += 1;
+      }
+      if (normalizeStatus(issue.status?.name) === "DONE" && issue.updatedAt) {
+        const rDate = new Date(issue.updatedAt);
+        const key = `${rDate.getFullYear()}-${rDate.getMonth() + 1}`;
+        if (buckets[key]) buckets[key].resolved += 1;
+      }
+    });
+
+    const timeline = labels.map((label) => ({
+      label,
+      created: buckets[label]?.created ?? 0,
+      resolved: buckets[label]?.resolved ?? 0,
+    }));
+
+    return {
+      counts: { total, completed, started, unstarted, backlog },
+      timeline,
     };
   }
 }

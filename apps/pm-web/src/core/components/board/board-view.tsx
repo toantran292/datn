@@ -28,6 +28,7 @@ import {
   EModalPosition,
   setToast,
   TOAST_TYPE,
+  Avatar,
 } from "@uts/design-system/ui";
 import { cn } from "@uts/fe-utils";
 
@@ -37,7 +38,10 @@ import type { IIssueStatus } from "@/core/types/issue-status";
 import type { ISprint } from "@/core/types/sprint";
 import { formatIssueKey } from "@/core/components/backlog/utils";
 import { CreateStatusModal } from "@/core/components/issue-status";
+import { CompleteSprintModal } from "@/core/components/sprint/complete-sprint-modal";
 import { useIssueStatus } from "@/core/hooks/store/use-issue-status";
+import { IdentityService } from "@/core/services/identity/identity.service";
+import { ProjectService } from "@/core/services/project/project.service";
 
 const IssueDetailPanel = dynamic(
   () => import("@/core/components/issue/issue-detail-panel").then((mod) => mod.IssueDetailPanel),
@@ -51,6 +55,8 @@ type BoardViewProps = {
   issueStore: IIssueStore;
   issueStatuses: IIssueStatus[];
   projectIdentifier?: string | null;
+  workspaceSlug?: string | null;
+  members?: { id: string; name: string; email?: string }[];
 };
 
 export const BoardView = memo(function BoardView({
@@ -60,9 +66,16 @@ export const BoardView = memo(function BoardView({
   issueStore,
   issueStatuses,
   projectIdentifier,
+  workspaceSlug,
+  members = [],
 }: BoardViewProps) {
   const issueStatusStore = useIssueStatus();
-  
+  const identityService = useMemo(() => new IdentityService(), []);
+  const projectService = useMemo(() => new ProjectService(), []);
+  const [orgId, setOrgId] = useState<string | null>(null);
+  const [memberState, setMemberState] = useState<{ id: string; name: string; email?: string }[]>(members);
+  const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
+
   const grouped = useMemo(() => {
     const map: Record<string, IIssue[]> = {};
 
@@ -99,7 +112,66 @@ export const BoardView = memo(function BoardView({
   const [isCreateStatusModalOpen, setIsCreateStatusModalOpen] = useState(false);
   const [draggedColumnId, setDraggedColumnId] = useState<string | null>(null);
   const [dropPosition, setDropPosition] = useState<{ statusId: string; position: "before" | "after" } | null>(null);
-  
+  const memberMap = useMemo(() => {
+    const map = new Map<string, { id: string; name: string; email?: string }>();
+    (memberState ?? []).forEach((m) => map.set(m.id, m));
+    return map;
+  }, [memberState]);
+
+  useEffect(() => {
+    if (!members || members.length === 0) return;
+    setMemberState((prev) => {
+      if (prev.length === members.length && prev.every((m, idx) => m.id === members[idx]?.id)) {
+        return prev;
+      }
+      return members;
+    });
+  }, [members]);
+
+  useEffect(() => {
+    if (!projectId) return;
+    const loadOrg = async () => {
+      try {
+        const project = await projectService.getProjectById(projectId);
+        setOrgId(project.orgId);
+      } catch (error) {
+        console.error("Failed to load project for board member map:", error);
+      }
+    };
+    loadOrg();
+  }, [projectId, projectService]);
+
+  useEffect(() => {
+    const fetchMembers = async () => {
+      if (memberState.length > 0) return;
+      if (!orgId) return;
+      try {
+        let page = 0;
+        const size = 200;
+        let totalPages = 1;
+        const collected: { id: string; name: string; email?: string }[] = [];
+        while (page < totalPages) {
+          const res = await identityService.getOrgMembers(orgId, page, size);
+          totalPages = res.totalPages || 1;
+          res.items?.forEach((m) =>
+            collected.push({
+              id: m.id,
+              name: m.display_name || m.email || "User",
+              email: m.email,
+            })
+          );
+          page += 1;
+        }
+        if (collected.length > 0) {
+          setMemberState(collected);
+        }
+      } catch (error) {
+        console.error("Failed to fetch members for board:", error);
+      }
+    };
+    fetchMembers();
+  }, [identityService, memberState.length, orgId]);
+
   // Get first status ID for quick create (usually "TO DO")
   const firstStatusId = issueStatuses.length > 0 ? issueStatuses[0].id : null;
   const selectedIssue = selectedIssueId ? (issueStore.getIssueById(selectedIssueId) ?? null) : null;
@@ -307,7 +379,7 @@ export const BoardView = memo(function BoardView({
     <>
       <div className="flex h-full flex-col gap-4 overflow-hidden">
         <div className="flex-shrink-0">
-          <BoardToolbar />
+          <BoardToolbar onCompleteSprint={() => setIsCompleteModalOpen(true)} canComplete={activeSprints.length > 0} />
         </div>
         <div className="flex-shrink-0 flex flex-col gap-4 max-h-[40vh] overflow-y-auto">
           {activeSprints.map((sprint) => (
@@ -350,9 +422,10 @@ export const BoardView = memo(function BoardView({
               }}
               onColumnDragOver={(position) => setDropPosition({ statusId: status.id, position })}
               onColumnDrop={handleColumnDrop}
+              memberMap={memberMap}
             />
           ))}
-          
+
           {/* Add Status Button */}
           <button
             onClick={() => setIsCreateStatusModalOpen(true)}
@@ -371,6 +444,7 @@ export const BoardView = memo(function BoardView({
           onClose={handleCloseDetail}
           projectIdentifier={projectIdentifier}
           locationLabel={locationLabel}
+          workspaceSlug={workspaceSlug}
           onUpdateIssue={handleUpdateIssue}
         />
       ) : null}
@@ -380,11 +454,24 @@ export const BoardView = memo(function BoardView({
         onClose={() => setIsCreateStatusModalOpen(false)}
         onSubmit={handleCreateStatus}
       />
+
+      <CompleteSprintModal
+        projectId={projectId}
+        activeSprints={activeSprints}
+        issues={issues}
+        isOpen={isCompleteModalOpen}
+        onClose={() => setIsCompleteModalOpen(false)}
+        members={memberState}
+        issueStatuses={issueStatuses}
+      />
     </>
   );
 });
 
-const BoardToolbar = () => (
+const BoardToolbar: React.FC<{ onCompleteSprint?: () => void; canComplete?: boolean }> = ({
+  onCompleteSprint,
+  canComplete = false,
+}) => (
   <div className="flex flex-wrap items-center justify-between gap-3 bg-custom-background-100 rounded-lg p-4 border border-custom-border-200">
     <div className="flex items-center gap-2">
       <div className="relative">
@@ -406,7 +493,7 @@ const BoardToolbar = () => (
       </Button>
     </div>
     <div className="flex items-center gap-2">
-      <Button variant="primary" size="sm" disabled className="gap-2">
+      <Button variant="primary" size="sm" className="gap-2" onClick={onCompleteSprint} disabled={!canComplete}>
         <CheckCircle2 className="size-4" />
         Hoàn thành sprint
       </Button>
@@ -519,6 +606,7 @@ const BoardColumn: React.FC<{
   onColumnDragEnd: () => void;
   onColumnDragOver: (position: "before" | "after") => void;
   onColumnDrop: (statusId: string, position: "before" | "after") => void;
+  memberMap: Map<string, { id: string; name: string; email?: string }>;
 }> = ({
   statusId,
   title,
@@ -543,6 +631,7 @@ const BoardColumn: React.FC<{
   onColumnDragEnd,
   onColumnDragOver,
   onColumnDrop,
+  memberMap,
 }) => {
   const [hoveredIssueId, setHoveredIssueId] = useState<string | null>(null);
   const [hoveredPosition, setHoveredPosition] = useState<"top" | "bottom" | null>(null);
@@ -565,7 +654,7 @@ const BoardColumn: React.FC<{
           onColumnDragEnter(statusId);
           return;
         }
-        
+
         // Column drag over
         event.preventDefault();
         const rect = event.currentTarget.getBoundingClientRect();
@@ -575,7 +664,7 @@ const BoardColumn: React.FC<{
       }}
       onDrop={(event) => {
         event.preventDefault();
-        
+
         if (isDraggingColumn && dropPosition) {
           onColumnDrop(statusId, dropPosition);
         } else {
@@ -592,9 +681,9 @@ const BoardColumn: React.FC<{
       {dropPosition === "after" && (
         <div className="absolute right-0 top-0 bottom-0 w-1 bg-custom-primary-100 z-10 rounded-r-lg" />
       )}
-      
+
       {/* Column Header */}
-      <div 
+      <div
         className="flex items-center justify-between px-4 pt-4 pb-2 cursor-grab active:cursor-grabbing"
         draggable={!isDraggingColumn}
         onDragStart={(e) => {
@@ -706,6 +795,7 @@ const BoardColumn: React.FC<{
             }}
             onOpenDetail={() => onIssueClick?.(issue.id)}
             projectIdentifier={projectIdentifier}
+            memberMap={memberMap}
           />
         ))}
         {issues.length === 0 && !showQuickCreate ? (
@@ -729,6 +819,7 @@ const BoardIssueCard: React.FC<{
   dragPosition?: "top" | "bottom" | null;
   onOpenDetail?: () => void;
   projectIdentifier?: string | null;
+  memberMap: Map<string, { id: string; name: string; email?: string }>;
 }> = ({
   issue,
   onDragStart,
@@ -739,6 +830,7 @@ const BoardIssueCard: React.FC<{
   dragPosition,
   onOpenDetail,
   projectIdentifier,
+  memberMap,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isDraggingCard, setIsDraggingCard] = useState(false);
@@ -891,15 +983,15 @@ const BoardIssueCard: React.FC<{
       {/* Assignees */}
       {issue.assignees && issue.assignees.length > 0 ? (
         <div className="flex items-center gap-1 -space-x-2">
-          {issue.assignees.slice(0, 3).map((assignee, index) => (
-            <div
-              key={assignee || index}
-              className="size-6 rounded-full bg-custom-primary-100 border-2 border-custom-background-100 flex items-center justify-center text-[10px] font-medium text-white"
-              title={assignee || "Assignee"}
-            >
-              {(assignee || "U").charAt(0).toUpperCase()}
-            </div>
-          ))}
+          {issue.assignees.slice(0, 3).map((assigneeId, index) => {
+            const assignee = memberMap.get(assigneeId);
+            const displayName = assignee?.name || assignee?.email || "User";
+            return (
+              <div key={assigneeId || index} className="shrink-0" title={displayName}>
+                <Avatar name={displayName} size={24} className="ring-2 ring-custom-background-100 text-[10px]" />
+              </div>
+            );
+          })}
           {issue.assignees.length > 3 ? (
             <div className="size-6 rounded-full bg-custom-background-80 border-2 border-custom-background-100 flex items-center justify-center text-[10px] font-medium text-custom-text-200">
               +{issue.assignees.length - 3}
@@ -937,20 +1029,22 @@ const IssueDetailModal: React.FC<{
   onClose: () => void;
   projectIdentifier?: string | null;
   locationLabel?: string | null;
+  workspaceSlug?: string | null;
   onUpdateIssue?: (issueId: string, data: Partial<IIssue>) => Promise<void>;
-}> = ({ issue, isOpen, onClose, projectIdentifier, locationLabel, onUpdateIssue }) => (
+}> = ({ issue, isOpen, onClose, projectIdentifier, locationLabel, workspaceSlug, onUpdateIssue }) => (
   <ModalCore
     isOpen={isOpen}
     handleClose={onClose}
     position={EModalPosition.CENTER}
-    width={EModalWidth.XXL}
+    width={EModalWidth.XXXL}
     className="max-h-[90vh]"
   >
-    <div className="max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="max-h-[90vh] overflow-hidden flex flex-col w-full">
       <IssueDetailPanel
         issue={issue}
         projectIdentifier={projectIdentifier}
         locationLabel={locationLabel}
+        workspaceSlug={workspaceSlug}
         onClose={onClose}
         onUpdateIssue={onUpdateIssue}
       />

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { Menu } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Header, EHeaderVariant } from "../header";
 import { WorkspaceSelector } from "./workspace-selector";
@@ -30,13 +31,7 @@ const UTSLogo: React.FC = () => (
 );
 
 export const AppHeader: React.FC<AppHeaderProps> = ({ className }) => {
-  const {
-    currentApp,
-    workspaceSlug,
-    currentWorkspaceId,
-    apiBaseUrl,
-    authWebUrl,
-  } = useAppHeaderContext();
+  const { currentApp, workspaceSlug, currentWorkspaceId, apiBaseUrl, authWebUrl } = useAppHeaderContext();
 
   const [isCreateProjectModalOpen, setIsCreateProjectModalOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -55,13 +50,23 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ className }) => {
     <>
       <Header variant={EHeaderVariant.PRIMARY} className={cn("border-b border-custom-border-200 px-2", className)}>
         <Header.LeftItem>
+          {/* Collapse/Expand Sidebar Toggle */}
+          {/* {showMenuToggle && (
+            <button
+              type="button"
+              onClick={onMenuToggle}
+              className="flex items-center justify-center size-8 rounded-md hover:bg-custom-background-80 transition-colors"
+              aria-label="Toggle sidebar"
+            >
+              <Menu className="size-4" />
+            </button>
+          )} */}
+
           <UTSLogo />
 
           <WorkspaceSelector />
 
-          <ProjectSelector
-            onCreateProject={handleOpenCreateProject}
-          />
+          <ProjectSelector onCreateProject={handleOpenCreateProject} />
         </Header.LeftItem>
 
         <Header.RightItem className="flex items-center gap-2">

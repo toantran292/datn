@@ -11,8 +11,12 @@ import {
   IBacklogSectionData,
   StartSprintModal,
 } from "@/core/components/backlog";
+import { CompleteSprintModal } from "@/core/components/sprint/complete-sprint-modal";
 import { ProjectTabs } from "@/core/components/project/project-tabs";
+import { IdentityService } from "@/core/services/identity/identity.service";
+import { ProjectService } from "@/core/services/project/project.service";
 import { useIssue } from "@/core/hooks/store/use-issue";
+import { useIssueStatus } from "@/core/hooks/store/use-issue-status";
 import { useProject } from "@/core/hooks/store/use-project";
 import { useSprint } from "@/core/hooks/store/use-sprint";
 import { IIssue } from "@/core/types/issue";
@@ -32,10 +36,17 @@ const ProjectBacklogPage = observer(() => {
   const workspaceSlug = Array.isArray(workspaceSlugParam) ? (workspaceSlugParam[0] ?? "") : (workspaceSlugParam ?? "");
 
   const issueStore = useIssue();
+  const issueStatusStore = useIssueStatus();
   const sprintStore = useSprint();
   const projectStore = useProject();
+  const identityService = useMemo(() => new IdentityService(), []);
+  const projectService = useMemo(() => new ProjectService(), []);
+  const [orgId, setOrgId] = useState<string | null>(null);
+  const [members, setMembers] = useState<{ id: string; name: string; email?: string }[]>([]);
   const [startSprintState, setStartSprintState] = useState<{ sprintId: string; issueCount: number } | null>(null);
   const [isStartModalOpen, setIsStartModalOpen] = useState(false);
+  const [completeSprintId, setCompleteSprintId] = useState<string | null>(null);
+  const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
 
   const {
     fetchIssuesByProject,
@@ -43,6 +54,12 @@ const ProjectBacklogPage = observer(() => {
     getLoaderForProject: getIssueLoader,
     projectFetchStatus: issueFetchStatus,
   } = issueStore;
+  const {
+    fetchIssueStatusesByProject,
+    getIssueStatusesForProject,
+    getLoaderForProject: getStatusLoader,
+    projectFetchStatus: statusFetchStatus,
+  } = issueStatusStore;
 
   const {
     fetchSprintsByProject,
@@ -56,6 +73,17 @@ const ProjectBacklogPage = observer(() => {
 
   useEffect(() => {
     if (!projectId) return;
+
+    const loadOrg = async () => {
+      try {
+        const project = await projectService.getProjectById(projectId);
+        setOrgId(project.orgId);
+      } catch (error) {
+        console.error("Failed to load project for members:", error);
+      }
+    };
+
+    loadOrg();
 
     // Fetch projects if not already fetched
     if (projectStore.fetchStatus === undefined) {
@@ -87,18 +115,73 @@ const ProjectBacklogPage = observer(() => {
         })
       );
     }
+
+    if (statusFetchStatus[projectId] !== "complete") {
+      fetchIssueStatusesByProject(projectId).catch(() =>
+        setToast({
+          type: TOAST_TYPE.ERROR,
+          title: "Lỗi",
+          message: "Không thể tải danh sách trạng thái",
+        })
+      );
+    }
   }, [
     projectId,
+    projectService,
     workspaceSlug,
     projectStore.fetchStatus,
     sprintFetchStatus,
     fetchSprintsByProject,
     issueFetchStatus,
     fetchIssuesByProject,
+    statusFetchStatus,
+    fetchIssueStatusesByProject,
     fetchPartialProjects,
   ]);
 
+  useEffect(() => {
+    const fetchMembers = async () => {
+      if (!orgId) return;
+      try {
+        let page = 0;
+        const size = 200;
+        let totalPages = 1;
+        const collected: { id: string; name: string; email?: string }[] = [];
+
+        while (page < totalPages) {
+          const res = await identityService.getOrgMembers(orgId, page, size);
+          totalPages = res.totalPages || 1;
+          res.items?.forEach((m) => {
+            collected.push({
+              id: m.id,
+              name: m.display_name || m.email || "User",
+              email: m.email,
+            });
+          });
+          page += 1;
+        }
+
+        setMembers(collected);
+      } catch (error) {
+        console.error("Failed to load members:", error);
+      } finally {
+      }
+    };
+
+    fetchMembers();
+  }, [identityService, orgId]);
+
   const project = projectId ? projectStore.getPartialProjectById(projectId) : undefined;
+  const issueStatuses = getIssueStatusesForProject(projectId);
+  const projectIssues = issueStore.getIssuesForProject(projectId);
+  const allSprints = getSprintsForProject(projectId);
+  const visibleSprints = allSprints.filter((s) => s.status !== "CLOSED");
+  const activeSprints = visibleSprints.filter((s) => s.status === "ACTIVE");
+  const visibleSprintIds = useMemo(() => new Set(visibleSprints.map((s) => s.id)), [visibleSprints]);
+  const visibleIssues = useMemo(
+    () => projectIssues.filter((issue) => !issue.sprintId || visibleSprintIds.has(issue.sprintId)),
+    [projectIssues, visibleSprintIds]
+  );
 
   const handleUnimplemented = () => UNIMPLEMENTED_TOAST();
 
@@ -231,6 +314,11 @@ const ProjectBacklogPage = observer(() => {
     setIsStartModalOpen(true);
   };
 
+  const handleOpenCompleteSprint = (sprintId: string) => {
+    setCompleteSprintId(sprintId);
+    setIsCompleteModalOpen(true);
+  };
+
   const handleCloseStartSprint = () => {
     setIsStartModalOpen(false);
     setStartSprintState(null);
@@ -277,22 +365,19 @@ const ProjectBacklogPage = observer(() => {
     }
   };
 
-  const projectIssues = issueStore.getIssuesForProject(projectId);
-
   const issuesGroupedBySprint = useMemo(() => {
     const grouped = new Map<string | null, IIssue[]>();
-    projectIssues.forEach((issue) => {
+    visibleIssues.forEach((issue) => {
       const key = issue.sprintId ?? null;
       const existing = grouped.get(key);
       if (existing) existing.push(issue);
       else grouped.set(key, [issue]);
     });
     return grouped;
-  }, [projectIssues]);
+  }, [visibleIssues]);
 
   const sprintSections = useMemo(() => {
-    const sprints = getSprintsForProject(projectId);
-    return sprints.map<IBacklogSectionData>((sprint) => ({
+    return visibleSprints.map<IBacklogSectionData>((sprint) => ({
       id: sprint.id,
       name: sprint.name,
       type: "sprint",
@@ -301,7 +386,7 @@ const ProjectBacklogPage = observer(() => {
       endDate: sprint.endDate,
       issues: issuesGroupedBySprint.get(sprint.id) ?? [],
     }));
-  }, [getSprintsForProject, issuesGroupedBySprint, projectId]);
+  }, [visibleSprints, issuesGroupedBySprint]);
 
   const backlogSection = useMemo<IBacklogSectionData>(
     () => ({
@@ -320,8 +405,9 @@ const ProjectBacklogPage = observer(() => {
 
   const issueLoader = getIssueLoader(projectId);
   const sprintLoader = getSprintLoader(projectId);
+  const statusLoader = getStatusLoader(projectId);
   const isLoading = projectId
-    ? [issueLoader, sprintLoader].some((loader) => loader === "init-loader" || loader === undefined)
+    ? [issueLoader, sprintLoader, statusLoader].some((loader) => loader === "init-loader" || loader === undefined)
     : false;
 
   const projectTitle = project?.name ?? "Backlog";
@@ -347,10 +433,14 @@ const ProjectBacklogPage = observer(() => {
         isLoading={isLoading}
         onCreateIssue={handleCreateIssue}
         onIssueDrop={handleIssueDrop}
-        onCompleteSprint={handleUnimplemented}
+        onCompleteSprint={handleOpenCompleteSprint}
         onCreateSprint={handleCreateSprint}
         onStartSprint={handleOpenStartSprint}
         onUpdateIssue={handleUpdateIssue}
+        workspaceSlug={workspaceSlug}
+        members={members}
+        issueStatuses={issueStatuses}
+        sprints={getSprintsForProject(projectId)}
       />
 
       <StartSprintModal
@@ -362,6 +452,16 @@ const ProjectBacklogPage = observer(() => {
         initialEndDate={sprintToStart?.endDate ?? null}
         onClose={handleCloseStartSprint}
         onConfirm={handleConfirmStartSprint}
+      />
+
+      <CompleteSprintModal
+        projectId={projectId}
+        activeSprints={activeSprints}
+        issues={projectIssues}
+        isOpen={isCompleteModalOpen}
+        onClose={() => setIsCompleteModalOpen(false)}
+        members={members}
+        issueStatuses={issueStatuses}
       />
     </div>
   );

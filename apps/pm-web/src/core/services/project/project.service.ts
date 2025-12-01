@@ -9,6 +9,13 @@ type TProjectLiteResponse = {
   projectLead: string | null;
 };
 
+type TProjectDetailResponse = TProjectLiteResponse & {
+  defaultAssignee: string | null;
+  createdAt: string;
+  updatedAt: string;
+  sprintIds: string[];
+};
+
 export class ProjectService extends APIService {
   constructor() {
     super();
@@ -53,6 +60,14 @@ export class ProjectService extends APIService {
       .then((response) => response?.data)
       .catch((error) => {
         throw error?.response;
+      });
+  }
+
+  async getProjectById(projectId: string): Promise<TProjectDetailResponse> {
+    return this.get(`/api/projects/${projectId}`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data || error;
       });
   }
 }
