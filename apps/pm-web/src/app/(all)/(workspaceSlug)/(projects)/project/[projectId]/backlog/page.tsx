@@ -173,6 +173,15 @@ const ProjectBacklogPage = observer(() => {
 
   const project = projectId ? projectStore.getPartialProjectById(projectId) : undefined;
   const issueStatuses = getIssueStatusesForProject(projectId);
+  const projectIssues = issueStore.getIssuesForProject(projectId);
+  const allSprints = getSprintsForProject(projectId);
+  const visibleSprints = allSprints.filter((s) => s.status !== "CLOSED");
+  const activeSprints = visibleSprints.filter((s) => s.status === "ACTIVE");
+  const visibleSprintIds = useMemo(() => new Set(visibleSprints.map((s) => s.id)), [visibleSprints]);
+  const visibleIssues = useMemo(
+    () => projectIssues.filter((issue) => !issue.sprintId || visibleSprintIds.has(issue.sprintId)),
+    [projectIssues, visibleSprintIds]
+  );
 
   const handleUnimplemented = () => UNIMPLEMENTED_TOAST();
 
@@ -356,22 +365,19 @@ const ProjectBacklogPage = observer(() => {
     }
   };
 
-  const projectIssues = issueStore.getIssuesForProject(projectId);
-
   const issuesGroupedBySprint = useMemo(() => {
     const grouped = new Map<string | null, IIssue[]>();
-    projectIssues.forEach((issue) => {
+    visibleIssues.forEach((issue) => {
       const key = issue.sprintId ?? null;
       const existing = grouped.get(key);
       if (existing) existing.push(issue);
       else grouped.set(key, [issue]);
     });
     return grouped;
-  }, [projectIssues]);
+  }, [visibleIssues]);
 
   const sprintSections = useMemo(() => {
-    const sprints = getSprintsForProject(projectId);
-    return sprints.map<IBacklogSectionData>((sprint) => ({
+    return visibleSprints.map<IBacklogSectionData>((sprint) => ({
       id: sprint.id,
       name: sprint.name,
       type: "sprint",
@@ -380,7 +386,7 @@ const ProjectBacklogPage = observer(() => {
       endDate: sprint.endDate,
       issues: issuesGroupedBySprint.get(sprint.id) ?? [],
     }));
-  }, [getSprintsForProject, issuesGroupedBySprint, projectId]);
+  }, [visibleSprints, issuesGroupedBySprint]);
 
   const backlogSection = useMemo<IBacklogSectionData>(
     () => ({
@@ -450,11 +456,12 @@ const ProjectBacklogPage = observer(() => {
 
       <CompleteSprintModal
         projectId={projectId}
-        activeSprints={getSprintsForProject(projectId)}
+        activeSprints={activeSprints}
         issues={projectIssues}
         isOpen={isCompleteModalOpen}
         onClose={() => setIsCompleteModalOpen(false)}
         members={members}
+        issueStatuses={issueStatuses}
       />
     </div>
   );

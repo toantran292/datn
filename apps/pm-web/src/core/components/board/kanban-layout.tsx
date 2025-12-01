@@ -39,7 +39,7 @@ export const KanbanLayout = observer(() => {
   }, [issueStore, issueStatusStore, sprintStore, projectId]);
 
   // Removed useMemo to allow MobX observer to properly track changes
-  const sprints = sprintStore.getSprintsForProject(projectId);
+  const sprints = sprintStore.getSprintsForProject(projectId).filter((sprint) => sprint.status !== "CLOSED");
   const activeSprints = sprints.filter((sprint) => sprint.status === "ACTIVE");
 
   // Removed useMemo to allow MobX observer to properly track changes

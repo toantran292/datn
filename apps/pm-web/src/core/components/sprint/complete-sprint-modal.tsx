@@ -27,6 +27,7 @@ type CompleteSprintModalProps = {
   issues: IIssue[];
   members?: { id: string; name: string; email?: string }[];
   onCompleted?: (sprintId: string) => void;
+  issueStatuses?: { id: string; name: string }[];
 };
 
 export const CompleteSprintModal: React.FC<CompleteSprintModalProps> = ({
@@ -37,6 +38,7 @@ export const CompleteSprintModal: React.FC<CompleteSprintModalProps> = ({
   issues,
   members = [],
   onCompleted,
+  issueStatuses = [],
 }) => {
   const sprintStore = useSprint();
   const issueStore = useIssue();
@@ -70,8 +72,26 @@ export const CompleteSprintModal: React.FC<CompleteSprintModalProps> = ({
     () => issues.filter((i) => i.sprintId === selectedSprintId),
     [issues, selectedSprintId]
   );
-  const completedIssues = useMemo(() => issuesForSelected.filter((i) => i.state === "DONE"), [issuesForSelected]);
-  const openIssues = useMemo(() => issuesForSelected.filter((i) => i.state !== "DONE"), [issuesForSelected]);
+  const doneStatusIds = useMemo(() => {
+    const keywords = ["DONE", "HOÀN THÀNH", "COMPLETED"];
+    return new Set(
+      issueStatuses
+        .filter((s) => keywords.some((k) => s.name?.toUpperCase()?.includes(k)))
+        .map((s) => s.id)
+    );
+  }, [issueStatuses]);
+  const isDone = (issue: IIssue) => issue.state === "DONE" || doneStatusIds.has(issue.statusId);
+  const completedIssues = useMemo(() => issuesForSelected.filter(isDone), [issuesForSelected, doneStatusIds]);
+  const openIssues = useMemo(() => issuesForSelected.filter((i) => !isDone(i)), [issuesForSelected, doneStatusIds]);
+
+  useEffect(() => {
+    if (openIssues.length === 0) {
+      setMoveToSprintId(null);
+      return;
+    }
+    const firstFuture = futureSprints[0]?.id ?? "backlog";
+    setMoveToSprintId((prev) => prev ?? firstFuture);
+  }, [openIssues.length, futureSprints]);
 
   const handleComplete = async () => {
     if (!selectedSprintId) return;
@@ -157,26 +177,30 @@ export const CompleteSprintModal: React.FC<CompleteSprintModalProps> = ({
             ) : null}
           </div>
 
-          <div className="space-y-1">
-            <label className="text-sm font-medium text-custom-text-200">Di chuyển công việc đang mở tới</label>
-            <CustomSelect
-              value={moveToSprintId ?? "backlog"}
-              onChange={(val: string) => setMoveToSprintId(val)}
-              input
-              label={
-                moveToSprintId === "backlog"
-                  ? "Backlog"
-                  : (futureSprints.find((s) => s.id === moveToSprintId)?.name ?? "Chọn đích")
-              }
-            >
-              <CustomSelect.Option value="backlog">Backlog</CustomSelect.Option>
-              {futureSprints.map((s) => (
-                <CustomSelect.Option key={s.id} value={s.id}>
-                  {s.name}
-                </CustomSelect.Option>
-              ))}
-            </CustomSelect>
-          </div>
+          {openIssues.length > 0 && (
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-custom-text-200">Di chuyển công việc đang mở tới</label>
+              <CustomSelect
+                value={moveToSprintId ?? futureSprints[0]?.id ?? "backlog"}
+                onChange={(val: string) => setMoveToSprintId(val)}
+                input
+                label={
+                  moveToSprintId === "backlog"
+                    ? "Backlog"
+                    : (futureSprints.find((s) => s.id === moveToSprintId)?.name ??
+                      futureSprints[0]?.name ??
+                      "Chọn đích")
+                }
+              >
+                <CustomSelect.Option value="backlog">Backlog</CustomSelect.Option>
+                {futureSprints.map((s) => (
+                  <CustomSelect.Option key={s.id} value={s.id}>
+                    {s.name}
+                  </CustomSelect.Option>
+                ))}
+              </CustomSelect>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center justify-end gap-2">

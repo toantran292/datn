@@ -462,6 +462,7 @@ export const BoardView = memo(function BoardView({
         isOpen={isCompleteModalOpen}
         onClose={() => setIsCompleteModalOpen(false)}
         members={memberState}
+        issueStatuses={issueStatuses}
       />
     </>
   );

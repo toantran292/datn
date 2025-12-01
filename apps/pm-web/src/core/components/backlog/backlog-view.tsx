@@ -115,18 +115,33 @@ const BacklogViewComponent: React.FC<BacklogViewProps> = (props) => {
   const [isResizingDetail, setIsResizingDetail] = useState(false);
   const detailResizeStateRef = useRef<{ startX: number; startWidth: number } | null>(null);
 
-  const sprintCount = useMemo(() => sections.filter((section) => section.type === "sprint").length, [sections]);
+  const allowedSprintIds = useMemo(() => {
+    const ids = new Set<string>();
+    sprints.forEach((s) => {
+      if (s.status !== "CLOSED") ids.add(s.id);
+    });
+    return ids;
+  }, [sprints]);
+
+  const filteredSections = useMemo(() => {
+    return sections.filter((section) => section.type !== "sprint" || allowedSprintIds.has(section.id));
+  }, [allowedSprintIds, sections]);
+
+  const sprintCount = useMemo(
+    () => filteredSections.filter((section) => section.type === "sprint").length,
+    [filteredSections]
+  );
   const defaultSprintName = useMemo(() => `Sprint ${sprintCount + 1}`, [sprintCount]);
 
   const issueLookup = useMemo(() => {
     const map = new Map<string, { issue: IIssue; section: IBacklogSectionData }>();
-    sections.forEach((section) => {
+    filteredSections.forEach((section) => {
       section.issues.forEach((issue) => {
         map.set(issue.id, { issue, section });
       });
     });
     return map;
-  }, [sections]);
+  }, [filteredSections]);
 
   const memberMap = useMemo(() => {
     const map = new Map<string, { id: string; name: string; email?: string }>();
@@ -299,12 +314,12 @@ const BacklogViewComponent: React.FC<BacklogViewProps> = (props) => {
 
     return (
       <div className="flex flex-col overflow-y-auto h-full">
-        {sections.map((section) => (
+        {filteredSections.map((section) => (
           <BacklogSection
             key={section.id}
             data={section}
-        projectIdentifier={projectIdentifier}
-        onStartCreate={handleStartDraft}
+            projectIdentifier={projectIdentifier}
+            onStartCreate={handleStartDraft}
         onSubmitDraft={handleSubmitDraft}
         onCancelDraft={handleCancelDraft}
         onDraftNameChange={setDraftName}
