@@ -18,6 +18,14 @@ export class IssueService extends APIService {
       });
   }
 
+  async getProjectAnalytics(projectId: string): Promise<{ counts: any; timeline: any[] }> {
+    return this.get(`/api/projects/${projectId}/analytics`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data ?? error;
+      });
+  }
+
   async getIssueById(issueId: string): Promise<IIssue> {
     return this.get(`/api/issues/${issueId}`)
       .then((response) => this.normalizeIssue(response?.data))

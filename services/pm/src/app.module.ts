@@ -9,6 +9,7 @@ import { SprintModule } from "./modules/sprint/sprint.module";
 import { IssueModule } from "./modules/issue/issue.module";
 import { IssueStatusModule } from "./modules/issue-status/issue-status.module";
 import { IssueCommentModule } from "./modules/issue-comment/issue-comment.module";
+import { AnalyticsModule } from "./modules/analytics/analytics.module";
 import { OrgIdGuard } from "./common/guards";
 
 @Module({
@@ -22,6 +23,7 @@ import { OrgIdGuard } from "./common/guards";
     IssueModule,
     IssueStatusModule,
     IssueCommentModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [

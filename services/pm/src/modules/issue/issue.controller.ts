@@ -33,6 +33,15 @@ export class IssueController {
     return this.issueService.findByProject(projectId, orgId);
   }
 
+  @Get("projects/:projectId/analytics")
+  async getProjectAnalytics(
+    @Param("projectId") projectId: string,
+    @Req() request: RequestWithOrg
+  ): Promise<any> {
+    const orgId = request.orgId;
+    return this.issueService.getProjectAnalytics(projectId, orgId);
+  }
+
   @Get("sprints/:sprintId/issues")
   async findBySprint(@Param("sprintId") sprintId: string, @Req() request: RequestWithOrg): Promise<IssueResponseDto[]> {
     const orgId = request.orgId;
