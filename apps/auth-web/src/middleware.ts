@@ -11,7 +11,7 @@ async function isAuthenticated(request: NextRequest): Promise<boolean> {
   try {
     const backendUrl = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080';
 
-    console.log('[Middleware] Checking auth with cookies:', request.cookies.getAll().map(c => c.name));
+    // console.log('[Middleware] Checking auth with cookies:', request.cookies.getAll().map(c => c.name));
 
     const response = await fetch(`${backendUrl}/auth/me`, {
       method: 'GET',
@@ -21,13 +21,13 @@ async function isAuthenticated(request: NextRequest): Promise<boolean> {
       redirect: 'manual',
     });
 
-    console.log('[Middleware] Auth check response:', response.status);
+    // console.log('[Middleware] Auth check response:', response.status);
 
     // Return true only if we get 200
     return response.status === 200;
   } catch (error) {
     // If backend is down or network error, assume not authenticated
-    console.log('[Middleware] Auth check error:', error);
+    // console.log('[Middleware] Auth check error:', error);
     return false;
   }
 }

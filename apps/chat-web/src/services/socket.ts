@@ -2,7 +2,7 @@ import { io, Socket } from 'socket.io-client';
 import type { Room, Message, RoomUpdatedPayload } from '../types';
 
 // Connect through edge (nginx) at port 8080, which proxies /chat to chat service
-const WS_URL = import.meta.env.VITE_WS_URL || 'http://localhost:8080';
+const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:8080';
 
 export type SocketEventHandlers = {
   onRoomsBootstrap?: (rooms: Room[]) => void;

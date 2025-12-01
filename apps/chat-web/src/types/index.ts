@@ -4,6 +4,7 @@ export interface Room {
   orgId: string;
   isPrivate: boolean;
   type: 'channel' | 'dm';
+  projectId?: string | null; // null = org-level, string = project-specific
 }
 
 export interface Message {

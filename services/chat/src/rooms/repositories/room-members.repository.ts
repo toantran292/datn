@@ -20,9 +20,59 @@ export class RoomMembersRepository {
     this.model = mapper.forModel<RoomMemberEntity>('RoomMember');
   }
 
-  async addMember(roomId: types.TimeUuid, userId: types.Uuid, orgId: types.Uuid) {
+  async addMember(
+    roomId: types.TimeUuid,
+    userId: types.Uuid,
+    orgId: types.Uuid,
+    roomData?: {
+      roomType: 'channel' | 'dm';
+      roomName?: string;
+      isPrivate: boolean;
+      projectId?: types.Uuid | null;
+    }
+  ) {
     const row: RoomMemberEntity = { roomId, userId, orgId };
-    await this.model.insert(row);
+    const joinedAt = new Date();
+
+    // Use batch to write to multiple tables for consistency
+    const queries = [
+      {
+        query: 'INSERT INTO chat.room_members (room_id, user_id, org_id) VALUES (?, ?, ?)',
+        params: [roomId, userId, orgId],
+      },
+    ];
+
+    // If room data is provided, write to denormalized tables
+    if (roomData) {
+      // Write to user_rooms for general joined rooms lookup
+      queries.push({
+        query: `INSERT INTO chat.user_rooms (user_id, org_id, room_id, room_type, room_name, is_private, project_id, joined_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        params: [userId, orgId, roomId, roomData.roomType, roomData.roomName, roomData.isPrivate, roomData.projectId, joinedAt] as any[],
+      });
+
+      // If project-specific, write to user_project_rooms
+      if (roomData.projectId) {
+        queries.push({
+          query: `INSERT INTO chat.user_project_rooms (user_id, org_id, project_id, room_id, room_type, room_name, is_private, joined_at)
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          params: [userId, orgId, roomData.projectId, roomId, roomData.roomType, roomData.roomName, roomData.isPrivate, joinedAt] as any[],
+        });
+      }
+
+      // If DM, write to user_dms
+      if (roomData.roomType === 'dm') {
+        queries.push({
+          query: `INSERT INTO chat.user_dms (user_id, org_id, room_id, room_name, joined_at)
+                  VALUES (?, ?, ?, ?, ?)`,
+          params: [userId, orgId, roomId, roomData.roomName, joinedAt] as any[],
+        });
+      }
+    }
+
+    // Execute batch
+    await this.client.batch(queries, { prepare: true });
+
     return row;
   }
 
@@ -86,16 +136,70 @@ export class RoomMembersRepository {
     roomId: types.TimeUuid,
     userId: types.Uuid,
     lastId: types.TimeUuid,
+    orgId: types.Uuid,
   ) {
-    const query =
-      'UPDATE chat.room_members SET last_seen_message_id = ? WHERE room_id = ? AND user_id = ?';
-    await this.client.execute(query, [lastId, roomId, userId], { prepare: true });
+    // Update last_seen in all denormalized tables
+    const queries = [
+      {
+        query: 'UPDATE chat.room_members SET last_seen_message_id = ? WHERE room_id = ? AND user_id = ?',
+        params: [lastId, roomId, userId],
+      },
+      {
+        query: 'UPDATE chat.user_rooms SET last_seen_message_id = ? WHERE user_id = ? AND org_id = ? AND room_id = ?',
+        params: [lastId, userId, orgId, roomId],
+      },
+    ];
+
+    // Note: We also need to update user_project_rooms and user_dms if applicable
+    // But we need projectId and roomType info. For now, update those separately if needed.
+    // Or we can query first to get that info (trade-off: more reads vs more params)
+
+    await this.client.batch(queries, { prepare: true });
+  }
+
+  async updateLastSeenWithRoomInfo(
+    roomId: types.TimeUuid,
+    userId: types.Uuid,
+    lastId: types.TimeUuid,
+    orgId: types.Uuid,
+    roomType: 'channel' | 'dm',
+    projectId?: types.Uuid | null,
+  ) {
+    const queries = [
+      {
+        query: 'UPDATE chat.room_members SET last_seen_message_id = ? WHERE room_id = ? AND user_id = ?',
+        params: [lastId, roomId, userId],
+      },
+      {
+        query: 'UPDATE chat.user_rooms SET last_seen_message_id = ? WHERE user_id = ? AND org_id = ? AND room_id = ?',
+        params: [lastId, userId, orgId, roomId],
+      },
+    ];
+
+    // Update project-specific table if applicable
+    if (projectId) {
+      queries.push({
+        query: 'UPDATE chat.user_project_rooms SET last_seen_message_id = ? WHERE user_id = ? AND org_id = ? AND project_id = ? AND room_id = ?',
+        params: [lastId, userId, orgId, projectId, roomId],
+      });
+    }
+
+    // Update DMs table if applicable
+    if (roomType === 'dm') {
+      queries.push({
+        query: 'UPDATE chat.user_dms SET last_seen_message_id = ? WHERE user_id = ? AND org_id = ? AND room_id = ?',
+        params: [lastId, userId, orgId, roomId],
+      });
+    }
+
+    await this.client.batch(queries, { prepare: true });
   }
 
   async updateLastSeenIfNewer(
     roomId: types.TimeUuid,
     userId: types.Uuid,
     messageId: types.TimeUuid,
+    orgId: types.Uuid,
   ) {
     const res = await this.model.find({ roomId, userId });
     const row = res.first() as RoomMemberEntity | null;
@@ -105,7 +209,7 @@ export class RoomMembersRepository {
       row.lastSeenMessageId.getDate() < messageId.getDate();
 
     if (shouldUpdate) {
-      await this.updateLastSeen(roomId, userId, messageId);
+      await this.updateLastSeen(roomId, userId, messageId, orgId);
     }
   }
 
