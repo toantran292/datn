@@ -815,7 +815,7 @@ export function ParticipantAvatar({
 
   return (
     <div
-      className="relative flex flex-col items-center gap-3"
+      className="relative flex flex-col items-center gap-3 pb-10"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -960,15 +960,14 @@ export function ParticipantAvatar({
             </div>
           )}
         </motion.div>
-
         {/* Tooltip on hover for compact mode */}
         <AnimatePresence>
-          {showTooltip && isHovered && (
+          {showTooltip && (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              className="absolute -top-12 left-1/2 -translate-x-1/2 z-50 whitespace-nowrap"
+              exit={{ opacity: 0, y: -10 }}
+              className="absolute top-full mt-1 left-2 -translate-x-1/2 z-50 whitespace-nowrap"
             >
               <div
                 className="px-3 py-1.5 rounded-lg backdrop-blur-md border"

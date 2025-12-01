@@ -82,11 +82,8 @@ export function ScreenShareView({
                     const type = t.getType();
                     if (type === 'video') {
                         const isDesktop = t.getVideoType?.() === 'desktop' || t.videoType === 'desktop';
-                        if (isSharer) {
-                            // Sharer: only show desktop track, hide camera
-                            return isDesktop;
-                        }
-                        // Others: only show camera, hide desktop
+                        // In participant strip, always show camera track (not desktop)
+                        // Desktop track is shown in the main screen share area
                         return !isDesktop;
                     }
                     return true; // Keep audio
@@ -153,7 +150,7 @@ export function ScreenShareView({
             <motion.div
                 initial={{ y: -50, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                className="absolute top-6 left-6 z-20 flex items-center gap-4"
+                className="absolute top-4 left-6 z-20 flex items-center gap-4"
             >
                 <div
                     className="px-4 py-2.5 rounded-xl backdrop-blur-md border"
@@ -170,12 +167,12 @@ export function ScreenShareView({
             </motion.div>
 
             {/* Main screen share area - Centered and elevated */}
-            <div className="flex-1 flex items-center justify-center px-8 pt-24 pb-4">
+            <div className="flex-1 flex items-center justify-center px-8 pt-16 pb-8">
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.3 }}
-                    className="w-full h-full max-w-7xl rounded-2xl overflow-hidden relative border-2"
+                    className="w-full max-w-[1100px] max-h-[620px] h-auto rounded-2xl overflow-hidden relative border-2"
                     style={{
                         borderColor: 'var(--ts-orange)',
                         boxShadow: '0 0 40px rgba(255, 136, 0, 0.15), 0 8px 32px rgba(0, 0, 0, 0.4)',
@@ -223,9 +220,9 @@ export function ScreenShareView({
                 initial={{ y: 50, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.1 }}
-                className="px-8 pb-32"
+                className="px-8 pb-32 z-50 relative"
             >
-                <div className="w-full max-w-7xl mx-auto relative">
+                <div className="w-full max-w-[1100px] mx-auto relative">
                     {/* Scrollable container with navigation */}
                     <div className="relative">
                         {/* Left scroll button */}
@@ -270,7 +267,7 @@ export function ScreenShareView({
 
                         {/* Participant strip */}
                         <div
-                            className="rounded-2xl backdrop-blur-xl border-t-2 overflow-hidden"
+                            className="rounded-2xl backdrop-blur-xl border-t-2 overflow-visible"
                             style={{
                                 background: 'rgba(17, 24, 39, 0.95)',
                                 borderTopColor: 'var(--ts-border)',
@@ -299,7 +296,7 @@ export function ScreenShareView({
                                             isLocal={participant.id === 'local'}
                                             isSpeaking={participant.isSpeaking || false}
                                             isMuted={participant.isMuted || false}
-                                            size="small"
+                                            size="tiny"
                                             showTooltip={true}
                                         />
                                     </motion.div>

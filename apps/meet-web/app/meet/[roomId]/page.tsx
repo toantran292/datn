@@ -128,17 +128,19 @@ export default function MeetingPage() {
   // Get local participant speaking state (from hook)
   const localIsMuted = isAudioMuted;
 
-  // Filter local tracks - only filter when LOCAL user is sharing
-  // When remote is sharing, local should always show camera
+  // Filter local tracks - always keep camera track even when sharing screen
+  // Only exclude desktop track when NOT in screen share view (for MeetingGrid)
   const isLocalSharing = screenSharingParticipantId === 'local' || (screenShareTrack && screenShareTrack.isLocal());
   const filteredLocalTracks: JitsiTrack[] = isScreenSharing && isLocalSharing && screenShareTrack
     ? localTracks.filter((t: JitsiTrack) => {
+      // When local is sharing screen, include BOTH camera and desktop tracks
+      // Camera will be shown in participant strip, desktop will be shown as main screen
       const type = t.getType();
       if (type === 'video') {
-        // When local is sharing screen, only include desktop track, exclude camera
         const tAny = t as any;
         const isDesktop = tAny.getVideoType?.() === 'desktop' || tAny.videoType === 'desktop';
-        return isDesktop;
+        // Include camera track (not desktop) for participant strip
+        return !isDesktop;
       }
       // Keep audio track
       return true;
@@ -164,16 +166,24 @@ export default function MeetingPage() {
       // Local screen share
       screenSharerName = displayName;
       activeScreenShareTrack = screenShareTrack;
-    } else {
-      // Remote participant is sharing screen
+    } else if (screenShareTrack && !screenShareTrack.isLocal()) {
+      // Remote participant is sharing screen - use the track from hook
       const sharingParticipant = participants.get(screenSharingParticipantId);
       if (sharingParticipant) {
         screenSharerName = sharingParticipant.name;
-        // Find desktop track from this participant - try multiple detection methods
+        activeScreenShareTrack = screenShareTrack;
+      } else {
+        // Participant not found, clear screen sharing state
+        activeScreenShareTrack = null;
+      }
+    } else {
+      // Fallback: try to find desktop track from participants if screenShareTrack is not set
+      const sharingParticipant = participants.get(screenSharingParticipantId);
+      if (sharingParticipant) {
+        screenSharerName = sharingParticipant.name;
         activeScreenShareTrack = sharingParticipant.tracks.find((t: any) => {
           const type = t.getType();
           if (type !== 'video') return false;
-          // Try multiple ways to detect desktop track
           const tAny = t as any;
           return (
             tAny.getVideoType?.() === 'desktop' ||
@@ -182,7 +192,15 @@ export default function MeetingPage() {
             (tAny.getOriginalStream && tAny.getOriginalStream().getVideoTracks()[0]?.getSettings().displaySurface)
           );
         }) || null;
+      } else {
+        // Participant not found, clear screen sharing state
+        activeScreenShareTrack = null;
       }
+    }
+
+    // If no track found, should not be in screen share view
+    if (!activeScreenShareTrack) {
+      console.log('[Meeting] No screen share track found, but isScreenSharing is true - this should be cleared by hook');
     }
   }
 
@@ -221,7 +239,7 @@ export default function MeetingPage() {
 
       {/* Video Grid or Screen Share View */}
       <div className="flex-1 overflow-hidden">
-        {isScreenSharing && screenSharingParticipantId ? (
+        {isScreenSharing && screenSharingParticipantId && activeScreenShareTrack ? (
           <ScreenShareView
             participants={participantsArray}
             localParticipant={{

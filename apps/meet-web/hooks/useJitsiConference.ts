@@ -74,9 +74,17 @@ export function useJitsiConference(
     }
   }, [localTracks, isAudioMuted]);
 
-  // Toggle video
+  // Toggle video - always toggle camera track, never desktop track
   const toggleVideo = useCallback(async () => {
-    const videoTrack = localTracks.find((t: JitsiTrack) => t.getType() === 'video');
+    // Always find camera track (not desktop track) to toggle
+    const videoTrack = localTracks.find((t: JitsiTrack) => {
+      const type = t.getType();
+      if (type !== 'video') return false;
+      const tAny = t as any;
+      const isDesktop = tAny.getVideoType?.() === 'desktop' || tAny.videoType === 'desktop';
+      return !isDesktop; // Only camera track, not desktop
+    });
+
     if (!videoTrack) return;
 
     try {
@@ -98,32 +106,32 @@ export function useJitsiConference(
 
     try {
       if (isScreenSharing) {
-        // Stop screen sharing - restore original video track
+        // Stop screen sharing - remove desktop track only
+        // Camera track is still in conference, no need to restore it
         if (screenShareTrack) {
+          // Remove ended event listener if it exists
+          const stream = (screenShareTrack as any).getOriginalStream?.() || (screenShareTrack as any).stream;
+          if (stream) {
+            const videoTrack = stream.getVideoTracks()[0];
+            const endedListener = (screenShareTrack as any).__endedListener;
+            if (videoTrack && endedListener) {
+              videoTrack.removeEventListener('ended', endedListener);
+            }
+          }
+
           await conferenceRef.current.removeTrack(screenShareTrack);
           screenShareTrack.dispose();
           setScreenShareTrack(null);
         }
 
-        if (originalVideoTrackRef.current) {
-          const trackToRestore = originalVideoTrackRef.current;
-          await ensureTrackId(trackToRestore);
-          await conferenceRef.current.addTrack(trackToRestore);
-          // Update localTracks to include restored video track
-          setLocalTracks((prev: JitsiTrack[]) => {
-            const hasTrack = prev.some((t: JitsiTrack) => t.getId() === trackToRestore.getId());
-            if (!hasTrack) {
-              return [...prev, trackToRestore];
-            }
-            return prev;
-          });
-          originalVideoTrackRef.current = null;
-        }
+        // Camera track is still active in conference, just clear the reference
+        originalVideoTrackRef.current = null;
 
         setIsScreenSharing(false);
         setScreenSharingParticipantId(null);
       } else {
-        // Start screen sharing - replace video track with desktop track
+        // Start screen sharing - ADD desktop track WITHOUT removing camera track
+        // This allows remote participants to see both camera and desktop track
         // First, find and remove any existing desktop track to avoid duplicates
         const existingDesktopTrack = localTracks.find((t: JitsiTrack) => {
           const type = t.getType();
@@ -136,32 +144,69 @@ export function useJitsiConference(
           setLocalTracks((prev: JitsiTrack[]) => prev.filter((t: JitsiTrack) => t.getId() !== existingDesktopTrack.getId()));
         }
 
-        // Find camera video track (not desktop)
+        // Find camera video track (not desktop) - KEEP IT in conference
         const currentVideoTrack = localTracks.find((t: JitsiTrack) => {
           const type = t.getType();
           return type === 'video' && ((t as any).getVideoType?.() !== 'desktop' && (t as any).videoType !== 'desktop');
         });
 
+        // Store camera track reference but DON'T remove it from conference
+        // Remote participants need both camera and desktop tracks
         if (currentVideoTrack) {
-          // Store original video track
           originalVideoTrackRef.current = currentVideoTrack;
-
-          // Remove current video track from conference but keep in localTracks for now
-          await conferenceRef.current.removeTrack(currentVideoTrack);
+          // DO NOT remove camera track - keep it in conference
         }
 
-        // Create and add desktop track
+        // Create and add desktop track (alongside camera track)
         const desktopTracks = await createDesktopTrack();
         const desktopTrack = desktopTracks.find((t: JitsiTrack) => t.getType() === 'video');
 
         if (desktopTrack) {
           await ensureTrackId(desktopTrack);
+
+          // Listen for track ended event (when user stops sharing from browser)
+          const handleTrackEnded = () => {
+            console.log('[Jitsi] Desktop track ended - user stopped sharing from browser');
+            // Stop screen sharing when track ends - always clear state regardless of current screenShareTrack value
+            // The track will be removed via TRACK_REMOVED event, we just need to clear state here
+            setScreenShareTrack(null);
+            setIsScreenSharing(false);
+            setScreenSharingParticipantId(null);
+            originalVideoTrackRef.current = null;
+
+            // Also try to remove track from conference if still connected
+            if (conferenceRef.current) {
+              conferenceRef.current.removeTrack(desktopTrack).catch((err: any) => {
+                console.error('[Jitsi] Error removing desktop track on end:', err);
+              });
+            }
+            try {
+              desktopTrack.dispose();
+            } catch (err) {
+              // Ignore dispose errors
+              console.error('[Jitsi] Error disposing desktop track:', err);
+            }
+          };
+
+          // Get the underlying MediaStreamTrack and listen for ended event
+          const stream = (desktopTrack as any).getOriginalStream?.() || (desktopTrack as any).stream;
+          if (stream) {
+            const videoTrack = stream.getVideoTracks()[0];
+            if (videoTrack) {
+              videoTrack.addEventListener('ended', handleTrackEnded);
+              // Store cleanup function
+              (desktopTrack as any).__endedListener = handleTrackEnded;
+            }
+          }
+
           await conferenceRef.current.addTrack(desktopTrack);
           // Don't add to localTracks here - it will be added via TRACK_ADDED event
           // This prevents duplicates
           setScreenShareTrack(desktopTrack);
           setIsScreenSharing(true);
-          setScreenSharingParticipantId(conferenceRef.current.myUserId());
+          // Normalize participant ID for consistency
+          const localUserId = conferenceRef.current.myUserId();
+          setScreenSharingParticipantId(normalizeId(localUserId));
         }
       }
     } catch (err) {
@@ -420,9 +465,13 @@ export function useJitsiConference(
               // Local desktop track
               setScreenShareTrack(track);
               setIsScreenSharing(true);
-              setScreenSharingParticipantId(conferenceRef.current?.myUserId() || 'local');
+              // Normalize ID for consistency
+              const localUserId = conferenceRef.current?.myUserId() || 'local';
+              setScreenSharingParticipantId(normalizeId(localUserId));
             } else {
-              // Remote participant is sharing screen - update state outside of setParticipants to ensure re-render
+              // Remote participant is sharing screen
+              // Store the remote desktop track so it can be accessed for rendering
+              setScreenShareTrack(track);
               setScreenSharingParticipantId(pid);
               setIsScreenSharing(true);
               // Force a state update to trigger re-render
@@ -439,9 +488,23 @@ export function useJitsiConference(
             // Check if this was a desktop track being removed
             const isDesktopTrack = track.getType() === 'video' && ((track as any).getVideoType?.() === 'desktop' || (track as any).videoType === 'desktop');
             if (isDesktopTrack) {
+              console.log('[Jitsi] Local desktop track removed - stopping screen share');
+
+              // Remove ended event listener if it exists
+              const stream = (track as any).getOriginalStream?.() || (track as any).stream;
+              if (stream) {
+                const videoTrack = stream.getVideoTracks()[0];
+                const endedListener = (track as any).__endedListener;
+                if (videoTrack && endedListener) {
+                  videoTrack.removeEventListener('ended', endedListener);
+                }
+              }
+
+              // Always clear screen sharing state when desktop track is removed
               setScreenShareTrack(null);
               setIsScreenSharing(false);
               setScreenSharingParticipantId(null);
+              originalVideoTrackRef.current = null;
             }
 
             setLocalTracks((prev: JitsiTrack[]) =>
@@ -454,19 +517,97 @@ export function useJitsiConference(
 
           // Check if this was a desktop track being removed
           const isDesktopTrack = track.getType() === 'video' && ((track as any).getVideoType?.() === 'desktop' || (track as any).videoType === 'desktop');
-          if (isDesktopTrack && pid === screenSharingParticipantId) {
-            setScreenSharingParticipantId(null);
-            setIsScreenSharing(false);
+          if (isDesktopTrack) {
+            console.log('[Jitsi] Remote desktop track removed - checking if should stop screen share', {
+              pid,
+              screenSharingParticipantId,
+              trackParticipantId: track.getParticipantId(),
+              trackId: track.getId(),
+              screenShareTrackId: screenShareTrack?.getId(),
+              isLocal: track.isLocal()
+            });
+
+            // First check: Is this the exact track we're storing?
+            const isExactTrack = screenShareTrack && (
+              track.getId() === screenShareTrack.getId() ||
+              track === screenShareTrack
+            );
+
+            // Second check: Is this from the screen sharing participant?
+            // Normalize both IDs for comparison - ensure consistent comparison
+            const normalizedSharingId = screenSharingParticipantId ? normalizeId(screenSharingParticipantId) : null;
+            const normalizedPid = normalizeId(pid);
+
+            // Also check the original participant ID from track (before normalization)
+            const originalParticipantId = track.getParticipantId();
+            const normalizedOriginalId = normalizeId(originalParticipantId);
+
+            // If this is the screen sharing participant, stop screen sharing
+            // Check multiple ways to ensure we catch the match
+            const isSharingParticipant =
+              isExactTrack ||
+              normalizedPid === normalizedSharingId ||
+              pid === screenSharingParticipantId ||
+              normalizedPid === screenSharingParticipantId ||
+              normalizedOriginalId === normalizedSharingId ||
+              originalParticipantId === screenSharingParticipantId ||
+              (screenSharingParticipantId && normalizeId(screenSharingParticipantId) === normalizedPid);
+
+            if (isSharingParticipant) {
+              console.log('[Jitsi] Remote desktop track removed - stopping screen share view', {
+                matched: true,
+                isExactTrack,
+                pid,
+                screenSharingParticipantId,
+                normalizedPid,
+                normalizedSharingId
+              });
+              setScreenShareTrack(null);
+              setScreenSharingParticipantId(null);
+              setIsScreenSharing(false);
+            } else {
+              console.log('[Jitsi] Remote desktop track removed but not from sharing participant', {
+                isExactTrack,
+                pid,
+                screenSharingParticipantId,
+                normalizedPid,
+                normalizedSharingId
+              });
+            }
           }
 
           setParticipants((prev: Map<string, Participant>) => {
             const next = new Map(prev);
             const p = next.get(pid);
             if (p) {
+              const updatedTracks = p.tracks.filter((t: JitsiTrack) => t.getId() !== track.getId());
               next.set(pid, {
                 ...p,
-                tracks: p.tracks.filter((t: JitsiTrack) => t.getId() !== track.getId())
+                tracks: updatedTracks
               });
+
+              // After removing track, check if this participant was sharing screen and no longer has desktop track
+              if (isDesktopTrack && screenSharingParticipantId) {
+                const normalizedSharingId = normalizeId(screenSharingParticipantId);
+                const normalizedPid = normalizeId(pid);
+
+                // If this is the sharing participant and no desktop track remains, clear screen sharing
+                if (normalizedPid === normalizedSharingId || pid === screenSharingParticipantId) {
+                  const hasDesktopTrack = updatedTracks.some((t: JitsiTrack) => {
+                    const type = t.getType();
+                    if (type !== 'video') return false;
+                    const tAny = t as any;
+                    return tAny.getVideoType?.() === 'desktop' || tAny.videoType === 'desktop';
+                  });
+
+                  if (!hasDesktopTrack) {
+                    console.log('[Jitsi] Sharing participant no longer has desktop track - clearing screen share state');
+                    setScreenShareTrack(null);
+                    setScreenSharingParticipantId(null);
+                    setIsScreenSharing(false);
+                  }
+                }
+              }
             }
             return next;
           });
@@ -679,6 +820,61 @@ export function useJitsiConference(
       }
     };
   }, [localTracks, isJoined, isAudioMuted]);
+
+  // Safety check: Clear screen sharing state if track is missing
+  useEffect(() => {
+    if (isScreenSharing && screenSharingParticipantId) {
+      // Check if we still have a desktop track for the sharing participant
+      let hasDesktopTrack = false;
+
+      // Check local tracks if local is sharing
+      if (screenSharingParticipantId === 'local' || normalizeId(conferenceRef.current?.myUserId() || '') === normalizeId(screenSharingParticipantId)) {
+        hasDesktopTrack = localTracks.some((t: JitsiTrack) => {
+          const type = t.getType();
+          if (type !== 'video') return false;
+          const tAny = t as any;
+          return tAny.getVideoType?.() === 'desktop' || tAny.videoType === 'desktop';
+        });
+      } else {
+        // Check remote participant's tracks
+        const sharingParticipant = participants.get(screenSharingParticipantId);
+        if (sharingParticipant) {
+          hasDesktopTrack = sharingParticipant.tracks.some((t: JitsiTrack) => {
+            const type = t.getType();
+            if (type !== 'video') return false;
+            const tAny = t as any;
+            return tAny.getVideoType?.() === 'desktop' || tAny.videoType === 'desktop';
+          });
+        }
+      }
+
+      // Also check if screenShareTrack exists and is valid
+      if (!hasDesktopTrack && screenShareTrack) {
+        // Check if the stored track is still valid
+        try {
+          const trackId = screenShareTrack.getId();
+          if (trackId) {
+            hasDesktopTrack = true;
+          }
+        } catch (e) {
+          // Track is disposed, not valid
+          hasDesktopTrack = false;
+        }
+      }
+
+      // If no desktop track found for the sharing participant, clear screen sharing state
+      if (!hasDesktopTrack) {
+        console.log('[Jitsi] Safety check: Clearing screen sharing state - no desktop track found for sharing participant', {
+          screenSharingParticipantId,
+          hasScreenShareTrack: !!screenShareTrack
+        });
+        setScreenShareTrack(null);
+        setIsScreenSharing(false);
+        setScreenSharingParticipantId(null);
+        originalVideoTrackRef.current = null;
+      }
+    }
+  }, [isScreenSharing, screenSharingParticipantId, screenShareTrack, localTracks, participants]);
 
   return {
     conference,
