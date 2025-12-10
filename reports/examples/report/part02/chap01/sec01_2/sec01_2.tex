@@ -1,0 +1,51 @@
+\subsection{Yêu cầu chức năng}
+
+Dựa trên mô tả bài toán ở mục 1.1, hệ thống có 3 tác nhân chính (Super Admin, Workspace Owner, Member) và các hệ thống bên ngoài tương tác với phân hệ nền tảng và thông tin. Các yêu cầu chức năng được phân loại theo từng tác nhân và được biểu diễn thông qua các sơ đồ use case dưới đây.
+
+\subsubsection{Sơ đồ Use Case tổng quan}
+
+Sơ đồ use case tổng quan mô tả toàn bộ các chức năng chính của hệ thống và mối quan hệ giữa các tác nhân với hệ thống. Hệ thống phân hệ nền tảng và thông tin cung cấp các nhóm chức năng chính bao gồm: quản lý tài khoản và xác thực, quản lý workspace, quản lý thành viên và phân quyền, quản lý file, quản lý thông báo, tích hợp AI và cung cấp giao diện quản trị. Mỗi tác nhân có quyền truy cập vào các chức năng tương ứng với vai trò của mình trong hệ thống.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/usecase_tongquan.png}
+    \caption{Sơ đồ Use Case tổng quan của phân hệ nền tảng và thông tin}
+    \label{fig:usecase_tongquan}
+\end{figure}
+
+\subsubsection{Use Case của Super Admin}
+
+Super Admin là tác nhân có quyền hạn cao nhất trong hệ thống, chịu trách nhiệm quản lý toàn bộ nền tảng SaaS. Các chức năng chính của Super Admin bao gồm: quản lý workspace (tạo, xem, cập nhật, xóa workspace), quản lý người dùng cấp hệ thống, cấu hình hệ thống (cấu hình bảo mật, tích hợp dịch vụ bên ngoài, cấu hình email, storage), giám sát hoạt động tổng thể (xem log, theo dõi tài nguyên hệ thống, giám sát hiệu năng), và xử lý các vấn đề kỹ thuật. Super Admin không tham gia trực tiếp vào các dự án cụ thể của workspace mà tập trung vào việc đảm bảo hệ thống hoạt động ổn định, bảo mật và có khả năng mở rộng.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{images/usecase_super_admin.png}
+    \caption{Sơ đồ Use Case của Super Admin}
+    \label{fig:usecase_super_admin}
+\end{figure}
+
+\subsubsection{Use Case của Workspace Owner}
+
+Workspace Owner là người đại diện cho một tổ chức hoặc nhóm phát triển, có quyền quản lý toàn bộ tài nguyên và thành viên trong workspace của mình. Các chức năng chính của Workspace Owner bao gồm: quản lý thông tin workspace (cập nhật tên, mô tả, cấu hình), quản lý thành viên (mời thêm thành viên mới, xóa thành viên, cập nhật vai trò và quyền hạn), quản lý dự án trong workspace (tạo, xem, cập nhật, xóa dự án), quản lý file và tài nguyên (xem danh sách file, cấu hình quyền truy cập file theo dự án), quản lý thông báo (cấu hình loại thông báo, xem thống kê thông báo), và xem các báo cáo, dashboard tổng hợp (số lượng dự án đang chạy, số lượng thành viên, dung lượng file sử dụng, hoạt động gần đây) do hệ thống cung cấp. Workspace Owner cũng có thể tương tác với các dịch vụ AI để yêu cầu tổng hợp thông tin hoặc phân tích dữ liệu dự án.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/usecase_workspace_owner.png}
+    \caption{Sơ đồ Use Case của Workspace Owner}
+    \label{fig:usecase_workspace_owner}
+\end{figure}
+
+\subsubsection{Use Case của Member}
+
+Member là người tham gia vào một hoặc nhiều dự án trong workspace, có quyền truy cập vào các tài nguyên dự án theo vai trò được phân quyền. Các chức năng chính của Member bao gồm: xem và cập nhật thông tin cá nhân (tên, email, avatar, mật khẩu), xem danh sách dự án mà mình tham gia, truy cập vào tài nguyên dự án (xem thông tin dự án, danh sách thành viên, tài liệu liên quan), quản lý file cá nhân và file dự án (upload, download, xem, xóa file theo quyền hạn), nhận và quản lý thông báo (xem danh sách thông báo, đánh dấu đã đọc, cấu hình nhận thông báo), và tương tác với các chức năng do các phân hệ khác cung cấp (quản lý task, tham gia kênh truyền thông, tham gia cuộc họp). Tùy theo vai trò cụ thể (Project Manager, Developer, Tester, Viewer), Member có thể có các quyền hạn khác nhau trong việc thao tác với dữ liệu dự án.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{images/usecase_member.png}
+    \caption{Sơ đồ Use Case của Member}
+    \label{fig:usecase_member}
+\end{figure}
+
+\subsubsection{Các hệ thống bên ngoài}
+
+Ngoài ba tác nhân chính, phân hệ nền tảng và thông tin còn tương tác với các hệ thống bên ngoài để cung cấp các chức năng mở rộng. Các hệ thống bên ngoài bao gồm: dịch vụ email (gửi thông báo qua email, xác nhận tài khoản, reset mật khẩu), dịch vụ lưu trữ đám mây (lưu trữ file trên S3-compatible storage), dịch vụ AI bên ngoài (OpenAI API, Gemini API để tổng hợp và phân tích dữ liệu), và các phân hệ chức năng khác (project management, communication, meeting) để đồng bộ dữ liệu và cung cấp thông tin tổng hợp. Việc tích hợp với các hệ thống bên ngoài giúp phân hệ nền tảng linh hoạt, dễ mở rộng và có thể tận dụng các dịch vụ sẵn có thay vì phải xây dựng lại từ đầu.

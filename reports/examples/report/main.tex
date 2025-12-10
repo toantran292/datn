@@ -1,0 +1,94 @@
+\documentclass[a4paper]{article} % Create new a report
+\usepackage[utf8]{inputenc}
+\usepackage[T5]{fontenc} % To use unicode
+\usepackage{mathptmx} % Time New Roman
+\usepackage[right=2cm,left=3cm,top=2cm,bottom=2.5cm]{geometry}
+\usepackage[fontsize=13pt]{scrextend}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{indentfirst}
+\usepackage{float} % Set position of image.
+\usepackage{tikz} % Create border
+\usepackage{multicol}
+\usepackage{caption}
+\usepackage{array} % Required for Table Column Text Alignment with Custom Widths
+\usepackage{titlesec} % Set font style
+\usepackage{parskip}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{tocloft}
+\usepackage{xparse}
+\usepackage{forloop}
+\usepackage{enumitem}
+\usepackage{lipsum}
+\usepackage{textcase}
+\usepackage{tabularray}
+\usepackage{longtable}
+\usepackage{changepage}
+\usepackage[inkscape = inkscape -z -D, svgpath = fig/]{svg}  % Requires shell-escape
+
+\usetikzlibrary{calc}
+%Custom packages
+\usepackage{./config/heading}
+\usepackage{./config/fancy}
+\usepackage{./config/figure}
+
+\setlist{nolistsep}
+\renewcommand{\baselinestretch}{1.2}
+\setlength{\parskip}{6pt} % Spacing after
+\setlength{\parindent}{1cm}
+
+\newcommand{\setsection}[1]{\section*{\texorpdfstring{\MakeTextUppercase{#1}}{#1}}\addcontentsline{toc}{section}{\texorpdfstring{\MakeTextUppercase{#1}}{#1}}\markright{#1}}
+\newcommand{\setsubsection}[1]{\subsection*{\texorpdfstring{\MakeTextUppercase{#1}}{#1}}\addcontentsline{toc}{subsection}{\texorpdfstring{\MakeTextUppercase{#1}}{#1}}\markright{#1}}
+
+
+% Link to figure
+\usepackage[unicode,breaklinks=true]{hyperref}
+\usepackage{url}
+\def\UrlBreaks{\do\/\do-\do_}
+\newcommand{\myref}[1]{\textbf{\hyperref[#1]{Hình~\ref*{#1}}}}
+\newcommand{\myreftb}[1]{\textbf{\hyperref[#1]{Bảng~\ref*{#1}}}}
+
+% Bibliography - using plain bibtex instead of biblatex
+% \usepackage[style=numeric,sorting=none]{biblatex}
+% \addbibresource{references.bib}
+
+\DefTblrTemplate{contfoot-text}{default}{Tiếp tục bên trang tiếp theo}
+\DefTblrTemplate{conthead-text}{default}{(Tiếp tục)}
+
+% =========================== START DOCUMENT ==================================
+\begin{document}
+\pagenumbering{roman}
+\input{coverPage}
+\input{coverPage-2}
+
+\input{thanks}
+\newpage
+\input{approval}
+\newpage
+\input{commitment}
+\newpage
+\input{list}
+\newpage
+\input{acronyms}
+\newpage
+\input{abstract-vi}
+\newpage
+\input{abstract-en}
+
+
+
+\pagenumbering{arabic}
+\input{part01/part01.tex}
+\newpage
+\input{part02/part02.tex}
+\newpage
+% \input{part03/part03.tex}
+\newpage
+
+
+\phantomsection
+\setsection{Tài liệu tham khảo}
+\renewcommand{\refname}{}  % Remove "References" heading
+\bibliographystyle{unsrt}
+\bibliography{references}
+\end{document}
