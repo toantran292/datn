@@ -16,30 +16,6 @@ Bố cục tổng thể được chia thành: Sidebar (240px) với project navi
 
 \subsubsection{Phác thảo thiết kế giao diện}
 
-\textbf{Giao diện đăng ký và đăng nhập:}
-
-Giao diện chức năng đăng ký cho phép người dùng tạo tài khoản để đăng nhập vào hệ thống. Để đăng ký, người dùng cần nhập họ tên, email, mật khẩu và xác nhận mật khẩu. Ngoài ra, người dùng có thể đăng ký nhanh bằng tài khoản Google (Google OAuth).
-
-Giao diện chức năng đăng nhập cho phép người dùng đăng nhập vào hệ thống. Để đăng nhập, người dùng cần nhập email, mật khẩu. Nếu quên mật khẩu, người dùng có thể nhấn vào link "Forgot password?" để được hướng dẫn reset.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.55\textwidth]{images/ui_auth.png}
-\caption{Giao diện phác thảo chức năng đăng ký và chức năng đăng nhập}
-\label{fig:ui_auth}
-\end{figure}
-
-\textbf{Giao diện trang chủ (Landing Page):}
-
-Giao diện trang chủ (Landing Page) được thiết kế với thanh điều hướng ở phía trên, hero section với slogan và nút CTA, và các section giới thiệu tính năng chính của sản phẩm.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.55\textwidth,height=0.35\textheight,keepaspectratio]{images/ui_landing.png}
-\caption{Giao diện phác thảo trang chủ (Landing Page)}
-\label{fig:ui_landing}
-\end{figure}
-
 \textbf{Giao diện danh sách Projects:}
 
 Giao diện danh sách Projects hiển thị tất cả các projects mà người dùng là thành viên trong organization hiện tại. Mỗi project được hiển thị dưới dạng card bao gồm: project avatar, project key, tên project, mô tả ngắn, số lượng thành viên, active sprint (nếu có), và vai trò của người dùng (Project Lead/Team Member/Viewer).
@@ -84,29 +60,18 @@ Giao diện Issue Detail hiển thị chi tiết đầy đủ của một issue 
 \label{fig:ui_issue_detail}
 \end{figure}
 
-\textbf{Giao diện quản lý Project Members:}
+\textbf{Giao diện project summary:}
 
-Giao diện quản lý Project Members hiển thị danh sách tất cả thành viên trong project với thông tin: họ tên, email, vai trò (Project Lead/Team Member/Viewer), số issues assigned, và ngày tham gia. Project Lead có thể thêm members từ organization, thay đổi roles, và remove members.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.55\textwidth]{images/ui_project_members.png}
-\caption{Giao diện phác thảo quản lý Project Members}
-\label{fig:ui_project_members}
-\end{figure}
-
-\textbf{Giao diện Sprint Management:}
-
-Giao diện Sprint Management hiển thị danh sách tất cả sprints trong project với các tabs: ACTIVE (max 1), FUTURE, CLOSED. Mỗi sprint card hiển thị: sprint name, goal, date range, số issues (completed/total), progress bar, và actions. FUTURE sprints có action "Start Sprint" với validation. ACTIVE sprint có action "Complete Sprint" trigger AI Summary generation. CLOSED sprints hiển thị AI-generated summary preview và link "View Full Summary".
+Giao diện project summary hiển thị tổng quan về project: số lượng issues, số lượng sprints, số lượng thành viên, số lượng comments, số lượng attachments, và số lượng activities.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.65\textwidth]{images/ui_sprints.png}
-\caption{Giao diện phác thảo Sprint Management}
-\label{fig:ui_sprints}
+\includegraphics[width=0.65\textwidth]{images/ui_project_summary.png}
+\caption{Giao diện phác thảo project summary}
+\label{fig:ui_project_summary}
 \end{figure}
 
-\textbf{Giao diện Sprint Summary (AI-generated):}
+\textbf{Giao diện Sprint Summary:}
 
 Giao diện Sprint Summary hiển thị AI-generated retrospective khi Project Lead complete sprint. Bao gồm các sections: Overview (tổng quan sprint), Achievements (bullet points các thành tựu chính), Issues Found (các vấn đề phát hiện với title và description), Recommendations (khuyến nghị cho sprints tiếp theo), và Metrics (completed/incomplete issues, velocity, average completion time). Footer hiển thị LLM provider used, tokens consumed, và generated timestamp.
 
@@ -150,35 +115,3 @@ Giao diện Custom Status Management cho phép Project Lead định nghĩa custo
 \label{fig:ui_custom_statuses}
 \end{figure}
 
-\textbf{Giao diện Project Settings:}
-
-Giao diện Project Settings cho phép Project Lead cấu hình project: thông tin cơ bản (name, key, description, avatar), default assignee, Board/Backlog config (column ordering, filters), AI settings (preferred LLM provider, custom prompts cho Sprint Summary và Task Breakdown), và archive project option.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.5\textwidth]{images/ui_project_settings.png}
-\caption{Giao diện phác thảo Project Settings}
-\label{fig:ui_project_settings}
-\end{figure}
-
-\textbf{Giao diện trang cá nhân của người dùng:}
-
-Giao diện trang cá nhân của người dùng hiển thị thông tin tài khoản và các tùy chọn quản lý như đổi mật khẩu, cài đặt thông báo.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.55\textwidth]{images/ui_profile.png}
-\caption{Giao diện phác thảo trang cá nhân của người dùng}
-\label{fig:ui_profile}
-\end{figure}
-
-\textbf{Giao diện Organization Dashboard:}
-
-Giao diện Organization Dashboard (dành cho Organization Owner) hiển thị tổng quan về organization: số projects, total members, storage usage, AI tokens consumed. Charts hiển thị: project creation trend, sprint velocity across projects, issue completion rates. Actions: "Create Project", "Manage Members", "Organization Settings". Danh sách recent activities across all projects trong organization.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.65\textwidth]{images/ui_org_dashboard.png}
-\caption{Giao diện phác thảo Organization Dashboard}
-\label{fig:ui_org_dashboard}
-\end{figure}
