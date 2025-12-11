@@ -1,0 +1,46 @@
+\phantomsection
+\subsection*{3. Mục tiêu đề tài}
+\addcontentsline{toc}{subsection}{3. Mục tiêu đề tài}
+\setcounter{subsection}{3}
+\setcounter{subsubsection}{0}
+\setcounter{figure}{0}
+
+\subsubsection{Mục tiêu tổng quát}
+
+Phát triển phân hệ nền tảng và thông tin cho một nền tảng SaaS tích hợp AI nhằm thống nhất quản lý dự án Agile, đóng vai trò lớp xương sống quản lý tài khoản, workspace, tệp dữ liệu và thông báo hệ thống, đồng thời cung cấp cổng truy cập tập trung (API Gateway) và dịch vụ tổng hợp thông tin bằng AI từ các phân hệ chức năng khác (quản lý dự án, truyền thông, họp trực tuyến). Phân hệ này hướng tới việc giảm phân mảnh công cụ, chuẩn hóa luồng dữ liệu và hỗ trợ người quản lý nắm bắt bức tranh tổng thể về dự án một cách nhanh chóng, trực quan.
+
+\subsubsection{Mục tiêu cụ thể}
+
+\textbf{Mục tiêu chuyên môn:}
+
+\begin{itemize}
+    \item Rèn luyện kỹ năng thiết kế và triển khai hệ thống theo kiến trúc microservice, chú trọng khả năng mở rộng, hiệu năng và bảo mật. Xây dựng các service lõi với công nghệ đa dạng: dịch vụ edge sử dụng Nginx làm API Gateway và reverse proxy, dịch vụ account quản lý tài khoản và xác thực sử dụng Java Spring Boot, các dịch vụ còn lại (notification, file-storage, tenant-bff, AI) sử dụng NodeJS/NestJS; tất cả giao tiếp qua API RESTful.
+
+    \item Thiết kế và triển khai dịch vụ edge sử dụng Nginx hoạt động như một API Gateway và reverse proxy, đảm nhận nhiệm vụ định tuyến yêu cầu đến các dịch vụ phía sau, cân bằng tải và bảo mật điểm truy cập duy nhất vào hệ thống; thực hiện xác thực người dùng tại edge và ký kết thông tin xác thực bằng HMAC để các service phía sau có thể xác minh tính hợp lệ mà không cần gọi lại service xác thực.
+
+    \item Xây dựng dịch vụ account sử dụng Java Spring Boot, đảm nhận quản lý tài khoản người dùng, workspace, xác thực (authentication) và phân quyền (authorization), cung cấp cơ chế đăng nhập, đăng ký và quản lý phiên làm việc cho toàn bộ hệ thống.
+
+    \item Xây dựng dịch vụ file-storage cho phép lưu trữ, quản lý và truy xuất tệp dùng chung giữa các phân hệ (tài liệu dự án, file biên bản họp, tài liệu đính kèm trong kênh truyền thông…) một cách an toàn, có tổ chức và dễ tích hợp.
+
+    \item Phát triển dịch vụ notification để tập trung hóa và phân phối thông báo từ các phân hệ quản lý dự án, truyền thông và họp trực tuyến; hỗ trợ các kênh thông báo khác nhau (trên web, email hoặc kênh nội bộ) và cho phép người dùng cấu hình ưu tiên nhận thông báo.
+
+    \item Xây dựng AI service có khả năng thu thập dữ liệu từ các phân hệ chức năng (nội dung công việc, hội thoại, biên bản họp, tệp đính kèm) và cung cấp các API phục vụ tổng hợp, tóm tắt và báo cáo thông tin ở mức nền tảng, tạo tiền đề cho các màn hình dashboard hoặc trợ lý thông minh ở các phân hệ khác.
+
+    \item Phát triển giao diện trang quản trị (admin) cho chủ workspace bằng React/NextJS, cho phép quản lý người dùng, phân quyền, cấu hình workspace, cài đặt thông báo và xem các thống kê/tổng hợp cơ bản do phân hệ nền tảng cung cấp.
+
+    \item Nâng cao kỹ năng viết tài liệu chuyên môn (tài liệu đặc tả, thiết kế, hướng dẫn triển khai) và kỹ năng quản lý tiến độ, lập kế hoạch thực hiện đồ án tốt nghiệp.
+\end{itemize}
+
+\textbf{Mục tiêu về sản phẩm:}
+
+\begin{itemize}
+    \item Xây dựng một phân hệ nền tảng và thông tin hoàn chỉnh, có thể triển khai độc lập nhưng sẵn sàng tích hợp với các phân hệ quản lý dự án, truyền thông và họp trực tuyến. Phân hệ cho phép người dùng đăng ký, đăng nhập, quản lý nhiều workspace; chủ workspace có thể cấu hình tổ chức, mời thành viên, thiết lập vai trò và phân quyền truy cập.
+
+    \item Cung cấp hệ thống thông báo tập trung giúp người dùng theo dõi được các sự kiện quan trọng (task được giao, trạng thái dự án thay đổi, cuộc họp sắp diễn ra, trao đổi mới trong kênh truyền thông…) tại một nơi duy nhất, hạn chế bỏ sót thông tin.
+
+    \item Cung cấp khả năng quản lý và chia sẻ tệp dùng chung theo workspace và dự án, hỗ trợ đính kèm giữa các phân hệ khác nhau nhưng vẫn thống nhất về lưu trữ, phân quyền và truy vết.
+
+    \item Tích hợp các API AI ở mức nền tảng để tổng hợp và tóm tắt thông tin (ví dụ: tổng hợp hoạt động gần đây của một dự án, tóm tắt nội dung chính từ các cuộc họp và hội thoại liên quan), sẵn sàng cho việc hiển thị trên các dashboard hoặc trang admin.
+
+    \item Đảm bảo hệ thống hoạt động ổn định, có khả năng mở rộng trong tương lai, đáp ứng tốt yêu cầu tích hợp thêm các phân hệ mới mà không phải thay đổi lớn kiến trúc lõi; đồng thời cung cấp bộ tài liệu triển khai và hướng dẫn sử dụng để có thể chuyển giao và phát triển tiếp sau khi hoàn thành đề tài.
+\end{itemize}
