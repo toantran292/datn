@@ -1,0 +1,70 @@
+\paragraph{UC07: Tương tác tin nhắn}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.3\textwidth]{images/UC07.png}
+    \caption{Sơ đồ use case UC07 - Tương tác tin nhắn}
+    \label{fig:uc07}
+\end{figure}
+
+\begin{adjustwidth}{-1.5cm}{-0.5cm}
+\begin{longtblr}[
+    caption = {Đặc tả use case UC07 - Tương tác tin nhắn},
+    label = {tab:uc07}
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Tương tác tin nhắn} \\\hline
+ID & UC07 \\\hline
+Người sử dụng & Member \\\hline
+Mức độ cần thiết & Quan trọng \\\hline
+Phân loại & Đơn giản \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{Member:} Muốn tương tác với tin nhắn bằng reaction, reply, chỉnh sửa, xóa hoặc ghim tin nhắn quan trọng.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Cho phép Member thực hiện các tương tác với tin nhắn: thêm reaction (emoji), reply trực tiếp, chỉnh sửa tin nhắn của mình, xóa tin nhắn và ghim tin nhắn quan trọng. \\\hline
+Trigger & Member chọn một tin nhắn và thực hiện một hành động tương tác. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item Member hover vào một tin nhắn trong kênh.
+        \item Hệ thống hiển thị toolbar với các tùy chọn tương tác.
+        \item Member chọn icon reaction (emoji).
+        \item Hệ thống hiển thị bảng chọn emoji.
+        \item Member chọn một emoji.
+        \item Hệ thống thêm reaction vào tin nhắn và hiển thị cho tất cả thành viên.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{S1 - Reply tin nhắn:} Member chọn "Reply" → Tin nhắn mới được liên kết với tin nhắn gốc.
+
+    + \textbf{S2 - Chỉnh sửa tin nhắn:} Member chọn "Edit" (chỉ tin nhắn của mình) → Sửa nội dung → Lưu.
+
+    + \textbf{S3 - Xóa tin nhắn:} Member chọn "Delete" → Xác nhận → Tin nhắn bị xóa.
+
+    + \textbf{S4 - Ghim tin nhắn:} Member chọn "Pin" → Tin nhắn được ghim và hiển thị trong danh sách pinned.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- Không có quyền chỉnh sửa/xóa: Hệ thống ẩn các tùy chọn không được phép.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Tin nhắn được tương tác (reaction/reply/edit/delete/pin) thành công. \\\hline
+\end{longtblr}
+\end{adjustwidth}

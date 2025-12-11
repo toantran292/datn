@@ -2,24 +2,40 @@
 
 \subsubsection{Khái quát}
 
-PostgreSQL là một hệ quản trị cơ sở dữ liệu quan hệ (RDBMS) mã nguồn mở mạnh mẽ với hơn 35 năm phát triển, nổi tiếng với độ tin cậy, tính toàn vẹn dữ liệu, và bộ tính năng phong phú. PostgreSQL đảm bảo ACID compliance (Atomicity, Consistency, Isolation, Durability) cho transactions, có tính extensibility cao với khả năng tạo custom functions, data types, operators và extensions, hỗ trợ JSON/JSONB để lưu trữ và query dữ liệu JSON hiệu quả kết hợp ưu điểm của cả SQL và NoSQL, cung cấp built-in full-text search capabilities, hỗ trợ advanced indexing với nhiều loại indexes (B-tree, Hash, GiST, SP-GiST, GIN, BRIN), và sử dụng MVCC (Multi-Version Concurrency Control) cho phép đọc và ghi đồng thời mà không lock dữ liệu.
+Post\-gre\-SQL là hệ quản trị cơ sở dữ liệu quan hệ mã nguồn mở mạnh mẽ với hơn 35 năm phát triển. Post\-gre\-SQL đảm bảo ACID compliance cho transactions, hỗ trợ JSON/JSONB, và cung cấp built-in full-text search với GIN index.
 
-Redis (Remote Dictionary Server) là một in-memory data structure store được sử dụng như database, cache, và message broker. Redis lưu trữ dữ liệu trong RAM cho phép đọc/ghi cực nhanh với latency dưới millisecond, hỗ trợ nhiều data structures như Strings, Lists, Sets, Sorted Sets, Hashes, và Streams. Sự kết hợp giữa PostgreSQL và Redis trong một hệ thống tạo nên kiến trúc hybrid database mạnh mẽ: PostgreSQL làm persistent storage với ACID guarantees, Redis làm caching layer và real-time data processing.
+Đặc biệt, Post\-gre\-SQL hỗ trợ extension pgvector cho phép lưu trữ và truy vấn vector embeddings trực tiếp trong database. Đây là tính năng quan trọng cho ứng dụng AI/ML, cho phép thực hiện si\-mi\-la\-ri\-ty search mà không cần ex\-ter\-nal vector database.
 
-\subsubsection{Ứng dụng và use cases}
+Redis là in-memory data store được sử dụng như database, cache, và message broker. Redis lưu trữ dữ liệu trong RAM cho phép đọc/ghi cực nhanh. Sự kết hợp Post\-gre\-SQL và Redis tạo nên kiến trúc hybrid database mạnh mẽ.
 
-Redis được sử dụng rộng rãi trong các ứng dụng web hiện đại cho nhiều mục đích khác nhau: session storage để lưu trữ user sessions với fast access, caching cho database query results và API responses giúp giảm load lên database chính, rate limiting để kiểm soát số lượng requests từ clients, real-time leaderboards với Sorted Sets, Pub/Sub messaging cho real-time communication giữa các services, và job queues để xử lý background tasks. Trong kiến trúc SaaS, Redis đóng vai trò quan trọng trong việc cải thiện performance và scalability của hệ thống.
+\subsubsection{pgvector và Vector Database}
 
-\subsubsection{ORM và data access layer}
+pgvector là Post\-gre\-SQL extension cho phép lưu trữ và truy vấn vector embeddings. Extension cung cấp kiểu dữ liệu vector với các operators để tính khoảng cách: \texttt{<->} cho L2 distance, \texttt{<=>} cho cosine distance.
 
-ORM (Object-Relational Mapping) là kỹ thuật ánh xạ giữa object-oriented program\-ming models và relational database tables, giúp developers làm việc với database thông qua objects thay vì raw SQL queries. Hệ thống sử dụng hai ORM solutions khác nhau phù hợp với từng tech stack.
+pgvector hỗ trợ hai loại index cho ap\-prox\-i\-mate nearest neighbor search: IVFFlat chia vectors thành clusters, phù hợp cho datasets vừa; HNSW sử dụng graph-based approach, cho accuracy và per\-for\-mance tốt hơn.
 
-Spring Data JPA kết hợp với Hibernate được sử dụng trong Account Service (Spring Boot). JPA (Java Persistence API) là specification cho ORM trong Java, trong khi Hibernate là implementation phổ biến nhất của JPA. Entity là Java class được annotate với @Entity để map với database table, Repository Interface extends JpaRepository và Spring tự động implement các CRUD operations, Query Methods tự động generate queries từ method names giúp giảm boilerplate code, và @Query annotation cho phép viết custom JPQL hoặc native SQL queries khi cần.
+Trong kiến trúc RAG, pgvector đóng vai trò vector store. Khi có tin nhắn hoặc tài liệu mới, hệ thống tạo embeddings và lưu vào Post\-gre\-SQL. Khi user đặt câu hỏi, hệ thống thực hiện si\-mi\-la\-ri\-ty search để tìm các chunks liên quan.
 
-Prisma ORM được sử dụng trong các NestJS services, là một modern ORM cho Node.js và TypeScript với type-safe database client. Prisma Schema file định nghĩa data models và database connection bằng declarative syntax, Prisma Client là auto-generated type-safe database client, Prisma Migrate là database migration tool tự động tạo và apply migrations, Prisma Studio cung cấp GUI để browse và edit data, và tính năng Type Safety với full TypeScript support đảm bảo compile-time checking cho database operations.
+\subsubsection{Redis trong ứng dụng Chat Real-time}
+
+Redis được sử dụng rộng rãi trong ứng dụng chat với nhiều mục đích. Socket.io Adapter cho phép nhiều Web\-Socket Gateway instances giao tiếp qua Redis pub/sub, đây là yếu tố quan trọng để ho\-ri\-zon\-tal scaling.
+
+Redis lưu trữ session và connection state bao gồm trạng thái kết nối Web\-Socket, mapping giữa user ID và socket ID. Redis cũng được sử dụng cho caching thông tin kênh và rate limiting.
+
+BullMQ sử dụng Redis làm backend cho job queue, quản lý các background jobs như tạo embeddings và xử lý tài liệu. Redis lưu trữ tạm thời trạng thái typing indicators với TTL ngắn.
+
+\subsubsection{Prisma ORM}
+
+Prisma là modern ORM cho Node.js và Type\-Script với type-safe database client. Prisma Schema định nghĩa data models, Prisma Client là auto-ge\-ne\-ra\-ted type-safe data\-base client, và Prisma Migrate quản lý database migrations.
+
+Ưu điểm của Prisma: Type Safety với compile-time checking, Auto-com\-ple\-tion trong IDE, Query Builder trực quan, và Relations được xử lý tự động. Prisma hỗ trợ pgvector thông qua raw queries.
 
 \subsubsection{Vận dụng vào đề tài}
 
-Hệ thống database được thiết kế theo kiến trúc hybrid kết hợp PostgreSQL và Redis để tối ưu cả về performance và data integrity. PostgreSQL đóng vai trò persistent storage chính lưu trữ toàn bộ dữ liệu quan trọng như users, workspaces, members, files metadata, permissions, notifications, reports, và audit logs. Dữ liệu được tổ chức theo schema relational với foreign keys để đảm bảo referential integrity, sử dụng JSONB columns cho flexible data như workspace settings và report content.
+Hệ thống database được thiết kế theo kiến trúc hybrid kết hợp Post\-gre\-SQL (với pgvector) và Redis để tối ưu per\-for\-mance, data integrity, và AI capabilities.
 
-Redis được sử dụng làm caching và session layer với nhiều mục đích: session storage cho user authentication với JWT refresh tokens, caching cho frequently accessed data như workspace info và user permissions để giảm database queries, rate limiting cho API requests sử dụng Redis counters với TTL, và Pub/Sub messaging cho real-time notifications giữa Notification Service và clients. ORM layer được implement khác nhau cho từng service: Account Service sử dụng Spring Data JPA và Hibernate với Flyway migrations để quản lý database schema changes, trong khi các NestJS services sử dụng Prisma ORM với Prisma Migrate. Cả hai ORM đều cung cấp type-safe database access và automatic migration management, đảm bảo data integrity và giảm thiểu lỗi runtime.
+Post\-gre\-SQL lưu trữ toàn bộ dữ liệu quan trọng: Channel, ChannelMember, Message, Thread, Reaction, Attachment. Để hỗ trợ AI, MessageEmbedding và DocumentChunk lưu vector embeddings với HNSW index.
+
+Redis đóng vai trò caching, real-time, và job queue. Socket.io Redis Adapter hỗ trợ ho\-ri\-zon\-tal scaling. BullMQ sử dụng Redis cho các queues xử lý background jobs như embedding-queue và document-queue.
+
+Tất cả NestJS services sử dụng Prisma ORM với Prisma Migrate để quản lý database schema. Đối với vector operations với pgvector, sử dụng Prisma raw queries để thực hiện si\-mi\-la\-ri\-ty search.

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>UC10 - Tìm kiếm tin nhắn</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; font-size: 13pt; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; vertical-align: top; }
+        .header-row td:first-child { width: 70%; }
+        .header-row td:last-child { width: 30%; }
+        ul, ol { margin: 5px 0; padding-left: 20px; }
+        .section-title { font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<table>
+    <tr class="header-row">
+        <td><strong>Tên chức năng:</strong> Tìm kiếm tin nhắn</td>
+        <td><strong>ID:</strong> UC10</td>
+    </tr>
+    <tr>
+        <td><strong>Người sử dụng:</strong> Member</td>
+        <td><strong>Mức độ cần thiết:</strong> Quan trọng</td>
+    </tr>
+    <tr>
+        <td colspan="2" style="text-align: right;"><strong>Phân loại:</strong> Trung bình</td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Các thành phần tham gia và mối quan tâm:</p>
+            <ul>
+                <li><strong>Member:</strong> Muốn tìm kiếm tin nhắn cũ theo từ khóa, người gửi hoặc khoảng thời gian.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Mô tả tóm tắt:</p>
+            <p>Cho phép Member tìm kiếm tin nhắn trong các kênh mà mình có quyền truy cập. Hỗ trợ tìm kiếm theo từ khóa (full-text) và tìm kiếm ngữ nghĩa (semantic search) sử dụng vector database.</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p><strong>Trigger:</strong> Member nhập từ khóa vào ô tìm kiếm.</p>
+            <p><strong>Kiểu sự kiện:</strong> External</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Luồng xử lý bình thường của sự kiện:</p>
+            <ol>
+                <li>Member click vào ô tìm kiếm hoặc nhấn Ctrl+K.</li>
+                <li>Member nhập từ khóa cần tìm.</li>
+                <li>Hệ thống thực hiện tìm kiếm full-text trên nội dung tin nhắn.</li>
+                <li>Hệ thống hiển thị danh sách kết quả với highlight từ khóa.</li>
+                <li>Member click vào một kết quả.</li>
+                <li>Hệ thống chuyển đến tin nhắn tương ứng trong kênh.</li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Các luồng sự kiện con (Subflows):</p>
+            <ul>
+                <li><strong>S1 - Tìm kiếm nâng cao:</strong> Member chọn bộ lọc (kênh, người gửi, thời gian, loại) → Kết quả được lọc theo điều kiện.</li>
+                <li><strong>S2 - Tìm kiếm ngữ nghĩa:</strong> Member bật chế độ semantic search → Hệ thống tìm theo ý nghĩa thay vì từ khóa chính xác.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Luồng luân phiên/đặc biệt (Alternative/Exceptional flows):</p>
+            <p><strong>3a. Không có kết quả:</strong></p>
+            <p>4. Hệ thống hiển thị "Không tìm thấy tin nhắn phù hợp".</p>
+            <p><strong>3b. Quá nhiều kết quả:</strong></p>
+            <p>4. Hệ thống phân trang kết quả và hiển thị các kết quả liên quan nhất trước.</p>
+
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p><strong>Kết quả:</strong> Member tìm được tin nhắn cần tìm và có thể truy cập trực tiếp.</p>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>

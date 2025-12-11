@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>UC07 - Tương tác tin nhắn</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; font-size: 13pt; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; vertical-align: top; }
+        .header-row td:first-child { width: 70%; }
+        .header-row td:last-child { width: 30%; }
+        ul, ol { margin: 5px 0; padding-left: 20px; }
+        .section-title { font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<table>
+    <tr class="header-row">
+        <td><strong>Tên chức năng:</strong> Tương tác tin nhắn</td>
+        <td><strong>ID:</strong> UC07</td>
+    </tr>
+    <tr>
+        <td><strong>Người sử dụng:</strong> Member</td>
+        <td><strong>Mức độ cần thiết:</strong> Quan trọng</td>
+    </tr>
+    <tr>
+        <td colspan="2" style="text-align: right;"><strong>Phân loại:</strong> Đơn giản</td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Các thành phần tham gia và mối quan tâm:</p>
+            <ul>
+                <li><strong>Member:</strong> Muốn tương tác với tin nhắn bằng reaction, reply, chỉnh sửa, xóa hoặc ghim tin nhắn quan trọng.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Mô tả tóm tắt:</p>
+            <p>Cho phép Member thực hiện các tương tác với tin nhắn: thêm reaction (emoji), reply trực tiếp, chỉnh sửa tin nhắn của mình, xóa tin nhắn và ghim tin nhắn quan trọng.</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p><strong>Trigger:</strong> Member chọn một tin nhắn và thực hiện một hành động tương tác.</p>
+            <p><strong>Kiểu sự kiện:</strong> External</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Luồng xử lý bình thường của sự kiện:</p>
+            <ol>
+                <li>Member hover vào một tin nhắn trong kênh.</li>
+                <li>Hệ thống hiển thị toolbar với các tùy chọn tương tác.</li>
+                <li>Member chọn icon reaction (emoji).</li>
+                <li>Hệ thống hiển thị bảng chọn emoji.</li>
+                <li>Member chọn một emoji.</li>
+                <li>Hệ thống thêm reaction vào tin nhắn và hiển thị cho tất cả thành viên.</li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Các luồng sự kiện con (Subflows):</p>
+            <ul>
+                <li><strong>S1 - Reply tin nhắn:</strong> Member chọn "Reply" → Tin nhắn mới được liên kết với tin nhắn gốc.</li>
+                <li><strong>S2 - Chỉnh sửa tin nhắn:</strong> Member chọn "Edit" (chỉ tin nhắn của mình) → Sửa nội dung → Lưu.</li>
+                <li><strong>S3 - Xóa tin nhắn:</strong> Member chọn "Delete" → Xác nhận → Tin nhắn bị xóa.</li>
+                <li><strong>S4 - Ghim tin nhắn:</strong> Member chọn "Pin" → Tin nhắn được ghim và hiển thị trong danh sách pinned.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Luồng luân phiên/đặc biệt (Alternative/Exceptional flows):</p>
+            <p><strong>3a. Không có quyền chỉnh sửa/xóa:</strong></p>
+            <p>4. Hệ thống ẩn các tùy chọn không được phép.</p>
+
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p><strong>Kết quả:</strong> Tin nhắn được tương tác (reaction/reply/edit/delete/pin) thành công.</p>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>

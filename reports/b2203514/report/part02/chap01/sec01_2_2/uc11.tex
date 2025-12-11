@@ -1,0 +1,66 @@
+\paragraph{UC11: Tóm tắt hội thoại}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/UC11.png}
+    \caption{Sơ đồ use case UC11 - Tóm tắt hội thoại}
+    \label{fig:uc11}
+\end{figure}
+
+\begin{adjustwidth}{-1.5cm}{-0.5cm}
+\begin{longtblr}[
+    caption = {Đặc tả use case UC11 - Tóm tắt hội thoại},
+    label = {tab:uc11}
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Tóm tắt hội thoại} \\\hline
+ID & UC11 \\\hline
+Người sử dụng & Member \\\hline
+Mức độ cần thiết & Quan trọng \\\hline
+Phân loại & Phức tạp \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{Member:} Muốn nắm bắt nhanh nội dung của một đoạn hội thoại dài mà không cần đọc toàn bộ. \\
+    + \textbf{AI Provider:} Xử lý và sinh văn bản tóm tắt.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Cho phép Member yêu cầu AI tóm tắt một đoạn hội thoại được chọn hoặc tóm tắt toàn bộ kênh từ một mốc thời gian (ví dụ: từ lần truy cập cuối). \\\hline
+Trigger & Member chọn các tin nhắn và yêu cầu tóm tắt hoặc chọn "Tóm tắt từ lần truy cập cuối". \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item Member chọn một hoặc nhiều tin nhắn cần tóm tắt.
+        \item Member click "Tóm tắt với AI".
+        \item Hệ thống thu thập nội dung các tin nhắn được chọn.
+        \item Hệ thống gửi nội dung đến AI Service.
+        \item AI Service sử dụng LLM để sinh bản tóm tắt.
+        \item Hệ thống hiển thị bản tóm tắt trong panel AI Assistant.
+        \item Member có thể copy hoặc lưu bản tóm tắt.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{S1 - Tóm tắt từ mốc thời gian:} Member chọn "Tóm tắt từ lần truy cập cuối" → AI tóm tắt tất cả tin nhắn mới.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{A1}} -- Nội dung quá dài: Hệ thống chia nhỏ và tóm tắt từng phần, sau đó tổng hợp.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Bản tóm tắt hội thoại được hiển thị, giúp Member nắm bắt nội dung nhanh chóng. \\\hline
+\end{longtblr}
+\end{adjustwidth}

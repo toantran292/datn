@@ -8,17 +8,17 @@
 \subsubsection{Đối tượng nghiên cứu}
 
 \begin{itemize}
-    \item Đặc điểm quản lý dự án Agile trong môi trường phát triển phần mềm hiện đại, nhấn mạnh sự cần thiết của việc tích hợp dữ liệu đa nguồn (task, communication, meeting) vào một nền tảng thống nhất.
+    \item Đặc điểm giao tiếp và trao đổi thông tin trong môi trường phát triển phần mềm Agile, nhấn mạnh sự cần thiết của việc tập trung hóa các cuộc hội thoại, tài liệu đính kèm và lịch sử trao đổi vào một hệ thống thống nhất thay vì phân tán trên nhiều nền tảng.
 
-    \item Yêu cầu kỹ thuật và chức năng của một nền tảng SaaS hỗ trợ Agile: khả năng mở rộng, multi-tenancy (hỗ trợ nhiều workspace độc lập), bảo mật dữ liệu cấp tổ chức và dự án, quản lý người dùng/vai trò/quyền hạn, lưu trữ tệp tập trung, hệ thống thông báo và truyền thông sự kiện.
+    \item Yêu cầu kỹ thuật và chức năng của một hệ thống nhắn tin doanh nghiệp: truyền thông thời gian thực (real-time messaging), quản lý kênh theo dự án và workspace, tích hợp với dịch vụ lưu trữ tệp, tìm kiếm lịch sử hội thoại và khả năng mở rộng khi số lượng người dùng tăng.
 
-    \item Cơ chế quản lý tài khoản, workspace, xác thực và phân quyền: nghiên cứu cách thiết kế hệ thống tài khoản đa workspace, vai trò và quyền hạn linh hoạt, cũng như cách tích hợp xác thực (OAuth2, JWT) và phân quyền dựa trên vai trò (RBAC) hoặc dựa trên chính sách (ABAC).
+    \item Cơ chế quản lý kênh trò chuyện và tin nhắn: nghiên cứu cách thiết kế hệ thống kênh (channel) theo dự án, kênh công khai và kênh riêng tư; cách tổ chức tin nhắn theo thread để dễ theo dõi các cuộc thảo luận; cách quản lý quyền truy cập kênh dựa trên vai trò trong workspace.
 
-    \item Kiến trúc microservice cho hệ thống quản lý dự án: nghiên cứu cách phân tách các chức năng thành các dịch vụ nhỏ độc lập (edge service với Nginx, account service với Spring Boot, notification/file-storage/tenant-bff/AI service với NestJS), cách chúng giao tiếp qua API RESTful, cách quản lý database riêng biệt cho từng service, cách đồng bộ dữ liệu liên service khi cần thiết; đồng thời nghiên cứu cơ chế bảo mật giao tiếp nội bộ giữa các service thông qua xác thực và ký kết thông tin (HMAC) để đảm bảo tính toàn vẹn và xác thực yêu cầu.
+    \item Kiến trúc microservice cho hệ thống truyền thông: nghiên cứu cách thiết kế phân hệ truyền thông như một dịch vụ độc lập sử dụng NodeJS/NestJS, cách tích hợp WebSocket cho truyền thông thời gian thực, cách quản lý kết nối đồng thời của nhiều người dùng, cách đồng bộ trạng thái tin nhắn giữa các thiết bị và cách giao tiếp với các phân hệ khác trong nền tảng (đặc biệt là File Service từ phân hệ nền tảng và thông tin).
 
-    \item Giao diện quản trị (admin) và trải nghiệm người dùng cuối: nghiên cứu cách thiết kế màn hình admin cho chủ workspace sử dụng Next.js, cho phép quản lý thành viên, cấu hình workspace, xem thống kê và dashboard tổng hợp được cung cấp bởi phân hệ nền tảng; đồng thời tìm hiểu cách tối ưu UX để dễ sử dụng và trực quan.
+    \item Giao diện chat và trải nghiệm người dùng: nghiên cứu cách thiết kế giao diện nhắn tin hiện đại sử dụng React/Next.js, bao gồm danh sách kênh, khung trò chuyện thời gian thực, khu vực xem tệp đính kèm, panel hiển thị tóm tắt và trả lời từ AI; đồng thời tìm hiểu cách tối ưu UX cho các tương tác phổ biến như gửi tin nhắn, đính kèm file, tìm kiếm và cuộn lịch sử.
 
-    \item Tích hợp AI để tổng hợp và phân tích dữ liệu đa nguồn: nghiên cứu cách sử dụng các API/AI model (như OpenAI API, Gemini API hoặc các mô hình nguồn mở) để tóm tắt văn bản, trích xuất thông tin quan trọng từ các cuộc họp, hội thoại, công việc; từ đó xây dựng AI service cung cấp các endpoint để các phân hệ khác gọi khi cần trợ giúp AI trong việc báo cáo, tổng hợp hoặc đề xuất hành động.
+    \item Tích hợp AI với kiến trúc RAG (Retrieval-Augmented Generation): nghiên cứu cách sử dụng vector database để lưu trữ embedding của tin nhắn và nội dung tệp đính kèm; cách thiết kế pipeline xử lý tài liệu (document processing) để trích xuất văn bản, chia nhỏ (chunking) và tạo embedding; cách kết hợp kết quả truy xuất từ vector database với mô hình ngôn ngữ lớn (LLM) để tóm tắt hội thoại, trả lời câu hỏi dựa trên ngữ cảnh và phân tích nội dung tài liệu.
 \end{itemize}
 
 \subsubsection{Phạm vi nghiên cứu}
@@ -26,37 +26,39 @@
 \textbf{Về mặt lý thuyết:}
 
 \begin{itemize}
-    \item Tìm hiểu các mô hình quản lý dự án Agile (Scrum, Kanban), yêu cầu về minh bạch thông tin, cộng tác liên chức năng và vai trò của công cụ tập trung trong việc hỗ trợ các quy trình Agile (sprint planning, daily standup, retrospective, v.v.).
+    \item Tìm hiểu các mô hình quản lý dự án Agile (Scrum, Kanban), vai trò của giao tiếp hiệu quả trong các quy trình Agile (sprint planning, daily standup, retrospective) và cách các công cụ nhắn tin tập trung hỗ trợ sự minh bạch thông tin và cộng tác liên chức năng.
 
-    \item Nghiên cứu kiến trúc microservice: nguyên tắc thiết kế service nhỏ, gọn, độc lập; cách quản lý API Gateway/edge service để định tuyến và bảo mật; cách triển khai service discovery, load balancing, và fault tolerance trong môi trường microservice; nghiên cứu cơ chế bảo mật nội bộ giữa các service thông qua ký kết HMAC để xác minh tính hợp lệ của yêu cầu từ edge service.
+    \item Nghiên cứu kiến trúc hệ thống nhắn tin thời gian thực: nguyên tắc thiết kế hệ thống chat có khả năng mở rộng, cách sử dụng WebSocket để truyền tin nhắn tức thì, cách quản lý kết nối đồng thời và cách xử lý các vấn đề như mất kết nối, đồng bộ trạng thái và thứ tự tin nhắn.
 
-    \item Nghiên cứu công nghệ Java Spring Boot cho dịch vụ account: tìm hiểu cách xây dựng RESTful API, tích hợp Spring Security cho xác thực và phân quyền, sử dụng Spring Data JPA để quản lý cơ sở dữ liệu người dùng và workspace.
+    \item Nghiên cứu mô hình dữ liệu cho hệ thống nhắn tin: cách thiết kế schema cho kênh (channel), tin nhắn (message), thread, phản hồi (reaction), liên kết tệp đính kèm (attachment reference); cách tối ưu truy vấn cho việc tải tin nhắn theo trang (pagination) và tìm kiếm full-text.
 
-    \item Tìm hiểu công nghệ NodeJS/NestJS cho các dịch vụ notification, file-storage, tenant-bff và AI: nghiên cứu cách NestJS tổ chức module, controller, service, dependency injection; cách tích hợp với database (PostgreSQL), cách xử lý file upload/download, cách gửi thông báo qua nhiều kênh và cách gọi các API bên ngoài (ví dụ OpenAI API) từ AI service.
+    \item Tìm hiểu công nghệ NodeJS/NestJS cho backend truyền thông: nghiên cứu cách NestJS tổ chức module, controller, service, dependency injection; cách tích hợp WebSocket Gateway với NestJS; cách giao tiếp với File Service của phân hệ nền tảng để gửi và truy xuất tệp đính kèm.
 
-    \item Nghiên cứu công nghệ Next.js cho giao diện admin: tìm hiểu cách xây dựng giao diện dashboard và form quản lý phức tạp với React, cách tích hợp authentication và authorization trên frontend, cách tối ưu hiệu năng trang web.
+    \item Nghiên cứu công nghệ React/Next.js cho giao diện chat: tìm hiểu cách xây dựng giao diện nhắn tin responsive và real-time, cách quản lý state phức tạp với nhiều kênh và tin nhắn, cách tối ưu hiệu năng khi render danh sách tin nhắn dài và cách tích hợp các thư viện UI hiện đại.
 
-    \item Tìm hiểu về quản lý file trong môi trường phân tán: cách lưu trữ file an toàn (local storage, S3-compatible storage), cách quản lý metadata của file, cách kiểm soát quyền truy cập file theo workspace và project, cách tối ưu việc upload/download file lớn.
+    \item Nghiên cứu kiến trúc RAG (Retrieval-Augmented Generation) cho hệ thống hỏi đáp thông minh: tìm hiểu cách hoạt động của text embedding và các mô hình embedding phổ biến (OpenAI Embedding, Sentence Transformers); cách lựa chọn và sử dụng vector database (Pinecone, Qdrant, Weaviate, pgvector); các chiến lược chunking văn bản (fixed-size, semantic, recursive); cách thiết kế prompt và kết hợp context từ vector search với LLM.
 
-    \item Nghiên cứu cơ chế thông báo (notification) theo mô hình publish-subscribe hoặc event-driven, cách lưu trữ và phân phối thông báo đến nhiều người dùng, cách quản lý trạng thái đã đọc/chưa đọc và ưu tiên thông báo, cũng như cách tích hợp với email hoặc các kênh bên ngoài.
+    \item Nghiên cứu pipeline xử lý tài liệu cho AI: cách trích xuất văn bản từ các định dạng file khác nhau (PDF, DOCX, hình ảnh với OCR); cách tiền xử lý và làm sạch văn bản; cách quản lý và cập nhật embedding khi nội dung thay đổi; cách tối ưu chi phí và hiệu năng khi gọi API embedding và LLM.
 \end{itemize}
 
 \textbf{Về mặt lập trình:}
 
 \begin{itemize}
-    \item Cấu hình và triển khai Nginx làm API Gateway và reverse proxy, định tuyến request đến các service phía sau, cấu hình SSL/TLS, cân bằng tải và bảo mật điểm vào hệ thống; triển khai logic xác thực người dùng tại edge và ký kết thông tin xác thực bằng HMAC trước khi chuyển tiếp yêu cầu đến các service nội bộ.
+    \item Xây dựng Messaging Service bằng NestJS: thiết kế cơ sở dữ liệu cho Channel, Message, Thread, Reaction, AttachmentReference (liên kết đến File Service); triển khai API CRUD cho kênh và tin nhắn; xây dựng logic phân quyền truy cập kênh theo workspace và dự án; tích hợp với File Service của phân hệ nền tảng để gửi và lấy tệp đính kèm.
 
-    \item Xây dựng Account Service bằng Java Spring Boot: thiết kế cơ sở dữ liệu cho User, Workspace, Role, Permission; triển khai API đăng ký, đăng nhập, quản lý workspace, mời thành viên, phân quyền; tích hợp Spring Security và JWT để bảo vệ API; viết unit test và integration test cho các chức năng xác thực và phân quyền.
+    \item Phát triển hệ thống WebSocket Gateway bằng NestJS: triển khai kết nối WebSocket cho truyền thông thời gian thực, xử lý các sự kiện gửi tin nhắn, nhận tin nhắn mới, typing indicator, cập nhật trạng thái đã đọc; quản lý room theo kênh để broadcast tin nhắn đến đúng người nhận; xử lý reconnection và đồng bộ trạng thái khi người dùng online trở lại.
 
-    \item Phát triển Notification Service bằng NestJS: thiết kế database schema cho notification (người gửi, người nhận, nội dung, trạng thái, loại thông báo); xây dựng API để tạo, lấy danh sách, đánh dấu đã đọc thông báo; tích hợp với message queue (ví dụ RabbitMQ hoặc Redis Pub/Sub) để nhận sự kiện từ các service khác và phát thông báo theo thời gian thực hoặc qua email; triển khai middleware xác minh chữ ký HMAC từ edge service để đảm bảo yêu cầu hợp lệ.
+    \item Xây dựng Document Processing Pipeline: triển khai các module trích xuất văn bản từ file (PDF parser, DOCX parser, OCR cho hình ảnh); xây dựng logic chunking văn bản với các chiến lược phù hợp cho từng loại nội dung (tin nhắn ngắn, tài liệu dài); tích hợp với File Service để lấy nội dung file cần xử lý.
 
-    \item Phát triển File-Storage Service bằng NestJS: thiết kế cơ chế lưu trữ file (local hoặc S3-compatible), quản lý metadata (tên file, kích thước, loại, workspace, project, người upload), triển khai API upload/download file, kiểm soát quyền truy cập file theo workspace và project, tối ưu hiệu năng (streaming, chunked upload) và bảo mật (virus scanning nếu có); áp dụng xác minh HMAC cho các yêu cầu từ edge service.
+    \item Triển khai Vector Database và Embedding Service: cấu hình và tích hợp vector database (pgvector với PostgreSQL hoặc Qdrant); xây dựng service tạo embedding cho tin nhắn và nội dung tệp đính kèm; thiết kế cơ chế đồng bộ và cập nhật embedding khi có tin nhắn mới hoặc file mới được upload; tối ưu việc batch processing để giảm chi phí API.
 
-    \item Phát triển AI Service bằng NestJS: thiết kế các endpoint cho các chức năng AI như tóm tắt nội dung, trích xuất thông tin, phân tích dữ liệu đa nguồn; tích hợp với các API bên ngoài (OpenAI, Gemini, v.v.) hoặc mô hình nguồn mở (nếu có); xử lý dữ liệu đầu vào từ các service khác (project management, communication, meeting) và trả về kết quả dạng JSON cho client hoặc các service khác; triển khai xác minh HMAC để bảo vệ API khỏi các yêu cầu không hợp lệ.
+    \item Phát triển AI Service với kiến trúc RAG bằng NestJS: thiết kế các endpoint cho tóm tắt đoạn hội thoại, trích xuất ý chính và danh sách công việc, trả lời câu hỏi dựa trên ngữ cảnh kênh và tài liệu đính kèm; triển khai logic truy xuất context từ vector database và kết hợp với LLM (OpenAI, Gemini); xử lý và chuẩn hóa kết quả trả về cho client.
 
-    \item Xây dựng giao diện Admin bằng Next.js: thiết kế các trang quản lý workspace, user, role, permission; hiển thị dashboard tổng hợp số liệu từ các service; tích hợp với API của Account Service và các service khác để lấy dữ liệu; triển khai authentication/authorization trên frontend; tối ưu hiệu năng tải trang và trải nghiệm người dùng.
+    \item Xây dựng Search Service cho tìm kiếm lịch sử hội thoại: triển khai tìm kiếm hybrid kết hợp full-text search (PostgreSQL) và semantic search (vector database); hỗ trợ lọc theo kênh, khoảng thời gian, người gửi; cung cấp API tìm kiếm với phân trang và ranking kết quả.
 
-    \item Thiết kế và triển khai cơ sở dữ liệu PostgreSQL cho từng service: định nghĩa schema, index, constraint, migration script; đảm bảo tính toàn vẹn dữ liệu và hiệu năng truy vấn; xem xét cách đồng bộ dữ liệu liên service khi cần thiết (ví dụ: khi workspace bị xóa, các file và notification liên quan cũng cần xử lý).
+    \item Xây dựng giao diện Chat bằng React/Next.js: thiết kế và triển khai các component cho danh sách kênh, khung trò chuyện, ô nhập tin nhắn, khu vực hiển thị tệp đính kèm (tích hợp với File Service), panel AI assistant cho tóm tắt và hỏi đáp; tích hợp WebSocket client để nhận và gửi tin nhắn real-time; xử lý lazy loading cho lịch sử tin nhắn.
 
-    \item Tích hợp và kiểm thử toàn bộ hệ thống: viết integration test cho luồng dữ liệu giữa các service; kiểm thử bảo mật, hiệu năng và khả năng mở rộng; triển khai hệ thống lên môi trường staging hoặc production (sử dụng Docker, Docker Compose hoặc Kubernetes nếu có); viết tài liệu triển khai và hướng dẫn sử dụng cho người quản trị và người phát triển tiếp theo.
+    \item Thiết kế và triển khai cơ sở dữ liệu PostgreSQL cho phân hệ truyền thông: định nghĩa schema cho messaging (Channel, Message, Thread), schema cho vector storage (sử dụng pgvector extension nếu chọn PostgreSQL làm vector database); tạo index phù hợp (B-tree, GIN cho full-text, HNSW/IVFFlat cho vector); viết migration script và đảm bảo hiệu năng truy vấn.
+
+    \item Tích hợp và kiểm thử toàn bộ phân hệ: viết integration test cho luồng gửi/nhận tin nhắn, upload file qua File Service, pipeline xử lý tài liệu và RAG; kiểm thử hiệu năng WebSocket với nhiều kết nối đồng thời; đánh giá chất lượng câu trả lời của AI; triển khai hệ thống lên môi trường staging hoặc production (sử dụng Docker, Docker Compose); viết tài liệu triển khai và hướng dẫn sử dụng.
 \end{itemize}

@@ -2,142 +2,195 @@
 
 \subsubsection{Mô tả dữ liệu}
 
-Hệ thống quản lý các loại dữ liệu chính được tổ chức theo các nhóm entity với mục đích và cấu trúc riêng biệt, đảm bảo tính toàn vẹn và khả năng mở rộng của cơ sở dữ liệu. Các loại dữ liệu chính bao gồm:
+Phân hệ truyền thông quản lý các loại dữ liệu chính được tổ chức theo các nhóm entity với mục đích và cấu trúc riêng biệt, đảm bảo tính toàn vẹn và khả năng mở rộng của cơ sở dữ liệu. Đặc biệt, hệ thống sử dụng PostgreSQL với extension pgvector để lưu trữ vector embeddings phục vụ cho tìm kiếm ngữ nghĩa và RAG pipeline. Các loại dữ liệu chính bao gồm:
 
-\textbf{Dữ liệu về người dùng (User Data):} Đại diện cho thực thể User trong hệ thống, bao gồm các thông tin sau:
+\textbf{Dữ liệu về kênh trò chuyện (Channel Data):} Đại diện cho thực thể Channel trong hệ thống, bao gồm các thông tin sau:
 
 \begin{itemize}
-    \item user\_id: Mã định danh duy nhất của người dùng (UUID).
-    \item name: Họ và tên người dùng.
-    \item email: Email đăng ký, dùng để đăng nhập và xác thực.
-    \item password\_hash: Mật khẩu đã được mã hóa bằng Bcrypt.
-    \item avatar\_url: URL đến ảnh đại diện của người dùng.
-    \item oauth\_provider: Nhà cung cấp OAuth (google) nếu đăng nhập qua bên thứ ba.
-    \item oauth\_id: ID người dùng từ OAuth provider.
-    \item email\_verified: Trạng thái xác thực email.
-    \item is\_active: Trạng thái hoạt động của tài khoản.
-    \item last\_login\_at: Thời điểm đăng nhập cuối cùng.
-    \item created\_at: Ngày tạo tài khoản.
+    \item id: Mã định danh duy nhất của kênh (UUID).
+    \item workspace\_id: ID workspace chứa kênh (tham chiếu từ phân hệ nền tảng).
+    \item name: Tên kênh trò chuyện.
+    \item description: Mô tả về kênh.
+    \item type: Loại kênh (PUBLIC, PRIVATE, PROJECT).
+    \item is\_private: Kênh có phải riêng tư hay không.
+    \item ai\_enabled: Trạng thái bật/tắt AI Assistant cho kênh.
+    \item ai\_features: Cấu hình các tính năng AI được phép (JSONB): summarization, action\_items, qa, document\_summary.
+    \item created\_by: User ID người tạo kênh.
+    \item archived\_at: Thời điểm lưu trữ kênh (nullable).
+    \item created\_at: Ngày tạo kênh.
     \item updated\_at: Ngày cập nhật thông tin gần nhất.
 \end{itemize}
 
-\textbf{Dữ liệu về workspace (Workspace Data):} Đại diện cho workspace - không gian làm việc của nhóm, bao gồm:
+\textbf{Dữ liệu về thành viên kênh (ChannelMember Data):} Đại diện cho quan hệ giữa người dùng và kênh:
 
 \begin{itemize}
-    \item workspace\_id: Mã định danh workspace (UUID).
-    \item owner\_id: User ID của chủ sở hữu workspace.
-    \item name: Tên workspace.
-    \item description: Mô tả về workspace.
-    \item logo\_url: URL đến logo workspace.
-    \item settings: Cấu hình tùy chỉnh (JSONB) bao gồm LLM provider, AI prompts, retention policies.
-    \item storage\_limit: Giới hạn dung lượng lưu trữ (bytes).
-    \item member\_limit: Số lượng thành viên tối đa được phép.
-    \item is\_active: Trạng thái hoạt động (active/suspended).
-    \item deleted\_at: Timestamp soft delete cho phép restore.
-    \item created\_at: Ngày tạo workspace.
-    \item updated\_at: Ngày cập nhật gần nhất.
+    \item id: Mã định danh quan hệ thành viên (UUID).
+    \item channel\_id: ID kênh được tham gia.
+    \item user\_id: ID người dùng (tham chiếu từ phân hệ nền tảng).
+    \item role: Vai trò trong kênh (ADMIN, MEMBER).
+    \item notification\_level: Mức độ thông báo (ALL, MENTIONS, NONE).
+    \item joined\_at: Thời điểm tham gia kênh.
+    \item last\_read\_at: Thời điểm đọc tin nhắn cuối cùng.
+    \item last\_read\_message\_id: ID tin nhắn đã đọc cuối cùng (để tính unread count).
 \end{itemize}
 
-\textbf{Dữ liệu về thành viên và quyền (Member \& Permission Data):}
+\textbf{Dữ liệu về tin nhắn (Message Data):} Đại diện cho thực thể Message - đơn vị cơ bản của hội thoại:
 
 \begin{itemize}
-    \item member\_id: Mã định danh quan hệ thành viên.
-    \item user\_id: ID người dùng tham gia workspace.
-    \item workspace\_id: ID workspace được tham gia.
-    \item role: Vai trò (OWNER, ADMIN, MEMBER).
-    \item permissions: Quyền tùy chỉnh chi tiết (JSONB) cho từng resource: read, write, delete, share.
-    \item joined\_at: Thời điểm tham gia workspace.
-    \item invitation\_token: Token cho lời mời tham gia (nếu pending).
-    \item invitation\_expires\_at: Thời hạn của lời mời.
-\end{itemize}
-
-\textbf{Dữ liệu về files và folders (File \& Folder Data):}
-
-\begin{itemize}
-    \item file\_id: Mã định danh file (UUID).
-    \item workspace\_id: Workspace chứa file.
-    \item folder\_id: Thư mục chứa file (nullable cho root).
-    \item uploaded\_by: User ID người upload.
-    \item name: Tên file.
-    \item size: Kích thước file (bytes).
-    \item mime\_type: Loại MIME của file.
-    \item s3\_key: Key để truy xuất object trong S3/MinIO.
-    \item version: Số phiên bản file.
-    \item checksum: SHA-256 checksum để verify integrity.
-    \item shared\_with: Danh sách user IDs được chia sẻ.
-    \item public\_link\_token: Token cho public sharing link.
-    \item deleted\_at: Timestamp cho soft delete, permanent delete sau 30 ngày.
-    \item created\_at: Thời điểm upload.
+    \item id: Mã định danh tin nhắn (UUID).
+    \item channel\_id: ID kênh chứa tin nhắn.
+    \item sender\_id: User ID người gửi.
+    \item thread\_id: ID thread nếu tin nhắn thuộc thread (nullable).
+    \item parent\_id: ID tin nhắn cha nếu là reply (nullable).
+    \item content: Nội dung tin nhắn dạng plain text.
+    \item content\_html: Nội dung đã được parse với formatting (bold, italic, code).
+    \item message\_type: Loại tin nhắn (TEXT, SYSTEM, AI\_RESPONSE).
+    \item metadata: Dữ liệu bổ sung (JSONB): mentions, links, formatting info.
+    \item is\_pinned: Tin nhắn có được ghim hay không.
+    \item edited\_at: Thời điểm chỉnh sửa (nullable).
+    \item deleted\_at: Timestamp soft delete (nullable).
+    \item created\_at: Thời điểm gửi tin nhắn.
     \item updated\_at: Thời điểm cập nhật gần nhất.
 \end{itemize}
 
-\textbf{Dữ liệu về thông báo (Notification Data):}
+\textbf{Dữ liệu về thread (Thread Data):} Đại diện cho luồng thảo luận từ một tin nhắn:
 
 \begin{itemize}
-    \item notification\_id: Mã định danh thông báo (UUID).
-    \item user\_id: User nhận thông báo.
-    \item workspace\_id: Workspace liên quan (nullable).
-    \item type: Loại thông báo (member\_joined, file\_uploaded, mention, settings\_changed).
-    \item title: Tiêu đề thông báo.
-    \item message: Nội dung chi tiết.
-    \item metadata: Dữ liệu bổ sung (JSONB) chứa entity IDs liên quan.
-    \item read\_at: Thời điểm đã đọc (nullable).
-    \item delivery\_status: Trạng thái gửi (sent, delivered, failed) cho email.
-    \item created\_at: Thời điểm tạo thông báo.
+    \item id: Mã định danh thread (UUID).
+    \item channel\_id: ID kênh chứa thread.
+    \item root\_message\_id: ID tin nhắn gốc tạo thread.
+    \item reply\_count: Số lượng tin nhắn trả lời trong thread.
+    \item participant\_ids: Danh sách user IDs đã tham gia thread (Array).
+    \item last\_reply\_at: Thời điểm có reply cuối cùng.
+    \item created\_at: Thời điểm tạo thread.
 \end{itemize}
 
-\textbf{Dữ liệu về báo cáo (Report Data):}
+\textbf{Dữ liệu về reaction (Reaction Data):} Đại diện cho emoji reactions trên tin nhắn:
 
 \begin{itemize}
-    \item report\_id: Mã định danh báo cáo (UUID).
-    \item workspace\_id: Workspace chứa báo cáo.
-    \item generated\_by: User ID người tạo báo cáo.
-    \item title: Tiêu đề báo cáo.
-    \item description: Mô tả về báo cáo.
-    \item content: Nội dung báo cáo (JSONB) với sections, insights, recommendations.
-    \item llm\_provider: Nhà cung cấp LLM sử dụng (OpenAI, Anthropic, Google).
-    \item prompt\_template: Template prompt đã sử dụng.
-    \item tokens\_used: Số lượng tokens tiêu thụ.
-    \item version: Phiên bản báo cáo.
-    \item created\_at: Thời điểm tạo báo cáo.
+    \item id: Mã định danh reaction (UUID).
+    \item message\_id: ID tin nhắn được react.
+    \item user\_id: ID người react.
+    \item emoji: Mã emoji (ví dụ: thumbsup, heart, smile).
+    \item created\_at: Thời điểm react.
 \end{itemize}
 
-\textbf{Dữ liệu audit log (Audit Log Data):}
+\textbf{Dữ liệu về tệp đính kèm (Attachment Data):} Metadata của tệp đính kèm trong tin nhắn:
 
 \begin{itemize}
-    \item log\_id: Mã định danh log (UUID).
-    \item user\_id: User thực hiện action (nullable cho system actions).
-    \item workspace\_id: Workspace liên quan (nullable).
-    \item entity\_type: Loại entity bị tác động (user, workspace, file, member).
-    \item entity\_id: ID của entity bị tác động.
-    \item action: Hành động thực hiện (create, update, delete).
-    \item changes: Before/after values (JSONB) để audit trail đầy đủ.
-    \item ip\_address: Địa chỉ IP của client.
-    \item user\_agent: User agent string.
-    \item created\_at: Thời điểm chính xác của action.
+    \item id: Mã định danh attachment (UUID).
+    \item message\_id: ID tin nhắn chứa attachment.
+    \item file\_id: ID file trong File Service của phân hệ nền tảng.
+    \item filename: Tên file gốc.
+    \item mime\_type: Loại MIME của file.
+    \item size: Kích thước file (bytes).
+    \item thumbnail\_url: URL thumbnail (cho hình ảnh).
+    \item processing\_status: Trạng thái xử lý (PENDING, PROCESSING, COMPLETED, FAILED).
+    \item created\_at: Thời điểm đính kèm.
+\end{itemize}
+
+\textbf{Dữ liệu về vector embedding tin nhắn (MessageEmbedding Data):} Lưu trữ vector embeddings cho semantic search:
+
+\begin{itemize}
+    \item id: Mã định danh embedding (UUID).
+    \item message\_id: ID tin nhắn nguồn.
+    \item channel\_id: ID kênh (để filter khi search).
+    \item chunk\_index: Thứ tự chunk (nếu tin nhắn dài được chia nhỏ).
+    \item chunk\_text: Nội dung text của chunk.
+    \item embedding: Vector embedding 1536 chiều (pgvector).
+    \item token\_count: Số tokens trong chunk.
+    \item created\_at: Thời điểm tạo embedding.
+\end{itemize}
+
+\textbf{Dữ liệu về document chunk (DocumentChunk Data):} Chunks từ tài liệu đính kèm để phục vụ RAG:
+
+\begin{itemize}
+    \item id: Mã định danh chunk (UUID).
+    \item attachment\_id: ID attachment nguồn.
+    \item channel\_id: ID kênh (để filter khi search).
+    \item chunk\_index: Thứ tự chunk trong tài liệu.
+    \item chunk\_text: Nội dung text của chunk.
+    \item embedding: Vector embedding 1536 chiều (pgvector).
+    \item token\_count: Số tokens trong chunk.
+    \item metadata: Dữ liệu bổ sung (JSONB): page number, section title.
+    \item created\_at: Thời điểm tạo chunk.
+\end{itemize}
+
+\textbf{Dữ liệu về AI conversation (AIConversation Data):} Log các tương tác với AI Assistant:
+
+\begin{itemize}
+    \item id: Mã định danh conversation (UUID).
+    \item channel\_id: ID kênh nơi diễn ra tương tác.
+    \item user\_id: ID người dùng đặt câu hỏi.
+    \item query: Câu hỏi/yêu cầu của người dùng.
+    \item response: Câu trả lời của AI.
+    \item context\_message\_ids: Danh sách message IDs được sử dụng làm context (Array).
+    \item source\_references: Tham chiếu nguồn (JSONB): message\_id, chunk\_id, relevance\_score.
+    \item model\_used: Tên model LLM đã sử dụng (gpt-4o-mini, gpt-4o).
+    \item tokens\_used: Số tokens tiêu thụ (prompt + completion).
+    \item response\_time\_ms: Thời gian phản hồi (milliseconds).
+    \item created\_at: Thời điểm tương tác.
+\end{itemize}
+
+\textbf{Dữ liệu về mention (Mention Data):} Theo dõi các mentions trong tin nhắn:
+
+\begin{itemize}
+    \item id: Mã định danh mention (UUID).
+    \item message\_id: ID tin nhắn chứa mention.
+    \item user\_id: ID người được mention.
+    \item mention\_type: Loại mention (USER, CHANNEL, EVERYONE).
+    \item created\_at: Thời điểm mention.
 \end{itemize}
 
 \subsubsection{Mô hình dữ liệu}
 
-Mô hình dữ liệu của hệ thống được thiết kế dựa trên kiến trúc relational database với PostgreSQL, sử dụng các nguyên tắc normalization để đảm bảo tính toàn vẹn dữ liệu và giảm thiểu redundancy. Hệ thống bao gồm các core entities chính và relationships giữa chúng được thể hiện qua class diagram và entity relationship diagram.
+Mô hình dữ liệu của phân hệ truyền thông được thiết kế dựa trên kiến trúc relational database với PostgreSQL kết hợp pgvector extension cho vector storage. Hệ thống sử dụng các nguyên tắc normalization để đảm bảo tính toàn vẹn dữ liệu và giảm thiểu redundancy. Các core entities chính và relationships giữa chúng được thể hiện qua class diagram và entity relationship diagram.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{images/class_diagram.png}
-\caption{Sơ đồ lớp (Class Diagram) của hệ thống}
+\caption{Sơ đồ lớp (Class Diagram) của phân hệ truyền thông}
 \label{fig:class_diagram}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{images/erd_diagram.png}
+\caption{Sơ đồ quan hệ thực thể (ERD) của phân hệ truyền thông}
+\label{fig:erd_diagram}
 \end{figure}
 
 \textbf{Key Design Patterns:}
 
 \begin{itemize}
     \item \textbf{UUID Primary Keys:} Sử dụng UUID thay vì auto-increment integers để tránh enumeration attacks và dễ dàng merge data từ multiple sources.
-    \item \textbf{Soft Deletes:} Các tables quan trọng có deleted\_at timestamp để cho phép restore và audit.
-    \item \textbf{JSONB Columns:} Sử dụng PostgreSQL JSONB cho flexible data như metadata, settings, report content.
-    \item \textbf{Timestamps:} Mọi table có created\_at và updated\_at để tracking.
-    \item \textbf{Foreign Key Constraints:} Enforce referential integrity với ON DELETE CASCADE hoặc RESTRICT tùy business logic.
+    
+    \item \textbf{Soft Deletes:} Message có deleted\_at timestamp để cho phép restore và hiển thị "This message was deleted" thay vì xóa hoàn toàn.
+    
+    \item \textbf{JSONB Columns:} Sử dụng PostgreSQL JSONB cho flexible data như metadata, ai\_features, source\_references - giúp schema linh hoạt mà không cần migrations.
+    
+    \item \textbf{pgvector Extension:} Sử dụng kiểu dữ liệu VECTOR(1536) cho embeddings, với HNSW index để tối ưu similarity search.
+    
+    \item \textbf{Denormalization cho Performance:} reply\_count trong Thread, participant\_ids được lưu trực tiếp thay vì query mỗi lần để tăng tốc độ đọc.
+    
+    \item \textbf{Channel-level Indexing:} Embeddings lưu channel\_id để filter khi search, đảm bảo user chỉ tìm được nội dung trong các kênh có quyền truy cập.
+    
+    \item \textbf{Foreign Key References:} Các entities tham chiếu đến User (từ phân hệ nền tảng) qua user\_id nhưng không có FK constraint để đảm bảo loose coupling giữa các phân hệ.
+    
+    \item \textbf{Timestamps:} Mọi table có created\_at, một số có updated\_at để tracking changes.
+\end{itemize}
+
+\textbf{Indexes quan trọng:}
+
+\begin{itemize}
+    \item \textbf{Message:} Composite index (channel\_id, created\_at DESC) cho pagination tin nhắn.
+    \item \textbf{Message:} GIN index trên content cho full-text search.
+    \item \textbf{MessageEmbedding:} HNSW index trên embedding với cosine distance cho semantic search.
+    \item \textbf{DocumentChunk:} HNSW index trên embedding cho document search.
+    \item \textbf{ChannelMember:} Unique constraint (channel\_id, user\_id).
+    \item \textbf{Reaction:} Unique constraint (message\_id, user\_id, emoji).
 \end{itemize}
 
 \subsubsection{Từ điển dữ liệu}
 
-Chi tiết từ điển dữ liệu của toàn bộ các bảng trong hệ thống, bao gồm tên cột, kiểu dữ liệu, mô tả và các ràng buộc, được trình bày đầy đủ trong Phụ lục B.
+Chi tiết từ điển dữ liệu của toàn bộ các bảng trong phân hệ truyền thông, bao gồm tên cột, kiểu dữ liệu, mô tả và các ràng buộc, được trình bày đầy đủ trong Phụ lục B.
