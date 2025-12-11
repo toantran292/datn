@@ -20,16 +20,4 @@ UC_Validate .up.> UC_Create : <<include>>
 UC_CheckID .up.> UC_Create : <<include>>
 UC_CreateStatuses .up.> UC_Create : <<include>>
 
-note right of UC_CheckID
-  Kiểm tra identifier
-  duy nhất trong orgId
-end note
-
-note bottom of UC_CreateStatuses
-  Tự động tạo:
-  - TODO
-  - IN_PROGRESS
-  - DONE
-end note
-
 @enduml

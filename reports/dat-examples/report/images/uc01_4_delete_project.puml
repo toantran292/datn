@@ -18,23 +18,4 @@ UC_Confirm .up.> UC_Delete : <<include>>
 UC_CheckPerm .up.> UC_Delete : <<include>>
 UC_Cascade .up.> UC_Delete : <<include>>
 
-note right of UC_Confirm
-  User phải nhập đúng
-  identifier để xác nhận
-end note
-
-note bottom of UC_Cascade
-  Xóa toàn bộ:
-  • Sprints
-  • Issues
-  • Issue Statuses
-  • Comments
-  • Activities
-end note
-
-note left of UC_CheckPerm
-  Chỉ Project Lead
-  mới có quyền xóa
-end note
-
 @enduml

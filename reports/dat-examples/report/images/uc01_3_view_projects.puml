@@ -27,14 +27,4 @@ UC_Board ..> UC_Detail : <<extend>>
 UC_Backlog ..> UC_Detail : <<extend>>
 UC_Summary ..> UC_Detail : <<extend>>
 
-note right of UC_List
-  Filter by orgId
-  từ JWT token
-end note
-
-note bottom of UC_Detail
-  4 tabs: Backlog, Board,
-  Summary, Settings
-end note
-
 @enduml

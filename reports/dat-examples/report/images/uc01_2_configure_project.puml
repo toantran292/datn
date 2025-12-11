@@ -20,14 +20,4 @@ UC_ChangeLead .up.> UC_Configure : <<include>>
 UC_ChangeAssignee .up.> UC_Configure : <<include>>
 UC_LogActivity .up.> UC_Configure : <<include>>
 
-note right of UC_Configure
-  Identifier read-only
-  (không cho phép đổi)
-end note
-
-note bottom of UC_LogActivity
-  Ghi lại tất cả
-  thay đổi cấu hình
-end note
-
 @enduml
