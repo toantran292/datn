@@ -1,6 +1,6 @@
 \subsection{Phân tích đánh giá các giải pháp}
 
-Để xây dựng ứng dụng SaaS Platform tích hợp AI cho quản lý workspace, em đã lựa chọn giải pháp dựa trên các tiêu chí: hiệu suất, khả năng mở rộng, tính tương thích và trải nghiệm người dùng. Cụ thể:
+Để xây dựng ứng dụng SaaS Platform tích hợp AI cho quản lý dự án, em đã lựa chọn giải pháp dựa trên các tiêu chí: hiệu suất, khả năng mở rộng, tính tương thích và trải nghiệm người dùng. Cụ thể:
 
 \begin{itemize}
     \item \textbf{Ngôn ngữ và nền tảng phát triển}
@@ -17,7 +17,7 @@
     \item \textbf{Backend Framework}
     \begin{itemize}
         \item \textbf{Spring Boot 3.x (Account Service):} Framework Java enter\-prise-grade cho authen\-tication và user management. Spring Security cung cấp JWT authen\-tication và OAuth 2.0 integration với Google.
-        \item \textbf{NestJS (Other Services):} Framework Node.js cho Workspace, Member, File, Noti\-fication, Report services. NestJS cung cấp kiến trúc module hóa, dependency injection và TypeScript native support.
+        \item \textbf{NestJS (PM Service):} Framework Node.js cho PM Service xử lý project, sprint, issue, custom status và tích hợp AI. NestJS cung cấp kiến trúc module hóa, dependency injection và TypeScript native support. Prisma ORM được sử dụng để quản lý database schema và migration.
     \end{itemize}
 
     \item \textbf{Web Server và Reverse Proxy}
@@ -31,16 +31,16 @@
         \item \textbf{Redis:} Caching layer tăng tốc truy vấn và lưu session, giảm tải cho database chính.
     \end{itemize}
 
-    \item \textbf{Object Storage (File Storage)}
+    \item \textbf{Object Storage (File Attachments)}
     \begin{itemize}
-        \item \textbf{MinIO (Development):} S3-compatible object storage chạy local trong Docker, cho phép development và testing offline.
-        \item \textbf{AWS S3 (Production):} Object storage với high durability và availability cho production environment.
+        \item \textbf{MinIO (Development):} S3-compatible object storage chạy local trong Docker, hỗ trợ lưu trữ file attachments cho issues (screenshots, documents, logs).
+        \item \textbf{AWS S3 (Production):} Object storage với high durability và availability cho production environment, lưu trữ các file đính kèm của issues.
     \end{itemize}
 
     \item \textbf{Tích hợp AI/LLM}
     \begin{itemize}
-        \item \textbf{OpenAI API (GPT-4):} Xử lý ngôn ngữ tự nhiên mạnh mẽ, phù hợp tạo báo cáo tổng hợp, trích xuất insights.
-        \item \textbf{Anthropic Claude API:} Alternative cho OpenAI với khả năng xử lý context dài, phù hợp phân tích tài liệu lớn.
+        \item \textbf{OpenAI API (GPT-4):} Xử lý ngôn ngữ tự nhiên mạnh mẽ, phù hợp tạo AI Sprint Summary, AI Issue Description Generation và AI Task Breakdown cho EPIC/STORY.
+        \item \textbf{Anthropic Claude API:} Alternative cho OpenAI với khả năng xử lý context dài, phù hợp phân tích sprint data và tạo summary chi tiết với nhiều sections (Overview, Achievements, Issues, Recommendations).
     \end{itemize}
 
     \item \textbf{Authentication và Authorization}
@@ -50,8 +50,8 @@
 
     \item \textbf{Real-time Communication}
     \begin{itemize}
-        \item \textbf{WebSocket (NestJS):} Cho phép cập nhật real-time cho noti\-fications, dashboard metrics và colla\-borative features.
+        \item \textbf{WebSocket (NestJS):} Cho phép cập nhật real-time cho Board view (drag-and-drop issues), sprint progress, issue status changes và colla\-borative editing. Đảm bảo nhiều users có thể làm việc đồng thời trên cùng project.
     \end{itemize}
 \end{itemize}
 
-\textbf{Đánh giá tổng quan:} Kết hợp các công nghệ trên đáp ứng tốt mục tiêu về hiệu năng, trải nghiệm người dùng và khả năng mở rộng của hệ thống. Giải pháp đáp ứng đầy đủ yêu cầu đề tài, đảm bảo tích hợp AI mượt mà, hỗ trợ tối ưu trải nghiệm người dùng, dễ mở rộng chức năng trong tương lai, đồng thời phù hợp xu hướng phát triển web và AI hiện đại.
+\textbf{Đánh giá tổng quan:} Kết hợp các công nghệ trên đáp ứng tốt mục tiêu về hiệu năng, trải nghiệm người dùng và khả năng mở rộng của hệ thống quản lý dự án. Giải pháp đáp ứng đầy đủ yêu cầu đề tài với các tính năng: Board/Backlog view với drag-and-drop intuitive, sprint management lifecycle (FUTURE-ACTIVE-CLOSED), issue tracking đa dạng (STORY, TASK, BUG, EPIC), custom status workflow và AI-assisted features (Sprint Summary, Issue Description Generation, Task Breakdown). Tích hợp AI mượt mà giúp tự động hóa các tác vụ lặp lại, tối ưu trải nghiệm làm việc của team, dễ mở rộng chức năng trong tương lai, đồng thời phù hợp xu hướng phát triển web và AI hiện đại.
