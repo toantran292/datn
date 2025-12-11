@@ -14,8 +14,8 @@
         \begin{textblock}{1}(1,1)
             \rotatebox{90}{%
                 \parbox{27.5cm}{%
-                    \fontsize{10pt}{12pt}\selectfont\itshape 
-                    Xây dựng Nền tảng SaaS tích hợp AI nhằm Thống nhất Quản lý Dự án Agile - Phân hệ nền tảng và thông tin
+                    \fontsize{10pt}{12pt}\selectfont\itshape
+                    Xây dựng Nền tảng SaaS tích hợp AI nhằm Thống nhất Quản lý Dự án Agile - Phân hệ quản lý dự án
                     \vspace{2pt}
                     \hrule
                 }%
@@ -40,9 +40,9 @@
 \phantomsection
 \setsection{Phụ lục B: Từ điển dữ liệu}
 
-Phần này trình bày chi tiết mô tả dữ liệu cho các bảng của sơ đồ lớp của ứng dụng SaaS Platform được trình bày ở Phần II - Chương III - Thiết kế cơ sở dữ liệu - Từ điển dữ liệu.
+Phần này trình bày chi tiết mô tả dữ liệu cho các bảng của sơ đồ lớp của phân hệ quản lý dự án được trình bày ở Phần II - Chương III - Thiết kế cơ sở dữ liệu - Từ điển dữ liệu.
 
-\textbf{Bảng users: Lưu trữ thông tin của người dùng trong hệ thống}
+\textbf{Bảng projects: Lưu trữ thông tin dự án trong hệ thống}
 
 \renewcommand{\arraystretch}{1.5}
 \begin{longtable}{|p{3cm}|p{2.5cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{3cm}|p{5cm}|}
@@ -60,33 +60,29 @@ Phần này trình bày chi tiết mô tả dữ liệu cho các bảng của s�
 
 \hline
 \endfoot
-user\_id & UUID & X & & X & X & & Mã tài khoản người dùng. \\
+project\_id & UUID & X & & X & X & & Mã định danh dự án. \\
 \hline
-name & String & & & & X & & Họ và tên người dùng. \\
+org\_id & UUID & & X & & X & organizations & Tổ chức sở hữu dự án. \\
 \hline
-email & String & & & X & X & & Email đăng ký. \\
+identifier & String & & & & X & & Mã định danh ngắn gọn (e.g. PROJ). \\
 \hline
-password\_hash & String & & & & & & Mật khẩu đã mã hóa. \\
+name & String & & & & X & & Tên dự án. \\
 \hline
-avatar\_url & String & & & & & & URL ảnh đại diện. \\
+description & Text & & & & & & Mô tả chi tiết dự án. \\
 \hline
-oauth\_provider & String & & & & & & Nhà cung cấp OAuth. \\
+project\_lead\_id & UUID & & X & & & users & User ID của người dẫn dự án. \\
 \hline
-oauth\_id & String & & & & & & ID từ OAuth provider. \\
+default\_assignee\_id & UUID & & X & & & users & User ID mặc định được gán issue. \\
 \hline
-email\_verified & Boolean & & & & & & Trạng thái xác thực email. \\
+created\_by & UUID & & X & & X & users & User tạo dự án. \\
 \hline
-is\_active & Boolean & & & & & & Trạng thái tài khoản. \\
+created\_at & Timestamp & & & & X & & Thời điểm tạo dự án. \\
 \hline
-last\_login\_at & Timestamp & & & & & & Thời điểm đăng nhập cuối. \\
-\hline
-created\_at & Timestamp & & & & X & & Ngày tạo tài khoản. \\
-\hline
-updated\_at & Timestamp & & & & X & & Ngày cập nhật gần nhất. \\
+updated\_at & Timestamp & & & & X & & Thời điểm cập nhật gần nhất. \\
 \hline
 \end{longtable}
 
-\textbf{Bảng workspaces: Lưu trữ thông tin workspace - không gian làm việc của nhóm}
+\textbf{Bảng sprints: Lưu trữ thông tin sprint của dự án}
 
 \renewcommand{\arraystretch}{1.5}
 \begin{longtable}{|p{3cm}|p{2.5cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{3cm}|p{5cm}|}
@@ -104,33 +100,29 @@ updated\_at & Timestamp & & & & X & & Ngày cập nhật gần nhất. \\
 
 \hline
 \endfoot
-workspace\_id & UUID & X & & X & X & & Mã workspace. \\
+sprint\_id & UUID & X & & X & X & & Mã định danh sprint. \\
 \hline
-owner\_id & UUID & & X & & X & users & User ID chủ sở hữu. \\
+project\_id & UUID & & X & & X & projects & Dự án chứa sprint. \\
 \hline
-name & String & & & & X & & Tên workspace. \\
+name & String & & & & X & & Tên sprint. \\
 \hline
-description & String & & & & & & Mô tả workspace. \\
+goal & Text & & & & & & Mục tiêu của sprint. \\
 \hline
-logo\_url & String & & & & & & URL logo workspace. \\
+start\_date & Date & & & & & & Ngày bắt đầu sprint. \\
 \hline
-settings & JSONB & & & & & & Cấu hình tùy chỉnh. \\
+end\_date & Date & & & & & & Ngày kết thúc sprint. \\
 \hline
-storage\_limit & BigInt & & & & & & Giới hạn dung lượng. \\
+status & Enum & & & & X & & Trạng thái (FUTURE, ACTIVE, CLOSED). \\
 \hline
-member\_limit & Integer & & & & & & Số thành viên tối đa. \\
+created\_by & UUID & & X & & X & users & User tạo sprint. \\
 \hline
-is\_active & Boolean & & & & & & Trạng thái hoạt động. \\
+created\_at & Timestamp & & & & X & & Thời điểm tạo sprint. \\
 \hline
-deleted\_at & Timestamp & & & & & & Timestamp soft delete. \\
-\hline
-created\_at & Timestamp & & & & X & & Ngày tạo workspace. \\
-\hline
-updated\_at & Timestamp & & & & X & & Ngày cập nhật gần nhất. \\
+updated\_at & Timestamp & & & & X & & Thời điểm cập nhật gần nhất. \\
 \hline
 \end{longtable}
 
-\textbf{Bảng workspace\_members: Lưu trữ quan hệ giữa user và workspace}
+\textbf{Bảng issues: Lưu trữ thông tin công việc/nhiệm vụ trong dự án}
 
 \renewcommand{\arraystretch}{1.5}
 \begin{longtable}{|p{3cm}|p{2.5cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{3cm}|p{5cm}|}
@@ -148,211 +140,43 @@ updated\_at & Timestamp & & & & X & & Ngày cập nhật gần nhất. \\
 
 \hline
 \endfoot
-member\_id & UUID & X & & X & X & & Mã quan hệ thành viên. \\
+issue\_id & UUID & X & & X & X & & Mã định danh issue. \\
 \hline
-user\_id & UUID & & X & & X & users & User tham gia workspace. \\
+project\_id & UUID & & X & & X & projects & Dự án chứa issue. \\
 \hline
-workspace\_id & UUID & & X & & X & workspaces & Workspace được tham gia. \\
+sprint\_id & UUID & & X & & & sprints & Sprint chứa issue (nullable). \\
 \hline
-role & Enum & & & & X & & Vai trò (OWNER, ADMIN, MEMBER). \\
+parent\_id & UUID & & X & & & issues & Issue cha (cho sub-task). \\
 \hline
-joined\_at & Timestamp & & & & X & & Thời điểm tham gia. \\
+seq\_id & Integer & & & & X & & ID tự tăng trong project. \\
 \hline
-created\_at & Timestamp & & & & X & & Ngày tạo record. \\
+title & String & & & & X & & Tiêu đề issue. \\
 \hline
-updated\_at & Timestamp & & & & X & & Ngày cập nhật gần nhất. \\
+description & Text & & & & & & Mô tả chi tiết (HTML). \\
 \hline
-\end{longtable}
-
-\textbf{Bảng permissions: Lưu trữ quyền tùy chỉnh chi tiết của thành viên}
-
-\renewcommand{\arraystretch}{1.5}
-\begin{longtable}{|p{3cm}|p{2.5cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{3cm}|p{5cm}|}
+type & Enum & & & & X & & Loại (STORY, TASK, BUG, EPIC). \\
 \hline
-\rowcolor{gray!20}
-\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+status\_id & UUID & & X & & X & issue\_statuses & Trạng thái hiện tại. \\
 \hline
-\endfirsthead
-
+priority & Enum & & & & X & & Độ ưu tiên (LOW, MEDIUM, HIGH, CRITICAL). \\
 \hline
-\rowcolor{gray!20}
-\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+story\_points & Decimal & & & & & & Điểm ước tính công việc. \\
 \hline
-\endhead
-
+start\_date & Date & & & & & & Ngày bắt đầu. \\
 \hline
-\endfoot
-permission\_id & UUID & X & & X & X & & Mã quyền. \\
+target\_date & Date & & & & & & Ngày mục tiêu hoàn thành. \\
 \hline
-member\_id & UUID & & X & & X & workspace\_members & Member sở hữu quyền. \\
+sort\_order & Decimal & & & & X & & Thứ tự sắp xếp (fractional). \\
 \hline
-resource\_type & String & & & & X & & Loại resource. \\
-\hline
-resource\_id & UUID & & & & X & & ID của resource. \\
-\hline
-actions & JSONB & & & & X & & Array các actions được phép. \\
-\hline
-created\_at & Timestamp & & & & X & & Ngày tạo quyền. \\
-\hline
-updated\_at & Timestamp & & & & X & & Ngày cập nhật gần nhất. \\
-\hline
-\end{longtable}
-
-\textbf{Bảng folders: Lưu trữ thông tin cấu trúc thư mục}
-
-\renewcommand{\arraystretch}{1.5}
-\begin{longtable}{|p{3cm}|p{2.5cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{3cm}|p{5cm}|}
-\hline
-\rowcolor{gray!20}
-\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
-\hline
-\endfirsthead
-
-\hline
-\rowcolor{gray!20}
-\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
-\hline
-\endhead
-
-\hline
-\endfoot
-folder\_id & UUID & X & & X & X & & Mã thư mục. \\
-\hline
-workspace\_id & UUID & & X & & X & workspaces & Workspace chứa folder. \\
-\hline
-parent\_id & UUID & & X & & & folders & Thư mục cha. \\
-\hline
-name & String & & & & X & & Tên thư mục. \\
-\hline
-path & String & & & & X & & Đường dẫn đầy đủ. \\
-\hline
-created\_at & Timestamp & & & & X & & Ngày tạo thư mục. \\
-\hline
-updated\_at & Timestamp & & & & X & & Ngày cập nhật gần nhất. \\
-\hline
-\end{longtable}
-
-\textbf{Bảng files: Lưu trữ metadata của files}
-
-\renewcommand{\arraystretch}{1.5}
-\begin{longtable}{|p{3cm}|p{2.5cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{3cm}|p{5cm}|}
-\hline
-\rowcolor{gray!20}
-\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
-\hline
-\endfirsthead
-
-\hline
-\rowcolor{gray!20}
-\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
-\hline
-\endhead
-
-\hline
-\endfoot
-file\_id & UUID & X & & X & X & & Mã file. \\
-\hline
-workspace\_id & UUID & & X & & X & workspaces & Workspace chứa file. \\
-\hline
-folder\_id & UUID & & X & & & folders & Thư mục chứa file. \\
-\hline
-uploaded\_by & UUID & & X & & X & users & User upload file. \\
-\hline
-name & String & & & & X & & Tên file. \\
-\hline
-size & BigInt & & & & X & & Kích thước file (bytes). \\
-\hline
-mime\_type & String & & & & X & & Loại MIME của file. \\
-\hline
-s3\_key & String & & & & X & & Key truy xuất object. \\
-\hline
-version & Integer & & & & & & Số phiên bản file. \\
-\hline
-checksum & String & & & & X & & SHA-256 checksum. \\
-\hline
-deleted\_at & Timestamp & & & & & & Timestamp soft delete. \\
-\hline
-created\_at & Timestamp & & & & X & & Thời điểm upload. \\
-\hline
-updated\_at & Timestamp & & & & X & & Ngày cập nhật gần nhất. \\
-\hline
-\end{longtable}
-
-\textbf{Bảng file\_shares: Lưu trữ thông tin chia sẻ file}
-
-\renewcommand{\arraystretch}{1.5}
-\begin{longtable}{|p{3cm}|p{2.5cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{3cm}|p{5cm}|}
-\hline
-\rowcolor{gray!20}
-\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
-\hline
-\endfirsthead
-
-\hline
-\rowcolor{gray!20}
-\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
-\hline
-\endhead
-
-\hline
-\endfoot
-share\_id & UUID & X & & X & X & & Mã chia sẻ. \\
-\hline
-file\_id & UUID & & X & & X & files & File được chia sẻ. \\
-\hline
-shared\_by & UUID & & X & & X & users & User thực hiện chia sẻ. \\
-\hline
-shared\_with & UUID & & X & & & users & User nhận chia sẻ. \\
-\hline
-public\_link\_token & String & & & & & & Token cho public link. \\
-\hline
-permissions & String & & & & X & & Quyền chia sẻ. \\
-\hline
-expires\_at & Timestamp & & & & & & Thời hạn chia sẻ. \\
-\hline
-created\_at & Timestamp & & & & X & & Thời điểm tạo share. \\
-\hline
-\end{longtable}
-
-\textbf{Bảng notifications: Lưu trữ thông báo của người dùng}
-
-\renewcommand{\arraystretch}{1.5}
-\begin{longtable}{|p{3cm}|p{2.5cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{3cm}|p{5cm}|}
-\hline
-\rowcolor{gray!20}
-\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
-\hline
-\endfirsthead
-
-\hline
-\rowcolor{gray!20}
-\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
-\hline
-\endhead
-
-\hline
-\endfoot
-notification\_id & UUID & X & & X & X & & Mã thông báo. \\
-\hline
-user\_id & UUID & & X & & X & users & User nhận thông báo. \\
-\hline
-workspace\_id & UUID & & X & & & workspaces & Workspace liên quan. \\
-\hline
-type & String & & & & X & & Loại thông báo. \\
-\hline
-title & String & & & & X & & Tiêu đề thông báo. \\
-\hline
-message & String & & & & X & & Nội dung chi tiết. \\
-\hline
-metadata & JSONB & & & & & & Dữ liệu bổ sung. \\
-\hline
-read\_at & Timestamp & & & & & & Thời điểm đã đọc. \\
+created\_by & UUID & & X & & X & users & User tạo issue. \\
 \hline
 created\_at & Timestamp & & & & X & & Thời điểm tạo. \\
 \hline
+updated\_at & Timestamp & & & & X & & Thời điểm cập nhật gần nhất. \\
+\hline
 \end{longtable}
 
-\textbf{Bảng reports: Lưu trữ báo cáo được tạo bởi AI}
+\textbf{Bảng issue\_statuses: Lưu trữ các trạng thái tùy chỉnh của issue}
 
 \renewcommand{\arraystretch}{1.5}
 \begin{longtable}{|p{3cm}|p{2.5cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{3cm}|p{5cm}|}
@@ -370,31 +194,25 @@ created\_at & Timestamp & & & & X & & Thời điểm tạo. \\
 
 \hline
 \endfoot
-report\_id & UUID & X & & X & X & & Mã báo cáo. \\
+status\_id & UUID & X & & X & X & & Mã định danh trạng thái. \\
 \hline
-workspace\_id & UUID & & X & & X & workspaces & Workspace chứa báo cáo. \\
+project\_id & UUID & & X & & X & projects & Dự án chứa trạng thái. \\
 \hline
-generated\_by & UUID & & X & & X & users & User tạo báo cáo. \\
+name & String & & & & X & & Tên trạng thái. \\
 \hline
-title & String & & & & X & & Tiêu đề báo cáo. \\
+description & Text & & & & & & Mô tả trạng thái. \\
 \hline
-description & String & & & & & & Mô tả báo cáo. \\
+color & String & & & & X & & Mã màu hex cho UI. \\
 \hline
-content & JSONB & & & & X & & Nội dung báo cáo. \\
-\hline
-llm\_provider & String & & & & X & & LLM provider sử dụng. \\
-\hline
-prompt\_template & String & & & & X & & Template prompt. \\
-\hline
-tokens\_used & Integer & & & & X & & Số tokens tiêu thụ. \\
-\hline
-version & Integer & & & & & & Phiên bản báo cáo. \\
+order & Integer & & & & X & & Thứ tự hiển thị. \\
 \hline
 created\_at & Timestamp & & & & X & & Thời điểm tạo. \\
 \hline
+updated\_at & Timestamp & & & & X & & Thời điểm cập nhật gần nhất. \\
+\hline
 \end{longtable}
 
-\textbf{Bảng audit\_logs: Lưu trữ lịch sử thao tác của người dùng}
+\textbf{Bảng issue\_assignees: Lưu trữ quan hệ gán issue cho thành viên}
 
 \renewcommand{\arraystretch}{1.5}
 \begin{longtable}{|p{3cm}|p{2.5cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{3cm}|p{5cm}|}
@@ -412,25 +230,111 @@ created\_at & Timestamp & & & & X & & Thời điểm tạo. \\
 
 \hline
 \endfoot
-log\_id & UUID & X & & X & X & & Mã log. \\
+issue\_id & UUID & X & X & & X & issues & Issue được gán. \\
 \hline
-user\_id & UUID & & X & & & users & User thực hiện action. \\
+user\_id & UUID & X & X & & X & users & User được gán. \\
 \hline
-workspace\_id & UUID & & X & & & workspaces & Workspace liên quan. \\
+created\_at & Timestamp & & & & X & & Thời điểm gán. \\
 \hline
-entity\_type & String & & & & X & & Loại entity bị tác động. \\
+\end{longtable}
+
+\textbf{Bảng issue\_comments: Lưu trữ bình luận trên issue}
+
+\renewcommand{\arraystretch}{1.5}
+\begin{longtable}{|p{3cm}|p{2.5cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{3cm}|p{5cm}|}
 \hline
-entity\_id & UUID & & & & X & & ID entity bị tác động. \\
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
 \hline
-action & String & & & & X & & Hành động thực hiện. \\
+\endfirsthead
+
 \hline
-changes & JSONB & & & & X & & Before/after values. \\
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
 \hline
-ip\_address & String & & & & & & Địa chỉ IP. \\
+\endhead
+
 \hline
-user\_agent & String & & & & & & User agent string. \\
+\endfoot
+comment\_id & UUID & X & & X & X & & Mã định danh comment. \\
 \hline
-created\_at & Timestamp & & & & X & & Thời điểm action. \\
+issue\_id & UUID & & X & & X & issues & Issue chứa comment. \\
+\hline
+user\_id & UUID & & X & & X & users & User tạo comment. \\
+\hline
+content & Text & & & & X & & Nội dung comment (HTML). \\
+\hline
+created\_at & Timestamp & & & & X & & Thời điểm tạo. \\
+\hline
+updated\_at & Timestamp & & & & X & & Thời điểm cập nhật gần nhất. \\
+\hline
+\end{longtable}
+
+\textbf{Bảng issue\_activities: Lưu trữ lịch sử thay đổi của issue}
+
+\renewcommand{\arraystretch}{1.5}
+\begin{longtable}{|p{3cm}|p{2.5cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{3cm}|p{5cm}|}
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endfirsthead
+
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+activity\_id & UUID & X & & X & X & & Mã định danh hoạt động. \\
+\hline
+issue\_id & UUID & & X & & X & issues & Issue bị thay đổi. \\
+\hline
+user\_id & UUID & & X & & X & users & User thực hiện thay đổi. \\
+\hline
+field\_name & String & & & & X & & Tên trường bị thay đổi. \\
+\hline
+old\_value & Text & & & & & & Giá trị cũ. \\
+\hline
+new\_value & Text & & & & & & Giá trị mới. \\
+\hline
+created\_at & Timestamp & & & & X & & Thời điểm thay đổi. \\
+\hline
+\end{longtable}
+
+\textbf{Bảng project\_analytics: Lưu trữ số liệu thống kê dự án}
+
+\renewcommand{\arraystretch}{1.5}
+\begin{longtable}{|p{3cm}|p{2.5cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{3cm}|p{5cm}|}
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endfirsthead
+
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+analytics\_id & UUID & X & & X & X & & Mã định danh analytics. \\
+\hline
+project\_id & UUID & & X & & X & projects & Dự án được phân tích. \\
+\hline
+date & Date & & & & X & & Ngày thu thập số liệu. \\
+\hline
+issues\_created & Integer & & & & X & & Số issue tạo mới. \\
+\hline
+issues\_resolved & Integer & & & & X & & Số issue đã hoàn thành. \\
+\hline
+issues\_in\_progress & Integer & & & & X & & Số issue đang thực hiện. \\
+\hline
+created\_at & Timestamp & & & & X & & Thời điểm tạo record. \\
 \hline
 \end{longtable}
 
@@ -440,97 +344,90 @@ created\_at & Timestamp & & & & X & & Thời điểm action. \\
 \phantomsection
 \subsection*{Các yêu cầu ràng buộc cần thiết khi xử lý dữ liệu}
 
-Phần này mô tả các ràng buộc dữ liệu cần được đảm bảo khi xử lý và lưu trữ thông tin trong hệ thống SaaS Platform.
+Phần này mô tả các ràng buộc dữ liệu cần được đảm bảo khi xử lý và lưu trữ thông tin trong phân hệ quản lý dự án.
 
-\subsubsection*{Ràng buộc dữ liệu người dùng (Users)}
+\subsubsection*{Ràng buộc dữ liệu dự án (Projects)}
 
 \begin{itemize}
-    \item Thuộc tính \texttt{email} phải khác rỗng, duy nhất trong hệ thống, và đúng định dạng email hợp lệ.
-    \item Thuộc tính \texttt{password\_hash} phải khác rỗng, được mã hóa bằng thuật toán Bcrypt với salt factor tối thiểu 12.
-    \item Thuộc tính \texttt{role} phải có một trong các giá trị được định nghĩa trước: SUPER\_ADMIN, WORKSPACE\_OWNER, MEMBER.
-    \item Thuộc tính \texttt{oauth\_provider} chỉ chấp nhận giá trị 'google' hoặc null nếu không sử dụng OAuth.
-    \item Thuộc tính \texttt{email\_verified} phải là giá trị boolean, mặc định là false khi tạo tài khoản mới.
-    \item Thuộc tính \texttt{is\_active} phải là giá trị boolean, mặc định là true khi tạo tài khoản mới.
+    \item Thuộc tính \texttt{identifier} phải khác rỗng, duy nhất trong organization, có độ dài từ 2 đến 10 ký tự viết hoa.
+    \item Thuộc tính \texttt{name} phải khác rỗng và có độ dài tối thiểu 3 ký tự, tối đa 100 ký tự.
+    \item Thuộc tính \texttt{org\_id} phải là UUID hợp lệ và tham chiếu đến một organization tồn tại trong hệ thống.
+    \item Thuộc tính \texttt{project\_lead\_id} và \texttt{default\_assignee\_id} phải là UUID hợp lệ tham chiếu đến users.
+    \item Cặp (\texttt{org\_id}, \texttt{identifier}) phải duy nhất để tránh trùng lặp mã dự án trong organization.
 \end{itemize}
 
-\subsubsection*{Ràng buộc dữ liệu workspace (Workspaces)}
+\subsubsection*{Ràng buộc dữ liệu sprint (Sprints)}
 
 \begin{itemize}
     \item Thuộc tính \texttt{name} phải khác rỗng và có độ dài tối thiểu 3 ký tự, tối đa 100 ký tự.
-    \item Thuộc tính \texttt{owner\_id} phải là UUID hợp lệ và tham chiếu đến một user tồn tại trong hệ thống.
-    \item Thuộc tính \texttt{storage\_limit} phải là số nguyên dương, được tính bằng bytes.
-    \item Thuộc tính \texttt{member\_limit} phải là số nguyên dương trong khoảng từ 1 đến 1000.
-    \item Thuộc tính \texttt{settings} phải là dữ liệu JSON hợp lệ chứa cấu hình LLM provider, AI prompts, và retention policies.
-    \item Thuộc tính \texttt{is\_active} phải là giá trị boolean để quản lý trạng thái active/suspended.
-    \item Thuộc tính \texttt{deleted\_at} cho phép null, sử dụng cho soft delete để có thể khôi phục workspace.
+    \item Thuộc tính \texttt{project\_id} phải là UUID hợp lệ và tham chiếu đến một project tồn tại trong hệ thống.
+    \item Thuộc tính \texttt{status} phải có một trong các giá trị: FUTURE, ACTIVE, CLOSED.
+    \item Thuộc tính \texttt{start\_date} và \texttt{end\_date} phải là ngày hợp lệ, với \texttt{end\_date} sau \texttt{start\_date}.
+    \item Chỉ được phép có tối đa một sprint với status ACTIVE trong mỗi project tại một thời điểm.
+    \item Thuộc tính \texttt{goal} có thể null, nhưng khuyến khích điền để rõ mục tiêu sprint.
 \end{itemize}
 
-\subsubsection*{Ràng buộc dữ liệu thành viên (Members)}
+\subsubsection*{Ràng buộc dữ liệu issue (Issues)}
 
 \begin{itemize}
-    \item Thuộc tính \texttt{user\_id} và \texttt{workspace\_id} phải là UUID hợp lệ, tham chiếu đến các bản ghi tồn tại.
-    \item Cặp (\texttt{user\_id}, \texttt{workspace\_id}) phải duy nhất để tránh duplicate membership.
-    \item Thuộc tính \texttt{role} phải có một trong các giá trị: OWNER, ADMIN, MEMBER.
-    \item Thuộc tính \texttt{permissions} phải là dữ liệu JSONB hợp lệ chứa các quyền chi tiết: read, write, delete, share cho từng resource.
-    \item Thuộc tính \texttt{invitation\_token} phải là chuỗi ngẫu nhiên duy nhất nếu status là 'pending'.
-    \item Thuộc tính \texttt{invitation\_expires\_at} phải là timestamp trong tương lai nếu có \texttt{invitation\_token}.
+    \item Thuộc tính \texttt{title} phải khác rỗng và có độ dài tối thiểu 3 ký tự, tối đa 255 ký tự.
+    \item Thuộc tính \texttt{project\_id} phải là UUID hợp lệ và tham chiếu đến một project tồn tại.
+    \item Thuộc tính \texttt{type} phải có một trong các giá trị: STORY, TASK, BUG, EPIC.
+    \item Thuộc tính \texttt{priority} phải có một trong các giá trị: LOW, MEDIUM, HIGH, CRITICAL.
+    \item Thuộc tính \texttt{status\_id} phải tham chiếu đến một status hợp lệ thuộc cùng project.
+    \item Thuộc tính \texttt{seq\_id} phải là số nguyên dương tự tăng duy nhất trong project.
+    \item Thuộc tính \texttt{sprint\_id} có thể null (issue trong backlog) hoặc tham chiếu đến sprint hợp lệ.
+    \item Thuộc tính \texttt{parent\_id} nếu có phải tham chiếu đến issue khác trong cùng project (để tạo sub-task).
+    \item Thuộc tính \texttt{story\_points} nếu có phải là số thập phân dương.
+    \item Thuộc tính \texttt{sort\_order} phải là số thập phân để hỗ trợ fractional ordering.
 \end{itemize}
 
-\subsubsection*{Ràng buộc dữ liệu files (Files)}
+\subsubsection*{Ràng buộc dữ liệu trạng thái (Issue Statuses)}
 
 \begin{itemize}
-    \item Thuộc tính \texttt{name} phải khác rỗng, có độ dài tối đa 255 ký tự.
-    \item Thuộc tính \texttt{size} phải là số nguyên dương, được tính bằng bytes.
-    \item Thuộc tính \texttt{mime\_type} phải khác rỗng và tuân theo chuẩn MIME type.
-    \item Thuộc tính \texttt{s3\_key} phải là chuỗi duy nhất để truy xuất object trong S3/MinIO.
-    \item Thuộc tính \texttt{version} phải là số nguyên dương, khởi tạo bằng 1 và tăng dần khi cập nhật file.
-    \item Thuộc tính \texttt{checksum} phải là chuỗi SHA-256 hợp lệ để verify file integrity.
-    \item Thuộc tính \texttt{shared\_with} phải là mảng các UUID hợp lệ tham chiếu đến users.
-    \item Thuộc tính \texttt{deleted\_at} cho phép null, files sẽ bị xóa vĩnh viễn sau 30 ngày kể từ soft delete.
+    \item Thuộc tính \texttt{name} phải khác rỗng và có độ dài tối thiểu 1 ký tự, tối đa 50 ký tự.
+    \item Thuộc tính \texttt{project\_id} phải là UUID hợp lệ tham chiếu đến project.
+    \item Cặp (\texttt{project\_id}, \texttt{name}) phải duy nhất để tránh trùng lặp tên status trong project.
+    \item Thuộc tính \texttt{color} phải là mã màu hex hợp lệ (ví dụ: \#FF0000).
+    \item Thuộc tính \texttt{order} phải là số nguyên dương để sắp xếp các status.
 \end{itemize}
 
-\subsubsection*{Ràng buộc dữ liệu thông báo (Notifications)}
+\subsubsection*{Ràng buộc dữ liệu bình luận (Issue Comments)}
 
 \begin{itemize}
-    \item Thuộc tính \texttt{user\_id} phải là UUID hợp lệ tham chiếu đến user nhận thông báo.
-    \item Thuộc tính \texttt{type} phải có một trong các giá trị định nghĩa: member\_joined, file\_uploaded, mention, settings\_changed, workspace\_locked.
-    \item Thuộc tính \texttt{title} phải khác rỗng, có độ dài tối đa 200 ký tự.
-    \item Thuộc tính \texttt{message} phải khác rỗng, có độ dài tối đa 1000 ký tự.
-    \item Thuộc tính \texttt{metadata} phải là dữ liệu JSONB hợp lệ chứa các entity IDs liên quan.
-    \item Thuộc tính \texttt{delivery\_status} phải có một trong các giá trị: sent, delivered, failed.
+    \item Thuộc tính \texttt{content} phải khác rỗng và có độ dài tối thiểu 1 ký tự.
+    \item Thuộc tính \texttt{issue\_id} phải là UUID hợp lệ tham chiếu đến issue.
+    \item Thuộc tính \texttt{user\_id} phải là UUID hợp lệ tham chiếu đến user tạo comment.
+    \item Content có thể chứa HTML để hỗ trợ rich text formatting.
 \end{itemize}
 
-\subsubsection*{Ràng buộc dữ liệu báo cáo (Reports)}
+\subsubsection*{Ràng buộc dữ liệu lịch sử (Issue Activities)}
 
 \begin{itemize}
-    \item Thuộc tính \texttt{workspace\_id} phải là UUID hợp lệ tham chiếu đến workspace chứa báo cáo.
-    \item Thuộc tính \texttt{title} phải khác rỗng, có độ dài từ 5 đến 200 ký tự.
-    \item Thuộc tính \texttt{content} phải là dữ liệu JSONB hợp lệ chứa sections, insights, recommendations.
-    \item Thuộc tính \texttt{llm\_provider} phải có một trong các giá trị: OpenAI, Anthropic, Google.
-    \item Thuộc tính \texttt{tokens\_used} phải là số nguyên dương để tracking usage.
-    \item Thuộc tính \texttt{version} phải là số nguyên dương, khởi tạo bằng 1.
+    \item Thuộc tính \texttt{field\_name} phải khác rỗng và là tên trường hợp lệ của issue (ví dụ: status, assignee, priority).
+    \item Thuộc tính \texttt{issue\_id} phải tham chiếu đến issue bị thay đổi.
+    \item Thuộc tính \texttt{user\_id} phải tham chiếu đến user thực hiện thay đổi.
+    \item Thuộc tính \texttt{old\_value} và \texttt{new\_value} lưu trữ giá trị trước và sau thay đổi dạng text.
 \end{itemize}
 
-\subsubsection*{Ràng buộc dữ liệu audit log (Audit Logs)}
+\subsubsection*{Ràng buộc dữ liệu phân tích (Project Analytics)}
 
 \begin{itemize}
-    \item Thuộc tính \texttt{entity\_type} phải có một trong các giá trị: user, workspace, file, member, notification, report.
-    \item Thuộc tính \texttt{entity\_id} phải là UUID hợp lệ tham chiếu đến entity bị tác động.
-    \item Thuộc tính \texttt{action} phải có một trong các giá trị: create, update, delete, read.
-    \item Thuộc tính \texttt{changes} phải là dữ liệu JSONB hợp lệ chứa before/after values để audit trail đầy đủ.
-    \item Thuộc tính \texttt{ip\_address} phải là địa chỉ IPv4 hoặc IPv6 hợp lệ.
-    \item Thuộc tính \texttt{created\_at} phải là timestamp chính xác của action, không được null.
+    \item Thuộc tính \texttt{project\_id} phải là UUID hợp lệ tham chiếu đến project.
+    \item Thuộc tính \texttt{date} phải là ngày hợp lệ, duy nhất cho mỗi project.
+    \item Các thuộc tính \texttt{issues\_created}, \texttt{issues\_resolved}, \texttt{issues\_in\_progress} phải là số nguyên không âm.
 \end{itemize}
 
-\subsubsection*{Ràng buộc chung cho toàn hệ thống}
+\subsubsection*{Ràng buộc chung cho phân hệ quản lý dự án}
 
 \begin{itemize}
     \item Mọi bảng phải có primary key là UUID để tránh enumeration attacks và đảm bảo tính duy nhất.
     \item Mọi bảng phải có \texttt{created\_at} và \texttt{updated\_at} timestamps để tracking thời gian tạo và cập nhật.
-    \item Các bảng quan trọng phải có \texttt{deleted\_at} timestamp để support soft delete, cho phép khôi phục dữ liệu.
-    \item Foreign key constraints phải được enforce với ON DELETE CASCADE hoặc RESTRICT tùy theo business logic.
-    \item Các trường chứa dữ liệu nhạy cảm (password, tokens, API keys) phải được mã hóa trước khi lưu vào database.
-    \item Dữ liệu JSONB phải được validate schema trước khi lưu để đảm bảo tính toàn vẹn và nhất quán.
+    \item Foreign key constraints phải được enforce với ON DELETE CASCADE cho các quan hệ phụ thuộc (ví dụ: xóa project sẽ xóa toàn bộ issues, sprints).
+    \item Các giá trị enum (type, priority, status) phải được kiểm tra strict để đảm bảo chỉ chứa các giá trị được định nghĩa.
     \item Tất cả các trường bắt buộc (NOT NULL) phải được validate ở application layer trước khi insert/update.
-    \item Các giá trị enum phải được kiểm tra strict để đảm bảo chỉ chứa các giá trị được định nghĩa.
+    \item Dữ liệu phải được tổ chức theo organization để đảm bảo data isolation giữa các tổ chức.
+    \item Mọi thay đổi quan trọng trên issue phải được ghi lại trong bảng \texttt{issue\_activities} để đảm bảo audit trail đầy đủ.
+    \item Thứ tự sắp xếp (sort\_order) sử dụng fractional indexing để cho phép re-ordering linh hoạt mà không cần update nhiều records.
+    \item Mỗi project chỉ được phép có tối đa một sprint ở trạng thái ACTIVE tại một thời điểm.
 \end{itemize}
