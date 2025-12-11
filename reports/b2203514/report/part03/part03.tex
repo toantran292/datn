@@ -1,0 +1,55 @@
+% !TEX root = ../main.tex
+
+% Reset numbering for Part 3
+\renewcommand{\thesubsection}{\arabic{section}.\arabic{subsection}}
+\setcounter{section}{0}
+\setcounter{subsection}{0}
+
+\phantomsection
+\addcontentsline{toc}{section}{Phần 3: KẾT LUẬN}
+\section*{Phần 3: KẾT LUẬN}
+
+\phantomsection
+\addcontentsline{toc}{subsection}{1. Kết quả đạt được}
+\subsection*{1. Kết quả đạt được}
+
+\subsubsection*{1.1. Về lý thuyết}
+
+\begin{itemize}
+    \item Rèn luyện được kỹ năng giải quyết vấn đề, đọc hiểu tài liệu và tra cứu thông tin kỹ thuật.
+    \item Nâng cao được khả năng tư duy, phân tích và thiết kế cơ sở dữ liệu quan hệ.
+    \item Học hỏi thêm kiến thức về các công nghệ hiện đại như NestJS, Next.js, PostgreSQL, và các dịch vụ cloud như MinIO/S3.
+    \item Hiểu được quy trình phát triển ứng dụng web theo mô hình SaaS (Software as a Service) và kiến trúc multi-tenant.
+    \item Tìm hiểu và áp dụng được các API của các nhà cung cấp LLM như OpenAI, Anthropic, và Google vào việc tạo báo cáo AI tự động.
+    \item Nghiên cứu và hiểu rõ hơn về các phương pháp xác thực và phân quyền trong hệ thống web, bao gồm JWT, OAuth 2.0 và RBAC (Role-Based Access Control).
+\end{itemize}
+
+\subsubsection*{1.2. Về chương trình}
+
+\begin{itemize}
+    \item Phát triển thành công một nền tảng SaaS quản lý dự án hoàn chỉnh trên nền tảng công nghệ NestJS và Next.js, đáp ứng đầy đủ nhu cầu quản lý workspace, thành viên, tệp tin và báo cáo AI. Giao diện được thiết kế trực quan theo phong cách Linear/Stripe, thân thiện, tối ưu cho cả máy tính và thiết bị di động, mang lại trải nghiệm mượt mà cho người dùng.
+    \item Về phía người dùng, hệ thống cho phép thực hiện các thao tác từ đăng ký, đăng nhập, quản lý thông tin cá nhân đến tạo workspace, mời thành viên, upload/download tệp tin và tạo báo cáo AI. Đặc biệt, người dùng có thể tận dụng sức mạnh của các mô hình ngôn ngữ lớn (LLM) để tự động tạo báo cáo tổng hợp hoạt động của workspace.
+    \item Về phía quản trị, ứng dụng hỗ trợ quản lý workspace, thành viên, audit log. Đối với Super Admin, ngoài các quyền của Owner, còn có khả năng quản lý toàn bộ hệ thống, khóa/mở khóa workspace vi phạm chính sách.
+    \item Hệ thống được tích hợp lưu trữ tệp tin qua MinIO/S3, giúp quản lý và phân phối tệp tin an toàn và hiệu quả. Một điểm nổi bật khác là tính năng tạo báo cáo AI, cho phép người dùng chọn LLM Provider (OpenAI, Anthropic, Google) để tạo báo cáo tự động dựa trên dữ liệu hoạt động của workspace. Nhìn chung, ứng dụng không chỉ đáp ứng đầy đủ các chức năng quản lý dự án cơ bản mà còn mang lại những trải nghiệm hiện đại và tiện ích, tạo sự khác biệt so với các nền tảng quản lý dự án truyền thống.
+\end{itemize}
+
+\subsubsection*{1.3. Về vận dụng thực tế}
+
+\begin{itemize}
+    \item Kết quả của quá trình kiểm thử và đánh giá cũng cho thấy, ứng dụng web có khả năng hoạt động một cách ổn định và hiệu quả. Nhìn chung, "Xây dựng Nền tảng SaaS tích hợp AI nhằm Thống nhất Quản lý Dự án Agile" đã được xây dựng thành công và đáp ứng đầy đủ các chức năng cốt lõi của một hệ thống quản lý dự án, bao gồm quản lý workspace, thành viên, tệp tin và báo cáo AI. Bên cạnh đó, giao diện được thiết kế hiện đại, trực quan, giúp người dùng dễ dàng thao tác và quản lý công việc.
+    \item Điểm nổi bật của ứng dụng là tính năng tích hợp AI để tạo báo cáo tự động, cho phép người dùng nhanh chóng có được cái nhìn tổng quan về hoạt động của workspace mà không cần tốn nhiều thời gian tổng hợp thủ công. Ngoài ra, ứng dụng còn được tích hợp các tính năng nâng cao trải nghiệm người dùng như hệ thống thông báo real-time, audit log để theo dõi lịch sử hoạt động, và phân quyền linh hoạt theo vai trò.
+    \item Với những ưu điểm này, hệ thống hoàn toàn có thể triển khai trong thực tế để phục vụ các nhóm làm việc, startup, doanh nghiệp vừa và nhỏ trong việc quản lý dự án và cộng tác nhóm. Hệ thống cũng có thể mở rộng sang các lĩnh vực khác như quản lý tài liệu, quản lý kiến thức nội bộ, tạo ra trải nghiệm thú vị và chuyên nghiệp cho người dùng.
+\end{itemize}
+
+\phantomsection
+\addcontentsline{toc}{subsection}{2. Hướng phát triển}
+\subsection*{2. Hướng phát triển}
+
+\begin{itemize}
+    \item Tích hợp thêm các tính năng quản lý dự án Agile như Kanban board, Sprint planning, Backlog management để hỗ trợ đầy đủ quy trình phát triển phần mềm theo phương pháp Agile/Scrum. Trong tương lai, có thể tích hợp các công cụ CI/CD để tự động hóa quy trình deploy và testing.
+    \item Các phương thức thanh toán nội địa như VNPay, MoMo, và ZaloPay sẽ được tích hợp cùng với Stripe nhằm đáp ứng tốt hơn thói quen thanh toán của người dùng Việt Nam. Hệ thống cũng sẽ triển khai tính năng đăng nhập nhanh qua tài khoản Google và GitHub để giúp người dùng đăng ký và truy cập tiện lợi hơn.
+    \item Phát triển thêm các loại báo cáo AI đa dạng hơn như phân tích tiến độ dự án, dự đoán rủi ro, đề xuất cải thiện quy trình làm việc. Tích hợp chatbot AI để hỗ trợ người dùng tương tác và truy vấn thông tin nhanh chóng.
+    \item Xây dựng ứng dụng mobile native cho iOS và Android sử dụng React Native hoặc Flutter để người dùng có thể quản lý công việc mọi lúc mọi nơi.
+    \item Tích hợp với các công cụ phổ biến như Slack, Microsoft Teams, Jira, Trello để đồng bộ dữ liệu và thông báo, giúp người dùng không cần chuyển đổi giữa nhiều ứng dụng.
+    \item Phát triển tính năng Analytics dashboard với các biểu đồ trực quan để theo dõi hiệu suất làm việc của team, thống kê thời gian hoàn thành task, và đánh giá năng suất thành viên.
+\end{itemize}

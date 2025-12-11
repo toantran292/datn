@@ -1,0 +1,249 @@
+\paragraph{UC06: Xem Báo cáo AI Tổng hợp}
+\mbox{}
+
+% UC06.1 - Xem báo cáo tổng hợp
+\textbf{UC06.1 - Xem báo cáo tổng hợp}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc06_1_view_ai_report.png}
+    \caption{Sơ đồ use case chức năng xem báo cáo tổng hợp}
+    \label{fig:uc06_1_view_ai_report}
+\end{figure}
+
+\begin{adjustwidth}{-1.5cm}{-0.5cm}
+\begin{longtblr}[
+    caption = {Đặc tả use case UC06.1 - Xem báo cáo tổng hợp},
+    label = {tab:uc06_1},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Xem báo cáo tổng hợp} \\\hline
+ID & UC06.1 \\\hline
+Người sử dụng & Workspace Owner, Member \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Cao \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{User:} Muốn xem báo cáo được AI tổng hợp từ các nguồn dữ liệu. \\
+    + \textbf{LLM Provider:} Cung cấp khả năng phân tích và tổng hợp nội dung.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Chức năng hiển thị báo cáo được AI tổng hợp từ meetings, chats, và tệp tin. \\\hline
+Trigger & User truy cập trang AI Reports. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User truy cập AI Reports.
+        \item Hệ thống hiển thị danh sách báo cáo (daily, weekly...).
+        \item User chọn loại báo cáo.
+        \item Hệ thống tổng hợp từ các nguồn (meetings, chats, files).
+        \item Hệ thống gọi AI phân tích (Include UC06.4).
+        \item Hệ thống hiển thị báo cáo với insights.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & Include UC06.4 (Truy vấn LLM Provider). \\\hline
+Luồng luân phiên/đặc biệt &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textcolor{red}{+ E1: Chưa cấu hình LLM Provider → Hiển thị hướng dẫn cấu hình.} \\
+    \textcolor{red}{+ E2: LLM Provider không phản hồi → Hiển thị lỗi và cho phép thử lại.}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & User xem được báo cáo AI tổng hợp với insights hữu ích. \\\hline
+\end{longtblr}
+\end{adjustwidth}
+
+\vspace{1em}
+
+% UC06.2 - Tạo báo cáo tùy chỉnh
+\textbf{UC06.2 - Tạo báo cáo tùy chỉnh}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc06_2_create_custom_report.png}
+    \caption{Sơ đồ use case chức năng tạo báo cáo tùy chỉnh}
+    \label{fig:uc06_2_create_custom_report}
+\end{figure}
+
+\begin{adjustwidth}{-1.5cm}{-0.5cm}
+\begin{longtblr}[
+    caption = {Đặc tả use case UC06.2 - Tạo báo cáo tùy chỉnh},
+    label = {tab:uc06_2},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Tạo báo cáo tùy chỉnh} \\\hline
+ID & UC06.2 \\\hline
+Người sử dụng & Workspace Owner \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Cao \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{Workspace Owner:} Muốn tạo báo cáo AI theo yêu cầu cụ thể. \\
+    + \textbf{LLM Provider:} Xử lý yêu cầu phân tích tùy chỉnh.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Owner tạo báo cáo AI tùy chỉnh với prompt và nguồn dữ liệu. \\\hline
+Trigger & Owner chọn "Tạo báo cáo mới" trong AI Reports. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item Owner chọn "Tạo báo cáo mới".
+        \item Hệ thống hiển thị wizard.
+        \item Owner chọn nguồn (meetings, chats, files).
+        \item Owner chọn khoảng thời gian.
+        \item Owner nhập prompt cụ thể.
+        \item Owner nhấn "Tạo báo cáo".
+        \item Hệ thống collect dữ liệu.
+        \item Hệ thống gọi AI phân tích (Include UC06.4).
+        \item Hệ thống lưu và hiển thị báo cáo.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & Include UC06.4 (Truy vấn LLM Provider). \\\hline
+Luồng luân phiên/đặc biệt &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textcolor{red}{+ E1: Không đủ dữ liệu → Gợi ý mở rộng phạm vi.} \\
+    \textcolor{red}{+ E2: Prompt phức tạp → Gợi ý chia nhỏ.}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Báo cáo tùy chỉnh được tạo và lưu để xem lại sau. \\\hline
+\end{longtblr}
+\end{adjustwidth}
+
+\vspace{1em}
+
+% UC06.3 - Xuất báo cáo
+\textbf{UC06.3 - Xuất báo cáo}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc06_3_export_report.png}
+    \caption{Sơ đồ use case chức năng xuất báo cáo}
+    \label{fig:uc06_3_export_report}
+\end{figure}
+
+\begin{adjustwidth}{-1.5cm}{-0.5cm}
+\begin{longtblr}[
+    caption = {Đặc tả use case UC06.3 - Xuất báo cáo},
+    label = {tab:uc06_3},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Xuất báo cáo} \\\hline
+ID & UC06.3 \\\hline
+Người sử dụng & Workspace Owner, Member \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia & + \textbf{User:} Muốn xuất báo cáo để chia sẻ hoặc lưu trữ. \\\hline
+Mô tả tóm tắt & Chức năng export báo cáo AI sang các định dạng phổ biến. \\\hline
+Trigger & User chọn "Xuất báo cáo" cho một báo cáo đã tạo. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User chọn "Xuất báo cáo".
+        \item Hệ thống hiển thị options định dạng (PDF, DOCX, MD, HTML).
+        \item User chọn định dạng mong muốn.
+        \item User nhấn "Xuất".
+        \item Hệ thống render báo cáo theo định dạng.
+        \item Hệ thống tạo file và trigger download.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng luân phiên/đặc biệt &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textcolor{red}{+ A1: Chia sẻ qua email → Gửi báo cáo đến email.}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Báo cáo được xuất và download về máy user. \\\hline
+\end{longtblr}
+\end{adjustwidth}
+
+\vspace{1em}
+
+% UC06.4 - Truy vấn LLM Provider
+\textbf{UC06.4 - Truy vấn LLM Provider}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc06_4_query_llm.png}
+    \caption{Sơ đồ use case chức năng truy vấn LLM Provider}
+    \label{fig:uc06_4_query_llm}
+\end{figure}
+
+\begin{adjustwidth}{-1.5cm}{-0.5cm}
+\begin{longtblr}[
+    caption = {Đặc tả use case UC06.4 - Truy vấn LLM Provider},
+    label = {tab:uc06_4},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Truy vấn LLM Provider} \\\hline
+ID & UC06.4 \\\hline
+Người sử dụng & LLM Provider \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Cao \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{System:} Cần gửi request đến AI để phân tích dữ liệu. \\
+    + \textbf{LLM Provider:} Xử lý request và trả về kết quả phân tích.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Hệ thống giao tiếp với LLM Provider (OpenAI, Anthropic) để xử lý AI. \\\hline
+Trigger & Được gọi từ UC06.1, UC06.2. \\\hline
+Kiểu sự kiện & Internal. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item Hệ thống chuẩn bị prompt.
+        \item Hệ thống gửi request đến LLM API (dùng API key).
+        \item LLM Provider xử lý request.
+        \item LLM Provider trả response.
+        \item Hệ thống parse response.
+        \item Hệ thống ghi log.
+        \item Hệ thống trả kết quả về UC gọi.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & Include bởi UC06.1, UC06.2. \\\hline
+Luồng luân phiên/đặc biệt &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textcolor{red}{+ E1: Timeout → Retry tối đa 3 lần.} \\
+    \textcolor{red}{+ E2: Rate limit → Queue và retry sau.} \\
+    \textcolor{red}{+ E3: Invalid key → Thông báo Owner.}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Hệ thống nhận được response từ AI để sử dụng trong báo cáo. \\\hline
+\end{longtblr}
+\end{adjustwidth}

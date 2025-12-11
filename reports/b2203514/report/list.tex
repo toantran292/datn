@@ -1,0 +1,32 @@
+\addtocontents{toc}{\protect\thispagestyle{empty}}
+\renewcommand{\contentsname}{MỤC LỤC}
+\tableofcontents
+\thispagestyle{empty}
+\cleardoublepage
+
+% \pagenumbering{roman}
+% ======= SET UP LIST OF FIGURES =======
+\setlength{\cftfigindent}{0pt}
+\setlength{\cftfignumwidth}{4em}
+\renewcommand{\cftfigdotsep}{1.5}
+\renewcommand{\figurename}{\fontsize{12pt}{0pt}\selectfont Hình}
+\renewcommand{\thefigure}{\thesection.\arabic{figure}}
+\renewcommand{\cftfigpresnum}{\figurename~}
+\renewcommand{\listfigurename}{DANH MỤC HÌNH}
+\phantomsection
+\addcontentsline{toc}{section}{DANH MỤC HÌNH}
+\listoffigures
+\cleardoublepage
+
+% ======= SET UP LIST OF TABLES =======
+\setlength{\cfttabindent}{0pt}
+\setlength{\cfttabnumwidth}{4em}
+\renewcommand{\cfttabdotsep}{1.5}
+\renewcommand{\tablename}{\fontsize{12pt}{0pt}\selectfont Bảng}
+\renewcommand{\thetable}{\thesection.\arabic{table}}
+\renewcommand{\cfttabpresnum}{\tablename~}
+\renewcommand{\listtablename}{DANH MỤC BẢNG}
+\phantomsection
+\addcontentsline{toc}{section}{DANH MỤC BẢNG}
+\listoftables
+\cleardoublepage

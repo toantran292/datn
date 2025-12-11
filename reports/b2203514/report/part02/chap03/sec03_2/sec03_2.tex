@@ -1,0 +1,94 @@
+\subsection{Kiến trúc hệ thống}
+
+
+\subsubsection{Thiết kế kiến trúc tổng thể}
+
+Hệ thống được thiết kế theo mô hình microservices architecture với sự phân tách rõ ràng giữa frontend, backend services, và infrastructure components. Kiến trúc tổng thể tuân theo các nguyên tắc: Separation of Concerns với mỗi service có trách nhiệm cụ thể độc lập, API-First Design sử dụng RESTful APIs và WebSocket cho communication, Stateless Services với state được lưu trong PostgreSQL và Redis, Single Entry Point qua Nginx API Gateway, và Data Isolation hoàn toàn cho mỗi workspace thông qua workspace\_id.
+
+Các thành phần chính trong kiến trúc bao gồm: Client Layer với web browsers (desktop và mobile) truy cập qua HTTPS, Edge Layer với Nginx reverse proxy xử lý SSL termination và load balancing, Application Layer gồm Frontend (Next.js) và Backend Services (Spring Boot + NestJS), Data Layer với PostgreSQL, Redis, và MinIO/S3, và External Services như Google OAuth cùng các LLM Providers (OpenAI, Anthropic, Google).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{images/system_architecture.png}
+\caption{Sơ đồ kiến trúc hệ thống tổng quát}
+\label{fig:system_architecture}
+\end{figure}
+
+\subsubsection{Mô hình phân lớp (Layered Architecture)}
+
+Mỗi backend service được tổ chức theo mô hình 3-layer architecture với các layer sau:
+
+\begin{itemize}
+    \item \textbf{Presentation Layer (Controllers/Handlers):} Nhận HTTP requests từ clients qua REST endpoints, validate request data với DTOs (Data Transfer Objects), route requests đến Service Layer để xử lý business logic, format responses trả về clients (JSON format), và handle exceptions với appropriate HTTP status codes.
+
+    \item \textbf{Business Logic Layer (Services):} Implement business rules và workflows của ứng dụng, orchestrate operations giữa nhiều entities, call external services (LLM APIs, Storage APIs) khi cần thiết, validate business rules phức tạp (check permissions trước khi allow actions), và transaction management để đảm bảo data consistency.
+
+    \item \textbf{Data Access Layer (Repositories):} Tương tác với database qua ORM (Prisma hoặc Spring Data JPA), execute CRUD operations trên database tables, thực hiện complex queries với joins, filtering, pagination, cache management với Redis cho frequently accessed data, và database transaction handling.
+\end{itemize}
+
+\subsubsection{Mô tả sự phân rã}
+
+Hệ thống được phân rã theo hai chiều: phân rã theo nhóm người dùng và phân rã theo chức năng của từng nhóm, được thể hiện qua các sơ đồ sau:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{images/user_groups.png}
+\caption{Sơ đồ nhóm đối tượng người dùng}
+\label{fig:user_groups}
+\end{figure}
+
+Mỗi nhóm người dùng có các chức năng riêng biệt tương ứng với vai trò và quyền hạn được thể hiện qua các sơ đồ phân rã chức năng:
+
+\textbf{Phân rã chức năng của Guest:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{images/func_guest.png}
+\caption{Sơ đồ phân rã chức năng của Guest}
+\label{fig:func_guest}
+\end{figure}
+
+\textbf{Phân rã chức năng của Member:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{images/func_member.png}
+\caption{Sơ đồ phân rã chức năng của Member}
+\label{fig:func_member}
+\end{figure}
+
+\textbf{Phân rã chức năng của Workspace Owner:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{images/func_owner.png}
+\caption{Sơ đồ phân rã chức năng của Workspace Owner}
+\label{fig:func_owner}
+\end{figure}
+
+\textbf{Phân rã chức năng của Super Admin:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{images/func_admin.png}
+\caption{Sơ đồ phân rã chức năng của Super Admin}
+\label{fig:func_admin}
+\end{figure}
+
+\subsubsection{Cơ sở thiết kế}
+
+Mô hình kiến trúc phân lớp (Layered Architecture) là một kiến trúc phần mềm phổ biến, được sử dụng rộng rãi trong phát triển ứng dụng web và các hệ thống hiện đại. Mô hình này chia ứng dụng thành các lớp riêng biệt: Presentation (Controller), Business Logic (Service), và Data Access (Repository), giúp hệ thống dễ bảo trì, mở rộng, và phân chia công việc hiệu quả giữa các nhóm phát triển.
+
+Ưu điểm của mô hình kiến trúc phân lớp: Các thành phần Presentation, Business Logic và Data Access có thể được xây dựng, kiểm thử và bảo trì độc lập với nhau. Việc thay đổi logic nghiệp vụ (Service) không ảnh hưởng đến giao diện (Controller), và ngược lại, giúp giảm rủi ro khi cập nhật hệ thống. Nhóm phát triển có thể chia ra phụ trách riêng từng phần, ví dụ: frontend developer tập trung vào View, backend developer xử lý Controller và Service, giúp đẩy nhanh tiến độ và giảm xung đột công việc. Việc chia nhỏ logic theo từng lớp giúp việc viết kiểm thử đơn vị (unit test) trở nên dễ dàng hơn và chính xác hơn. Các phần tử trong mô hình như thành phần xử lý workspace, users, files có thể tái sử dụng lại trong các tính năng khác. Cải thiện bảo mật: Do các phần được tách biệt, dữ liệu có thể được xử lý và kiểm tra chặt chẽ trước khi hiển thị ra View, giúp hạn chế lộ thông tin hoặc lỗi bảo mật.
+
+Nhược điểm: Với các dự án nhỏ, áp dụng mô hình phân lớp có thể gây phức tạp không cần thiết, làm tăng thời gian phát triển ban đầu. Để sử dụng hiệu quả mô hình này, đội ngũ phát triển cần có sự hiểu biết rõ ràng về nguyên lý hoạt động của từng thành phần và cách phối hợp chúng. Việc cấu hình một dự án sử dụng mô hình phân lớp (đặc biệt kết hợp các công nghệ như React, Spring Boot, NestJS, Prisma) có thể tốn thời gian hơn so với các framework nhỏ gọn.
+
+Với các đặc điểm như cần tích hợp AI tạo báo cáo, quản lý workspace đa cấp, phân quyền người dùng, và khả năng mở rộng, thì việc áp dụng mô hình kiến trúc phân lớp kết hợp Microservices trong xây dựng hệ thống SaaS Platform là hoàn toàn hợp lý. Kiến trúc này không chỉ giúp hệ thống dễ mở rộng, dễ bảo trì mà còn phù hợp để làm việc theo nhóm và phát triển chuyên nghiệp trong dài hạn.
+
+Tại sao chọn microservices thay vì monolithic? Scalability là lý do quan trọng vì các services như File Service và Report Service cần scale nhiều hơn Account Service, và Microservices cho phép scale từng service độc lập. Technology Fit cũng là yếu tố quyết định khi Spring Boot phù hợp cho Account Service với ecosystem Java mạnh cho enterprise authentication và Spring Security mature, trong khi NestJS phù hợp cho các services khác với Node.js performance, TypeScript type safety, và WebSocket support tốt. Team Organization được cải thiện khi các teams có thể work độc lập trên các services khác nhau. Deployment Flexibility cho phép deploy và update từng service mà không ảnh hưởng đến toàn hệ thống.
+
+Tại sao sử dụng Nginx làm API Gateway? Performance là ưu điểm nổi bật với Nginx event-driven architecture xử lý hàng chục nghìn concurrent connections với mini\-mal resources. SSL Termination xử lý HTTPS encryption/decryption tại edge, backends chỉ cần HTTP. Load Balancing distribute traffic across multiple instances của mỗi service. Caching cho static assets và API responses để giảm load. Security với rate limiting, request filtering, CORS configuration tập trung.
+
+Tại sao kết hợp PostgreSQL và Redis? PostgreSQL là ACID-compliant, reliable cho persistent data như users, workspaces, files metadata, hỗ trợ complex queries, transac\-tions, foreign keys. Redis là in-memory, cực nhanh cho session storage, caching frequently accessed data (workspace settings, user permissions), hỗ trợ Pub/Sub cho real-time features. Complementary khi PostgreSQL làm "source of truth", Redis làm performance optimization.
+
+Tại sao MinIO cho development và S3 cho production? S3-Compatible API với MinIO 100\% compatible với AWS S3 API, cho phép dùng cùng codebase cho dev và prod. Development với MinIO chạy local trong Docker, không cần AWS account, costs zero, fast iteration. Production với AWS S3 cung cấp 99.999999999\% durability, global availability, managed service không cần maintain infrastructure. Seamless Transition khi switch giữa MinIO và S3 chỉ cần change endpoint configuration.

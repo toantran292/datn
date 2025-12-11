@@ -1,0 +1,78 @@
+\phantomsection
+\subsection*{5. Quy trình nghiên cứu và Công nghệ sử dụng}
+\addcontentsline{toc}{subsection}{5. Quy trình nghiên cứu và Công nghệ sử dụng}
+\setcounter{subsection}{5}
+\setcounter{subsubsection}{0}
+\setcounter{figure}{0}
+
+\subsubsection{Quy trình nghiên cứu}
+
+\begin{itemize}
+    \item Tìm hiểu lý thuyết về quản lý dự án theo phương pháp Agile, cách tổ chức team, quy trình backlog -- sprint -- release và nhu cầu theo dõi tiến độ, cảnh báo rủi ro, báo cáo tổng hợp trong doanh nghiệp.
+
+    \item Khảo sát và phân tích một số nền tảng và công cụ tiêu biểu như Jira, Notion, Slack, Microsoft Teams, Base.vn,… để rút ra ưu điểm, hạn chế và xác định khoảng trống về một lớp truyền thông thống nhất.
+
+    \item Xác định yêu cầu và mục tiêu cho phân hệ truyền thông: quản lý tài khoản, workspace, phân quyền, lưu trữ tệp dùng chung, quản lý thông báo tập trung và xây dựng AI Service đóng vai trò điều phối, tổng hợp thông tin từ các phân hệ chức năng.
+
+    \item Phân tích, lựa chọn mô hình kiến trúc phù hợp: kiến trúc microservice với lớp edge làm cổng vào hệ thống, Account Service chuyên trách tài khoản và các service còn lại xử lý thông báo, file, AI,… Riêng AI Service được thiết kế theo mô hình Orchestrator để gọi và tổng hợp dữ liệu từ các phân hệ khác (quản lý dự án, truyền thông, họp trực tuyến).
+
+    \item Thiết kế kiến trúc hệ thống chi tiết theo hướng nhiều dịch vụ:
+    \begin{itemize}
+        \item Edge sử dụng Nginx đóng vai trò API Gateway, chịu trách nhiệm định tuyến, bảo vệ backend và thực hiện kiểm tra xác thực cơ bản.
+        \item Account Service dùng Spring Boot để xử lý đăng ký, đăng nhập, quản lý người dùng và vai trò.
+        \item Các service nền tảng còn lại dùng NestJS để xử lý nghiệp vụ (Notification, File-Storage, Tenant BFF).
+        \item AI Service dùng NestJS, đóng vai trò trung gian gọi API đến các phân hệ chức năng, thu thập kết quả và sử dụng LLM để tổng hợp thành báo cáo thống nhất.
+    \end{itemize}
+
+    \item Thiết kế cơ sở dữ liệu cho các nhóm chức năng chính: người dùng, workspace, vai trò, phân quyền, thông báo và metadata tệp; bảo đảm đáp ứng nhu cầu truy vấn và khả năng mở rộng theo mô hình multi-tenant.
+
+    \item Thiết kế giao diện người dùng cho trang admin bằng Next.js: xác định luồng thao tác, bố cục màn hình, cách trình bày báo cáo tổng hợp từ AI, danh sách thông báo và các trang cấu hình workspace.
+
+    \item Xây dựng và hoàn thiện các chức năng của hệ thống theo từng giai đoạn:
+    \begin{itemize}
+        \item Hoàn thiện lớp edge với Nginx, cấu hình route, bảo mật cơ bản và cơ chế xác thực HMAC.
+        \item Phát triển Account Service, các service NestJS và giao diện Next.js.
+        \item Xây dựng AI Service với khả năng gọi song song API đến các phân hệ chức năng và tổng hợp kết quả.
+        \item Thiết kế API contract thống nhất giữa AI Service và các phân hệ để đảm bảo tính nhất quán khi trao đổi dữ liệu.
+    \end{itemize}
+
+    \item Tích hợp AI Service với API của nhà cung cấp mô hình ngôn ngữ lớn (LLM) để thực hiện tóm tắt, tổng hợp thông tin từ nhiều nguồn; xây dựng các loại báo cáo mẫu như báo cáo tuần, tóm tắt hoạt động, cảnh báo rủi ro hiển thị trên trang admin.
+
+    \item Thực hiện kiểm thử chức năng, kiểm thử tích hợp giữa các service và đánh giá toàn hệ thống dựa trên các tiêu chí: đáp ứng yêu cầu, tính ổn định, khả năng mở rộng, thời gian phản hồi của AI Service và chất lượng thông tin tổng hợp.
+\end{itemize}
+
+\subsubsection{Công nghệ sử dụng}
+
+\begin{itemize}
+    \item \textbf{Nginx}: sử dụng làm lớp edge/API Gateway cho toàn hệ thống, thực hiện reverse proxy, định tuyến request đến các service phía sau, cấu hình SSL và kiểm tra xác thực cơ bản trước khi cho phép truy cập. Edge cũng là nơi gắn thông tin người dùng vào request và dùng chữ ký HMAC để đảm bảo request gửi đến từ cổng hợp lệ.
+
+    \item \textbf{Spring Boot}: dùng để xây dựng Account Service, xử lý các chức năng đăng ký, đăng nhập, quản lý tài khoản, vai trò và phân quyền; cung cấp API để edge kiểm tra trạng thái đăng nhập của người dùng.
+
+    \item \textbf{NestJS (Node.js)}: sử dụng để xây dựng các service nền tảng còn lại như Notification Service, File-Storage Service, Tenant BFF và AI Service nhờ kiến trúc module rõ ràng, hỗ trợ TypeScript và dễ dàng mở rộng. NestJS cũng hỗ trợ tốt việc gọi HTTP song song và xử lý bất đồng bộ cần thiết cho AI Service.
+
+    \item \textbf{PostgreSQL}: cơ sở dữ liệu quan hệ lưu trữ thông tin người dùng, workspace, vai trò, cấu hình, thông báo và metadata tệp; bảo đảm tính toàn vẹn dữ liệu và hỗ trợ tốt cho mô hình multi-tenant.
+
+    \item \textbf{Redis}: lưu trữ dữ liệu tạm thời, cache kết quả từ các phân hệ và kết quả tổng hợp của AI để giảm số lần gọi API và tăng tốc độ phản hồi. Redis còn được sử dụng làm backend cho hàng đợi xử lý bất đồng bộ.
+
+    \item \textbf{BullMQ}: thư viện message queue dựa trên Redis, dùng để xử lý các tác vụ AI bất đồng bộ như tạo báo cáo tổng hợp, gửi thông báo hàng loạt mà không block request chính từ người dùng.
+
+    \item \textbf{MinIO (S3-compatible)}: kho lưu trữ tệp tương thích S3, dùng để lưu trữ tệp đính kèm (tài liệu dự án, biên bản họp, file chia sẻ), đảm bảo an toàn, dễ mở rộng và dễ tích hợp với các service NestJS.
+
+    \item \textbf{OpenAI API / LLM Service}: sử dụng API của nhà cung cấp mô hình ngôn ngữ lớn (ví dụ OpenAI GPT-4o-mini) để xử lý các tác vụ tóm tắt, tổng hợp thông tin từ nhiều nguồn và trả lời câu hỏi. AI Service đóng vai trò orchestrator, thu thập dữ liệu từ các phân hệ rồi gửi đến LLM để tạo báo cáo thống nhất.
+
+    \item \textbf{Next.js (React)}: dùng để xây dựng giao diện web cho trang admin và trang cấu hình workspace, tận dụng khả năng kết hợp SSR/CSR để tối ưu hiệu năng và trải nghiệm người dùng.
+
+    \item \textbf{Tailwind CSS và shadcn/ui}: hỗ trợ thiết kế giao diện hiện đại, nhất quán, dễ tùy biến theo nhu cầu của từng màn hình quản trị.
+
+    \item \textbf{Axios}: dùng trên cả frontend và backend (trong AI Service) để giao tiếp HTTP với các endpoint, hỗ trợ gọi song song nhiều API và xử lý timeout hiệu quả.
+\end{itemize}
+
+\subsubsection{Công cụ hỗ trợ xây dựng và phát triển}
+
+\begin{itemize}
+    \item Công cụ lập trình: Visual Studio Code, Cursor.
+    \item Công cụ quản lý và truy vấn cơ sở dữ liệu: DataGrip.
+    \item Công cụ kiểm thử API: Postman.
+    \item Công cụ container hóa và triển khai: Docker, Docker Compose.
+    \item Công cụ quản lý mã nguồn: Git, GitHub.
+\end{itemize}

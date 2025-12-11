@@ -1,0 +1,454 @@
+\paragraph{UC01: Quản lý tài khoản và xác thực}
+\mbox{}
+
+\textbf{UC01.1 - Đăng ký}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc01_1_register.png}
+    \caption{Sơ đồ use case chức năng đăng ký}
+    \label{fig:uc01_1_register}
+\end{figure}
+
+\begin{adjustwidth}{-1.5cm}{-0.5cm}
+\begin{longtblr}[
+    caption = {Đặc tả use case UC01.1 - Đăng ký},
+    label = {tab:uc01_1}
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Đăng ký} \\\hline
+ID & UC01.1 \\\hline
+Người sử dụng & User \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Cao \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{User:} Muốn tạo tài khoản mới để truy cập hệ thống. \\
+    + \textbf{Email Service:} Gửi email xác thực cho user.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Cho phép người dùng tạo tài khoản mới bằng email/mật khẩu hoặc Google OAuth. \\\hline
+Trigger & User truy cập trang đăng ký. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User truy cập trang đăng ký.
+        \item Hệ thống hiển thị form với các trường: tên, email, mật khẩu, xác nhận mật khẩu.
+        \item User nhập thông tin và nhấn "Đăng ký".
+        \item Hệ thống kiểm tra: email hợp lệ, mật khẩu đủ mạnh (tối thiểu 8 ký tự), mật khẩu khớp.
+        \item Hệ thống kiểm tra email chưa được đăng ký.
+        \item Hệ thống mã hóa mật khẩu (bcrypt).
+        \item Hệ thống tạo bản ghi user mới với is\_verified = false.
+        \item Hệ thống tạo verification token và gửi email xác thực.
+        \item Hệ thống hiển thị thông báo: "Đăng ký thành công. Vui lòng kiểm tra email để xác thực tài khoản."
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & Include UC01.7 (Xác thực tài khoản). \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{A1}} -- Đăng ký bằng Google OAuth: User nhấn "Đăng ký với Google", hệ thống chuyển đến Google OAuth, user chọn tài khoản, hệ thống nhận thông tin và tạo user với is\_verified = true, tạo session/JWT token và chuyển đến Dashboard.
+
+    \textbf{\textcolor{red}{E1}} -- Email đã tồn tại: Hiển thị thông báo "Email này đã được sử dụng."
+
+    \textbf{\textcolor{red}{E2}} -- Mật khẩu không đủ mạnh: Hiển thị thông báo "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt."
+
+    \textbf{\textcolor{red}{E3}} -- Mật khẩu không khớp: Hiển thị thông báo "Mật khẩu xác nhận không khớp."
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Tài khoản được tạo thành công, user nhận được email xác thực. \\\hline
+\end{longtblr}
+\end{adjustwidth}
+
+\vspace{1em}
+
+\textbf{UC01.2 - Đăng nhập}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc01_2_login.png}
+    \caption{Sơ đồ use case chức năng đăng nhập}
+    \label{fig:uc01_2_login}
+\end{figure}
+
+\begin{adjustwidth}{-1.5cm}{-0.5cm}
+\begin{longtblr}[
+    caption = {Đặc tả use case UC01.2 - Đăng nhập},
+    label = {tab:uc01_2}
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Đăng nhập} \\\hline
+ID & UC01.2 \\\hline
+Người sử dụng & User \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Cao \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{User:} Muốn truy cập vào hệ thống để sử dụng các chức năng. \\
+    + \textbf{Google OAuth Service:} Cung cấp xác thực danh tính qua tài khoản Google.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Cho phép người dùng xác thực danh tính bằng email/mật khẩu hoặc Google OAuth để truy cập hệ thống. \\\hline
+Trigger & User truy cập trang đăng nhập của hệ thống. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User truy cập trang đăng nhập.
+        \item Hệ thống hiển thị form đăng nhập với các trường: email, mật khẩu; và nút "Đăng nhập với Google".
+        \item User nhập email và mật khẩu, nhấn "Đăng nhập".
+        \item Hệ thống xác thực thông tin đăng nhập.
+        \item Hệ thống tạo session/JWT token cho user.
+        \item Hệ thống ghi log đăng nhập.
+        \item Hệ thống chuyển hướng user đến trang Dashboard.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & Include UC01.7 (Xác thực tài khoản). \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{A1}} -- Đăng nhập bằng Google OAuth: User nhấn "Đăng nhập với Google", hệ thống chuyển đến Google OAuth consent screen, user chọn tài khoản, Google trả về authorization code, hệ thống đổi code lấy access token và thông tin user, tìm tài khoản theo google\_id hoặc email, tạo session/JWT token, chuyển đến Dashboard.
+
+    \textbf{\textcolor{red}{A2}} -- Chọn "Ghi nhớ đăng nhập": Tạo refresh token với thời hạn 30 ngày.
+
+    \textbf{\textcolor{red}{E1}} -- Email không tồn tại: Hiển thị lỗi "Email hoặc mật khẩu không đúng".
+
+    \textbf{\textcolor{red}{E2}} -- Mật khẩu sai: Hiển thị lỗi, tăng số lần thử sai.
+
+    \textbf{\textcolor{red}{E3}} -- Sai quá 5 lần: Khóa tài khoản tạm thời 15 phút.
+
+    \textbf{\textcolor{red}{E4}} -- Tài khoản chưa xác thực: Hiển thị thông báo và gửi lại email xác thực.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & User đăng nhập thành công và được chuyển đến trang Dashboard. \\\hline
+\end{longtblr}
+\end{adjustwidth}
+
+\vspace{1em}
+
+\textbf{UC01.3 - Đăng xuất}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/uc01_3_logout.png}
+    \caption{Sơ đồ use case chức năng đăng xuất}
+    \label{fig:uc01_3_logout}
+\end{figure}
+
+\begin{adjustwidth}{-1.5cm}{-0.5cm}
+\begin{longtblr}[
+    caption = {Đặc tả use case UC01.3 - Đăng xuất},
+    label = {tab:uc01_3}
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Đăng xuất} \\\hline
+ID & UC01.3 \\\hline
+Người sử dụng & User \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia & + \textbf{User:} Muốn kết thúc phiên làm việc an toàn. \\\hline
+Mô tả tóm tắt & Cho phép người dùng kết thúc phiên đăng nhập hiện tại và thoát khỏi hệ thống. \\\hline
+Trigger & User nhấn nút "Đăng xuất" trong giao diện. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User nhấn nút "Đăng xuất".
+        \item Hệ thống hiển thị dialog xác nhận đăng xuất.
+        \item User xác nhận đăng xuất.
+        \item Hệ thống hủy session/token hiện tại.
+        \item Hệ thống ghi log đăng xuất.
+        \item Hệ thống chuyển hướng user về trang đăng nhập.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ & N/A \\\hline
+Kết quả & User đăng xuất thành công và phiên làm việc được kết thúc an toàn. \\\hline
+\end{longtblr}
+\end{adjustwidth}
+
+\vspace{1em}
+
+\textbf{UC01.4 - Cập nhật thông tin}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/uc01_4_update_profile.png}
+    \caption{Sơ đồ use case chức năng cập nhật thông tin}
+    \label{fig:uc01_4_update_profile}
+\end{figure}
+
+\begin{adjustwidth}{-1.5cm}{-0.5cm}
+\begin{longtblr}[
+    caption = {Đặc tả use case UC01.4 - Cập nhật thông tin},
+    label = {tab:uc01_4}
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Cập nhật thông tin} \\\hline
+ID & UC01.4 \\\hline
+Người sử dụng & User \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia & + \textbf{User:} Muốn cập nhật thông tin cá nhân như họ tên, avatar, số điện thoại. \\\hline
+Mô tả tóm tắt & Cho phép người dùng chỉnh sửa và cập nhật thông tin cá nhân trong hồ sơ tài khoản. \\\hline
+Trigger & User truy cập trang Profile/Hồ sơ cá nhân. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User truy cập trang Profile.
+        \item Hệ thống hiển thị form với thông tin hiện tại của user.
+        \item User chỉnh sửa thông tin và nhấn "Lưu".
+        \item Hệ thống kiểm tra dữ liệu hợp lệ.
+        \item Hệ thống cập nhật thông tin vào database.
+        \item Hệ thống hiển thị thông báo "Cập nhật thành công".
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{A1}} -- Upload avatar mới: User chọn file ảnh mới, hệ thống upload lên storage, cập nhật URL avatar vào database.
+
+    \textbf{\textcolor{red}{E1}} -- Dữ liệu không hợp lệ: Hiển thị thông báo lỗi cụ thể.
+
+    \textbf{\textcolor{red}{E2}} -- Lỗi upload avatar: Hiển thị thông báo "Lỗi upload ảnh".
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Thông tin cá nhân được cập nhật thành công. \\\hline
+\end{longtblr}
+\end{adjustwidth}
+
+\vspace{1em}
+
+\textbf{UC01.5 - Đổi mật khẩu}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/uc01_5_change_password.png}
+    \caption{Sơ đồ use case chức năng đổi mật khẩu}
+    \label{fig:uc01_5_change_password}
+\end{figure}
+
+\begin{adjustwidth}{-1.5cm}{-0.5cm}
+\begin{longtblr}[
+    caption = {Đặc tả use case UC01.5 - Đổi mật khẩu},
+    label = {tab:uc01_5}
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Đổi mật khẩu} \\\hline
+ID & UC01.5 \\\hline
+Người sử dụng & User \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia & + \textbf{User:} Muốn thay đổi mật khẩu để bảo mật tài khoản. \\\hline
+Mô tả tóm tắt & Cho phép người dùng thay đổi mật khẩu tài khoản bằng cách xác thực mật khẩu cũ. \\\hline
+Trigger & User truy cập trang đổi mật khẩu trong Profile. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User truy cập trang đổi mật khẩu.
+        \item Hệ thống hiển thị form với các trường: mật khẩu cũ, mật khẩu mới, xác nhận mật khẩu mới.
+        \item User nhập thông tin và nhấn "Đổi mật khẩu".
+        \item Hệ thống kiểm tra mật khẩu cũ đúng.
+        \item Hệ thống kiểm tra mật khẩu mới đủ mạnh và khớp với xác nhận.
+        \item Hệ thống mã hóa mật khẩu mới (bcrypt).
+        \item Hệ thống cập nhật mật khẩu vào database.
+        \item Hệ thống gửi email thông báo đổi mật khẩu thành công.
+        \item Hệ thống hiển thị thông báo "Đổi mật khẩu thành công".
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- Mật khẩu cũ sai: Hiển thị lỗi "Mật khẩu cũ không đúng".
+
+    \textbf{\textcolor{red}{E2}} -- Mật khẩu mới không đủ mạnh: Hiển thị lỗi "Mật khẩu phải có ít nhất 8 ký tự...".
+
+    \textbf{\textcolor{red}{E3}} -- Mật khẩu mới không khớp: Hiển thị lỗi "Mật khẩu xác nhận không khớp".
+
+    \textbf{\textcolor{red}{E4}} -- Tài khoản chỉ có Google OAuth: Hiển thị "Tài khoản đăng nhập bằng Google, vui lòng đặt mật khẩu trước".
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Mật khẩu được thay đổi thành công, user nhận email thông báo. \\\hline
+\end{longtblr}
+\end{adjustwidth}
+
+\vspace{1em}
+
+\textbf{UC01.6 - Quên mật khẩu}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc01_6_forgot_password.png}
+    \caption{Sơ đồ use case chức năng quên mật khẩu}
+    \label{fig:uc01_6_forgot_password}
+\end{figure}
+
+\begin{adjustwidth}{-1.5cm}{-0.5cm}
+\begin{longtblr}[
+    caption = {Đặc tả use case UC01.6 - Quên mật khẩu},
+    label = {tab:uc01_6}
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Quên mật khẩu} \\\hline
+ID & UC01.6 \\\hline
+Người sử dụng & User \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Cao \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{User:} Quên mật khẩu và cần khôi phục tài khoản. \\
+    + \textbf{Email Service:} Gửi email chứa link reset mật khẩu.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Cho phép người dùng đặt lại mật khẩu mới thông qua email xác thực khi quên mật khẩu. \\\hline
+Trigger & User nhấn "Quên mật khẩu?" trên trang đăng nhập. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User nhấn "Quên mật khẩu?".
+        \item Hệ thống hiển thị form nhập email.
+        \item User nhập email và nhấn "Gửi".
+        \item Hệ thống kiểm tra email tồn tại trong hệ thống.
+        \item Hệ thống tạo reset token (có thời hạn 1 giờ).
+        \item Hệ thống gửi email chứa link reset mật khẩu.
+        \item Hệ thống hiển thị thông báo "Vui lòng kiểm tra email".
+        \item User nhấn link trong email.
+        \item Hệ thống hiển thị form đặt mật khẩu mới.
+        \item User nhập mật khẩu mới và xác nhận, nhấn "Đặt lại mật khẩu".
+        \item Hệ thống kiểm tra token hợp lệ và chưa hết hạn.
+        \item Hệ thống kiểm tra mật khẩu đủ mạnh và khớp.
+        \item Hệ thống mã hóa và cập nhật mật khẩu mới.
+        \item Hệ thống vô hiệu hóa reset token.
+        \item Hệ thống hiển thị thông báo "Đặt lại mật khẩu thành công".
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- Email không tồn tại: Vẫn hiển thị "Đã gửi email" để bảo mật (không tiết lộ email có tồn tại hay không).
+
+    \textbf{\textcolor{red}{E2}} -- Token hết hạn: Hiển thị lỗi "Link đã hết hạn", yêu cầu reset lại.
+
+    \textbf{\textcolor{red}{E3}} -- Token không hợp lệ: Hiển thị lỗi "Link không hợp lệ".
+
+    \textbf{\textcolor{red}{E4}} -- Mật khẩu không đủ mạnh: Hiển thị lỗi validation.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Mật khẩu được đặt lại thành công, user có thể đăng nhập với mật khẩu mới. \\\hline
+\end{longtblr}
+\end{adjustwidth}
+
+\vspace{1em}
+
+\textbf{UC01.7 - Xác thực tài khoản}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/uc01_7_verify_account.png}
+    \caption{Sơ đồ use case chức năng xác thực tài khoản}
+    \label{fig:uc01_7_verify_account}
+\end{figure}
+
+\begin{adjustwidth}{-1.5cm}{-0.5cm}
+\begin{longtblr}[
+    caption = {Đặc tả use case UC01.7 - Xác thực tài khoản},
+    label = {tab:uc01_7}
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Xác thực tài khoản} \\\hline
+ID & UC01.7 \\\hline
+Người sử dụng & User \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{User:} Cần xác thực email để kích hoạt tài khoản. \\
+    + \textbf{Email Service:} Gửi email chứa link xác thực.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Cho phép người dùng xác thực địa chỉ email để kích hoạt tài khoản sau khi đăng ký. \\\hline
+Trigger & Được gọi từ UC01.1 (Đăng ký) hoặc UC01.2 (Đăng nhập). \\\hline
+Kiểu sự kiện & Internal. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item Hệ thống tạo verification token.
+        \item Hệ thống gửi email chứa link xác thực đến địa chỉ email của user.
+        \item User nhấn link trong email.
+        \item Hệ thống kiểm tra verification token hợp lệ.
+        \item Hệ thống cập nhật is\_verified = true cho user.
+        \item Hệ thống vô hiệu hóa verification token.
+        \item Hệ thống hiển thị thông báo "Xác thực tài khoản thành công".
+        \item Hệ thống chuyển hướng đến trang đăng nhập hoặc Dashboard.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{A1}} -- Gửi lại email xác thực: User nhấn "Gửi lại email", hệ thống tạo token mới và gửi lại email.
+
+    \textbf{\textcolor{red}{E1}} -- Token không hợp lệ: Hiển thị lỗi "Link xác thực không hợp lệ", cung cấp nút "Gửi lại".
+
+    \textbf{\textcolor{red}{E2}} -- Token đã được sử dụng: Hiển thị "Tài khoản đã được xác thực".
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Tài khoản được xác thực thành công, user có thể sử dụng đầy đủ chức năng của hệ thống. \\\hline
+\end{longtblr}
+\end{adjustwidth}
