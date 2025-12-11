@@ -1,0 +1,17 @@
+@startuml func_guest
+!theme plain
+skinparam backgroundColor white
+skinparam rectangleBorderThickness 2
+skinparam defaultFontSize 10
+
+title Phân rã chức năng của Guest
+
+rectangle "Guest" as Guest {
+    rectangle "Quản lý\nTài khoản" as Account {
+        rectangle "Đăng ký" as Register
+        rectangle "Đăng nhập" as Login
+        rectangle "Đổi mật khẩu" as ChangePassword
+    }
+}
+
+@enduml

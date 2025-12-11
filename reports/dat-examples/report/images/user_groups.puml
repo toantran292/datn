@@ -1,0 +1,49 @@
+@startuml user_groups
+!theme plain
+skinparam backgroundColor white
+skinparam classFontSize 11
+skinparam defaultFontSize 10
+skinparam rectangleBorderThickness 2
+
+title Sơ đồ nhóm đối tượng người dùng - Phân hệ quản lý dự án
+
+class "Guest" as Guest {
+    + Đăng nhập
+    + Đăng ký
+}
+
+class "Member" as Member {
+    + Xem danh sách issues
+    + Xem Backlog
+    + Xem Board Kanban
+    + Kéo thả issue
+    + Tạo issue
+    + Thêm comment
+    + Upload/Download tệp
+    + Xem thông báo
+}
+
+class "Project Lead" as Lead {
+    + Tạo project
+    + Cấu hình custom status
+    + Tạo sprint
+    + Bắt đầu sprint
+    + Hoàn thành sprint
+    + Mời thành viên
+    + Xóa thành viên
+    + Phân quyền
+    + Hỏi đáp AI
+    + Xem báo cáo tuần
+}
+
+class "Workspace Owner" as Owner {
+    + Khóa project
+    + Xem thống kê tổng hợp
+    + Quản lý organization
+}
+
+Guest <|-- Member : kế thừa
+Member <|-- Lead : kế thừa
+Lead <|-- Owner : kế thừa
+
+@enduml
