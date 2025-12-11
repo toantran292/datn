@@ -1,14 +1,14 @@
-% ==================== NHÓM WORKSPACE ====================
+% ==================== NHÓM PROJECT MANAGEMENT ====================
 
-\subsubsection{Chức năng tạo Workspace}
+\subsubsection{Chức năng tạo Project}
 
-\textbf{Mục đích:} Cho phép người dùng tạo một workspace mới để quản lý nhóm làm việc, tệp tin và báo cáo AI.
+\textbf{Mục đích:} Cho phép Organization Owner hoặc Admin tạo một project mới để quản lý sprints, issues và team members với custom workflow.
 
 \textbf{Dữ liệu được dùng:}
 
 \begin{longtblr}[
-  caption = {Bảng dữ liệu được dùng cho chức năng tạo Workspace},
-  label = {tab:func_create_workspace}
+  caption = {Bảng dữ liệu được dùng cho chức năng tạo Project},
+  label = {tab:func_create_project}
 ]{
   width=\linewidth, rowhead=2, hlines, vlines,
   colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
@@ -17,29 +17,30 @@
 }
 \SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
 & & Thêm & Sửa & Xóa & Truy vấn \\
-1 & Workspace & X & & & X \\
-2 & Member & X & & & \\
-3 & AuditLog & X & & & \\
+1 & Project & X & & & X \\
+2 & CustomStatus & X & & & \\
+3 & ProjectMember & X & & & \\
+4 & AuditLog & X & & & \\
 \end{longtblr}
 
 \textbf{Xử lý:}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.65\textwidth]{images/act_create_workspace.png}
-\caption{Sơ đồ hoạt động của chức năng tạo Workspace}
-\label{fig:act_create_workspace}
+\includegraphics[width=0.65\textwidth]{images/act_create_project.png}
+\caption{Sơ đồ hoạt động của chức năng tạo Project}
+\label{fig:act_create_project}
 \end{figure}
 
-\subsubsection{Chức năng xem Dashboard}
+\subsubsection{Chức năng xem Board view}
 
-\textbf{Mục đích:} Cho phép thành viên xem tổng quan hoạt động của workspace bao gồm thống kê và biểu đồ.
+\textbf{Mục đích:} Cho phép Project Members xem active sprint issues được tổ chức theo custom status columns với real-time updates qua WebSocket.
 
 \textbf{Dữ liệu được dùng:}
 
 \begin{longtblr}[
-  caption = {Bảng dữ liệu được dùng cho chức năng xem Dashboard},
-  label = {tab:func_view_dashboard}
+  caption = {Bảng dữ liệu được dùng cho chức năng xem Board view},
+  label = {tab:func_view_board}
 ]{
   width=\linewidth, rowhead=2, hlines, vlines,
   colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
@@ -48,18 +49,18 @@
 }
 \SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
 & & Thêm & Sửa & Xóa & Truy vấn \\
-1 & Workspace & & & & X \\
-2 & Member & & & & X \\
-3 & File & & & & X \\
-4 & AIReport & & & & X \\
-5 & AuditLog & & & & X \\
+1 & Project & & & & X \\
+2 & Sprint & & & & X \\
+3 & Issue & & & & X \\
+4 & CustomStatus & & & & X \\
+5 & ProjectMember & & & & X \\
 \end{longtblr}
 
 \textbf{Xử lý:}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.65\textwidth]{images/act_view_dashboard.png}
-\caption{Sơ đồ hoạt động của chức năng xem Dashboard}
-\label{fig:act_view_dashboard}
+\includegraphics[width=0.65\textwidth]{images/act_view_board.png}
+\caption{Sơ đồ hoạt động của chức năng xem Board view}
+\label{fig:act_view_board}
 \end{figure}

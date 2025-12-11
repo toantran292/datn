@@ -1,14 +1,14 @@
-% ==================== NHÓM THÔNG BÁO ====================
+% ==================== NHÓM ACTIVITY TRACKING ====================
 
-\subsubsection{Chức năng xem thông báo}
+\subsubsection{Chức năng xem Activity Feed}
 
-\textbf{Mục đích:} Cho phép người dùng xem danh sách thông báo về các hoạt động liên quan đến mình.
+\textbf{Mục đích:} Cho phép Project Members xem timeline của tất cả activities trong project với filters theo action type, user, date range để track project progress và collaboration.
 
 \textbf{Dữ liệu được dùng:}
 
 \begin{longtblr}[
-  caption = {Bảng dữ liệu được dùng cho chức năng xem thông báo},
-  label = {tab:func_view_notifications}
+  caption = {Bảng dữ liệu được dùng cho chức năng xem Activity Feed},
+  label = {tab:func_view_activity}
 ]{
   width=\linewidth, rowhead=2, hlines, vlines,
   colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
@@ -17,27 +17,29 @@
 }
 \SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
 & & Thêm & Sửa & Xóa & Truy vấn \\
-1 & Notification & & & & X \\
+1 & Activity & & & & X \\
+2 & Project & & & & X \\
+3 & ProjectMember & & & & X \\
 \end{longtblr}
 
 \textbf{Xử lý:}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.65\textwidth]{images/act_view_notifications.png}
-\caption{Sơ đồ hoạt động của chức năng xem thông báo}
-\label{fig:act_view_notifications}
+\includegraphics[width=0.65\textwidth]{images/act_view_activity.png}
+\caption{Sơ đồ hoạt động của chức năng xem Activity Feed}
+\label{fig:act_view_activity}
 \end{figure}
 
-\subsubsection{Chức năng cấu hình thông báo}
+\subsubsection{Chức năng ghi Activity Log}
 
-\textbf{Mục đích:} Cho phép người dùng tùy chỉnh cài đặt nhận thông báo qua email, push notification hoặc in-app.
+\textbf{Mục đích:} Hệ thống tự động ghi lại activities khi có actions xảy ra trong project: issue\_created, status\_changed, sprint\_started, comment\_added, issue\_assigned, sprint\_completed với before/after changes tracking.
 
 \textbf{Dữ liệu được dùng:}
 
 \begin{longtblr}[
-  caption = {Bảng dữ liệu được dùng cho chức năng cấu hình thông báo},
-  label = {tab:func_config_notification}
+  caption = {Bảng dữ liệu được dùng cho chức năng ghi Activity Log},
+  label = {tab:func_log_activity}
 ]{
   width=\linewidth, rowhead=2, hlines, vlines,
   colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
@@ -46,15 +48,48 @@
 }
 \SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
 & & Thêm & Sửa & Xóa & Truy vấn \\
-1 & NotificationSetting & X & X & & X \\
-2 & AuditLog & X & & & \\
+1 & Activity & X & & & \\
+2 & Project & & & & X \\
+3 & Issue & & & & X \\
+4 & Sprint & & & & X \\
 \end{longtblr}
 
 \textbf{Xử lý:}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.65\textwidth]{images/act_config_notification.png}
-\caption{Sơ đồ hoạt động của chức năng cấu hình thông báo}
-\label{fig:act_config_notification}
+\includegraphics[width=0.65\textwidth]{images/act_log_activity.png}
+\caption{Sơ đồ hoạt động của chức năng ghi Activity Log}
+\label{fig:act_log_activity}
+\end{figure}
+
+\subsubsection{Chức năng WebSocket Real-time Broadcast}
+
+\textbf{Mục đích:} Hệ thống broadcast activities real-time đến tất cả project members qua WebSocket connections trong project room để update Board view, Activity Feed ngay lập tức khi có changes.
+
+\textbf{Dữ liệu được dùng:}
+
+\begin{longtblr}[
+  caption = {Bảng dữ liệu được dùng cho chức năng WebSocket Broadcast},
+  label = {tab:func_websocket_broadcast}
+]{
+  width=\linewidth, rowhead=2, hlines, vlines,
+  colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
+  rows={m},
+  row{1-2}={font=\bfseries, c, bg=gray9}
+}
+\SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
+& & Thêm & Sửa & Xóa & Truy vấn \\
+1 & Activity & & & & X \\
+2 & ProjectMember & & & & X \\
+3 & Project & & & & X \\
+\end{longtblr}
+
+\textbf{Xử lý:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{images/act_websocket_broadcast.png}
+\caption{Sơ đồ hoạt động của chức năng WebSocket Real-time Broadcast}
+\label{fig:act_websocket_broadcast}
 \end{figure}
