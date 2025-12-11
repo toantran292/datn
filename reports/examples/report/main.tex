@@ -16,17 +16,59 @@
 \usepackage[table]{xcolor}
 \usepackage{listings}
 \usepackage{tocloft}
+
+% Listings configuration for code blocks
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.95}
+
+\lstdefinestyle{codestyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=none,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    frame=single,
+    framerule=0.5pt,
+    rulecolor=\color{gray},
+    xleftmargin=5pt,
+    xrightmargin=5pt,
+    aboveskip=10pt,
+    belowskip=10pt
+}
+
+\lstset{style=codestyle}
 \usepackage{xparse}
+\usepackage{etoolbox}
 \usepackage{forloop}
 \usepackage{enumitem}
 \usepackage{lipsum}
 \usepackage{textcase}
 \usepackage{tabularray}
+\UseTblrLibrary{counter}
+
+% Fix hyperref compatibility with tabularray longtblr
+\makeatletter
+\preto\longtblr@init{\phantomsection}
+\makeatother
 \usepackage{longtable}
 \usepackage{multirow}
 \usepackage{changepage}
 \usepackage{pdflscape} % For landscape pages
 \usepackage[absolute]{textpos}
+\usepackage{makecell}
 \usepackage[inkscape = inkscape -z -D, svgpath = fig/]{svg}  % Requires shell-escape
 
 \usetikzlibrary{calc}
@@ -58,6 +100,15 @@
 \DefTblrTemplate{contfoot-text}{default}{Tiếp tục bên trang tiếp theo}
 \DefTblrTemplate{conthead-text}{default}{(Tiếp tục)}
 
+\SetTblrTemplate{caption}{simple}
+\SetTblrTemplate{capcont}{simple}
+\SetTblrStyle{caption}{halign=l}
+
+% Table caption formatting: bold
+\SetTblrStyle{caption-tag}{font=\bfseries}
+\SetTblrStyle{caption-sep}{font=\bfseries}
+\SetTblrStyle{caption-text}{font=\bfseries}
+
 % =========================== START DOCUMENT ==================================
 \begin{document}
 \pagenumbering{roman}
@@ -85,18 +136,23 @@
 \newpage
 \input{part02/part02.tex}
 \newpage
-% \input{part03/part03.tex}
+\input{part03/part03.tex}
 \newpage
 
 
 \phantomsection
 \setsection{Tài liệu tham khảo}
 \renewcommand{\refname}{}  % Remove "References" heading
+\nocite{*}  % Include all references even if not cited
 \bibliographystyle{unsrt}
 \bibliography{references}
 \newpage
 
 % Phụ lục
+\input{appendix_a}
+\newpage
 \input{appendix_b}
+\newpage
+\input{appendix_c}
 
 \end{document}

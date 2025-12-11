@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chương 4: Kiểm thử và đánh giá - SaaS Platform</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 13pt;
+            line-height: 1.5;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px;
+            text-align: justify;
+        }
+        h1 {
+            font-size: 16pt;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 30pt;
+            margin-bottom: 20pt;
+        }
+        h2 {
+            font-size: 14pt;
+            font-weight: bold;
+            margin-top: 24pt;
+            margin-bottom: 12pt;
+        }
+        h3 {
+            font-size: 13pt;
+            font-weight: bold;
+            font-style: italic;
+            margin-top: 18pt;
+            margin-bottom: 10pt;
+        }
+        p {
+            margin-bottom: 12pt;
+            text-indent: 1.27cm;
+        }
+        p.no-indent {
+            text-indent: 0;
+        }
+        ul, ol {
+            margin-left: 1.27cm;
+            margin-bottom: 12pt;
+        }
+        li {
+            margin-bottom: 6pt;
+        }
+        .section-number {
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12pt 0;
+            font-size: 11pt;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+            text-align: center;
+        }
+        .table-caption {
+            font-style: italic;
+            font-size: 12pt;
+            text-align: center;
+            margin-top: 8pt;
+            margin-bottom: 16pt;
+            font-weight: bold;
+        }
+        .test-table th {
+            background-color: #d4a574;
+            color: #000;
+        }
+        .center {
+            text-align: center;
+        }
+        .pass {
+            color: green;
+            font-weight: bold;
+        }
+        .fail {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<h1>CHƯƠNG 4: KIỂM THỬ VÀ ĐÁNH GIÁ</h1>
+
+<h2><span class="section-number">4.1.</span> Giới thiệu</h2>
+
+<h3><span class="section-number">4.1.1.</span> Mục tiêu kiểm thử</h3>
+
+<p>Quy trình kiểm thử "Xây dựng Nền tảng SaaS tích hợp AI nhằm Thống nhất Quản lý Dự án Agile" nhằm đạt được các mục tiêu sau:</p>
+
+<ul>
+    <li>Phát hiện và xử lý các lỗi phát sinh, đảm bảo hệ thống hoạt động đúng theo các yêu cầu đã được đặc tả.</li>
+    <li>Xác minh và đánh giá mức độ đáp ứng của các chức năng so với kỳ vọng người dùng và đặc tả kỹ thuật.</li>
+    <li>Ghi nhận kết quả kiểm thử để phục vụ công tác phân tích, tối ưu và bảo trì hệ thống về sau.</li>
+</ul>
+
+<h3><span class="section-number">4.1.2.</span> Phạm vi kiểm thử</h3>
+
+<p>Quy trình kiểm thử được thực hiện thông qua các giai đoạn sau:</p>
+
+<ul>
+    <li>Kiểm thử thiết kế: đánh giá giao diện website, đảm bảo tuân thủ thiết kế UI/UX và thể hiện đúng mô tả trong đặc tả yêu cầu.</li>
+    <li>Kiểm thử chấp nhận: xác nhận hệ thống đáp ứng đúng các chức năng được yêu cầu, bao gồm quản lý workspace, thành viên, tệp tin và báo cáo AI.</li>
+    <li>Kiểm thử chức năng: đảm bảo các chức năng xử lý đúng dữ liệu đầu vào và trả về kết quả chính xác.</li>
+    <li>Kiểm thử cài đặt và triển khai: phát hiện và xử lý lỗi phát sinh trong quá trình cài đặt, cấu hình và triển khai hệ thống.</li>
+</ul>
+
+<h2><span class="section-number">4.2.</span> Chi tiết kế hoạch kiểm thử</h2>
+
+<h3><span class="section-number">4.2.1.</span> Các trường hợp kiểm thử</h3>
+
+<p>Các trường hợp kiểm thử chính được xác định bao gồm:</p>
+
+<ul>
+    <li>Người dùng thực hiện đăng ký tài khoản mới.</li>
+    <li>Người dùng thực hiện đăng nhập vào hệ thống.</li>
+    <li>Người dùng tạo và quản lý workspace.</li>
+    <li>Người dùng mời và quản lý thành viên trong workspace.</li>
+    <li>Người dùng upload và quản lý tệp tin.</li>
+    <li>Người dùng tạo báo cáo AI.</li>
+    <li>Người dùng xem và quản lý thông báo.</li>
+    <li>Admin quản lý hệ thống và khóa/mở khóa workspace.</li>
+</ul>
+
+<h3><span class="section-number">4.2.2.</span> Cách tiếp cận</h3>
+
+<p>Tiến hành kiểm thử theo thứ tự ưu tiên từ các chức năng chính đến các chức năng phụ, kiểm thử theo từ trên xuống và từ trái qua phải, đảm bảo không bỏ sót bất kỳ chức năng quan trọng nào.</p>
+
+<h3><span class="section-number">4.2.3.</span> Tiêu chí kiểm thử thành công/thất bại</h3>
+
+<ul>
+    <li>Tiêu chí kiểm thử thành công là kết quả thực thi đúng như mong đợi, phù hợp với đặc tả yêu cầu, không phát sinh lỗi nghiêm trọng và trải nghiệm người dùng mượt mà.</li>
+    <li>Tiêu chí kiểm thử thất bại là kết quả không như mong đợi, sai lệch so với đặc tả yêu cầu, phát sinh lỗi chức năng hoặc lỗi hiển thị, gây gián đoạn trải nghiệm người dùng.</li>
+</ul>
+
+<h3><span class="section-number">4.2.4.</span> Tiêu chí đình chỉ và yêu cầu bắt đầu lại</h3>
+
+<ul>
+    <li>Tiêu chí đình chỉ: Chức năng thông báo lỗi trong quá trình thực hiện kiểm thử.</li>
+    <li>Tiêu chí yêu cầu bắt đầu lại: Chức năng bị đình chỉ đã được sửa lỗi hoàn tất, đã xây dựng kịch bản kiểm thử và các trường hợp kiểm thử lại cho chức năng.</li>
+</ul>
+
+<h3><span class="section-number">4.2.5.</span> Sản phẩm bàn giao kiểm thử</h3>
+
+<ul>
+    <li>Kế hoạch kiểm thử.</li>
+    <li>Tài liệu các trường hợp kiểm thử.</li>
+</ul>
+
+<h2><span class="section-number">4.3.</span> Quản lý kiểm thử</h2>
+
+<h3><span class="section-number">4.3.1.</span> Quy trình kiểm thử</h3>
+
+<p class="no-indent">- Quá trình kiểm thử các chức năng sẽ thực hiện như sau:</p>
+<ul>
+    <li>Lập kế hoạch tạo các trường hợp kiểm thử.</li>
+    <li>Tiến hành kiểm thử.</li>
+    <li>Ghi lại các kết quả kiểm thử.</li>
+</ul>
+
+<h3><span class="section-number">4.3.2.</span> Môi trường kiểm thử</h3>
+
+<p class="no-indent">- Phần cứng:</p>
+<ul>
+    <li>Vi xử lý: Intel Core i5</li>
+    <li>RAM: 8GB</li>
+    <li>Ổ cứng: SSD 512GB</li>
+    <li>Cấu hình mạng: có kết nối internet</li>
+</ul>
+
+<p class="no-indent">- Phần mềm:</p>
+<ul>
+    <li>Hệ điều hành: Windows 11 / macOS</li>
+    <li>Trình duyệt: Google Chrome, Firefox, Safari</li>
+    <li>Database: PostgreSQL</li>
+    <li>Backend: NestJS</li>
+    <li>Frontend: Next.js</li>
+</ul>
+
+<h2><span class="section-number">4.4.</span> Kịch bản kiểm thử</h2>
+
+<p>Các kịch bản kiểm thử bao gồm:</p>
+
+<p class="table-caption">Bảng 4.1. Bảng kịch bản kiểm thử</p>
+<table>
+    <tr>
+        <th colspan="2">Tên dự án</th>
+        <th colspan="3">Xây dựng Nền tảng SaaS tích hợp AI nhằm Thống nhất Quản lý Dự án Agile</th>
+    </tr>
+    <tr>
+        <th colspan="2">Người thực hiện</th>
+        <th colspan="3">Trần Thái Toàn</th>
+    </tr>
+    <tr>
+        <th colspan="2">Ngày thực hiện</th>
+        <th colspan="3">10/12/2025</th>
+    </tr>
+    <tr>
+        <th>Mã kịch bản kiểm thử</th>
+        <th>Mã yêu cầu</th>
+        <th>Mô tả kịch bản kiểm thử</th>
+        <th>Độ ưu tiên</th>
+        <th>Số trường hợp kiểm thử</th>
+    </tr>
+    <tr>
+        <td>TS_REG</td>
+        <td>RQ01</td>
+        <td>Kiểm tra chức năng đăng ký tài khoản</td>
+        <td class="center">P1</td>
+        <td class="center">5</td>
+    </tr>
+    <tr>
+        <td>TS_LOGIN</td>
+        <td>RQ02</td>
+        <td>Kiểm tra chức năng đăng nhập</td>
+        <td class="center">P1</td>
+        <td class="center">4</td>
+    </tr>
+    <tr>
+        <td>TS_LOGOUT</td>
+        <td>RQ03</td>
+        <td>Kiểm tra chức năng đăng xuất</td>
+        <td class="center">P1</td>
+        <td class="center">2</td>
+    </tr>
+    <tr>
+        <td>TS_CWS</td>
+        <td>RQ04</td>
+        <td>Kiểm tra chức năng tạo workspace</td>
+        <td class="center">P1</td>
+        <td class="center">4</td>
+    </tr>
+    <tr>
+        <td>TS_INVITE</td>
+        <td>RQ05</td>
+        <td>Kiểm tra chức năng mời thành viên</td>
+        <td class="center">P1</td>
+        <td class="center">4</td>
+    </tr>
+    <tr>
+        <td>TS_ROLE</td>
+        <td>RQ06</td>
+        <td>Kiểm tra chức năng phân quyền thành viên</td>
+        <td class="center">P2</td>
+        <td class="center">3</td>
+    </tr>
+    <tr>
+        <td>TS_UPLOAD</td>
+        <td>RQ07</td>
+        <td>Kiểm tra chức năng upload tệp tin</td>
+        <td class="center">P1</td>
+        <td class="center">4</td>
+    </tr>
+    <tr>
+        <td>TS_DOWNLOAD</td>
+        <td>RQ08</td>
+        <td>Kiểm tra chức năng download tệp tin</td>
+        <td class="center">P2</td>
+        <td class="center">3</td>
+    </tr>
+    <tr>
+        <td>TS_AIREPORT</td>
+        <td>RQ09</td>
+        <td>Kiểm tra chức năng tạo báo cáo AI</td>
+        <td class="center">P1</td>
+        <td class="center">4</td>
+    </tr>
+    <tr>
+        <td>TS_NOTIF</td>
+        <td>RQ10</td>
+        <td>Kiểm tra chức năng xem thông báo</td>
+        <td class="center">P2</td>
+        <td class="center">3</td>
+    </tr>
+    <tr>
+        <td>TS_PROFILE</td>
+        <td>RQ11</td>
+        <td>Kiểm tra chức năng cập nhật thông tin cá nhân</td>
+        <td class="center">P2</td>
+        <td class="center">3</td>
+    </tr>
+    <tr>
+        <td>TS_ADMIN</td>
+        <td>RQ12</td>
+        <td>Kiểm tra chức năng Admin khóa/mở khóa workspace</td>
+        <td class="center">P1</td>
+        <td class="center">3</td>
+    </tr>
+</table>
+
+<h2><span class="section-number">4.5.</span> Các trường hợp kiểm thử</h2>
+
+<p>Chi tiết các trường hợp kiểm thử như sau:</p>
+
+<!-- TS_REG - Đăng ký -->
+<p class="table-caption">Bảng 4.2. Kiểm tra chức năng đăng ký tài khoản</p>
+<table class="test-table">
+    <tr>
+        <th>Mã trường hợp kiểm thử</th>
+        <th>Mã kịch bản kiểm thử</th>
+        <th>Mô tả</th>
+        <th>Dữ liệu kiểm thử</th>
+        <th>Các bước thực hiện</th>
+        <th>Kết quả mong đợi</th>
+        <th>Kết quả thực tế</th>
+        <th>Kết quả</th>
+    </tr>
+    <tr>
+        <td>TC_REG_01</td>
+        <td>TS_REG</td>
+        <td>Kiểm thử đăng ký với thông tin hợp lệ</td>
+        <td>Họ tên: Nguyễn Văn A<br>Email: nguyenvana@gmail.com<br>Mật khẩu: Password123!</td>
+        <td>1. Nhập họ tên<br>2. Nhập email<br>3. Nhập mật khẩu<br>4. Xác nhận mật khẩu<br>5. Nhấn Đăng ký</td>
+        <td>Hiển thị thông báo: "Đăng ký thành công!"</td>
+        <td>Hiển thị thông báo: "Đăng ký thành công!"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_REG_02</td>
+        <td>TS_REG</td>
+        <td>Kiểm thử đăng ký với email đã tồn tại</td>
+        <td>Họ tên: Trần Thị B<br>Email: nguyenvana@gmail.com<br>Mật khẩu: Password123!</td>
+        <td>1. Nhập họ tên<br>2. Nhập email đã tồn tại<br>3. Nhập mật khẩu<br>4. Xác nhận mật khẩu<br>5. Nhấn Đăng ký</td>
+        <td>Hiển thị thông báo: "Email đã được sử dụng!"</td>
+        <td>Hiển thị thông báo: "Email đã được sử dụng!"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_REG_03</td>
+        <td>TS_REG</td>
+        <td>Kiểm thử đăng ký với email không hợp lệ</td>
+        <td>Họ tên: Lê Văn C<br>Email: invalid-email<br>Mật khẩu: Password123!</td>
+        <td>1. Nhập họ tên<br>2. Nhập email không hợp lệ<br>3. Nhập mật khẩu<br>4. Nhấn Đăng ký</td>
+        <td>Hiển thị thông báo: "Email không hợp lệ!"</td>
+        <td>Hiển thị thông báo: "Email không hợp lệ!"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_REG_04</td>
+        <td>TS_REG</td>
+        <td>Kiểm thử đăng ký với mật khẩu yếu</td>
+        <td>Họ tên: Phạm Văn D<br>Email: phamvand@gmail.com<br>Mật khẩu: 123</td>
+        <td>1. Nhập họ tên<br>2. Nhập email<br>3. Nhập mật khẩu yếu<br>4. Nhấn Đăng ký</td>
+        <td>Hiển thị thông báo: "Mật khẩu phải có ít nhất 8 ký tự!"</td>
+        <td>Hiển thị thông báo: "Mật khẩu phải có ít nhất 8 ký tự!"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_REG_05</td>
+        <td>TS_REG</td>
+        <td>Kiểm thử đăng ký với mật khẩu không khớp</td>
+        <td>Họ tên: Hoàng Văn E<br>Email: hoangvane@gmail.com<br>Mật khẩu: Password123!<br>Xác nhận: Password456!</td>
+        <td>1. Nhập họ tên<br>2. Nhập email<br>3. Nhập mật khẩu<br>4. Nhập xác nhận khác<br>5. Nhấn Đăng ký</td>
+        <td>Hiển thị thông báo: "Mật khẩu xác nhận không khớp!"</td>
+        <td>Hiển thị thông báo: "Mật khẩu xác nhận không khớp!"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+</table>
+
+<!-- TS_LOGIN - Đăng nhập -->
+<p class="table-caption">Bảng 4.3. Kiểm tra chức năng đăng nhập</p>
+<table class="test-table">
+    <tr>
+        <th>Mã trường hợp kiểm thử</th>
+        <th>Mã kịch bản kiểm thử</th>
+        <th>Mô tả</th>
+        <th>Dữ liệu kiểm thử</th>
+        <th>Các bước thực hiện</th>
+        <th>Kết quả mong đợi</th>
+        <th>Kết quả thực tế</th>
+        <th>Kết quả</th>
+    </tr>
+    <tr>
+        <td>TC_LOGIN_01</td>
+        <td>TS_LOGIN</td>
+        <td>Kiểm thử đăng nhập với thông tin hợp lệ</td>
+        <td>Email: nguyenvana@gmail.com<br>Mật khẩu: Password123!</td>
+        <td>1. Nhập email<br>2. Nhập mật khẩu<br>3. Nhấn Đăng nhập</td>
+        <td>Chuyển đến trang Dashboard</td>
+        <td>Chuyển đến trang Dashboard</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_LOGIN_02</td>
+        <td>TS_LOGIN</td>
+        <td>Kiểm thử đăng nhập với email đúng, mật khẩu sai</td>
+        <td>Email: nguyenvana@gmail.com<br>Mật khẩu: WrongPass123!</td>
+        <td>1. Nhập email<br>2. Nhập mật khẩu sai<br>3. Nhấn Đăng nhập</td>
+        <td>Hiển thị thông báo: "Email hoặc mật khẩu không đúng!"</td>
+        <td>Hiển thị thông báo: "Email hoặc mật khẩu không đúng!"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_LOGIN_03</td>
+        <td>TS_LOGIN</td>
+        <td>Kiểm thử đăng nhập với email không tồn tại</td>
+        <td>Email: notexist@gmail.com<br>Mật khẩu: Password123!</td>
+        <td>1. Nhập email không tồn tại<br>2. Nhập mật khẩu<br>3. Nhấn Đăng nhập</td>
+        <td>Hiển thị thông báo: "Email hoặc mật khẩu không đúng!"</td>
+        <td>Hiển thị thông báo: "Email hoặc mật khẩu không đúng!"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_LOGIN_04</td>
+        <td>TS_LOGIN</td>
+        <td>Kiểm thử đăng nhập với tài khoản bị khóa</td>
+        <td>Email: locked@gmail.com<br>Mật khẩu: Password123!</td>
+        <td>1. Nhập email tài khoản bị khóa<br>2. Nhập mật khẩu<br>3. Nhấn Đăng nhập</td>
+        <td>Hiển thị thông báo: "Tài khoản của bạn đã bị khóa!"</td>
+        <td>Hiển thị thông báo: "Tài khoản của bạn đã bị khóa!"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+</table>
+
+<!-- TS_LOGOUT - Đăng xuất -->
+<p class="table-caption">Bảng 4.4. Kiểm tra chức năng đăng xuất</p>
+<table class="test-table">
+    <tr>
+        <th>Mã trường hợp kiểm thử</th>
+        <th>Mã kịch bản kiểm thử</th>
+        <th>Mô tả</th>
+        <th>Dữ liệu kiểm thử</th>
+        <th>Các bước thực hiện</th>
+        <th>Kết quả mong đợi</th>
+        <th>Kết quả thực tế</th>
+        <th>Kết quả</th>
+    </tr>
+    <tr>
+        <td>TC_LOGOUT_01</td>
+        <td>TS_LOGOUT</td>
+        <td>Kiểm thử đăng xuất thành công</td>
+        <td>User đã đăng nhập</td>
+        <td>1. Nhấn vào avatar<br>2. Chọn "Đăng xuất"<br>3. Xác nhận đăng xuất</td>
+        <td>Chuyển đến trang đăng nhập</td>
+        <td>Chuyển đến trang đăng nhập</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_LOGOUT_02</td>
+        <td>TS_LOGOUT</td>
+        <td>Kiểm thử truy cập trang bảo vệ sau khi đăng xuất</td>
+        <td>User đã đăng xuất</td>
+        <td>1. Đăng xuất<br>2. Truy cập URL dashboard</td>
+        <td>Chuyển hướng về trang đăng nhập</td>
+        <td>Chuyển hướng về trang đăng nhập</td>
+        <td class="pass center">Pass</td>
+    </tr>
+</table>
+
+<!-- TS_CWS - Tạo Workspace -->
+<p class="table-caption">Bảng 4.5. Kiểm tra chức năng tạo Workspace</p>
+<table class="test-table">
+    <tr>
+        <th>Mã trường hợp kiểm thử</th>
+        <th>Mã kịch bản kiểm thử</th>
+        <th>Mô tả</th>
+        <th>Dữ liệu kiểm thử</th>
+        <th>Các bước thực hiện</th>
+        <th>Kết quả mong đợi</th>
+        <th>Kết quả thực tế</th>
+        <th>Kết quả</th>
+    </tr>
+    <tr>
+        <td>TC_CWS_01</td>
+        <td>TS_CWS</td>
+        <td>Kiểm thử tạo workspace với thông tin hợp lệ</td>
+        <td>Tên: Marketing Team<br>Mô tả: Workspace cho team marketing</td>
+        <td>1. Nhấn "Tạo Workspace"<br>2. Nhập tên<br>3. Nhập mô tả<br>4. Nhấn Tạo</td>
+        <td>Hiển thị thông báo: "Tạo workspace thành công!"</td>
+        <td>Hiển thị thông báo: "Tạo workspace thành công!"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_CWS_02</td>
+        <td>TS_CWS</td>
+        <td>Kiểm thử tạo workspace với tên trống</td>
+        <td>Tên: (trống)<br>Mô tả: Test description</td>
+        <td>1. Nhấn "Tạo Workspace"<br>2. Để trống tên<br>3. Nhấn Tạo</td>
+        <td>Hiển thị thông báo: "Tên workspace không được để trống!"</td>
+        <td>Hiển thị thông báo: "Tên workspace không được để trống!"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_CWS_03</td>
+        <td>TS_CWS</td>
+        <td>Kiểm thử tạo workspace với tên quá dài</td>
+        <td>Tên: (255+ ký tự)<br>Mô tả: Test</td>
+        <td>1. Nhấn "Tạo Workspace"<br>2. Nhập tên quá dài<br>3. Nhấn Tạo</td>
+        <td>Hiển thị thông báo: "Tên không được vượt quá 255 ký tự!"</td>
+        <td>Hiển thị thông báo: "Tên không được vượt quá 255 ký tự!"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_CWS_04</td>
+        <td>TS_CWS</td>
+        <td>Kiểm thử người tạo được gán làm Owner</td>
+        <td>Tên: Dev Team<br>Mô tả: Development workspace</td>
+        <td>1. Tạo workspace mới<br>2. Vào trang Members<br>3. Kiểm tra vai trò</td>
+        <td>Người tạo có vai trò "Owner"</td>
+        <td>Người tạo có vai trò "Owner"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+</table>
+
+<!-- TS_INVITE - Mời thành viên -->
+<p class="table-caption">Bảng 4.6. Kiểm tra chức năng mời thành viên</p>
+<table class="test-table">
+    <tr>
+        <th>Mã trường hợp kiểm thử</th>
+        <th>Mã kịch bản kiểm thử</th>
+        <th>Mô tả</th>
+        <th>Dữ liệu kiểm thử</th>
+        <th>Các bước thực hiện</th>
+        <th>Kết quả mong đợi</th>
+        <th>Kết quả thực tế</th>
+        <th>Kết quả</th>
+    </tr>
+    <tr>
+        <td>TC_INVITE_01</td>
+        <td>TS_INVITE</td>
+        <td>Kiểm thử mời thành viên với email hợp lệ</td>
+        <td>Email: member@gmail.com<br>Vai trò: Member</td>
+        <td>1. Nhấn "Mời thành viên"<br>2. Nhập email<br>3. Chọn vai trò<br>4. Nhấn Gửi</td>
+        <td>Hiển thị thông báo: "Đã gửi lời mời thành công!"</td>
+        <td>Hiển thị thông báo: "Đã gửi lời mời thành công!"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_INVITE_02</td>
+        <td>TS_INVITE</td>
+        <td>Kiểm thử mời thành viên đã là member</td>
+        <td>Email: nguyenvana@gmail.com<br>Vai trò: Member</td>
+        <td>1. Nhấn "Mời thành viên"<br>2. Nhập email đã là member<br>3. Nhấn Gửi</td>
+        <td>Hiển thị thông báo: "Người này đã là thành viên!"</td>
+        <td>Hiển thị thông báo: "Người này đã là thành viên!"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_INVITE_03</td>
+        <td>TS_INVITE</td>
+        <td>Kiểm thử mời với email không hợp lệ</td>
+        <td>Email: invalid-email<br>Vai trò: Member</td>
+        <td>1. Nhấn "Mời thành viên"<br>2. Nhập email không hợp lệ<br>3. Nhấn Gửi</td>
+        <td>Hiển thị thông báo: "Email không hợp lệ!"</td>
+        <td>Hiển thị thông báo: "Email không hợp lệ!"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_INVITE_04</td>
+        <td>TS_INVITE</td>
+        <td>Kiểm thử Member không có quyền mời</td>
+        <td>User có vai trò Member</td>
+        <td>1. Đăng nhập với tài khoản Member<br>2. Vào trang Members<br>3. Kiểm tra nút "Mời"</td>
+        <td>Không hiển thị nút "Mời thành viên"</td>
+        <td>Không hiển thị nút "Mời thành viên"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+</table>
+
+<!-- TS_ROLE - Phân quyền -->
+<p class="table-caption">Bảng 4.7. Kiểm tra chức năng phân quyền thành viên</p>
+<table class="test-table">
+    <tr>
+        <th>Mã trường hợp kiểm thử</th>
+        <th>Mã kịch bản kiểm thử</th>
+        <th>Mô tả</th>
+        <th>Dữ liệu kiểm thử</th>
+        <th>Các bước thực hiện</th>
+        <th>Kết quả mong đợi</th>
+        <th>Kết quả thực tế</th>
+        <th>Kết quả</th>
+    </tr>
+    <tr>
+        <td>TC_ROLE_01</td>
+        <td>TS_ROLE</td>
+        <td>Kiểm thử Owner đổi vai trò Member thành Admin</td>
+        <td>Member: Trần Thị B<br>Vai trò mới: Admin</td>
+        <td>1. Chọn thành viên<br>2. Nhấn "Chỉnh sửa"<br>3. Đổi vai trò<br>4. Lưu</td>
+        <td>Hiển thị thông báo: "Cập nhật vai trò thành công!"</td>
+        <td>Hiển thị thông báo: "Cập nhật vai trò thành công!"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_ROLE_02</td>
+        <td>TS_ROLE</td>
+        <td>Kiểm thử không thể đổi vai trò Owner</td>
+        <td>Owner: Nguyễn Văn A</td>
+        <td>1. Chọn Owner<br>2. Kiểm tra nút chỉnh sửa vai trò</td>
+        <td>Không hiển thị tùy chọn đổi vai trò Owner</td>
+        <td>Không hiển thị tùy chọn đổi vai trò Owner</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_ROLE_03</td>
+        <td>TS_ROLE</td>
+        <td>Kiểm thử Admin không thể đổi vai trò Admin khác</td>
+        <td>User: Admin<br>Target: Admin khác</td>
+        <td>1. Đăng nhập Admin<br>2. Chọn Admin khác<br>3. Kiểm tra quyền chỉnh sửa</td>
+        <td>Không cho phép chỉnh sửa vai trò Admin khác</td>
+        <td>Không cho phép chỉnh sửa vai trò Admin khác</td>
+        <td class="pass center">Pass</td>
+    </tr>
+</table>
+
+<!-- TS_UPLOAD - Upload file -->
+<p class="table-caption">Bảng 4.8. Kiểm tra chức năng upload tệp tin</p>
+<table class="test-table">
+    <tr>
+        <th>Mã trường hợp kiểm thử</th>
+        <th>Mã kịch bản kiểm thử</th>
+        <th>Mô tả</th>
+        <th>Dữ liệu kiểm thử</th>
+        <th>Các bước thực hiện</th>
+        <th>Kết quả mong đợi</th>
+        <th>Kết quả thực tế</th>
+        <th>Kết quả</th>
+    </tr>
+    <tr>
+        <td>TC_UPLOAD_01</td>
+        <td>TS_UPLOAD</td>
+        <td>Kiểm thử upload file hợp lệ</td>
+        <td>File: report.pdf<br>Kích thước: 2MB</td>
+        <td>1. Nhấn "Upload"<br>2. Chọn file<br>3. Xác nhận upload</td>
+        <td>Hiển thị thông báo: "Upload thành công!"</td>
+        <td>Hiển thị thông báo: "Upload thành công!"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_UPLOAD_02</td>
+        <td>TS_UPLOAD</td>
+        <td>Kiểm thử upload file quá lớn</td>
+        <td>File: bigfile.zip<br>Kích thước: 150MB</td>
+        <td>1. Nhấn "Upload"<br>2. Chọn file lớn<br>3. Xác nhận upload</td>
+        <td>Hiển thị thông báo: "File không được vượt quá 100MB!"</td>
+        <td>Hiển thị thông báo: "File không được vượt quá 100MB!"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_UPLOAD_03</td>
+        <td>TS_UPLOAD</td>
+        <td>Kiểm thử upload file không được hỗ trợ</td>
+        <td>File: malware.exe<br>Kích thước: 1MB</td>
+        <td>1. Nhấn "Upload"<br>2. Chọn file .exe<br>3. Xác nhận upload</td>
+        <td>Hiển thị thông báo: "Loại file không được hỗ trợ!"</td>
+        <td>Hiển thị thông báo: "Loại file không được hỗ trợ!"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_UPLOAD_04</td>
+        <td>TS_UPLOAD</td>
+        <td>Kiểm thử Viewer không có quyền upload</td>
+        <td>User có vai trò Viewer</td>
+        <td>1. Đăng nhập với Viewer<br>2. Vào trang Files<br>3. Kiểm tra nút Upload</td>
+        <td>Không hiển thị nút "Upload"</td>
+        <td>Không hiển thị nút "Upload"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+</table>
+
+<!-- TS_DOWNLOAD - Download file -->
+<p class="table-caption">Bảng 4.9. Kiểm tra chức năng download tệp tin</p>
+<table class="test-table">
+    <tr>
+        <th>Mã trường hợp kiểm thử</th>
+        <th>Mã kịch bản kiểm thử</th>
+        <th>Mô tả</th>
+        <th>Dữ liệu kiểm thử</th>
+        <th>Các bước thực hiện</th>
+        <th>Kết quả mong đợi</th>
+        <th>Kết quả thực tế</th>
+        <th>Kết quả</th>
+    </tr>
+    <tr>
+        <td>TC_DOWNLOAD_01</td>
+        <td>TS_DOWNLOAD</td>
+        <td>Kiểm thử download file thành công</td>
+        <td>File: report.pdf</td>
+        <td>1. Chọn file<br>2. Nhấn nút Download</td>
+        <td>File được tải xuống</td>
+        <td>File được tải xuống</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_DOWNLOAD_02</td>
+        <td>TS_DOWNLOAD</td>
+        <td>Kiểm thử download file đã bị xóa</td>
+        <td>File đã bị xóa</td>
+        <td>1. Truy cập URL file đã xóa</td>
+        <td>Hiển thị thông báo: "File không tồn tại!"</td>
+        <td>Hiển thị thông báo: "File không tồn tại!"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_DOWNLOAD_03</td>
+        <td>TS_DOWNLOAD</td>
+        <td>Kiểm thử download không có quyền</td>
+        <td>User không phải member của workspace</td>
+        <td>1. Truy cập URL file workspace khác</td>
+        <td>Hiển thị thông báo: "Bạn không có quyền truy cập!"</td>
+        <td>Hiển thị thông báo: "Bạn không có quyền truy cập!"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+</table>
+
+<!-- TS_AIREPORT - Tạo báo cáo AI -->
+<p class="table-caption">Bảng 4.10. Kiểm tra chức năng tạo báo cáo AI</p>
+<table class="test-table">
+    <tr>
+        <th>Mã trường hợp kiểm thử</th>
+        <th>Mã kịch bản kiểm thử</th>
+        <th>Mô tả</th>
+        <th>Dữ liệu kiểm thử</th>
+        <th>Các bước thực hiện</th>
+        <th>Kết quả mong đợi</th>
+        <th>Kết quả thực tế</th>
+        <th>Kết quả</th>
+    </tr>
+    <tr>
+        <td>TC_AIREPORT_01</td>
+        <td>TS_AIREPORT</td>
+        <td>Kiểm thử tạo báo cáo AI thành công</td>
+        <td>Loại: Weekly Digest<br>Provider: OpenAI GPT-4</td>
+        <td>1. Nhấn "Tạo báo cáo"<br>2. Chọn loại báo cáo<br>3. Chọn provider<br>4. Nhấn Tạo</td>
+        <td>Hiển thị thông báo: "Đang tạo báo cáo..." và sau đó hiển thị báo cáo</td>
+        <td>Hiển thị thông báo: "Đang tạo báo cáo..." và sau đó hiển thị báo cáo</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_AIREPORT_02</td>
+        <td>TS_AIREPORT</td>
+        <td>Kiểm thử tạo báo cáo với prompt tùy chỉnh</td>
+        <td>Loại: Custom<br>Prompt: "Tóm tắt hoạt động tuần này"</td>
+        <td>1. Nhấn "Tạo báo cáo"<br>2. Chọn Custom<br>3. Nhập prompt<br>4. Nhấn Tạo</td>
+        <td>Báo cáo được tạo theo prompt</td>
+        <td>Báo cáo được tạo theo prompt</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_AIREPORT_03</td>
+        <td>TS_AIREPORT</td>
+        <td>Kiểm thử Member không có quyền tạo báo cáo</td>
+        <td>User có vai trò Member</td>
+        <td>1. Đăng nhập Member<br>2. Vào trang AI Reports<br>3. Kiểm tra nút Tạo</td>
+        <td>Không hiển thị nút "Tạo báo cáo"</td>
+        <td>Không hiển thị nút "Tạo báo cáo"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_AIREPORT_04</td>
+        <td>TS_AIREPORT</td>
+        <td>Kiểm thử xuất báo cáo ra PDF</td>
+        <td>Báo cáo đã tạo</td>
+        <td>1. Chọn báo cáo<br>2. Nhấn Export<br>3. Chọn PDF</td>
+        <td>File PDF được tải xuống</td>
+        <td>File PDF được tải xuống</td>
+        <td class="pass center">Pass</td>
+    </tr>
+</table>
+
+<!-- TS_NOTIF - Thông báo -->
+<p class="table-caption">Bảng 4.11. Kiểm tra chức năng xem thông báo</p>
+<table class="test-table">
+    <tr>
+        <th>Mã trường hợp kiểm thử</th>
+        <th>Mã kịch bản kiểm thử</th>
+        <th>Mô tả</th>
+        <th>Dữ liệu kiểm thử</th>
+        <th>Các bước thực hiện</th>
+        <th>Kết quả mong đợi</th>
+        <th>Kết quả thực tế</th>
+        <th>Kết quả</th>
+    </tr>
+    <tr>
+        <td>TC_NOTIF_01</td>
+        <td>TS_NOTIF</td>
+        <td>Kiểm thử hiển thị danh sách thông báo</td>
+        <td>User có thông báo</td>
+        <td>1. Nhấn vào icon thông báo</td>
+        <td>Hiển thị dropdown danh sách thông báo</td>
+        <td>Hiển thị dropdown danh sách thông báo</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_NOTIF_02</td>
+        <td>TS_NOTIF</td>
+        <td>Kiểm thử đánh dấu đã đọc</td>
+        <td>Thông báo chưa đọc</td>
+        <td>1. Nhấn vào thông báo chưa đọc</td>
+        <td>Thông báo được đánh dấu đã đọc</td>
+        <td>Thông báo được đánh dấu đã đọc</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_NOTIF_03</td>
+        <td>TS_NOTIF</td>
+        <td>Kiểm thử đánh dấu tất cả đã đọc</td>
+        <td>Nhiều thông báo chưa đọc</td>
+        <td>1. Nhấn "Đánh dấu tất cả đã đọc"</td>
+        <td>Tất cả thông báo được đánh dấu đã đọc, badge về 0</td>
+        <td>Tất cả thông báo được đánh dấu đã đọc, badge về 0</td>
+        <td class="pass center">Pass</td>
+    </tr>
+</table>
+
+<!-- TS_PROFILE - Cập nhật profile -->
+<p class="table-caption">Bảng 4.12. Kiểm tra chức năng cập nhật thông tin cá nhân</p>
+<table class="test-table">
+    <tr>
+        <th>Mã trường hợp kiểm thử</th>
+        <th>Mã kịch bản kiểm thử</th>
+        <th>Mô tả</th>
+        <th>Dữ liệu kiểm thử</th>
+        <th>Các bước thực hiện</th>
+        <th>Kết quả mong đợi</th>
+        <th>Kết quả thực tế</th>
+        <th>Kết quả</th>
+    </tr>
+    <tr>
+        <td>TC_PROFILE_01</td>
+        <td>TS_PROFILE</td>
+        <td>Kiểm thử cập nhật họ tên thành công</td>
+        <td>Họ tên mới: Nguyễn Văn B</td>
+        <td>1. Vào trang Profile<br>2. Nhấn Chỉnh sửa<br>3. Đổi họ tên<br>4. Lưu</td>
+        <td>Hiển thị thông báo: "Cập nhật thành công!"</td>
+        <td>Hiển thị thông báo: "Cập nhật thành công!"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_PROFILE_02</td>
+        <td>TS_PROFILE</td>
+        <td>Kiểm thử upload avatar</td>
+        <td>File: avatar.jpg<br>Kích thước: 500KB</td>
+        <td>1. Vào trang Profile<br>2. Nhấn đổi avatar<br>3. Chọn file<br>4. Lưu</td>
+        <td>Avatar được cập nhật</td>
+        <td>Avatar được cập nhật</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_PROFILE_03</td>
+        <td>TS_PROFILE</td>
+        <td>Kiểm thử cập nhật số điện thoại không hợp lệ</td>
+        <td>SĐT: abc123</td>
+        <td>1. Vào trang Profile<br>2. Nhập SĐT không hợp lệ<br>3. Lưu</td>
+        <td>Hiển thị thông báo: "Số điện thoại không hợp lệ!"</td>
+        <td>Hiển thị thông báo: "Số điện thoại không hợp lệ!"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+</table>
+
+<!-- TS_ADMIN - Admin functions -->
+<p class="table-caption">Bảng 4.13. Kiểm tra chức năng Admin khóa/mở khóa workspace</p>
+<table class="test-table">
+    <tr>
+        <th>Mã trường hợp kiểm thử</th>
+        <th>Mã kịch bản kiểm thử</th>
+        <th>Mô tả</th>
+        <th>Dữ liệu kiểm thử</th>
+        <th>Các bước thực hiện</th>
+        <th>Kết quả mong đợi</th>
+        <th>Kết quả thực tế</th>
+        <th>Kết quả</th>
+    </tr>
+    <tr>
+        <td>TC_ADMIN_01</td>
+        <td>TS_ADMIN</td>
+        <td>Kiểm thử Super Admin khóa workspace</td>
+        <td>Workspace: Marketing Team<br>Lý do: Vi phạm chính sách</td>
+        <td>1. Đăng nhập Super Admin<br>2. Vào Admin Panel<br>3. Chọn workspace<br>4. Nhấn Khóa<br>5. Nhập lý do</td>
+        <td>Hiển thị thông báo: "Đã khóa workspace!"</td>
+        <td>Hiển thị thông báo: "Đã khóa workspace!"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_ADMIN_02</td>
+        <td>TS_ADMIN</td>
+        <td>Kiểm thử Super Admin mở khóa workspace</td>
+        <td>Workspace đang bị khóa</td>
+        <td>1. Đăng nhập Super Admin<br>2. Vào Admin Panel<br>3. Chọn workspace bị khóa<br>4. Nhấn Mở khóa</td>
+        <td>Hiển thị thông báo: "Đã mở khóa workspace!"</td>
+        <td>Hiển thị thông báo: "Đã mở khóa workspace!"</td>
+        <td class="pass center">Pass</td>
+    </tr>
+    <tr>
+        <td>TC_ADMIN_03</td>
+        <td>TS_ADMIN</td>
+        <td>Kiểm thử user thường không truy cập được Admin Panel</td>
+        <td>User thường</td>
+        <td>1. Đăng nhập user thường<br>2. Truy cập URL /admin</td>
+        <td>Chuyển hướng về trang 403 hoặc Dashboard</td>
+        <td>Chuyển hướng về trang 403 hoặc Dashboard</td>
+        <td class="pass center">Pass</td>
+    </tr>
+</table>
+
+<h2><span class="section-number">4.6.</span> Đánh giá kiểm thử</h2>
+
+<p class="table-caption">Bảng 4.14. Bảng đánh giá kiểm thử</p>
+<table>
+    <tr>
+        <th>Mã kịch bản kiểm thử</th>
+        <th>Mô tả kịch bản kiểm thử</th>
+        <th>Số trường hợp kiểm thử</th>
+        <th>Số trường hợp kiểm thử thành công</th>
+        <th>Số trường hợp kiểm thử thất bại</th>
+    </tr>
+    <tr>
+        <td>TS_REG</td>
+        <td>Kiểm tra chức năng đăng ký tài khoản</td>
+        <td class="center">5</td>
+        <td class="center">5</td>
+        <td class="center">0</td>
+    </tr>
+    <tr>
+        <td>TS_LOGIN</td>
+        <td>Kiểm tra chức năng đăng nhập</td>
+        <td class="center">4</td>
+        <td class="center">4</td>
+        <td class="center">0</td>
+    </tr>
+    <tr>
+        <td>TS_LOGOUT</td>
+        <td>Kiểm tra chức năng đăng xuất</td>
+        <td class="center">2</td>
+        <td class="center">2</td>
+        <td class="center">0</td>
+    </tr>
+    <tr>
+        <td>TS_CWS</td>
+        <td>Kiểm tra chức năng tạo workspace</td>
+        <td class="center">4</td>
+        <td class="center">4</td>
+        <td class="center">0</td>
+    </tr>
+    <tr>
+        <td>TS_INVITE</td>
+        <td>Kiểm tra chức năng mời thành viên</td>
+        <td class="center">4</td>
+        <td class="center">4</td>
+        <td class="center">0</td>
+    </tr>
+    <tr>
+        <td>TS_ROLE</td>
+        <td>Kiểm tra chức năng phân quyền thành viên</td>
+        <td class="center">3</td>
+        <td class="center">3</td>
+        <td class="center">0</td>
+    </tr>
+    <tr>
+        <td>TS_UPLOAD</td>
+        <td>Kiểm tra chức năng upload tệp tin</td>
+        <td class="center">4</td>
+        <td class="center">4</td>
+        <td class="center">0</td>
+    </tr>
+    <tr>
+        <td>TS_DOWNLOAD</td>
+        <td>Kiểm tra chức năng download tệp tin</td>
+        <td class="center">3</td>
+        <td class="center">3</td>
+        <td class="center">0</td>
+    </tr>
+    <tr>
+        <td>TS_AIREPORT</td>
+        <td>Kiểm tra chức năng tạo báo cáo AI</td>
+        <td class="center">4</td>
+        <td class="center">4</td>
+        <td class="center">0</td>
+    </tr>
+    <tr>
+        <td>TS_NOTIF</td>
+        <td>Kiểm tra chức năng xem thông báo</td>
+        <td class="center">3</td>
+        <td class="center">3</td>
+        <td class="center">0</td>
+    </tr>
+    <tr>
+        <td>TS_PROFILE</td>
+        <td>Kiểm tra chức năng cập nhật thông tin cá nhân</td>
+        <td class="center">3</td>
+        <td class="center">3</td>
+        <td class="center">0</td>
+    </tr>
+    <tr>
+        <td>TS_ADMIN</td>
+        <td>Kiểm tra chức năng Admin khóa/mở khóa workspace</td>
+        <td class="center">3</td>
+        <td class="center">3</td>
+        <td class="center">0</td>
+    </tr>
+    <tr style="font-weight: bold; background-color: #f0f0f0;">
+        <td colspan="2" class="center">TỔNG CỘNG</td>
+        <td class="center">42</td>
+        <td class="center">42</td>
+        <td class="center">0</td>
+    </tr>
+</table>
+
+<p>Kết quả kiểm thử được thực hiện trên 12 kịch bản với tổng số trường hợp là 42. Số trường hợp kiểm thử thành công là 42/42, số trường hợp kiểm thử thất bại là 0/42. Qua kết quả trên, hệ thống sau khi trải qua quá trình kiểm thử thì kết quả thành công đạt 100%. Kết quả cho thấy hệ thống hoạt động tốt và ổn định.</p>
+
+</body>
+</html>
