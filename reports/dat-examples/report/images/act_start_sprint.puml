@@ -1,0 +1,42 @@
+@startuml act_start_sprint
+|Người dùng|
+start
+:Chọn sprint FUTURE;
+:Nhấn "Start Sprint";
+|Giao diện người dùng|
+:Hiển thị dialog xác nhận;
+|Người dùng|
+:Xác nhận start sprint;
+|Giao diện người dùng|
+:Gửi request start sprint;
+|Hệ thống xử lý|
+:Kiểm tra có sprint
+ACTIVE khác;
+if (Có sprint ACTIVE?) then (có)
+  |Giao diện người dùng|
+  :Thông báo lỗi:
+  "Only 1 active sprint allowed";
+  |Người dùng|
+  stop
+else (không)
+  :Kiểm tra sprint có issues;
+  if (Sprint có issues?) then (không)
+    |Giao diện người dùng|
+    :Cảnh báo sprint trống;
+    |Người dùng|
+    if (Vẫn muốn start?) then (không)
+      stop
+    endif
+  endif
+  :Update sprint.status = ACTIVE;
+  :Update sprint.startDate = now;
+  :Tạo audit log;
+  :Gửi WebSocket notification;
+  |Giao diện người dùng|
+  :Thông báo start thành công;
+  :Cập nhật UI;
+  :Chuyển đến Board view;
+  |Người dùng|
+  stop
+endif
+@enduml
