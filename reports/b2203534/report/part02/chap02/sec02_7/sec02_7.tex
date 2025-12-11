@@ -1,0 +1,21 @@
+\subsection{Giới thiệu về Object Storage}
+
+\subsubsection{Khái quát}
+
+Object Storage là phương thức lưu trữ dữ liệu dưới dạng objects, trong đó mỗi object bao gồm data, metadata, và unique identifier. Khác với traditional file systems sử dụng hierarchical directory structure, Object Storage sử dụng flat structure tổ chức data trong buckets với unique keys, phù hợp cho việc lưu trữ unstructured data như images, videos, documents, và backups. Mỗi object có thể có custom metadata giúp tổ chức và query data hiệu quả, khả năng scalability cho phép dễ dàng scale lên petabytes data mà không cần redesign architecture, HTTP access thông qua REST APIs giúp integration với applications đơn giản, và durability cao do data được replicate across multiple nodes hoặc locations đảm bảo data không bị mất.
+
+\subsubsection{Amazon S3 và đặc điểm}
+
+Amazon S3 (Simple Storage Service) là dịch vụ object storage của AWS với độ bền durability lên đến 99.999999999\% (11 nines), được thiết kế để lưu trữ và truy xuất bất kỳ lượng data nào từ bất kỳ đâu trên Internet. S3 tổ chức data trong Buckets là containers để lưu trữ objects, mỗi object được identify bằng unique key. S3 cung cấp nhiều Storage Classes như Standard cho frequently accessed data, Intelligent-Tiering tự động optimize costs, Glacier cho archival storage với low cost, phù hợp cho different access patterns. Versioning cho phép lưu trữ multiple versions của một object để protect against accidental deletes và overwrites. Access Control được quản lý qua IAM policies, bucket policies, và ACLs với granular permissions. Pre-signed URLs tạo temporary URLs để upload hoặc download objects với time-limited access mà không cần expose credentials. Event Notifications có thể trigger Lambda functions hoặc send messages đến SQS/SNS khi có changes trong bucket.
+
+\subsubsection{MinIO và ứng dụng}
+
+MinIO là một high-performance, S3-compatible object storage được thiết kế cho cloud-native workloads, có thể chạy on-premises hoặc trên cloud. MinIO cung cấp API 100\% compatible với Amazon S3 cho phép sử dụng các S3 SDKs và tools hiện có mà không cần code changes, thiết kế để đạt high throughput với commodity hardware, là single binary dễ dàng deploy với Docker hoặc Kubernetes, open source với Apache License 2.0 có thể self-host miễn phí, Kubernetes native với MinIO Operator giúp orchestration và scaling, và cung cấp Console UI là web-based management interface để quản lý buckets và objects.
+
+MinIO phù hợp cho nhiều use cases: Development Environment sử dụng local S3-compatible storage cho development và testing mà không cần kết nối đến AWS, Private Cloud làm on-premises object storage cho enterprises muốn kiểm soát data và tuân thủ compliance requirements, CI/CD làm artifact storage trong CI/CD pipelines để lưu trữ build artifacts và container images, và Data Lakes làm storage layer cho analytics workloads với high throughput cho large-scale data processing.
+
+\subsubsection{Vận dụng vào đề tài}
+
+Hệ thống quản lý files được thiết kế với dual-environment strategy tận dụng S3-compatible API. Development environment sử dụng MinIO chạy trong Docker container, cung cấp S3-compatible API cho seamless transition sang production, và MinIO Console để quản lý buckets và debug issues. Production environment sử dụng AWS S3 cho high durability và availability với 11 nines durability guarantee, cùng codebase với development nhờ S3-compatible API không cần code changes, và lifecycle policies để automatically transition objects giữa storage classes và manage storage costs.
+
+File Service implement các features chung cho cả hai environments: Pre-signed URLs cho phép clients upload files trực tiếp lên object storage mà không qua backend server giảm load, và download với temporary URLs có time-limited access tăng cường bảo mật. Bucket per workspace strategy đảm bảo data isolation hoàn toàn giữa các workspaces, mỗi workspace có dedicated bucket với separate access policies. File proces\-sing tự động generate thumbnails cho images với image processing libraries như Sharp, extract metadata từ documents, và validate file types trước khi upload. Soft delete mechanism move files vào trash folder thay vì xóa ngay, cho phép users restore trong vòng 30 ngày, sau đó files được xóa vĩnh viễn tự động bằng lifecycle policies.

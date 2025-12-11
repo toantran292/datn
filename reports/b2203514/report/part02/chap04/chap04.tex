@@ -1,0 +1,162 @@
+\subsection{Giới thiệu}
+
+\subsubsection{Mục tiêu kiểm thử}
+
+Quy trình kiểm thử "Xây dựng Nền tảng SaaS tích hợp AI nhằm Thống nhất Quản lý Dự án Agile" nhằm đạt được các mục tiêu sau:
+
+\begin{itemize}
+    \item Phát hiện và xử lý các lỗi phát sinh, đảm bảo hệ thống hoạt động đúng theo các yêu cầu đã được đặc tả.
+    \item Xác minh và đánh giá mức độ đáp ứng của các chức năng so với kỳ vọng người dùng và đặc tả kỹ thuật.
+    \item Ghi nhận kết quả kiểm thử để phục vụ công tác phân tích, tối ưu và bảo trì hệ thống về sau.
+\end{itemize}
+
+\subsubsection{Phạm vi kiểm thử}
+
+Quy trình kiểm thử được thực hiện thông qua các giai đoạn sau:
+
+\begin{itemize}
+    \item Kiểm thử thiết kế: đánh giá giao diện website, đảm bảo tuân thủ thiết kế UI/UX và thể hiện đúng mô tả trong đặc tả yêu cầu.
+    \item Kiểm thử chấp nhận: xác nhận hệ thống đáp ứng đúng các chức năng được yêu cầu, bao gồm quản lý workspace, thành viên, tệp tin và báo cáo AI.
+    \item Kiểm thử chức năng: đảm bảo các chức năng xử lý đúng dữ liệu đầu vào và trả về kết quả chính xác.
+    \item Kiểm thử cài đặt và triển khai: phát hiện và xử lý lỗi phát sinh trong quá trình cài đặt, cấu hình và triển khai hệ thống.
+\end{itemize}
+
+\subsection{Chi tiết kế hoạch kiểm thử}
+
+\subsubsection{Các trường hợp kiểm thử}
+
+Các trường hợp kiểm thử chính được xác định bao gồm:
+
+\begin{itemize}
+    \item Người dùng thực hiện đăng ký tài khoản mới.
+    \item Người dùng thực hiện đăng nhập vào hệ thống.
+    \item Người dùng tạo và quản lý workspace.
+    \item Người dùng mời và quản lý thành viên trong workspace.
+    \item Người dùng upload và quản lý tệp tin.
+    \item Người dùng tạo báo cáo AI.
+    \item Người dùng xem và quản lý thông báo.
+    \item Admin quản lý hệ thống và khóa/mở khóa workspace.
+\end{itemize}
+
+\subsubsection{Cách tiếp cận}
+
+Tiến hành kiểm thử theo thứ tự ưu tiên từ các chức năng chính đến các chức năng phụ, kiểm thử theo từ trên xuống và từ trái qua phải, đảm bảo không bỏ sót bất kỳ chức năng quan trọng nào.
+
+\subsubsection{Tiêu chí kiểm thử thành công/thất bại}
+
+\begin{itemize}
+    \item Tiêu chí kiểm thử thành công là kết quả thực thi đúng như mong đợi, phù hợp với đặc tả yêu cầu, không phát sinh lỗi nghiêm trọng và trải nghiệm người dùng mượt mà.
+    \item Tiêu chí kiểm thử thất bại là kết quả không như mong đợi, sai lệch so với đặc tả yêu cầu, phát sinh lỗi chức năng hoặc lỗi hiển thị, gây gián đoạn trải nghiệm người dùng.
+\end{itemize}
+
+\subsubsection{Tiêu chí đình chỉ và yêu cầu bắt đầu lại}
+
+\begin{itemize}
+    \item Tiêu chí đình chỉ: Chức năng thông báo lỗi trong quá trình thực hiện kiểm thử.
+    \item Tiêu chí yêu cầu bắt đầu lại: Chức năng bị đình chỉ đã được sửa lỗi hoàn tất, đã xây dựng kịch bản kiểm thử và các trường hợp kiểm thử lại cho chức năng.
+\end{itemize}
+
+\subsubsection{Sản phẩm bàn giao kiểm thử}
+
+\begin{itemize}
+    \item Kế hoạch kiểm thử.
+    \item Tài liệu các trường hợp kiểm thử.
+\end{itemize}
+
+\subsection{Quản lý kiểm thử}
+
+\subsubsection{Quy trình kiểm thử}
+
+Quá trình kiểm thử các chức năng sẽ thực hiện như sau:
+
+\begin{itemize}
+    \item Lập kế hoạch tạo các trường hợp kiểm thử.
+    \item Tiến hành kiểm thử.
+    \item Ghi lại các kết quả kiểm thử.
+\end{itemize}
+
+\subsubsection{Môi trường kiểm thử}
+
+Phần cứng:
+
+\begin{itemize}
+    \item Vi xử lý: Intel Core i5
+    \item RAM: 8GB
+    \item Ổ cứng: SSD 512GB
+    \item Cấu hình mạng: có kết nối internet
+\end{itemize}
+
+Phần mềm:
+
+\begin{itemize}
+    \item Hệ điều hành: Windows 11 / macOS
+    \item Trình duyệt: Google Chrome, Firefox, Safari
+    \item Database: PostgreSQL
+    \item Backend: NestJS
+    \item Frontend: Next.js
+\end{itemize}
+
+\subsection{Kịch bản kiểm thử}
+
+Các kịch bản kiểm thử bao gồm:
+
+\begin{adjustwidth}{-1.5cm}{-0.5cm}
+\begin{longtblr}[
+  caption = {Bảng kịch bản kiểm thử},
+  label = {tab:test_scenarios}
+]{
+  width=1\linewidth, hlines, vlines,
+  colspec={X[1.5,l]X[0.75,l]X[2.5,l]X[0.8,c]X[1,c]},
+  row{1}={font=\bfseries, c, bg=gray9},
+  row{2}={font=\bfseries, c, bg=gray9},
+  row{3}={font=\bfseries, c, bg=gray9},
+  row{4}={font=\bfseries, c, bg=gray9}
+}
+\SetCell[c=2]{} Tên dự án & & \SetCell[c=3]{} {Xây dựng Nền tảng SaaS tích hợp AI nhằm\\ Thống nhất Quản lý Dự án Agile} & & \\
+\SetCell[c=2]{} Người thực hiện & & \SetCell[c=3]{} Khưu Thị Bích Ngọc & & \\
+\SetCell[c=2]{} Ngày thực hiện & & \SetCell[c=3]{} 10/12/2025 & & \\
+Mã kịch bản kiểm thử & Mã yêu cầu & Mô tả kịch bản kiểm thử & Độ ưu tiên & Số trường hợp kiểm thử \\
+TS\_REG & RQ01 & Kiểm tra chức năng đăng ký tài khoản & P1 & 5 \\
+TS\_LOGIN & RQ02 & Kiểm tra chức năng đăng nhập & P1 & 4 \\
+TS\_LOGOUT & RQ03 & Kiểm tra chức năng đăng xuất & P1 & 2 \\
+TS\_CWS & RQ04 & Kiểm tra chức năng tạo workspace & P1 & 4 \\
+TS\_INVITE & RQ05 & Kiểm tra chức năng mời thành viên & P1 & 4 \\
+TS\_ROLE & RQ06 & Kiểm tra chức năng phân quyền thành viên & P2 & 3 \\
+TS\_UPLOAD & RQ07 & Kiểm tra chức năng upload tệp tin & P1 & 4 \\
+TS\_DOWNLOAD & RQ08 & Kiểm tra chức năng download tệp tin & P2 & 3 \\
+TS\_AIREPORT & RQ09 & Kiểm tra chức năng tạo báo cáo AI & P1 & 4 \\
+TS\_NOTIF & RQ10 & Kiểm tra chức năng xem thông báo & P2 & 3 \\
+TS\_PROFILE & RQ11 & Kiểm tra chức năng cập nhật thông tin cá nhân & P2 & 3 \\
+TS\_ADMIN & RQ12 & Kiểm tra chức năng Admin khóa/mở khóa workspace & P1 & 3 \\
+\end{longtblr}
+\end{adjustwidth}
+
+\subsection{Đánh giá kiểm thử}
+
+\begin{longtblr}[
+  caption = {Bảng đánh giá kiểm thử},
+  label = {tab:test_evaluation}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[2.5,l]X[1,c]X[1,c]X[1,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9},
+  row{14}={font=\bfseries, bg=gray9}
+}
+Mã kịch bản & Mô tả kịch bản kiểm thử & Số TC & Thành công & Thất bại \\
+TS\_REG & Kiểm tra chức năng đăng ký tài khoản & 5 & 5 & 0 \\
+TS\_LOGIN & Kiểm tra chức năng đăng nhập & 4 & 4 & 0 \\
+TS\_LOGOUT & Kiểm tra chức năng đăng xuất & 2 & 2 & 0 \\
+TS\_CWS & Kiểm tra chức năng tạo workspace & 4 & 4 & 0 \\
+TS\_INVITE & Kiểm tra chức năng mời thành viên & 4 & 4 & 0 \\
+TS\_ROLE & Kiểm tra chức năng phân quyền thành viên & 3 & 3 & 0 \\
+TS\_UPLOAD & Kiểm tra chức năng upload tệp tin & 4 & 4 & 0 \\
+TS\_DOWNLOAD & Kiểm tra chức năng download tệp tin & 3 & 3 & 0 \\
+TS\_AIREPORT & Kiểm tra chức năng tạo báo cáo AI & 4 & 4 & 0 \\
+TS\_NOTIF & Kiểm tra chức năng xem thông báo & 3 & 3 & 0 \\
+TS\_PROFILE & Kiểm tra chức năng cập nhật thông tin cá nhân & 3 & 3 & 0 \\
+TS\_ADMIN & Kiểm tra chức năng Admin khóa/mở khóa workspace & 3 & 3 & 0 \\
+TỔNG CỘNG & & 42 & 42 & 0 \\
+\end{longtblr}
+
+Kết quả kiểm thử được thực hiện trên 12 kịch bản với tổng số trường hợp là 42. Số trường hợp kiểm thử thành công là 42/42, số trường hợp kiểm thử thất bại là 0/42. Qua kết quả trên, hệ thống sau khi trải qua quá trình kiểm thử thì kết quả thành công đạt 100\%. Kết quả cho thấy hệ thống hoạt động tốt và ổn định.

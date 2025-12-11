@@ -1,0 +1,69 @@
+% ==================== NHÓM WORKSPACE ====================
+
+\subsubsection{Chức năng tạo Workspace}
+
+\textbf{Mục đích:} Cho phép người dùng tạo một workspace mới để quản lý nhóm làm việc, tệp tin và báo cáo AI.
+
+\textbf{Dữ liệu được dùng:}
+
+\begin{adjustwidth}{-1.5cm}{-0.5cm}
+\begin{longtblr}[
+  caption = {Bảng dữ liệu được dùng cho chức năng tạo Workspace},
+  label = {tab:func_create_workspace}
+]{
+  width=\linewidth, rowhead=2, hlines, vlines,
+  colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
+  rows={m},
+  row{1-2}={font=\bfseries, c, bg=gray9}
+}
+\SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
+& & Thêm & Sửa & Xóa & Truy vấn \\
+1 & Workspace & X & & & X \\
+2 & Member & X & & & \\
+3 & AuditLog & X & & & \\
+\end{longtblr}
+\end{adjustwidth}
+
+\textbf{Xử lý:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{images/act_create_workspace.png}
+\caption{Sơ đồ hoạt động của chức năng tạo Workspace}
+\label{fig:act_create_workspace}
+\end{figure}
+
+\subsubsection{Chức năng xem Dashboard}
+
+\textbf{Mục đích:} Cho phép thành viên xem tổng quan hoạt động của workspace bao gồm thống kê và biểu đồ.
+
+\textbf{Dữ liệu được dùng:}
+
+\begin{adjustwidth}{-1.5cm}{-0.5cm}
+\begin{longtblr}[
+  caption = {Bảng dữ liệu được dùng cho chức năng xem Dashboard},
+  label = {tab:func_view_dashboard}
+]{
+  width=\linewidth, rowhead=2, hlines, vlines,
+  colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
+  rows={m},
+  row{1-2}={font=\bfseries, c, bg=gray9}
+}
+\SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
+& & Thêm & Sửa & Xóa & Truy vấn \\
+1 & Workspace & & & & X \\
+2 & Member & & & & X \\
+3 & File & & & & X \\
+4 & AIReport & & & & X \\
+5 & AuditLog & & & & X \\
+\end{longtblr}
+\end{adjustwidth}
+
+\textbf{Xử lý:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{images/act_view_dashboard.png}
+\caption{Sơ đồ hoạt động của chức năng xem Dashboard}
+\label{fig:act_view_dashboard}
+\end{figure}

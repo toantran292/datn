@@ -1,0 +1,14 @@
+\subsection{Môi trường vận hành}
+
+\begin{itemize}
+    \item Triển khai trên Linux (Ubuntu Server 22.04 LTS) hoặc containerized với Docker.
+    \item Account Service chạy trên JVM (Java Virtual Machine) với Java 17 hoặc cao hơn.
+    \item Các services khác chạy trên Node.js runtime (v18 LTS hoặc cao hơn).
+    \item Web server và Reverse Proxy: Nginx để xử lý SSL termi\-nation, load balancing và routing.
+    \item Object Storage: MinIO (development), AWS S3 (production).
+    \item Trình duyệt hỗ trợ JavaScript và WebSocket: Chrome, Firefox, Edge, Safari.
+    \item Phát triển: IntelliJ IDEA (Account Service) và Visual Studio Code (Frontend, NestJS services).
+    \item Build tools: Maven/Gradle cho Account Service, npm/yarn cho Frontend và NestJS services.
+    \item Kiểm thử trên Postman và testing tự động (JUnit, Jest).
+    \item Kết nối Internet ổn định để gọi API LLM Provider (OpenAI, Anthropic, Google).
+\end{itemize}

@@ -1,0 +1,209 @@
+\begin{landscape}
+\pagestyle{lscape}
+
+\phantomsection
+\setsection{Phụ lục C. TÀI LIỆU KIỂM THỬ}
+\setcounter{section}{7}
+\setcounter{table}{0}
+\renewcommand{\thetable}{7.\arabic{table}}
+
+\subsection*{Các trường hợp kiểm thử chi tiết}
+
+Chi tiết các trường hợp kiểm thử như sau:
+
+% TS_REG - Đăng ký
+
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng đăng ký tài khoản},
+  label = {tab:tc_register}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-REG\_\-01 & TS\_\-REG & Kiểm thử đăng ký với thông tin hợp lệ & Họ tên: Nguyễn Văn A\newline Email: nguyenvana\-@gmail.com\newline Mật khẩu: Password123! & 1. Nhập họ tên\newline 2. Nhập email\newline 3. Nhập mật khẩu\newline 4. Xác nhận mật khẩu\newline 5. Nhấn Đăng ký & Hiển thị thông báo: "Đăng ký thành công!" & Hiển thị thông báo: "Đăng ký thành công!" & Pass \\
+TC\_\-REG\_\-02 & TS\_\-REG & Kiểm thử đăng ký với email đã tồn tại & Họ tên: Trần Thị B\newline Email: nguyenvana\-@gmail.com\newline Mật khẩu: Password123! & 1. Nhập họ tên\newline 2. Nhập email đã tồn tại\newline 3. Nhập mật khẩu\newline 4. Xác nhận mật khẩu\newline 5. Nhấn Đăng ký & Hiển thị thông báo: "Email đã được sử dụng!" & Hiển thị thông báo: "Email đã được sử dụng!" & Pass \\
+TC\_\-REG\_\-03 & TS\_\-REG & Kiểm thử đăng ký với email không hợp lệ & Họ tên: Lê Văn C\newline Email: invalid-email\newline Mật khẩu: Password123! & 1. Nhập họ tên\newline 2. Nhập email không hợp lệ\newline 3. Nhập mật khẩu\newline 4. Nhấn Đăng ký & Hiển thị thông báo: "Email không hợp lệ!" & Hiển thị thông báo: "Email không hợp lệ!" & Pass \\
+TC\_\-REG\_\-04 & TS\_\-REG & Kiểm thử đăng ký với mật khẩu yếu & Họ tên: Phạm Văn D\newline Email: phamvand\-@gmail.com\newline Mật khẩu: 123 & 1. Nhập họ tên\newline 2. Nhập email\newline 3. Nhập mật khẩu yếu\newline 4. Nhấn Đăng ký & Hiển thị thông báo: "Mật khẩu phải có ít nhất 8 ký tự!" & Hiển thị thông báo: "Mật khẩu phải có ít nhất 8 ký tự!" & Pass \\
+TC\_\-REG\_\-05 & TS\_\-REG & Kiểm thử đăng ký với mật khẩu không khớp & Họ tên: Hoàng Văn E\newline Email: hoangvane\-@gmail.com\newline Mật khẩu: Password123!\newline Xác nhận: Password456! & 1. Nhập họ tên\newline 2. Nhập email\newline 3. Nhập mật khẩu\newline 4. Nhập xác nhận khác\newline 5. Nhấn Đăng ký & Hiển thị thông báo: "Mật khẩu xác nhận không khớp!" & Hiển thị thông báo: "Mật khẩu xác nhận không khớp!" & Pass \\
+\end{longtblr}
+
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng đăng nhập},
+  label = {tab:tc_login}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-LOGIN\_\-01 & TS\_\-LOGIN & Kiểm thử đăng nhập với thông tin hợp lệ & Email: nguyenvana\-@gmail.com\newline Mật khẩu: Password123! & 1. Nhập email\newline 2. Nhập mật khẩu\newline 3. Nhấn Đăng nhập & Chuyển đến trang Dashboard & Chuyển đến trang Dashboard & Pass \\
+TC\_\-LOGIN\_\-02 & TS\_\-LOGIN & Kiểm thử đăng nhập với email đúng, mật khẩu sai & Email: nguyenvana\-@gmail.com\newline Mật khẩu: WrongPass123! & 1. Nhập email\newline 2. Nhập mật khẩu sai\newline 3. Nhấn Đăng nhập & Hiển thị thông báo: "Email hoặc mật khẩu không đúng!" & Hiển thị thông báo: "Email hoặc mật khẩu không đúng!" & Pass \\
+TC\_\-LOGIN\_\-03 & TS\_\-LOGIN & Kiểm thử đăng nhập với email không tồn tại & Email: notexist\-@gmail.com\newline Mật khẩu: Password123! & 1. Nhập email không tồn tại\newline 2. Nhập mật khẩu\newline 3. Nhấn Đăng nhập & Hiển thị thông báo: "Email hoặc mật khẩu không đúng!" & Hiển thị thông báo: "Email hoặc mật khẩu không đúng!" & Pass \\
+TC\_\-LOGIN\_\-04 & TS\_\-LOGIN & Kiểm thử đăng nhập với tài khoản bị khóa & Email: locked\-@gmail.com\newline Mật khẩu: Password123! & 1. Nhập email tài khoản bị khóa\newline 2. Nhập mật khẩu\newline 3. Nhấn Đăng nhập & Hiển thị thông báo: "Tài khoản của bạn đã bị khóa!" & Hiển thị thông báo: "Tài khoản của bạn đã bị khóa!" & Pass \\
+\end{longtblr}
+
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng đăng xuất},
+  label = {tab:tc_logout}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-LOGOUT\_\-01 & TS\_\-LOGOUT & Kiểm thử đăng xuất thành công & User đã đăng nhập & 1. Nhấn vào avatar\newline 2. Chọn "Đăng xuất"\newline 3. Xác nhận đăng xuất & Chuyển đến trang đăng nhập & Chuyển đến trang đăng nhập & Pass \\
+TC\_\-LOGOUT\_\-02 & TS\_\-LOGOUT & Kiểm thử truy cập trang bảo vệ sau khi đăng xuất & User đã đăng xuất & 1. Đăng xuất\newline 2. Truy cập URL dashboard & Chuyển hướng về trang đăng nhập & Chuyển hướng về trang đăng nhập & Pass \\
+\end{longtblr}
+
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng tạo Workspace},
+  label = {tab:tc_create_workspace}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-CWS\_\-01 & TS\_\-CWS & Kiểm thử tạo workspace với thông tin hợp lệ & Tên: Marketing Team\newline Mô tả: Workspace cho team marketing & 1. Nhấn "Tạo Workspace"\newline 2. Nhập tên\newline 3. Nhập mô tả\newline 4. Nhấn Tạo & Hiển thị thông báo: "Tạo workspace thành công!" & Hiển thị thông báo: "Tạo workspace thành công!" & Pass \\
+TC\_\-CWS\_\-02 & TS\_\-CWS & Kiểm thử tạo workspace với tên trống & Tên: (trống)\newline Mô tả: Test description & 1. Nhấn "Tạo Workspace"\newline 2. Để trống tên\newline 3. Nhấn Tạo & Hiển thị thông báo: "Tên workspace không được để trống!" & Hiển thị thông báo: "Tên workspace không được để trống!" & Pass \\
+TC\_\-CWS\_\-03 & TS\_\-CWS & Kiểm thử tạo workspace với tên quá dài & Tên: (255+ ký tự)\newline Mô tả: Test & 1. Nhấn "Tạo Workspace"\newline 2. Nhập tên quá dài\newline 3. Nhấn Tạo & Hiển thị thông báo: "Tên không được vượt quá 255 ký tự!" & Hiển thị thông báo: "Tên không được vượt quá 255 ký tự!" & Pass \\
+TC\_\-CWS\_\-04 & TS\_\-CWS & Kiểm thử người tạo được gán làm Owner & Tên: Dev Team\newline Mô tả: Development workspace & 1. Tạo workspace mới\newline 2. Vào trang Members\newline 3. Kiểm tra vai trò & Người tạo có vai trò "Owner" & Người tạo có vai trò "Owner" & Pass \\
+\end{longtblr}
+
+% TS_INVITE - Mời thành viên
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng mời thành viên},
+  label = {tab:tc_invite}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-INVITE\_\-01 & TS\_\-INVITE & Kiểm thử mời thành viên với email hợp lệ & Email: member\-@gmail.com\newline Vai trò: Member & 1. Nhấn "Mời thành viên"\newline 2. Nhập email\newline 3. Chọn vai trò\newline 4. Nhấn Gửi & Hiển thị thông báo: "Đã gửi lời mời thành công!" & Hiển thị thông báo: "Đã gửi lời mời thành công!" & Pass \\
+TC\_\-INVITE\_\-02 & TS\_\-INVITE & Kiểm thử mời thành viên đã là member & Email: nguyenvana\-@gmail.com\newline Vai trò: Member & 1. Nhấn "Mời thành viên"\newline 2. Nhập email đã là member\newline 3. Nhấn Gửi & Hiển thị thông báo: "Người này đã là thành viên!" & Hiển thị thông báo: "Người này đã là thành viên!" & Pass \\
+TC\_\-INVITE\_\-03 & TS\_\-INVITE & Kiểm thử mời với email không hợp lệ & Email: invalid-email\newline Vai trò: Member & 1. Nhấn "Mời thành viên"\newline 2. Nhập email không hợp lệ\newline 3. Nhấn Gửi & Hiển thị thông báo: "Email không hợp lệ!" & Hiển thị thông báo: "Email không hợp lệ!" & Pass \\
+TC\_\-INVITE\_\-04 & TS\_\-INVITE & Kiểm thử Member không có quyền mời & User có vai trò Member & 1. Đăng nhập với tài khoản Member\newline 2. Vào trang Members\newline 3. Kiểm tra nút "Mời" & Không hiển thị nút "Mời thành viên" & Không hiển thị nút "Mời thành viên" & Pass \\
+\end{longtblr}
+
+% TS_ROLE - Phân quyền
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng phân quyền thành viên},
+  label = {tab:tc_role}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-ROLE\_\-01 & TS\_\-ROLE & Kiểm thử Owner đổi vai trò Member thành Admin & Member: Trần Thị B\newline Vai trò mới: Admin & 1. Chọn thành viên\newline 2. Nhấn "Chỉnh sửa"\newline 3. Đổi vai trò\newline 4. Lưu & Hiển thị thông báo: "Cập nhật vai trò thành công!" & Hiển thị thông báo: "Cập nhật vai trò thành công!" & Pass \\
+TC\_\-ROLE\_\-02 & TS\_\-ROLE & Kiểm thử không thể đổi vai trò Owner & Owner: Nguyễn Văn A & 1. Chọn Owner\newline 2. Kiểm tra nút chỉnh sửa vai trò & Không hiển thị tùy chọn đổi vai trò Owner & Không hiển thị tùy chọn đổi vai trò Owner & Pass \\
+TC\_\-ROLE\_\-03 & TS\_\-ROLE & Kiểm thử Admin không thể đổi vai trò Admin khác & User: Admin\newline Target: Admin khác & 1. Đăng nhập Admin\newline 2. Chọn Admin khác\newline 3. Kiểm tra quyền chỉnh sửa & Không cho phép chỉnh sửa vai trò Admin khác & Không cho phép chỉnh sửa vai trò Admin khác & Pass \\
+\end{longtblr}
+
+% TS_UPLOAD - Upload file
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng upload tệp tin},
+  label = {tab:tc_upload}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-UPLOAD\_\-01 & TS\_\-UPLOAD & Kiểm thử upload file hợp lệ & File: report.pdf\newline Kích thước: 2MB & 1. Nhấn "Upload"\newline 2. Chọn file\newline 3. Xác nhận upload & Hiển thị thông báo: "Upload thành công!" & Hiển thị thông báo: "Upload thành công!" & Pass \\
+TC\_\-UPLOAD\_\-02 & TS\_\-UPLOAD & Kiểm thử upload file quá lớn & File: bigfile.zip\newline Kích thước: 150MB & 1. Nhấn "Upload"\newline 2. Chọn file lớn\newline 3. Xác nhận upload & Hiển thị thông báo: "File không được vượt quá 100MB!" & Hiển thị thông báo: "File không được vượt quá 100MB!" & Pass \\
+TC\_\-UPLOAD\_\-03 & TS\_\-UPLOAD & Kiểm thử upload file không được hỗ trợ & File: malware.exe\newline Kích thước: 1MB & 1. Nhấn "Upload"\newline 2. Chọn file .exe\newline 3. Xác nhận upload & Hiển thị thông báo: "Loại file không được hỗ trợ!" & Hiển thị thông báo: "Loại file không được hỗ trợ!" & Pass \\
+TC\_\-UPLOAD\_\-04 & TS\_\-UPLOAD & Kiểm thử Viewer không có quyền upload & User có vai trò Viewer & 1. Đăng nhập với Viewer\newline 2. Vào trang Files\newline 3. Kiểm tra nút Upload & Không hiển thị nút "Upload" & Không hiển thị nút "Upload" & Pass \\
+\end{longtblr}
+
+% TS_DOWNLOAD - Download file
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng download tệp tin},
+  label = {tab:tc_download}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-DOWNLOAD\_\-01 & TS\_\-DOWNLOAD & Kiểm thử download file thành công & File: report.pdf & 1. Chọn file\newline 2. Nhấn nút Download & File được tải xuống & File được tải xuống & Pass \\
+TC\_\-DOWNLOAD\_\-02 & TS\_\-DOWNLOAD & Kiểm thử download file đã bị xóa & File đã bị xóa & 1. Truy cập URL file đã xóa & Hiển thị thông báo: "File không tồn tại!" & Hiển thị thông báo: "File không tồn tại!" & Pass \\
+TC\_\-DOWNLOAD\_\-03 & TS\_\-DOWNLOAD & Kiểm thử download không có quyền & User không phải member của workspace & 1. Truy cập URL file workspace khác & Hiển thị thông báo: "Bạn không có quyền truy cập!" & Hiển thị thông báo: "Bạn không có quyền truy cập!" & Pass \\
+\end{longtblr}
+
+% TS_AIREPORT - Tạo báo cáo AI
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng tạo báo cáo AI},
+  label = {tab:tc_aireport}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-AIREPORT\_\-01 & TS\_\-AIREPORT & Kiểm thử tạo báo cáo AI thành công & Loại: Weekly Digest\newline Provider: OpenAI GPT-4 & 1. Nhấn "Tạo báo cáo"\newline 2. Chọn loại báo cáo\newline 3. Chọn provider\newline 4. Nhấn Tạo & Hiển thị thông báo: "Đang tạo báo cáo..." và sau đó hiển thị báo cáo & Hiển thị thông báo: "Đang tạo báo cáo..." và sau đó hiển thị báo cáo & Pass \\
+TC\_\-AIREPORT\_\-02 & TS\_\-AIREPORT & Kiểm thử tạo báo cáo với prompt tùy chỉnh & Loại: Custom\newline Prompt: "Tóm tắt hoạt động tuần này" & 1. Nhấn "Tạo báo cáo"\newline 2. Chọn Custom\newline 3. Nhập prompt\newline 4. Nhấn Tạo & Báo cáo được tạo theo prompt & Báo cáo được tạo theo prompt & Pass \\
+TC\_\-AIREPORT\_\-03 & TS\_\-AIREPORT & Kiểm thử Member không có quyền tạo báo cáo & User có vai trò Member & 1. Đăng nhập Member\newline 2. Vào trang AI Reports\newline 3. Kiểm tra nút Tạo & Không hiển thị nút "Tạo báo cáo" & Không hiển thị nút "Tạo báo cáo" & Pass \\
+TC\_\-AIREPORT\_\-04 & TS\_\-AIREPORT & Kiểm thử xuất báo cáo ra PDF & Báo cáo đã tạo & 1. Chọn báo cáo\newline 2. Nhấn Export\newline 3. Chọn PDF & File PDF được tải xuống & File PDF được tải xuống & Pass \\
+\end{longtblr}
+
+% TS_NOTIF - Thông báo
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng xem thông báo},
+  label = {tab:tc_notification}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-NOTIF\_\-01 & TS\_\-NOTIF & Kiểm thử hiển thị danh sách thông báo & User có thông báo & 1. Nhấn vào icon thông báo & Hiển thị dropdown danh sách thông báo & Hiển thị dropdown danh sách thông báo & Pass \\
+TC\_\-NOTIF\_\-02 & TS\_\-NOTIF & Kiểm thử đánh dấu đã đọc & Thông báo chưa đọc & 1. Nhấn vào thông báo chưa đọc & Thông báo được đánh dấu đã đọc & Thông báo được đánh dấu đã đọc & Pass \\
+TC\_\-NOTIF\_\-03 & TS\_\-NOTIF & Kiểm thử đánh dấu tất cả đã đọc & Nhiều thông báo chưa đọc & 1. Nhấn "Đánh dấu tất cả đã đọc" & Tất cả thông báo được đánh dấu đã đọc, badge về 0 & Tất cả thông báo được đánh dấu đã đọc, badge về 0 & Pass \\
+\end{longtblr}
+
+% TS_PROFILE - Cập nhật profile
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng cập nhật thông tin cá nhân},
+  label = {tab:tc_profile}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-PROFILE\_\-01 & TS\_\-PROFILE & Kiểm thử cập nhật họ tên thành công & Họ tên mới: Nguyễn Văn B & 1. Vào trang Profile\newline 2. Nhấn Chỉnh sửa\newline 3. Đổi họ tên\newline 4. Lưu & Hiển thị thông báo: "Cập nhật thành công!" & Hiển thị thông báo: "Cập nhật thành công!" & Pass \\
+TC\_\-PROFILE\_\-02 & TS\_\-PROFILE & Kiểm thử upload avatar & File: avatar.jpg\newline Kích thước: 500KB & 1. Vào trang Profile\newline 2. Nhấn đổi avatar\newline 3. Chọn file\newline 4. Lưu & Avatar được cập nhật & Avatar được cập nhật & Pass \\
+TC\_\-PROFILE\_\-03 & TS\_\-PROFILE & Kiểm thử cập nhật số điện thoại không hợp lệ & SĐT: abc123 & 1. Vào trang Profile\newline 2. Nhập SĐT không hợp lệ\newline 3. Lưu & Hiển thị thông báo: "Số điện thoại không hợp lệ!" & Hiển thị thông báo: "Số điện thoại không hợp lệ!" & Pass \\
+\end{longtblr}
+
+% TS_ADMIN - Admin functions
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng Admin khóa/mở khóa workspace},
+  label = {tab:tc_admin}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-ADMIN\_\-01 & TS\_\-ADMIN & Kiểm thử Super Admin khóa workspace & Workspace: Marketing Team\newline Lý do: Vi phạm chính sách & 1. Đăng nhập Super Admin\newline 2. Vào Admin Panel\newline 3. Chọn workspace\newline 4. Nhấn Khóa\newline 5. Nhập lý do & Hiển thị thông báo: "Đã khóa workspace!" & Hiển thị thông báo: "Đã khóa workspace!" & Pass \\
+TC\_\-ADMIN\_\-02 & TS\_\-ADMIN & Kiểm thử Super Admin mở khóa workspace & Workspace đang bị khóa & 1. Đăng nhập Super Admin\newline 2. Vào Admin Panel\newline 3. Chọn workspace bị khóa\newline 4. Nhấn Mở khóa & Hiển thị thông báo: "Đã mở khóa workspace!" & Hiển thị thông báo: "Đã mở khóa workspace!" & Pass \\
+TC\_\-ADMIN\_\-03 & TS\_\-ADMIN & Kiểm thử user thường không truy cập được Admin Panel & User thường & 1. Đăng nhập user thường\newline 2. Truy cập URL /admin & Chuyển hướng về trang 403 hoặc Dashboard & Chuyển hướng về trang 403 hoặc Dashboard & Pass \\
+\end{longtblr}
+\end{landscape}

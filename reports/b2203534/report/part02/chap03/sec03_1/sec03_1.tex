@@ -1,0 +1,11 @@
+\subsection{Tổng quan hệ thống}
+
+Trong bối cảnh chuyển đổi số hiện nay, nhu cầu về các nền tảng quản lý công việc và cộng tác trực tuyến ngày càng tăng cao, đặc biệt đối với các doanh nghiệp và tổ chức muốn tối ưu hóa quy trình làm việc. Người dùng không chỉ cần các công cụ quản lý cơ bản mà còn mong muốn có khả năng tích hợp AI để tự động hóa và tạo báo cáo thông minh.
+
+Đáp ứng xu hướng đó, hệ thống "SaaS Platform tích hợp AI cho quản lý Workspace" được phát triển nhằm cung cấp một nền tảng toàn diện cho việc quản lý workspace, thành viên, tệp tin và tạo báo cáo tổng hợp bằng AI. Hệ thống sử dụng nền tảng SaaS (Software as a Service), hỗ trợ đa workspace, phân quyền linh hoạt và tích hợp với các LLM Provider như OpenAI, Anthropic Claude để tạo insights từ dữ liệu.
+
+Điểm nổi bật của hệ thống so với các ứng dụng quản lý workspace khác là khả năng tích hợp AI để tự động tổng hợp thông tin, tạo báo cáo thông minh và cung cấp insights hữu ích cho người dùng. Ngoài ra, hệ thống còn hỗ trợ đầy đủ các chức năng như đăng nhập bằng Google OAuth, quản lý workspace với nhiều cấp độ phân quyền, upload và quản lý tệp tin, thông báo real-time.
+
+Về mặt kỹ thuật, hệ thống được xây dựng theo kiến trúc Microservices với Next.js cho frontend, Spring Boot cho Account Service (xác thực), NestJS cho các services còn lại, PostgreSQL để lưu trữ dữ liệu, Redis cho caching và session management, MinIO/S3 cho object storage.
+
+Việc xây dựng một nền tảng SaaS quản lý workspace yêu cầu một hệ thống được thiết kế chuyên biệt, từ giao diện người dùng, kiến trúc microservices, cách tích hợp AI, cho đến khả năng mở rộng. Sự chuyên biệt hóa này là yếu tố then chốt tạo nên giá trị cho ứng dụng, đồng thời đáp ứng đúng nhu cầu của nhóm khách hàng doanh nghiệp muốn số hóa và tự động hóa quy trình quản lý công việc.

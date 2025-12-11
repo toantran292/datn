@@ -1,0 +1,143 @@
+\subsection{Thiết kế cơ sở dữ liệu}
+
+\subsubsection{Mô tả dữ liệu}
+
+Hệ thống quản lý các loại dữ liệu chính được tổ chức theo các nhóm entity với mục đích và cấu trúc riêng biệt, đảm bảo tính toàn vẹn và khả năng mở rộng của cơ sở dữ liệu. Các loại dữ liệu chính bao gồm:
+
+\textbf{Dữ liệu về người dùng (User Data):} Đại diện cho thực thể User trong hệ thống, bao gồm các thông tin sau:
+
+\begin{itemize}
+    \item user\_id: Mã định danh duy nhất của người dùng (UUID).
+    \item name: Họ và tên người dùng.
+    \item email: Email đăng ký, dùng để đăng nhập và xác thực.
+    \item password\_hash: Mật khẩu đã được mã hóa bằng Bcrypt.
+    \item avatar\_url: URL đến ảnh đại diện của người dùng.
+    \item oauth\_provider: Nhà cung cấp OAuth (google) nếu đăng nhập qua bên thứ ba.
+    \item oauth\_id: ID người dùng từ OAuth provider.
+    \item email\_verified: Trạng thái xác thực email.
+    \item is\_active: Trạng thái hoạt động của tài khoản.
+    \item last\_login\_at: Thời điểm đăng nhập cuối cùng.
+    \item created\_at: Ngày tạo tài khoản.
+    \item updated\_at: Ngày cập nhật thông tin gần nhất.
+\end{itemize}
+
+\textbf{Dữ liệu về workspace (Workspace Data):} Đại diện cho workspace - không gian làm việc của nhóm, bao gồm:
+
+\begin{itemize}
+    \item workspace\_id: Mã định danh workspace (UUID).
+    \item owner\_id: User ID của chủ sở hữu workspace.
+    \item name: Tên workspace.
+    \item description: Mô tả về workspace.
+    \item logo\_url: URL đến logo workspace.
+    \item settings: Cấu hình tùy chỉnh (JSONB) bao gồm LLM provider, AI prompts, retention policies.
+    \item storage\_limit: Giới hạn dung lượng lưu trữ (bytes).
+    \item member\_limit: Số lượng thành viên tối đa được phép.
+    \item is\_active: Trạng thái hoạt động (active/suspended).
+    \item deleted\_at: Timestamp soft delete cho phép restore.
+    \item created\_at: Ngày tạo workspace.
+    \item updated\_at: Ngày cập nhật gần nhất.
+\end{itemize}
+
+\textbf{Dữ liệu về thành viên và quyền (Member \& Permission Data):}
+
+\begin{itemize}
+    \item member\_id: Mã định danh quan hệ thành viên.
+    \item user\_id: ID người dùng tham gia workspace.
+    \item workspace\_id: ID workspace được tham gia.
+    \item role: Vai trò (OWNER, ADMIN, MEMBER).
+    \item permissions: Quyền tùy chỉnh chi tiết (JSONB) cho từng resource: read, write, delete, share.
+    \item joined\_at: Thời điểm tham gia workspace.
+    \item invitation\_token: Token cho lời mời tham gia (nếu pending).
+    \item invitation\_expires\_at: Thời hạn của lời mời.
+\end{itemize}
+
+\textbf{Dữ liệu về files và folders (File \& Folder Data):}
+
+\begin{itemize}
+    \item file\_id: Mã định danh file (UUID).
+    \item workspace\_id: Workspace chứa file.
+    \item folder\_id: Thư mục chứa file (nullable cho root).
+    \item uploaded\_by: User ID người upload.
+    \item name: Tên file.
+    \item size: Kích thước file (bytes).
+    \item mime\_type: Loại MIME của file.
+    \item s3\_key: Key để truy xuất object trong S3/MinIO.
+    \item version: Số phiên bản file.
+    \item checksum: SHA-256 checksum để verify integrity.
+    \item shared\_with: Danh sách user IDs được chia sẻ.
+    \item public\_link\_token: Token cho public sharing link.
+    \item deleted\_at: Timestamp cho soft delete, permanent delete sau 30 ngày.
+    \item created\_at: Thời điểm upload.
+    \item updated\_at: Thời điểm cập nhật gần nhất.
+\end{itemize}
+
+\textbf{Dữ liệu về thông báo (Notification Data):}
+
+\begin{itemize}
+    \item notification\_id: Mã định danh thông báo (UUID).
+    \item user\_id: User nhận thông báo.
+    \item workspace\_id: Workspace liên quan (nullable).
+    \item type: Loại thông báo (member\_joined, file\_uploaded, mention, settings\_changed).
+    \item title: Tiêu đề thông báo.
+    \item message: Nội dung chi tiết.
+    \item metadata: Dữ liệu bổ sung (JSONB) chứa entity IDs liên quan.
+    \item read\_at: Thời điểm đã đọc (nullable).
+    \item delivery\_status: Trạng thái gửi (sent, delivered, failed) cho email.
+    \item created\_at: Thời điểm tạo thông báo.
+\end{itemize}
+
+\textbf{Dữ liệu về báo cáo (Report Data):}
+
+\begin{itemize}
+    \item report\_id: Mã định danh báo cáo (UUID).
+    \item workspace\_id: Workspace chứa báo cáo.
+    \item generated\_by: User ID người tạo báo cáo.
+    \item title: Tiêu đề báo cáo.
+    \item description: Mô tả về báo cáo.
+    \item content: Nội dung báo cáo (JSONB) với sections, insights, recommendations.
+    \item llm\_provider: Nhà cung cấp LLM sử dụng (OpenAI, Anthropic, Google).
+    \item prompt\_template: Template prompt đã sử dụng.
+    \item tokens\_used: Số lượng tokens tiêu thụ.
+    \item version: Phiên bản báo cáo.
+    \item created\_at: Thời điểm tạo báo cáo.
+\end{itemize}
+
+\textbf{Dữ liệu audit log (Audit Log Data):}
+
+\begin{itemize}
+    \item log\_id: Mã định danh log (UUID).
+    \item user\_id: User thực hiện action (nullable cho system actions).
+    \item workspace\_id: Workspace liên quan (nullable).
+    \item entity\_type: Loại entity bị tác động (user, workspace, file, member).
+    \item entity\_id: ID của entity bị tác động.
+    \item action: Hành động thực hiện (create, update, delete).
+    \item changes: Before/after values (JSONB) để audit trail đầy đủ.
+    \item ip\_address: Địa chỉ IP của client.
+    \item user\_agent: User agent string.
+    \item created\_at: Thời điểm chính xác của action.
+\end{itemize}
+
+\subsubsection{Mô hình dữ liệu}
+
+Mô hình dữ liệu của hệ thống được thiết kế dựa trên kiến trúc relational database với PostgreSQL, sử dụng các nguyên tắc normalization để đảm bảo tính toàn vẹn dữ liệu và giảm thiểu redundancy. Hệ thống bao gồm các core entities chính và relationships giữa chúng được thể hiện qua class diagram và entity relationship diagram.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{images/class_diagram.png}
+\caption{Sơ đồ lớp (Class Diagram) của hệ thống}
+\label{fig:class_diagram}
+\end{figure}
+
+\textbf{Key Design Patterns:}
+
+\begin{itemize}
+    \item \textbf{UUID Primary Keys:} Sử dụng UUID thay vì auto-increment integers để tránh enumeration attacks và dễ dàng merge data từ multiple sources.
+    \item \textbf{Soft Deletes:} Các tables quan trọng có deleted\_at timestamp để cho phép restore và audit.
+    \item \textbf{JSONB Columns:} Sử dụng PostgreSQL JSONB cho flexible data như metadata, settings, report content.
+    \item \textbf{Timestamps:} Mọi table có created\_at và updated\_at để tracking.
+    \item \textbf{Foreign Key Constraints:} Enforce referential integrity với ON DELETE CASCADE hoặc RESTRICT tùy business logic.
+\end{itemize}
+
+\subsubsection{Từ điển dữ liệu}
+
+Chi tiết từ điển dữ liệu của toàn bộ các bảng trong hệ thống, bao gồm tên cột, kiểu dữ liệu, mô tả và các ràng buộc, được trình bày đầy đủ trong Phụ lục B.
