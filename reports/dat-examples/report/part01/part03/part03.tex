@@ -7,40 +7,50 @@
 
 \subsubsection{Mục tiêu tổng quát}
 
-Phát triển phân hệ nền tảng và thông tin cho một nền tảng SaaS tích hợp AI nhằm thống nhất quản lý dự án Agile, đóng vai trò lớp xương sống quản lý tài khoản, workspace, tệp dữ liệu và thông báo hệ thống, đồng thời cung cấp cổng truy cập tập trung (API Gateway) và dịch vụ tổng hợp thông tin bằng AI từ các phân hệ chức năng khác (quản lý dự án, truyền thông, họp trực tuyến). Phân hệ này hướng tới việc giảm phân mảnh công cụ, chuẩn hóa luồng dữ liệu và hỗ trợ người quản lý nắm bắt bức tranh tổng thể về dự án một cách nhanh chóng, trực quan.
+Phát triển phân hệ quản lý dự án cho nền tảng SaaS tích hợp AI nhằm thống nhất quản lý dự án Agile, cung cấp đầy đủ các tính năng cốt lõi để lập kế hoạch sprint, quản lý công việc, theo dõi tiến độ và phân tích hiệu suất dự án. Phân hệ này xây dựng trên kiến trúc microservice với giao diện trực quan, hỗ trợ quy trình làm việc linh hoạt theo phương pháp Scrum, cho phép các nhóm dự án tổ chức backlog, quản lý sprint, theo dõi issue với nhiều loại công việc (Story, Task, Bug, Epic), tùy chỉnh luồng trạng thái và phân tích dữ liệu dự án một cách hiệu quả.
 
 \subsubsection{Mục tiêu cụ thể}
 
 \textbf{Mục tiêu chuyên môn:}
 
 \begin{itemize}
-    \item Rèn luyện kỹ năng thiết kế và triển khai hệ thống theo kiến trúc microservice, chú trọng khả năng mở rộng, hiệu năng và bảo mật. Xây dựng các service lõi với công nghệ đa dạng: dịch vụ edge sử dụng Nginx làm API Gateway và reverse proxy, dịch vụ account quản lý tài khoản và xác thực sử dụng Java Spring Boot, các dịch vụ còn lại (notification, file-storage, tenant-bff, AI) sử dụng NodeJS/NestJS; tất cả giao tiếp qua API RESTful.
+    \item Rèn luyện kỹ năng thiết kế và triển khai hệ thống quản lý dự án theo kiến trúc microservice, áp dụng phương pháp Agile/Scrum vào sản phẩm thực tế. Xây dựng backend service sử dụng NestJS với Prisma ORM kết nối PostgreSQL, thiết kế API RESTful tuân thủ chuẩn OpenAPI/Swagger, đảm bảo tính mở rộng, bảo trì và khả năng tích hợp với các phân hệ khác trong nền tảng.
 
-    \item Thiết kế và triển khai dịch vụ edge sử dụng Nginx hoạt động như một API Gateway và reverse proxy, đảm nhận nhiệm vụ định tuyến yêu cầu đến các dịch vụ phía sau, cân bằng tải và bảo mật điểm truy cập duy nhất vào hệ thống; thực hiện xác thực người dùng tại edge và ký kết thông tin xác thực bằng HMAC để các service phía sau có thể xác minh tính hợp lệ mà không cần gọi lại service xác thực.
+    \item Phát triển module quản lý dự án (Project Management) cung cấp các chức năng tạo, cấu hình dự án với identifier duy nhất, gán project lead và default assignee, quản lý sequence ID cho từng issue, thiết lập các thông số cơ bản phục vụ cho việc tổ chức và vận hành dự án theo workspace.
 
-    \item Xây dựng dịch vụ account sử dụng Java Spring Boot, đảm nhận quản lý tài khoản người dùng, workspace, xác thực (authentication) và phân quyền (authorization), cung cấp cơ chế đăng nhập, đăng ký và quản lý phiên làm việc cho toàn bộ hệ thống.
+    \item Xây dựng module quản lý sprint với đầy đủ vòng đời: tạo mới sprint với mục tiêu và khoảng thời gian, chuyển trạng thái từ FUTURE sang ACTIVE khi bắt đầu, và chuyển sang CLOSED khi hoàn thành; hỗ trợ hiển thị tổng quan sprint với số lượng issue theo trạng thái (TODO, IN\_PROGRESS, DONE) và theo dõi tiến độ thực hiện.
 
-    \item Xây dựng dịch vụ file-storage cho phép lưu trữ, quản lý và truy xuất tệp dùng chung giữa các phân hệ (tài liệu dự án, file biên bản họp, tài liệu đính kèm trong kênh truyền thông…) một cách an toàn, có tổ chức và dễ tích hợp.
+    \item Phát triển module quản lý issue với các loại công việc đa dạng (Story, Task, Bug, Epic), hỗ trợ phân loại theo mức độ ưu tiên (Low, Medium, High, Critical), story points cho việc ước lượng, thiết lập ngày bắt đầu/mục tiêu, gán nhiều người thực hiện, thiết lập quan hệ cha-con giữa các issue và theo dõi lịch sử thay đổi chi tiết.
 
-    \item Phát triển dịch vụ notification để tập trung hóa và phân phối thông báo từ các phân hệ quản lý dự án, truyền thông và họp trực tuyến; hỗ trợ các kênh thông báo khác nhau (trên web, email hoặc kênh nội bộ) và cho phép người dùng cấu hình ưu tiên nhận thông báo.
+    \item Thiết kế và triển khai hệ thống trạng thái tùy chỉnh (Custom Issue Status) cho phép mỗi dự án định nghĩa luồng công việc riêng với các trạng thái, màu sắc và thứ tự hiển thị phù hợp, hỗ trợ drag-and-drop để sắp xếp lại trạng thái và áp dụng linh hoạt cho nhiều quy trình làm việc khác nhau.
 
-    \item Xây dựng AI service có khả năng thu thập dữ liệu từ các phân hệ chức năng (nội dung công việc, hội thoại, biên bản họp, tệp đính kèm) và cung cấp các API phục vụ tổng hợp, tóm tắt và báo cáo thông tin ở mức nền tảng, tạo tiền đề cho các màn hình dashboard hoặc trợ lý thông minh ở các phân hệ khác.
+    \item Xây dựng module bình luận (Comments) và theo dõi hoạt động (Activity Log) để ghi nhận tất cả các thay đổi trên issue bao gồm thông tin trước/sau khi chỉnh sửa, người thực hiện và thời gian, tạo audit trail đầy đủ cho việc truy vết và đánh giá tiến độ công việc.
 
-    \item Phát triển giao diện trang quản trị (admin) cho chủ workspace bằng React/NextJS, cho phép quản lý người dùng, phân quyền, cấu hình workspace, cài đặt thông báo và xem các thống kê/tổng hợp cơ bản do phân hệ nền tảng cung cấp.
+    \item Phát triển module phân tích và thống kê (Analytics) cung cấp biểu đồ theo dõi số lượng issue được tạo và hoàn thành theo thời gian, thống kê phân bố issue theo loại, mức độ ưu tiên và trạng thái, hỗ trợ người quản lý đánh giá hiệu suất và xu hướng của dự án.
 
-    \item Nâng cao kỹ năng viết tài liệu chuyên môn (tài liệu đặc tả, thiết kế, hướng dẫn triển khai) và kỹ năng quản lý tiến độ, lập kế hoạch thực hiện đồ án tốt nghiệp.
+    \item Xây dựng giao diện người dùng với NextJS 14 (App Router) kết hợp MobX để quản lý state phản ứng, tích hợp thư viện Pragmatic Drag and Drop của Atlassian cho tính năng kéo thả issue trên bảng Kanban và backlog, sử dụng design system tùy chỉnh để đảm bảo trải nghiệm người dùng nhất quán và trực quan.
+
+    \item Phát triển hai giao diện chính là Board View (bảng Kanban theo cột trạng thái) và Backlog View (danh sách sprint và backlog), tích hợp panel chi tiết issue với khả năng chỉnh sửa nhanh, hiển thị comments, activity log và các thuộc tính liên quan, hỗ trợ thao tác drag-and-drop để di chuyển và sắp xếp lại issue giữa các sprint và trạng thái.
+
+    \item Nâng cao kỹ năng làm việc với cơ sở dữ liệu quan hệ PostgreSQL thông qua Prisma ORM, thiết kế schema với các ràng buộc và quan hệ phức tạp, viết migration và tối ưu hóa truy vấn; đồng thời rèn luyện kỹ năng viết tài liệu kỹ thuật, kiểm thử và quản lý tiến độ thực hiện đồ án.
 \end{itemize}
 
 \textbf{Mục tiêu về sản phẩm:}
 
 \begin{itemize}
-    \item Xây dựng một phân hệ nền tảng và thông tin hoàn chỉnh, có thể triển khai độc lập nhưng sẵn sàng tích hợp với các phân hệ quản lý dự án, truyền thông và họp trực tuyến. Phân hệ cho phép người dùng đăng ký, đăng nhập, quản lý nhiều workspace; chủ workspace có thể cấu hình tổ chức, mời thành viên, thiết lập vai trò và phân quyền truy cập.
+    \item Xây dựng phân hệ quản lý dự án hoàn chỉnh với đầy đủ tính năng để triển khai và sử dụng độc lập, đồng thời có khả năng tích hợp với các phân hệ khác trong nền tảng (truyền thông, họp trực tuyến, nền tảng và thông tin). Hệ thống cho phép tạo và quản lý nhiều dự án trong workspace, cấu hình thông tin dự án với identifier riêng biệt, gán người phụ trách và thiết lập các tham số vận hành phù hợp với từng nhóm làm việc.
 
-    \item Cung cấp hệ thống thông báo tập trung giúp người dùng theo dõi được các sự kiện quan trọng (task được giao, trạng thái dự án thay đổi, cuộc họp sắp diễn ra, trao đổi mới trong kênh truyền thông…) tại một nơi duy nhất, hạn chế bỏ sót thông tin.
+    \item Cung cấp công cụ lập kế hoạch sprint theo phương pháp Scrum, cho phép tạo sprint với mục tiêu rõ ràng, khoảng thời gian xác định, chuyển đổi trạng thái sprint từ kế hoạch sang thực hiện và hoàn thành; hiển thị tổng quan sprint với số lượng công việc theo từng trạng thái và tiến độ hoàn thành để người quản lý dễ dàng theo dõi và điều phối.
 
-    \item Cung cấp khả năng quản lý và chia sẻ tệp dùng chung theo workspace và dự án, hỗ trợ đính kèm giữa các phân hệ khác nhau nhưng vẫn thống nhất về lưu trữ, phân quyền và truy vết.
+    \item Xây dựng hệ thống quản lý issue linh hoạt với nhiều loại công việc (Story cho tính năng nghiệp vụ, Task cho công việc kỹ thuật, Bug cho lỗi cần sửa, Epic cho nhóm công việc lớn), hỗ trợ phân loại mức độ ưu tiên, ước lượng điểm story points, gán nhiều người thực hiện, thiết lập mối quan hệ cha-con và theo dõi đầy đủ lịch sử thay đổi của từng issue.
 
-    \item Tích hợp các API AI ở mức nền tảng để tổng hợp và tóm tắt thông tin (ví dụ: tổng hợp hoạt động gần đây của một dự án, tóm tắt nội dung chính từ các cuộc họp và hội thoại liên quan), sẵn sàng cho việc hiển thị trên các dashboard hoặc trang admin.
+    \item Cung cấp giao diện Board View dạng bảng Kanban trực quan với các cột tương ứng với trạng thái công việc, hỗ trợ kéo thả issue giữa các cột để thay đổi trạng thái nhanh chóng, hiển thị thông tin quan trọng trên thẻ issue (loại công việc, mức độ ưu tiên, người thực hiện, thời hạn) giúp nhóm dự án dễ dàng nắm bắt và cập nhật tiến độ công việc theo thời gian thực.
 
-    \item Đảm bảo hệ thống hoạt động ổn định, có khả năng mở rộng trong tương lai, đáp ứng tốt yêu cầu tích hợp thêm các phân hệ mới mà không phải thay đổi lớn kiến trúc lõi; đồng thời cung cấp bộ tài liệu triển khai và hướng dẫn sử dụng để có thể chuyển giao và phát triển tiếp sau khi hoàn thành đề tài.
+    \item Phát triển giao diện Backlog View cho phép tổ chức danh sách công việc theo sprint và backlog, hỗ trợ kéo thả issue giữa các sprint để sắp xếp lại kế hoạch, hiển thị tổng hợp số lượng issue theo trạng thái cho từng sprint, tích hợp panel chi tiết issue bên cạnh để xem và chỉnh sửa thông tin công việc mà không cần chuyển trang.
+
+    \item Tích hợp hệ thống bình luận và theo dõi hoạt động cho từng issue, ghi nhận đầy đủ các thay đổi về tiêu đề, mô tả, trạng thái, người thực hiện, mức độ ưu tiên và các thuộc tính khác kèm thông tin người thực hiện và thời gian, tạo audit trail chi tiết để theo dõi quá trình phát triển và giải quyết vấn đề.
+
+    \item Cung cấp module phân tích và báo cáo với biểu đồ theo dõi số lượng issue được tạo và hoàn thành theo thời gian (Created vs Resolved), thống kê phân bố issue theo loại công việc, mức độ ưu tiên và trạng thái hiện tại, giúp người quản lý đánh giá năng suất làm việc, phát hiện điểm nghẽn và dự báo tiến độ dự án.
+
+    \item Đảm bảo hệ thống vận hành ổn định với kiến trúc microservice, API RESTful được thiết kế rõ ràng theo chuẩn OpenAPI, database được tối ưu hóa với PostgreSQL và Prisma ORM, giao diện phản hồi nhanh nhờ MobX và React Query; đồng thời cung cấp tài liệu kỹ thuật đầy đủ về thiết kế, API và hướng dẫn triển khai để hỗ trợ bảo trì và phát triển tiếp trong tương lai.
 \end{itemize}
