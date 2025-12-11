@@ -87,7 +87,7 @@
 
 
 % Link to figure
-\usepackage[unicode,breaklinks=true]{hyperref}
+\usepackage[unicode,breaklinks=true,hypertexnames=false]{hyperref}
 \usepackage{url}
 \def\UrlBreaks{\do\/\do-\do_}
 \newcommand{\myref}[1]{\textbf{\hyperref[#1]{Hình~\ref*{#1}}}}
@@ -112,6 +112,7 @@
 % =========================== START DOCUMENT ==================================
 \begin{document}
 \pagenumbering{roman}
+\pagestyle{empty}
 \input{coverPage}
 \input{coverPage-2}
 
@@ -130,7 +131,7 @@
 \input{abstract-en}
 
 
-
+\pagestyle{fancy}
 \pagenumbering{arabic}
 \input{part01/part01.tex}
 \newpage
