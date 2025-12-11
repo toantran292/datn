@@ -8,71 +8,77 @@
 \subsubsection{Quy trình nghiên cứu}
 
 \begin{itemize}
-    \item Tìm hiểu lý thuyết về quản lý dự án theo phương pháp Agile, cách tổ chức team, quy trình backlog -- sprint -- release và nhu cầu theo dõi tiến độ, cảnh báo rủi ro, báo cáo tổng hợp trong doanh nghiệp.
+    \item Tìm hiểu lý thuyết về quản lý dự án theo phương pháp Agile, vai trò của giao tiếp hiệu quả trong các quy trình Agile và nhu cầu tập trung hóa các cuộc trao đổi, tài liệu đính kèm để hỗ trợ sự minh bạch thông tin và cộng tác liên chức năng.
 
-    \item Khảo sát và phân tích một số nền tảng và công cụ tiêu biểu như Jira, Notion, Slack, Microsoft Teams, Base.vn,… để rút ra ưu điểm, hạn chế và xác định khoảng trống về một lớp truyền thông thống nhất.
+    \item Khảo sát và phân tích một số nền tảng nhắn tin doanh nghiệp tiêu biểu như Slack, Microsoft Teams, Discord, Zulip,… để rút ra ưu điểm, hạn chế và xác định các tính năng cần thiết cho một hệ thống truyền thông tích hợp AI trong môi trường Agile.
 
-    \item Xác định yêu cầu và mục tiêu cho phân hệ truyền thông: quản lý tài khoản, workspace, phân quyền, lưu trữ tệp dùng chung, quản lý thông báo tập trung và xây dựng AI Service đóng vai trò điều phối, tổng hợp thông tin từ các phân hệ chức năng.
+    \item Xác định yêu cầu và mục tiêu cho phân hệ truyền thông: quản lý kênh trò chuyện theo dự án và workspace, nhắn tin thời gian thực, tích hợp tệp đính kèm từ File Service của phân hệ nền tảng, tìm kiếm lịch sử hội thoại và xây dựng AI Service với kiến trúc RAG để tóm tắt, phân tích và trả lời câu hỏi dựa trên ngữ cảnh.
 
-    \item Phân tích, lựa chọn mô hình kiến trúc phù hợp: kiến trúc microservice với lớp edge làm cổng vào hệ thống, Account Service chuyên trách tài khoản và các service còn lại xử lý thông báo, file, AI,… Riêng AI Service được thiết kế theo mô hình Orchestrator để gọi và tổng hợp dữ liệu từ các phân hệ khác (quản lý dự án, truyền thông, họp trực tuyến).
+    \item Phân tích, lựa chọn mô hình kiến trúc phù hợp: kiến trúc microservice với Messaging Service xử lý kênh và tin nhắn, WebSocket Gateway cho truyền thông thời gian thực, và AI Service tích hợp RAG kết hợp vector database để truy xuất ngữ cảnh và LLM để sinh câu trả lời.
 
     \item Thiết kế kiến trúc hệ thống chi tiết theo hướng nhiều dịch vụ:
     \begin{itemize}
-        \item Edge sử dụng Nginx đóng vai trò API Gateway, chịu trách nhiệm định tuyến, bảo vệ backend và thực hiện kiểm tra xác thực cơ bản.
-        \item Account Service dùng Spring Boot để xử lý đăng ký, đăng nhập, quản lý người dùng và vai trò.
-        \item Các service nền tảng còn lại dùng NestJS để xử lý nghiệp vụ (Notification, File-Storage, Tenant BFF).
-        \item AI Service dùng NestJS, đóng vai trò trung gian gọi API đến các phân hệ chức năng, thu thập kết quả và sử dụng LLM để tổng hợp thành báo cáo thống nhất.
+        \item Messaging Service dùng NestJS để quản lý kênh, tin nhắn, thread và liên kết với tệp đính kèm từ File Service.
+        \item WebSocket Gateway dùng NestJS kết hợp Socket.io để xử lý truyền thông thời gian thực, typing indicator và đồng bộ trạng thái.
+        \item Document Processing Pipeline để trích xuất văn bản từ tệp đính kèm, chunking và tạo embedding.
+        \item AI Service dùng NestJS, tích hợp vector database để truy xuất ngữ cảnh liên quan và gọi LLM để tóm tắt hội thoại, trả lời câu hỏi.
     \end{itemize}
 
-    \item Thiết kế cơ sở dữ liệu cho các nhóm chức năng chính: người dùng, workspace, vai trò, phân quyền, thông báo và metadata tệp; bảo đảm đáp ứng nhu cầu truy vấn và khả năng mở rộng theo mô hình multi-tenant.
+    \item Thiết kế cơ sở dữ liệu cho các nhóm chức năng chính: kênh (channel), tin nhắn (message), thread, phản hồi (reaction), liên kết tệp đính kèm; thiết kế vector storage để lưu trữ embedding của tin nhắn và nội dung tài liệu phục vụ semantic search.
 
-    \item Thiết kế giao diện người dùng cho trang admin bằng Next.js: xác định luồng thao tác, bố cục màn hình, cách trình bày báo cáo tổng hợp từ AI, danh sách thông báo và các trang cấu hình workspace.
+    \item Thiết kế giao diện người dùng cho trang chat bằng Next.js: xác định luồng thao tác, bố cục màn hình (danh sách kênh, khung trò chuyện, panel tệp đính kèm, panel AI assistant), cách hiển thị kết quả tóm tắt và trả lời từ AI.
 
     \item Xây dựng và hoàn thiện các chức năng của hệ thống theo từng giai đoạn:
     \begin{itemize}
-        \item Hoàn thiện lớp edge với Nginx, cấu hình route, bảo mật cơ bản và cơ chế xác thực HMAC.
-        \item Phát triển Account Service, các service NestJS và giao diện Next.js.
-        \item Xây dựng AI Service với khả năng gọi song song API đến các phân hệ chức năng và tổng hợp kết quả.
-        \item Thiết kế API contract thống nhất giữa AI Service và các phân hệ để đảm bảo tính nhất quán khi trao đổi dữ liệu.
+        \item Phát triển Messaging Service với đầy đủ API quản lý kênh và tin nhắn.
+        \item Triển khai WebSocket Gateway cho truyền thông thời gian thực.
+        \item Xây dựng Document Processing Pipeline để xử lý tệp đính kèm và tạo embedding.
+        \item Phát triển AI Service với kiến trúc RAG, tích hợp vector database và LLM.
+        \item Xây dựng giao diện chat với React/Next.js.
     \end{itemize}
 
-    \item Tích hợp AI Service với API của nhà cung cấp mô hình ngôn ngữ lớn (LLM) để thực hiện tóm tắt, tổng hợp thông tin từ nhiều nguồn; xây dựng các loại báo cáo mẫu như báo cáo tuần, tóm tắt hoạt động, cảnh báo rủi ro hiển thị trên trang admin.
+    \item Tích hợp AI Service với API của nhà cung cấp mô hình ngôn ngữ lớn (LLM) và embedding model để thực hiện: tạo embedding cho tin nhắn và tài liệu, truy xuất ngữ cảnh liên quan từ vector database, tóm tắt đoạn hội thoại dài, trích xuất ý chính và danh sách công việc, trả lời câu hỏi dựa trên nội dung kênh và tệp đính kèm.
 
-    \item Thực hiện kiểm thử chức năng, kiểm thử tích hợp giữa các service và đánh giá toàn hệ thống dựa trên các tiêu chí: đáp ứng yêu cầu, tính ổn định, khả năng mở rộng, thời gian phản hồi của AI Service và chất lượng thông tin tổng hợp.
+    \item Thực hiện kiểm thử chức năng, kiểm thử tích hợp giữa các service và đánh giá toàn hệ thống dựa trên các tiêu chí: đáp ứng yêu cầu, tính ổn định của WebSocket, hiệu năng truy vấn vector database, thời gian phản hồi của AI Service và chất lượng câu trả lời từ RAG.
 \end{itemize}
 
 \subsubsection{Công nghệ sử dụng}
 
 \begin{itemize}
-    \item \textbf{Nginx}: sử dụng làm lớp edge/API Gateway cho toàn hệ thống, thực hiện reverse proxy, định tuyến request đến các service phía sau, cấu hình SSL và kiểm tra xác thực cơ bản trước khi cho phép truy cập. Edge cũng là nơi gắn thông tin người dùng vào request và dùng chữ ký HMAC để đảm bảo request gửi đến từ cổng hợp lệ.
+    \item \textbf{NestJS (Node.js)}: sử dụng để xây dựng toàn bộ backend của phân hệ truyền thông bao gồm Messaging Service, WebSocket Gateway và AI Service nhờ kiến trúc module rõ ràng, hỗ trợ TypeScript, tích hợp tốt với Socket.io và dễ dàng mở rộng. NestJS cũng hỗ trợ tốt việc gọi HTTP song song và xử lý bất đồng bộ cần thiết cho pipeline xử lý tài liệu và AI.
 
-    \item \textbf{Spring Boot}: dùng để xây dựng Account Service, xử lý các chức năng đăng ký, đăng nhập, quản lý tài khoản, vai trò và phân quyền; cung cấp API để edge kiểm tra trạng thái đăng nhập của người dùng.
+    \item \textbf{Socket.io}: thư viện WebSocket được tích hợp với NestJS Gateway để xử lý truyền thông thời gian thực, bao gồm gửi/nhận tin nhắn tức thì, typing indicator, cập nhật trạng thái đã đọc và broadcast tin nhắn đến các thành viên trong kênh.
 
-    \item \textbf{NestJS (Node.js)}: sử dụng để xây dựng các service nền tảng còn lại như Notification Service, File-Storage Service, Tenant BFF và AI Service nhờ kiến trúc module rõ ràng, hỗ trợ TypeScript và dễ dàng mở rộng. NestJS cũng hỗ trợ tốt việc gọi HTTP song song và xử lý bất đồng bộ cần thiết cho AI Service.
+    \item \textbf{PostgreSQL}: cơ sở dữ liệu quan hệ lưu trữ thông tin kênh, tin nhắn, thread, phản hồi và liên kết tệp đính kèm; hỗ trợ full-text search cho tìm kiếm tin nhắn và tích hợp pgvector extension cho vector storage.
 
-    \item \textbf{PostgreSQL}: cơ sở dữ liệu quan hệ lưu trữ thông tin người dùng, workspace, vai trò, cấu hình, thông báo và metadata tệp; bảo đảm tính toàn vẹn dữ liệu và hỗ trợ tốt cho mô hình multi-tenant.
+    \item \textbf{pgvector}: extension của PostgreSQL cho phép lưu trữ và truy vấn vector embedding, hỗ trợ các thuật toán tìm kiếm nearest neighbor (HNSW, IVFFlat) để thực hiện semantic search trên nội dung tin nhắn và tài liệu đính kèm phục vụ kiến trúc RAG.
 
-    \item \textbf{Redis}: lưu trữ dữ liệu tạm thời, cache kết quả từ các phân hệ và kết quả tổng hợp của AI để giảm số lần gọi API và tăng tốc độ phản hồi. Redis còn được sử dụng làm backend cho hàng đợi xử lý bất đồng bộ.
+    \item \textbf{Redis}: lưu trữ dữ liệu tạm thời, cache kết quả truy vấn và quản lý session WebSocket. Redis còn được sử dụng làm adapter cho Socket.io để hỗ trợ horizontal scaling khi có nhiều instance WebSocket Gateway, đồng thời làm backend cho hàng đợi xử lý bất đồng bộ.
 
-    \item \textbf{BullMQ}: thư viện message queue dựa trên Redis, dùng để xử lý các tác vụ AI bất đồng bộ như tạo báo cáo tổng hợp, gửi thông báo hàng loạt mà không block request chính từ người dùng.
+    \item \textbf{BullMQ}: thư viện message queue dựa trên Redis, dùng để xử lý các tác vụ bất đồng bộ như tạo embedding cho tin nhắn mới, xử lý tài liệu đính kèm (trích xuất văn bản, chunking), tóm tắt hội thoại theo lịch mà không block request chính từ người dùng.
 
-    \item \textbf{MinIO (S3-compatible)}: kho lưu trữ tệp tương thích S3, dùng để lưu trữ tệp đính kèm (tài liệu dự án, biên bản họp, file chia sẻ), đảm bảo an toàn, dễ mở rộng và dễ tích hợp với các service NestJS.
+    \item \textbf{OpenAI API}: sử dụng API của OpenAI cho hai mục đích chính: (1) Embedding API (text-embedding-3-small hoặc text-embedding-3-large) để tạo vector embedding cho tin nhắn và nội dung tài liệu; (2) Chat Completion API (GPT-4o-mini hoặc GPT-4o) để tóm tắt hội thoại, trích xuất thông tin và trả lời câu hỏi dựa trên ngữ cảnh được truy xuất từ vector database.
 
-    \item \textbf{OpenAI API / LLM Service}: sử dụng API của nhà cung cấp mô hình ngôn ngữ lớn (ví dụ OpenAI GPT-4o-mini) để xử lý các tác vụ tóm tắt, tổng hợp thông tin từ nhiều nguồn và trả lời câu hỏi. AI Service đóng vai trò orchestrator, thu thập dữ liệu từ các phân hệ rồi gửi đến LLM để tạo báo cáo thống nhất.
+    \item \textbf{LangChain}: framework hỗ trợ xây dựng ứng dụng AI, được sử dụng để thiết kế pipeline RAG bao gồm: document loader để đọc các định dạng file khác nhau, text splitter để chunking văn bản, vector store integration để tương tác với pgvector, và chain/agent để kết hợp retrieval với LLM.
 
-    \item \textbf{Next.js (React)}: dùng để xây dựng giao diện web cho trang admin và trang cấu hình workspace, tận dụng khả năng kết hợp SSR/CSR để tối ưu hiệu năng và trải nghiệm người dùng.
+    \item \textbf{pdf-parse, mammoth, tesseract.js}: các thư viện xử lý tài liệu để trích xuất văn bản từ file PDF (pdf-parse), file DOCX (mammoth) và hình ảnh có chữ (tesseract.js với OCR), phục vụ cho việc tạo embedding và đưa vào vector database.
 
-    \item \textbf{Tailwind CSS và shadcn/ui}: hỗ trợ thiết kế giao diện hiện đại, nhất quán, dễ tùy biến theo nhu cầu của từng màn hình quản trị.
+    \item \textbf{Next.js (React)}: dùng để xây dựng giao diện web cho trang chat, tận dụng khả năng kết hợp SSR/CSR để tối ưu hiệu năng và trải nghiệm người dùng khi tải lịch sử tin nhắn và tương tác thời gian thực.
 
-    \item \textbf{Axios}: dùng trên cả frontend và backend (trong AI Service) để giao tiếp HTTP với các endpoint, hỗ trợ gọi song song nhiều API và xử lý timeout hiệu quả.
+    \item \textbf{Tailwind CSS và shadcn/ui}: hỗ trợ thiết kế giao diện chat hiện đại, nhất quán, với các component sẵn có cho input, button, dropdown, modal và các thành phần UI phổ biến trong ứng dụng nhắn tin.
+
+    \item \textbf{Zustand}: thư viện quản lý state nhẹ cho React, dùng để quản lý trạng thái phức tạp của ứng dụng chat như danh sách kênh, tin nhắn theo từng kênh, trạng thái kết nối WebSocket và kết quả từ AI.
+
+    \item \textbf{Socket.io-client}: thư viện client-side để kết nối WebSocket từ frontend React đến WebSocket Gateway, xử lý các sự kiện real-time và tự động reconnect khi mất kết nối.
 \end{itemize}
 
 \subsubsection{Công cụ hỗ trợ xây dựng và phát triển}
 
 \begin{itemize}
-    \item Công cụ lập trình: Visual Studio Code, Cursor.
+    \item Công cụ lập trình: Visual Studio Code.
     \item Công cụ quản lý và truy vấn cơ sở dữ liệu: DataGrip.
     \item Công cụ kiểm thử API: Postman.
+    \item Công cụ kiểm thử WebSocket: Postman WebSocket.
     \item Công cụ container hóa và triển khai: Docker, Docker Compose.
     \item Công cụ quản lý mã nguồn: Git, GitHub.
 \end{itemize}

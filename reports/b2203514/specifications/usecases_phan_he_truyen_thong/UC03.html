@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>UC03 - Cấu hình AI cho kênh</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; font-size: 13pt; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; vertical-align: top; }
+        .header-row td:first-child { width: 70%; }
+        .header-row td:last-child { width: 30%; }
+        ul, ol { margin: 5px 0; padding-left: 20px; }
+        .section-title { font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<table>
+    <tr class="header-row">
+        <td><strong>Tên chức năng:</strong> Cấu hình AI cho kênh</td>
+        <td><strong>ID:</strong> UC03</td>
+    </tr>
+    <tr>
+        <td><strong>Người sử dụng:</strong> Workspace Owner, Channel Admin</td>
+        <td><strong>Mức độ cần thiết:</strong> Quan trọng</td>
+    </tr>
+    <tr>
+        <td colspan="2" style="text-align: right;"><strong>Phân loại:</strong> Đơn giản</td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Các thành phần tham gia và mối quan tâm:</p>
+            <ul>
+                <li><strong>Channel Admin:</strong> Muốn kiểm soát các tính năng AI được phép sử dụng trong kênh để phù hợp với mục đích và chính sách bảo mật của tổ chức.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Mô tả tóm tắt:</p>
+            <p>Cho phép Channel Admin bật/tắt AI Assistant và chọn các tính năng AI cụ thể được phép sử dụng trong kênh (tóm tắt, hỏi đáp, trích xuất action items, tóm tắt tài liệu).</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p><strong>Trigger:</strong> Channel Admin truy cập vào cài đặt AI của kênh.</p>
+            <p><strong>Kiểu sự kiện:</strong> External</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Luồng xử lý bình thường của sự kiện:</p>
+            <ol>
+                <li>Channel Admin truy cập vào cài đặt của kênh.</li>
+                <li>Channel Admin chọn tab "AI Assistant".</li>
+                <li>Hệ thống hiển thị trạng thái bật/tắt AI và danh sách các tính năng.</li>
+                <li>Channel Admin bật/tắt AI Assistant.</li>
+                <li>Channel Admin chọn/bỏ chọn các tính năng AI muốn cho phép.</li>
+                <li>Channel Admin nhấn "Lưu cấu hình".</li>
+                <li>Hệ thống lưu cấu hình và thông báo thành công.</li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Các luồng sự kiện con (Subflows):</p>
+            <p>N/A</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Luồng luân phiên/đặc biệt (Alternative/Exceptional flows):</p>
+            <p><strong>4a. AI Assistant bị tắt ở cấp workspace:</strong></p>
+            <ol start="5">
+                <li>Hệ thống thông báo "AI Assistant đã bị vô hiệu hóa bởi Workspace Owner".</li>
+                <li>Các tùy chọn cấu hình bị disabled.</li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p><strong>Kết quả:</strong> Cấu hình AI cho kênh được cập nhật, các thành viên chỉ có thể sử dụng các tính năng AI được cho phép.</p>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>

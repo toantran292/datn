@@ -1,172 +1,49 @@
-\paragraph{UC02: Quản lý Workspace}
+\paragraph{UC02: Quản lý thành viên kênh}
 \mbox{}
 
-\textbf{UC02.1 - Tạo workspace}
-
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\textwidth]{images/uc02_1_create_workspace.png}
-    \caption{Sơ đồ use case chức năng tạo workspace}
-    \label{fig:uc02_1_create_workspace}
+    \includegraphics[width=0.6\textwidth]{images/UC02.png}
+    \caption{Sơ đồ use case UC02 - Quản lý thành viên kênh}
+    \label{fig:uc02}
 \end{figure}
 
-\begin{adjustwidth}{-1.5cm}{-0.5cm}
+\begin{adjustwidth}{-2cm}{-1cm}
 \begin{longtblr}[
-    caption = {Đặc tả use case UC02.1 - Tạo workspace},
-    label = {tab:uc02_1},
+    caption = {Đặc tả use case UC02 - Quản lý thành viên kênh},
+    label = {tab:uc02}
 ]{
     colspec={|l|p{.7\linewidth}|}
 }
 \hline
-\textbf{Tên chức năng} & \textbf{Tạo workspace} \\\hline
-ID & UC02.1 \\\hline
-Người sử dụng & Workspace Owner \\\hline
-Mức độ cần thiết & Bắt buộc \\\hline
-Phân loại & Cao \\\hline
-Các thành phần tham gia & + \textbf{Workspace Owner:} Muốn tạo không gian làm việc mới cho nhóm/dự án. \\\hline
-Mô tả tóm tắt & Chức năng cho phép người dùng tạo workspace mới để quản lý nhóm làm việc và dự án. \\\hline
-Trigger & User chọn "Tạo workspace mới" trong giao diện. \\\hline
-Kiểu sự kiện & External. \\\hline
-Luồng xử lý bình thường &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \begin{enumerate}
-        \item User chọn "Tạo workspace mới".
-        \item Hệ thống hiển thị form tạo workspace.
-        \item User nhập tên workspace và mô tả.
-        \item User upload logo (tùy chọn).
-        \item User chọn template (nếu có).
-        \item User nhấn "Tạo".
-        \item Hệ thống validate dữ liệu đầu vào.
-        \item Hệ thống tạo workspace trong database.
-        \item Hệ thống gán người tạo làm Owner.
-        \item Hệ thống tạo các channel mặc định (\#general, \#random).
-        \item Hệ thống chuyển hướng đến workspace mới.
-    \end{enumerate}
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Các luồng sự kiện con & N/A \\\hline
-Luồng thay thế/ngoại lệ &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \textbf{\textcolor{red}{E1}} -- Tên workspace trống: Hiển thị lỗi "Vui lòng nhập tên workspace".
-
-    \textbf{\textcolor{red}{E2}} -- Tên workspace đã tồn tại: Hiển thị lỗi, yêu cầu đổi tên.
-
-    \textbf{\textcolor{red}{E3}} -- Logo vượt quá 5MB: Hiển thị lỗi kích thước file.
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Kết quả & Workspace mới được tạo thành công và user trở thành Owner. \\\hline
-\end{longtblr}
-\end{adjustwidth}
-
-\vspace{1em}
-
-\textbf{UC02.2 - Cấu hình workspace}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\textwidth]{images/uc02_2_configure_workspace.png}
-    \caption{Sơ đồ use case chức năng cấu hình workspace}
-    \label{fig:uc02_2_configure_workspace}
-\end{figure}
-
-\begin{adjustwidth}{-1.5cm}{-0.5cm}
-\begin{longtblr}[
-    caption = {Đặc tả use case UC02.2 - Cấu hình workspace},
-    label = {tab:uc02_2},
-]{
-    colspec={|l|p{.7\linewidth}|}
-}
-\hline
-\textbf{Tên chức năng} & \textbf{Cấu hình workspace} \\\hline
-ID & UC02.2 \\\hline
-Người sử dụng & Workspace Owner \\\hline
-Mức độ cần thiết & Bắt buộc \\\hline
-Phân loại & Cao \\\hline
-Các thành phần tham gia & + \textbf{Workspace Owner:} Muốn thiết lập các tùy chọn và tích hợp cho workspace. \\\hline
-Mô tả tóm tắt & Chức năng cho phép Owner cấu hình các thiết lập của workspace như thông tin chung, tích hợp bên ngoài, và cấu hình AI. \\\hline
-Trigger & Owner truy cập Settings của workspace. \\\hline
-Kiểu sự kiện & External. \\\hline
-Luồng xử lý bình thường &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \begin{enumerate}
-        \item Owner truy cập Workspace Settings.
-        \item Hệ thống hiển thị các tab cấu hình: General, Integrations, AI, Permissions.
-        \item Owner chỉnh sửa thông tin chung (tên, mô tả, logo).
-        \item Owner cấu hình tích hợp (PM Service, Chat Service, Meeting Service).
-        \item Owner cấu hình LLM Provider (API key, model).
-        \item Owner thiết lập quyền mặc định cho Member.
-        \item Owner nhấn "Lưu cấu hình".
-        \item Hệ thống validate và lưu settings.
-        \item Hệ thống hiển thị thông báo thành công.
-    \end{enumerate}
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Các luồng sự kiện con & N/A \\\hline
-Luồng thay thế/ngoại lệ &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \textbf{\textcolor{red}{E1}} -- API key không hợp lệ: Hiển thị lỗi "Không thể kết nối đến dịch vụ".
-
-    \textbf{\textcolor{red}{E2}} -- LLM Provider không phản hồi: Hiển thị cảnh báo, vẫn cho phép lưu.
-
-    \textbf{\textcolor{red}{A1}} -- Test kết nối: Gửi request test đến service bên ngoài.
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Kết quả & Cấu hình workspace được lưu và áp dụng thành công. \\\hline
-\end{longtblr}
-\end{adjustwidth}
-
-\vspace{1em}
-
-\textbf{UC02.3 - Xem danh sách workspace}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\textwidth]{images/uc02_3_view_workspaces.png}
-    \caption{Sơ đồ use case chức năng xem danh sách workspace}
-    \label{fig:uc02_3_view_workspaces}
-\end{figure}
-
-\begin{adjustwidth}{-1.5cm}{-0.5cm}
-\begin{longtblr}[
-    caption = {Đặc tả use case UC02.3 - Xem danh sách workspace},
-    label = {tab:uc02_3},
-]{
-    colspec={|l|p{.7\linewidth}|}
-}
-\hline
-\textbf{Tên chức năng} & \textbf{Xem danh sách workspace} \\\hline
-ID & UC02.3 \\\hline
-Người sử dụng & Super Admin, Workspace Owner, Member \\\hline
+\textbf{Tên chức năng} & \textbf{Quản lý thành viên kênh} \\\hline
+ID & UC02 \\\hline
+Người sử dụng & Workspace Owner, Channel Admin \\\hline
 Mức độ cần thiết & Bắt buộc \\\hline
 Phân loại & Trung bình \\\hline
 Các thành phần tham gia &
 \begin{minipage}{\linewidth}
     \vskip 4pt
-    + \textbf{User:} Muốn xem tất cả workspace mà mình tham gia. \\
-    + \textbf{Super Admin:} Muốn xem tất cả workspace trong hệ thống để quản lý.
+    + \textbf{Workspace Owner/Channel Admin:} Muốn quản lý danh sách thành viên trong kênh, mời người mới, xóa thành viên và phân quyền truy cập. \\
+    + \textbf{Member:} Được mời vào kênh hoặc bị xóa khỏi kênh.
     \vskip 1pt
 \end{minipage}
 \\\hline
-Mô tả tóm tắt & Chức năng hiển thị danh sách tất cả workspace mà người dùng có quyền truy cập. \\\hline
-Trigger & User truy cập trang Workspace/Dashboard. \\\hline
+Mô tả tóm tắt & Cho phép Channel Admin mời thành viên workspace vào kênh, xóa thành viên khỏi kênh, và phân quyền Admin/Member cho từng thành viên trong kênh. \\\hline
+Trigger & Channel Admin chọn chức năng "Quản lý thành viên" của một kênh. \\\hline
 Kiểu sự kiện & External. \\\hline
 Luồng xử lý bình thường &
 \begin{minipage}{\linewidth}
     \vskip 4pt
     \begin{enumerate}
-        \item User truy cập trang Workspace.
-        \item Hệ thống truy vấn danh sách workspace của user.
-        \item Hệ thống hiển thị danh sách với thông tin: tên, role, số thành viên, trạng thái.
-        \item User chọn workspace để truy cập.
-        \item Hệ thống chuyển đến workspace được chọn.
+        \item Channel Admin truy cập vào cài đặt của kênh.
+        \item Channel Admin chọn tab "Thành viên".
+        \item Hệ thống hiển thị danh sách thành viên hiện tại của kênh.
+        \item Channel Admin chọn "Mời thành viên".
+        \item Hệ thống hiển thị danh sách thành viên workspace chưa tham gia kênh.
+        \item Channel Admin chọn một hoặc nhiều thành viên và nhấn "Mời".
+        \item Hệ thống thêm thành viên vào kênh và gửi thông báo.
+        \item Danh sách thành viên được cập nhật.
     \end{enumerate}
     \vskip 1pt
 \end{minipage}
@@ -174,236 +51,21 @@ Luồng xử lý bình thường &
 Các luồng sự kiện con &
 \begin{minipage}{\linewidth}
     \vskip 4pt
-    + Extend UC02.4 (Khóa workspace) - chỉ Super Admin. \\
-    + Extend UC02.5 (Mở khóa workspace) - chỉ Super Admin.
+    + \textbf{S1 - Xóa thành viên:} Channel Admin chọn thành viên → Chọn "Xóa" → Xác nhận → Thành viên bị xóa khỏi kênh.
+
+    + \textbf{S2 - Phân quyền:} Channel Admin chọn thành viên → Chọn vai trò (Admin/Member) → Lưu → Quyền được cập nhật.
     \vskip 1pt
 \end{minipage}
 \\\hline
 Luồng thay thế/ngoại lệ &
 \begin{minipage}{\linewidth}
     \vskip 4pt
-    \textbf{\textcolor{red}{A1}} -- Tìm kiếm workspace: Lọc danh sách theo keyword.
+    \textbf{\textcolor{red}{A1}} -- Thành viên đã tồn tại trong kênh: Hệ thống bỏ qua thành viên đã tồn tại và chỉ thêm các thành viên mới.
 
-    \textbf{\textcolor{red}{A2}} -- Sắp xếp theo tiêu chí: Sắp xếp theo tên/ngày tạo/số thành viên.
-
-    \textbf{\textcolor{red}{A3}} -- Super Admin xem tất cả: Hiển thị tất cả workspace trong hệ thống.
+    \textbf{\textcolor{red}{E1}} -- Không thể xóa Channel Admin cuối cùng: Hệ thống thông báo "Kênh phải có ít nhất một Admin".
     \vskip 1pt
 \end{minipage}
 \\\hline
-Kết quả & User xem được danh sách workspace và có thể truy cập vào workspace mong muốn. \\\hline
-\end{longtblr}
-\end{adjustwidth}
-
-\vspace{1em}
-
-\textbf{UC02.4 - Khóa workspace}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.6\textwidth]{images/uc02_4_lock_workspace.png}
-    \caption{Sơ đồ use case chức năng khóa workspace}
-    \label{fig:uc02_4_lock_workspace}
-\end{figure}
-
-\begin{adjustwidth}{-1.5cm}{-0.5cm}
-\begin{longtblr}[
-    caption = {Đặc tả use case UC02.4 - Khóa workspace},
-    label = {tab:uc02_4},
-]{
-    colspec={|l|p{.7\linewidth}|}
-}
-\hline
-\textbf{Tên chức năng} & \textbf{Khóa workspace} \\\hline
-ID & UC02.4 \\\hline
-Người sử dụng & Super Admin \\\hline
-Mức độ cần thiết & Bắt buộc \\\hline
-Phân loại & Cao \\\hline
-Các thành phần tham gia & + \textbf{Super Admin:} Muốn tạm ngưng hoạt động của workspace vi phạm chính sách. \\\hline
-Mô tả tóm tắt & Chức năng cho phép Super Admin khóa workspace, ngăn tất cả thành viên truy cập. \\\hline
-Trigger & Super Admin chọn "Khóa workspace" từ danh sách workspace. \\\hline
-Kiểu sự kiện & External. \\\hline
-Luồng xử lý bình thường &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \begin{enumerate}
-        \item Super Admin chọn workspace cần khóa từ danh sách.
-        \item Hệ thống hiển thị thông tin workspace.
-        \item Super Admin nhấn "Khóa workspace".
-        \item Hệ thống hiển thị dialog xác nhận với trường nhập lý do.
-        \item Super Admin nhập lý do khóa và xác nhận.
-        \item Hệ thống cập nhật trạng thái workspace thành "Locked".
-        \item Hệ thống gửi email thông báo cho Owner của workspace.
-        \item Hệ thống ghi audit log.
-    \end{enumerate}
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Các luồng sự kiện con & Extend từ UC02.3 (Xem danh sách workspace). \\\hline
-Luồng thay thế/ngoại lệ & N/A \\\hline
-Kết quả & Workspace bị khóa và tất cả thành viên không thể truy cập. \\\hline
-\end{longtblr}
-\end{adjustwidth}
-
-\vspace{1em}
-
-\textbf{UC02.5 - Mở khóa workspace}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.6\textwidth]{images/uc02_5_unlock_workspace.png}
-    \caption{Sơ đồ use case chức năng mở khóa workspace}
-    \label{fig:uc02_5_unlock_workspace}
-\end{figure}
-
-\begin{adjustwidth}{-1.5cm}{-0.5cm}
-\begin{longtblr}[
-    caption = {Đặc tả use case UC02.5 - Mở khóa workspace},
-    label = {tab:uc02_5},
-]{
-    colspec={|l|p{.7\linewidth}|}
-}
-\hline
-\textbf{Tên chức năng} & \textbf{Mở khóa workspace} \\\hline
-ID & UC02.5 \\\hline
-Người sử dụng & Super Admin \\\hline
-Mức độ cần thiết & Bắt buộc \\\hline
-Phân loại & Cao \\\hline
-Các thành phần tham gia & + \textbf{Super Admin:} Muốn kích hoạt lại workspace sau khi vấn đề đã được giải quyết. \\\hline
-Mô tả tóm tắt & Chức năng cho phép Super Admin mở khóa workspace đã bị khóa trước đó. \\\hline
-Trigger & Super Admin chọn "Mở khóa" cho workspace đang bị khóa. \\\hline
-Kiểu sự kiện & External. \\\hline
-Luồng xử lý bình thường &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \begin{enumerate}
-        \item Super Admin chọn workspace bị khóa từ danh sách.
-        \item Hệ thống hiển thị thông tin workspace và lý do khóa.
-        \item Super Admin nhấn "Mở khóa".
-        \item Hệ thống hiển thị xác nhận.
-        \item Super Admin xác nhận mở khóa.
-        \item Hệ thống cập nhật trạng thái workspace thành "Active".
-        \item Hệ thống gửi email thông báo cho Owner.
-        \item Hệ thống ghi audit log.
-    \end{enumerate}
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Các luồng sự kiện con & Extend từ UC02.3 (Xem danh sách workspace). \\\hline
-Luồng thay thế/ngoại lệ & N/A \\\hline
-Kết quả & Workspace được mở khóa và hoạt động bình thường trở lại. \\\hline
-\end{longtblr}
-\end{adjustwidth}
-
-\vspace{1em}
-
-\textbf{UC02.6 - Xem dashboard}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\textwidth]{images/uc02_6_view_dashboard.png}
-    \caption{Sơ đồ use case chức năng xem dashboard}
-    \label{fig:uc02_6_view_dashboard}
-\end{figure}
-
-\begin{adjustwidth}{-1.5cm}{-0.5cm}
-\begin{longtblr}[
-    caption = {Đặc tả use case UC02.6 - Xem dashboard},
-    label = {tab:uc02_6},
-]{
-    colspec={|l|p{.7\linewidth}|}
-}
-\hline
-\textbf{Tên chức năng} & \textbf{Xem dashboard} \\\hline
-ID & UC02.6 \\\hline
-Người sử dụng & Workspace Owner \\\hline
-Mức độ cần thiết & Bắt buộc \\\hline
-Phân loại & Trung bình \\\hline
-Các thành phần tham gia & + \textbf{Workspace Owner:} Muốn xem tổng quan hoạt động và thống kê của workspace. \\\hline
-Mô tả tóm tắt & Chức năng hiển thị dashboard với các thống kê và biểu đồ về hoạt động của workspace. \\\hline
-Trigger & Owner truy cập trang Dashboard của workspace. \\\hline
-Kiểu sự kiện & External. \\\hline
-Luồng xử lý bình thường &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \begin{enumerate}
-        \item Owner truy cập Dashboard.
-        \item Hệ thống truy vấn dữ liệu thống kê.
-        \item Hệ thống hiển thị các widget: số thành viên, số tệp tin, hoạt động gần đây.
-        \item Hệ thống hiển thị biểu đồ sử dụng AI (số request, token usage).
-        \item Hệ thống hiển thị top contributors.
-        \item Owner có thể chọn khoảng thời gian để filter dữ liệu.
-    \end{enumerate}
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Các luồng sự kiện con & N/A \\\hline
-Luồng thay thế/ngoại lệ &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \textbf{\textcolor{red}{A1}} -- Export báo cáo: Xuất dữ liệu dashboard sang PDF/Excel.
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Kết quả & Owner xem được tổng quan hoạt động của workspace. \\\hline
-\end{longtblr}
-\end{adjustwidth}
-
-\vspace{1em}
-
-\textbf{UC02.7 - Xem audit log}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\textwidth]{images/uc02_7_view_audit_log.png}
-    \caption{Sơ đồ use case chức năng xem audit log}
-    \label{fig:uc02_7_view_audit_log}
-\end{figure}
-
-\begin{adjustwidth}{-1.5cm}{-0.5cm}
-\begin{longtblr}[
-    caption = {Đặc tả use case UC02.7 - Xem audit log},
-    label = {tab:uc02_7},
-]{
-    colspec={|l|p{.7\linewidth}|}
-}
-\hline
-\textbf{Tên chức năng} & \textbf{Xem audit log} \\\hline
-ID & UC02.7 \\\hline
-Người sử dụng & Workspace Owner, Super Admin \\\hline
-Mức độ cần thiết & Bắt buộc \\\hline
-Phân loại & Trung bình \\\hline
-Các thành phần tham gia &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    + \textbf{Workspace Owner:} Muốn theo dõi lịch sử hoạt động trong workspace. \\
-    + \textbf{Super Admin:} Muốn giám sát hoạt động của tất cả workspace.
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Mô tả tóm tắt & Chức năng hiển thị lịch sử các hoạt động trong workspace để theo dõi và kiểm tra. \\\hline
-Trigger & Owner/Super Admin truy cập trang Audit Log. \\\hline
-Kiểu sự kiện & External. \\\hline
-Luồng xử lý bình thường &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \begin{enumerate}
-        \item User truy cập Audit Log.
-        \item Hệ thống truy vấn logs từ database.
-        \item Hệ thống hiển thị danh sách với: thời gian, user, hành động, đối tượng, IP.
-        \item User có thể lọc theo tiêu chí (user, action type, date range).
-        \item User có thể xuất báo cáo.
-    \end{enumerate}
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Các luồng sự kiện con & N/A \\\hline
-Luồng thay thế/ngoại lệ &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \textbf{\textcolor{red}{A1}} -- Export audit log: Tạo file CSV/PDF với dữ liệu đã filter.
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Kết quả & User xem được lịch sử hoạt động trong workspace để theo dõi và audit. \\\hline
+Kết quả & Danh sách thành viên kênh được cập nhật (thêm/xóa/thay đổi quyền). \\\hline
 \end{longtblr}
 \end{adjustwidth}

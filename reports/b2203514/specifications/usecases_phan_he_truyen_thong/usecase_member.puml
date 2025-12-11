@@ -1,0 +1,96 @@
+@startuml usecase_member
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam usecase {
+    BackgroundColor #FEFEFE
+    BorderColor #333333
+}
+skinparam rectangle {
+    BackgroundColor #F8F8F8
+    BorderColor #666666
+}
+skinparam package {
+    BackgroundColor #E8FDE8
+    BorderColor #4AD94A
+}
+
+title <b>Sơ đồ Use Case - Member</b>
+
+actor "Member" as Member
+actor "File Service" as FileService
+actor "AI Provider" as AIProvider
+
+rectangle "Phân hệ Truyền thông" {
+    package "Tham gia kênh" {
+        usecase "UC01: Xem danh sách kênh" as UC01
+        usecase "UC02: Tham gia\nkênh công khai" as UC02
+        usecase "UC03: Rời khỏi kênh" as UC03
+    }
+    
+    package "Nhắn tin (Messaging)" {
+        usecase "UC04: Gửi tin nhắn" as UC04
+        usecase "UC05: Chỉnh sửa/Xóa\ntin nhắn" as UC05
+        usecase "UC06: Tạo thread\nthảo luận" as UC06
+        usecase "UC07: Phản hồi tin nhắn\n(Reaction)" as UC07
+        usecase "UC08: Ghim tin nhắn" as UC08
+    }
+    
+    package "Tệp đính kèm" {
+        usecase "UC09: Gửi tệp đính kèm" as UC09
+        usecase "UC10: Xem trước/Tải tệp" as UC10
+    }
+    
+    package "Tìm kiếm" {
+        usecase "UC11: Tìm kiếm tin nhắn" as UC11
+        usecase "UC11.1: Tìm kiếm\nnâng cao" as UC11_1
+        usecase "UC11.2: Tìm kiếm\nngữ nghĩa" as UC11_2
+    }
+    
+    package "Thông báo" {
+        usecase "UC12: Xem tin chưa đọc" as UC12
+        usecase "UC13: Cấu hình\nthông báo kênh" as UC13
+    }
+    
+    package "AI Assistant" {
+        usecase "UC14: Tóm tắt hội thoại" as UC14
+        usecase "UC15: Trích xuất\naction items" as UC15
+        usecase "UC16: Hỏi đáp\ntheo ngữ cảnh" as UC16
+        usecase "UC17: Tóm tắt tài liệu" as UC17
+    }
+}
+
+' Member relationships
+Member --> UC01
+Member --> UC02
+Member --> UC03
+Member --> UC04
+Member --> UC05
+Member --> UC06
+Member --> UC07
+Member --> UC08
+Member --> UC09
+Member --> UC10
+Member --> UC11
+Member --> UC12
+Member --> UC13
+Member --> UC14
+Member --> UC15
+Member --> UC16
+Member --> UC17
+
+' Extend relationships
+UC11_1 .up.> UC11 : <<extend>>
+UC11_2 .up.> UC11 : <<extend>>
+
+' External systems
+UC09 ..> FileService : <<uses>>
+UC10 ..> FileService : <<uses>>
+UC14 ..> AIProvider : <<uses>>
+UC15 ..> AIProvider : <<uses>>
+UC16 ..> AIProvider : <<uses>>
+UC17 ..> AIProvider : <<uses>>
+
+@enduml

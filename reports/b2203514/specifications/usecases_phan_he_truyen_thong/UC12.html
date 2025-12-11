@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>UC12 - Trích xuất action items</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; font-size: 13pt; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; vertical-align: top; }
+        .header-row td:first-child { width: 70%; }
+        .header-row td:last-child { width: 30%; }
+        ul, ol { margin: 5px 0; padding-left: 20px; }
+        .section-title { font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<table>
+    <tr class="header-row">
+        <td><strong>Tên chức năng:</strong> Trích xuất action items</td>
+        <td><strong>ID:</strong> UC12</td>
+    </tr>
+    <tr>
+        <td><strong>Người sử dụng:</strong> Member</td>
+        <td><strong>Mức độ cần thiết:</strong> Quan trọng</td>
+    </tr>
+    <tr>
+        <td colspan="2" style="text-align: right;"><strong>Phân loại:</strong> Phức tạp</td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Các thành phần tham gia và mối quan tâm:</p>
+            <ul>
+                <li><strong>Member:</strong> Muốn trích xuất danh sách công việc, nhiệm vụ từ cuộc thảo luận để theo dõi và thực hiện.</li>
+                <li><strong>AI Provider:</strong> Phân tích và trích xuất action items.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Mô tả tóm tắt:</p>
+            <p>Cho phép Member yêu cầu AI phân tích cuộc hội thoại và trích xuất danh sách các công việc, nhiệm vụ (action items) được đề cập, bao gồm người chịu trách nhiệm và deadline nếu có.</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p><strong>Trigger:</strong> Member chọn "Trích xuất action items" trong một kênh hoặc thread.</p>
+            <p><strong>Kiểu sự kiện:</strong> External</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Luồng xử lý bình thường của sự kiện:</p>
+            <ol>
+                <li>Member mở panel AI Assistant trong kênh.</li>
+                <li>Member chọn "Trích xuất action items".</li>
+                <li>Hệ thống thu thập nội dung hội thoại gần đây.</li>
+                <li>Hệ thống gửi nội dung đến AI Service.</li>
+                <li>AI Service phân tích và trích xuất các công việc.</li>
+                <li>Hệ thống hiển thị danh sách action items với format: Task - Người thực hiện - Deadline.</li>
+                <li>Member có thể copy hoặc export danh sách.</li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Các luồng sự kiện con (Subflows):</p>
+            <p>N/A</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Luồng luân phiên/đặc biệt (Alternative/Exceptional flows):</p>
+            <p><strong>5a. Không tìm thấy action items:</strong></p>
+            <p>6. Hệ thống thông báo "Không tìm thấy công việc cụ thể trong cuộc hội thoại".</p>
+
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p><strong>Kết quả:</strong> Danh sách action items được trích xuất và hiển thị cho Member.</p>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>

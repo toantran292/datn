@@ -1,0 +1,68 @@
+\paragraph{UC10: Tìm kiếm tin nhắn}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/UC10.png}
+    \caption{Sơ đồ use case UC10 - Tìm kiếm tin nhắn}
+    \label{fig:uc10}
+\end{figure}
+
+\begin{adjustwidth}{-1.5cm}{-0.5cm}
+\begin{longtblr}[
+    caption = {Đặc tả use case UC10 - Tìm kiếm tin nhắn},
+    label = {tab:uc10}
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Tìm kiếm tin nhắn} \\\hline
+ID & UC10 \\\hline
+Người sử dụng & Member \\\hline
+Mức độ cần thiết & Quan trọng \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{Member:} Muốn tìm kiếm tin nhắn cũ theo từ khóa, người gửi hoặc khoảng thời gian.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Cho phép Member tìm kiếm tin nhắn trong các kênh mà mình có quyền truy cập. Hỗ trợ tìm kiếm theo từ khóa (full-text) và tìm kiếm ngữ nghĩa (semantic search) sử dụng vector database. \\\hline
+Trigger & Member nhập từ khóa vào ô tìm kiếm. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item Member click vào ô tìm kiếm hoặc nhấn Ctrl+K.
+        \item Member nhập từ khóa cần tìm.
+        \item Hệ thống thực hiện tìm kiếm full-text trên nội dung tin nhắn.
+        \item Hệ thống hiển thị danh sách kết quả với highlight từ khóa.
+        \item Member click vào một kết quả.
+        \item Hệ thống chuyển đến tin nhắn tương ứng trong kênh.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{S1 - Tìm kiếm nâng cao:} Member chọn bộ lọc (kênh, người gửi, thời gian, loại) → Kết quả được lọc theo điều kiện.
+
+    + \textbf{S2 - Tìm kiếm ngữ nghĩa:} Member bật chế độ semantic search → Hệ thống tìm theo ý nghĩa thay vì từ khóa chính xác.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- Không có kết quả: Hệ thống hiển thị "Không tìm thấy tin nhắn phù hợp".
+
+    \textbf{\textcolor{red}{A1}} -- Quá nhiều kết quả: Hệ thống phân trang kết quả và hiển thị các kết quả liên quan nhất trước.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Member tìm được tin nhắn cần tìm và có thể truy cập trực tiếp. \\\hline
+\end{longtblr}
+\end{adjustwidth}

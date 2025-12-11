@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>UC06 - Tạo thread thảo luận</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; font-size: 13pt; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; vertical-align: top; }
+        .header-row td:first-child { width: 70%; }
+        .header-row td:last-child { width: 30%; }
+        ul, ol { margin: 5px 0; padding-left: 20px; }
+        .section-title { font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<table>
+    <tr class="header-row">
+        <td><strong>Tên chức năng:</strong> Tạo thread thảo luận</td>
+        <td><strong>ID:</strong> UC06</td>
+    </tr>
+    <tr>
+        <td><strong>Người sử dụng:</strong> Member</td>
+        <td><strong>Mức độ cần thiết:</strong> Quan trọng</td>
+    </tr>
+    <tr>
+        <td colspan="2" style="text-align: right;"><strong>Phân loại:</strong> Trung bình</td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Các thành phần tham gia và mối quan tâm:</p>
+            <ul>
+                <li><strong>Member:</strong> Muốn tạo thread từ một tin nhắn để thảo luận chi tiết mà không làm gián đoạn luồng hội thoại chính.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Mô tả tóm tắt:</p>
+            <p>Cho phép Member tạo thread (luồng thảo luận phụ) từ một tin nhắn cụ thể để thảo luận sâu về một chủ đề mà không ảnh hưởng đến luồng chat chính.</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p><strong>Trigger:</strong> Member chọn một tin nhắn và chọn "Tạo thread".</p>
+            <p><strong>Kiểu sự kiện:</strong> External</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Luồng xử lý bình thường của sự kiện:</p>
+            <ol>
+                <li>Member hover vào một tin nhắn trong kênh.</li>
+                <li>Member chọn icon "Tạo thread" hoặc "Reply in thread".</li>
+                <li>Hệ thống mở panel thread bên phải màn hình.</li>
+                <li>Member nhập nội dung trả lời trong thread.</li>
+                <li>Member nhấn "Gửi".</li>
+                <li>Hệ thống lưu tin nhắn trong thread và hiển thị số reply trên tin nhắn gốc.</li>
+                <li>Các thành viên khác có thể xem và tham gia thread.</li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Các luồng sự kiện con (Subflows):</p>
+            <p>N/A</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Luồng luân phiên/đặc biệt (Alternative/Exceptional flows):</p>
+            <p><strong>2a. Thread đã tồn tại:</strong></p>
+            <p>3. Hệ thống mở thread hiện có thay vì tạo mới.</p>
+
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p><strong>Kết quả:</strong> Thread được tạo và các thành viên có thể thảo luận chi tiết trong thread.</p>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>

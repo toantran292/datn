@@ -1,0 +1,61 @@
+\paragraph{UC13: Hỏi đáp theo ngữ cảnh}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/UC13.png}
+    \caption{Sơ đồ use case UC13 - Hỏi đáp theo ngữ cảnh}
+    \label{fig:uc13}
+\end{figure}
+
+\begin{adjustwidth}{-1.5cm}{-0.5cm}
+\begin{longtblr}[
+    caption = {Đặc tả use case UC13 - Hỏi đáp theo ngữ cảnh},
+    label = {tab:uc13}
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Hỏi đáp theo ngữ cảnh} \\\hline
+ID & UC13 \\\hline
+Người sử dụng & Member \\\hline
+Mức độ cần thiết & Quan trọng \\\hline
+Phân loại & Phức tạp \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{Member:} Muốn đặt câu hỏi và nhận câu trả lời dựa trên nội dung đã trao đổi trong kênh. \\
+    + \textbf{AI Provider:} Truy xuất ngữ cảnh và sinh câu trả lời.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Cho phép Member đặt câu hỏi về nội dung đã trao đổi trong kênh. AI sử dụng kiến trúc RAG để truy xuất ngữ cảnh liên quan từ vector database và sinh câu trả lời chính xác. \\\hline
+Trigger & Member nhập câu hỏi vào AI Assistant. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item Member mở panel AI Assistant.
+        \item Member nhập câu hỏi về nội dung kênh.
+        \item Hệ thống tạo embedding cho câu hỏi.
+        \item Hệ thống truy xuất các tin nhắn/tài liệu liên quan từ vector database.
+        \item Hệ thống gửi câu hỏi + context đến LLM.
+        \item LLM sinh câu trả lời dựa trên context.
+        \item Hệ thống hiển thị câu trả lời kèm nguồn tham chiếu.
+        \item Member có thể click vào nguồn để xem tin nhắn gốc.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- Không tìm thấy context liên quan: AI trả lời dựa trên kiến thức chung và thông báo "Không tìm thấy thông tin cụ thể trong kênh".
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Member nhận được câu trả lời chính xác dựa trên nội dung đã trao đổi trong kênh. \\\hline
+\end{longtblr}
+\end{adjustwidth}
