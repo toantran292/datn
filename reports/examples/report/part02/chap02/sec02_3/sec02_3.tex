@@ -1,0 +1,29 @@
+\subsection{Giới thiệu về công nghệ Backend}
+
+\subsubsection{Khái quát}
+
+Hệ thống backend được xây dựng theo kiến trúc Microservices, trong đó mỗi service chịu trách nhiệm cho một bounded context cụ thể và giao tiếp với nhau thông qua REST APIs hoặc message queues. Kiến trúc này mang lại nhiều lợi ích: mỗi service có thể deploy độc lập mà không ảnh hưởng đến services khác, linh hoạt trong việc chọn tech stack phù hợp nhất cho từng service, dễ dàng scale từng service riêng biệt theo nhu cầu, và fault isolation đảm bảo lỗi ở một service không làm sập toàn hệ thống.
+
+Hệ thống sử dụng hai framework backend chính: Spring Boot cho Account Service do yêu cầu bảo mật cao và tích hợp OAuth 2.0, và NestJS cho các services còn lại nhờ khả năng phát triển nhanh và hệ sinh thái JavaScript phong phú. Cả hai framework đều tuân thủ nguyên tắc RESTful API design, cung cấp API documentation với Swagger/OpenAPI, và được containerized bằng Docker để dễ dàng deploy và scale.
+
+\subsubsection{Spring Boot và các thành phần}
+
+Spring Boot là một extension của Spring Framework giúp đơn giản hóa việc tạo và cấu hình ứng dụng Spring. Framework này cung cấp auto-configuration tự động cấu hình ứng dụng dựa trên dependencies trong classpath, embedded servers (Tomcat) tích hợp sẵn không cần deploy WAR files, starter dependencies đóng gói các thư viện liên quan, và production-ready features như health checks, metrics, externalized configuration. Account Service được xây dựng bằng Spring Boot do yêu cầu bảo mật cao và khả năng tích hợp OAuth 2.0 mạnh mẽ.
+
+Spring Security là framework bảo mật toàn diện được sử dụng cho authentication và authorization trong Account Service. Framework này hỗ trợ JWT authentication với cặp access token và refresh token để quản lý session an toàn, OAuth 2.0 Client cho Google login integration, và password encoding với BCrypt để bảo vệ thông tin nhạy cảm. Spring Data JPA cung cấp data access layer với PostgreSQL, sử dụng Repository pattern với JpaRepository interface và query methods tự động generate từ method names, giúp giảm thiểu boilerplate code. Spring MVC xử lý RESTful API với annotation @RestController, cung cấp các tính năng như request mapping, content negotiation, và exception handling.
+
+\subsubsection{NestJS và kiến trúc modular}
+
+NestJS là một framework Node.js tiên tiến để xây dựng các ứng dụng server-side hiệu quả và có khả năng mở rộng. Framework này được thiết kế với modular architecture cho phép tổ chức code thành các modules độc lập dễ maintain và test, built-in Dependency Injection container giúp quản lý dependencies hiệu quả, decorators để định nghĩa routes và middleware một cách declarative, TypeScript native support với type safety out-of-the-box, và hỗ trợ sẵn cho TypeORM/Prisma, WebSockets, microservi\-ces. NestJS được sử dụng cho các services còn lại trong hệ thống do khả năng phát triển nhanh và hệ sinh thái JavaScript phong phú.
+
+Kiến trúc của NestJS được xây dựng theo các layer rõ ràng: Controllers xử lý incoming requests và trả về responses, Services (Providers) chứa business logic và được inject vào controllers thông qua Dependency Injection, Modules tổ chức và đóng gói các components liên quan với nhau, Guards xử lý authentication và authorization logic, Interceptors transform data trước hoặc sau khi xử lý request, và Pipes thực hiện validation cũng như transformation của input data. Kiến trúc này đảm bảo separation of concerns và giúp code dễ test với unit testing và integration testing.
+
+\subsubsection{Nguyên tắc RESTful API}
+
+REST (Representational State Transfer) là một kiến trúc thiết kế API sử dụng các HTTP methods để thực hiện CRUD operations trên resources. RESTful API tuân theo các nguyên tắc quan trọng: URL đại diện cho resources (nouns như /users, /workspaces) chứ không phải actions (verbs), HTTP methods được sử dụng đúng mục đích (GET để lấy dữ liệu, POST để tạo mới, PUT/PATCH để cập nhật, DELETE để xóa), stateless design trong đó mỗi request chứa đầy đủ thông tin cần thiết và server không lưu client state, HTTP status codes phù hợp (200 OK, 201 Created, 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 500 Internal Server Error), và API versioning (v1, v2) để maintain backward compatibility khi có breaking changes.
+
+\subsubsection{Vận dụng vào đề tài}
+
+Backend của hệ thống được chia thành 5 microservices với 2 tech stack khác nhau. Account Service được xây dựng bằng Spring Boot 3.x với Spring Security và Spring Data JPA, chịu trách nhiệm Authentication, Authorization và User Management. Service này cung cấp JWT authentication với cặp access token và refresh token, Google OAuth 2.0 integration, các thao tác CRUD cho users, password reset, email verification, và session management. Việc chọn Spring Boot cho Account Service đảm bảo bảo mật cao và khả năng tích hợp OAuth 2.0 mạnh mẽ.
+
+Các services còn lại được xây dựng bằng NestJS với Prisma ORM: Workspace Service quản lý workspaces, cấu hình, và dashboard, Member Service quản lý members, invitations và permissions theo mô hình RBAC, File Service xử lý upload, download và quản lý files với MinIO/S3, Notification Service gửi real-time notifications qua WebSock\-et và email notifications, và Report Service tích hợp LLM để tạo AI-generated reports. Tất cả services đều tuân thủ RESTful API design với documentation bằng Swagger/Open\-API, validation với class-validator (NestJS) và Bean Validation (Spring), error handling với global exception handlers, logging tập trung và monitoring để đảm bảo observability.

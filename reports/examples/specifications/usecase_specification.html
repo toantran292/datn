@@ -845,11 +845,12 @@
             <span class="label">Luồng xử lý bình thường của sự kiện:</span>
             <ol>
                 <li>User chọn "Tạo workspace mới".</li>
-                <li>Hệ thống kiểm tra quota subscription của user.</li>
                 <li>Hệ thống hiển thị form tạo workspace.</li>
                 <li>User nhập tên workspace và mô tả.</li>
+                <li>User upload logo (tùy chọn).</li>
                 <li>User chọn template (nếu có).</li>
                 <li>User nhấn "Tạo".</li>
+                <li>Hệ thống validate dữ liệu đầu vào.</li>
                 <li>Hệ thống tạo workspace trong database.</li>
                 <li>Hệ thống gán người tạo làm Owner.</li>
                 <li>Hệ thống tạo các channel mặc định (#general, #random).</li>
@@ -866,8 +867,9 @@
         <td colspan="2">
             <span class="label">Luồng luân phiên/đặc biệt (Alternative/Exceptional flows):</span>
             <ul>
-                <li>E1: Vượt quá quota workspace → Hiển thị thông báo nâng cấp gói subscription.</li>
+                <li>E1: Tên workspace trống → Hiển thị lỗi "Vui lòng nhập tên workspace".</li>
                 <li>E2: Tên workspace đã tồn tại → Hiển thị lỗi, yêu cầu đổi tên.</li>
+                <li>E3: Logo vượt quá 5MB → Hiển thị lỗi kích thước file.</li>
             </ul>
         </td>
     </tr>
@@ -1353,7 +1355,6 @@
             <span class="label">Luồng xử lý bình thường của sự kiện:</span>
             <ol>
                 <li>Owner chọn "Mời thành viên".</li>
-                <li>Hệ thống kiểm tra quota thành viên của workspace.</li>
                 <li>Hệ thống hiển thị form mời với trường nhập email.</li>
                 <li>Owner nhập một hoặc nhiều email.</li>
                 <li>Owner chọn role mặc định (Member).</li>
@@ -1375,7 +1376,7 @@
             <span class="label">Luồng luân phiên/đặc biệt (Alternative/Exceptional flows):</span>
             <ul>
                 <li>E1: Email đã là thành viên → Bỏ qua và thông báo "Đã là thành viên".</li>
-                <li>E2: Vượt quota thành viên → Hiển thị thông báo nâng cấp gói.</li>
+                <li>E2: Email không hợp lệ → Hiển thị lỗi định dạng email.</li>
                 <li>A1: Nhập nhiều email cùng lúc → Xử lý batch và hiển thị kết quả từng email.</li>
             </ul>
         </td>
@@ -1883,7 +1884,7 @@
             <ul>
                 <li>E1: Vượt quá kích thước cho phép (100MB) → Hiển thị lỗi.</li>
                 <li>E2: Loại tệp không được hỗ trợ → Hiển thị danh sách loại tệp hợp lệ.</li>
-                <li>E3: Hết dung lượng storage → Hiển thị cảnh báo, đề xuất nâng cấp.</li>
+                <li>E3: Không có quyền upload → Hiển thị lỗi 403 Forbidden.</li>
                 <li>A1: Drag & drop nhiều tệp → Xử lý batch upload.</li>
             </ul>
         </td>
@@ -2520,7 +2521,7 @@
             <span class="label">Luồng luân phiên/đặc biệt (Alternative/Exceptional flows):</span>
             <ul>
                 <li>E1: Chưa cấu hình LLM Provider → Hiển thị hướng dẫn cấu hình.</li>
-                <li>E2: Hết quota AI → Hiển thị thông báo và đề xuất nâng cấp.</li>
+                <li>E2: LLM Provider không phản hồi → Hiển thị lỗi và cho phép thử lại.</li>
             </ul>
         </td>
     </tr>
@@ -2723,7 +2724,7 @@
                 <li>LLM Provider xử lý request.</li>
                 <li>LLM Provider trả về response.</li>
                 <li>Hệ thống nhận và parse response.</li>
-                <li>Hệ thống ghi log usage cho billing.</li>
+                <li>Hệ thống ghi log request để theo dõi.</li>
                 <li>Hệ thống trả kết quả về UC gọi.</li>
             </ol>
         </td>
@@ -2740,7 +2741,6 @@
                 <li>E1: API timeout → Retry với exponential backoff (tối đa 3 lần).</li>
                 <li>E2: Rate limit exceeded → Queue request và retry sau.</li>
                 <li>E3: Invalid API key → Thông báo Owner cấu hình lại.</li>
-                <li>E4: Hết quota → Hiển thị cảnh báo, đề xuất mua thêm credit.</li>
             </ul>
         </td>
     </tr>

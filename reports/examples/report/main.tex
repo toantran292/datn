@@ -13,7 +13,7 @@
 \usepackage{array} % Required for Table Column Text Alignment with Custom Widths
 \usepackage{titlesec} % Set font style
 \usepackage{parskip}
-\usepackage{xcolor}
+\usepackage[table]{xcolor}
 \usepackage{listings}
 \usepackage{tocloft}
 \usepackage{xparse}
@@ -23,7 +23,10 @@
 \usepackage{textcase}
 \usepackage{tabularray}
 \usepackage{longtable}
+\usepackage{multirow}
 \usepackage{changepage}
+\usepackage{pdflscape} % For landscape pages
+\usepackage[absolute]{textpos}
 \usepackage[inkscape = inkscape -z -D, svgpath = fig/]{svg}  % Requires shell-escape
 
 \usetikzlibrary{calc}
@@ -91,4 +94,9 @@
 \renewcommand{\refname}{}  % Remove "References" heading
 \bibliographystyle{unsrt}
 \bibliography{references}
+\newpage
+
+% Phụ lục
+\input{appendix_b}
+
 \end{document}
