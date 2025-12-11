@@ -1,46 +1,52 @@
-\paragraph{UC02: Quản lý Workspace}
+\paragraph{UC02: Quản lý Sprint}
 \mbox{}
 
-\textbf{UC02.1 - Tạo workspace}
+\textbf{UC02.1 - Tạo sprint mới}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\textwidth]{images/uc02_1_create_workspace.png}
-    \caption{Sơ đồ use case chức năng tạo workspace}
-    \label{fig:uc02_1_create_workspace}
+    \includegraphics[width=0.7\textwidth]{images/uc02_1_create_sprint.png}
+    \caption{Sơ đồ use case chức năng tạo sprint}
+    \label{fig:uc02_1_create_sprint}
 \end{figure}
 
 \begin{longtblr}[
-    caption = {Đặc tả use case UC02.1 - Tạo workspace},
+    caption = {Đặc tả use case UC02.1 - Tạo sprint mới},
     label = {tab:uc02_1},
 ]{
     colspec={|l|p{.7\linewidth}|}
 }
 \hline
-\textbf{Tên chức năng} & \textbf{Tạo workspace} \\\hline
+\textbf{Tên chức năng} & \textbf{Tạo sprint mới} \\\hline
 ID & UC02.1 \\\hline
-Người sử dụng & Workspace Owner \\\hline
+Người sử dụng & Project Lead \\\hline
 Mức độ cần thiết & Bắt buộc \\\hline
 Phân loại & Cao \\\hline
-Các thành phần tham gia & + \textbf{Workspace Owner:} Muốn tạo không gian làm việc mới cho nhóm/dự án. \\\hline
-Mô tả tóm tắt & Chức năng cho phép người dùng tạo workspace mới để quản lý nhóm làm việc và dự án. \\\hline
-Trigger & User chọn "Tạo workspace mới" trong giao diện. \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{Project Lead:} Người tạo và quản lý sprint. \\
+    + \textbf{PM Service:} Xử lý logic tạo sprint, validate thông tin. \\
+    + \textbf{PostgreSQL Database:} Lưu trữ thông tin sprint.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Cho phép Project Lead tạo sprint mới với tên, mục tiêu (sprint goal), ngày bắt đầu và kết thúc dự kiến. Sprint được tạo với trạng thái FUTURE. \\\hline
+Trigger & User nhấn nút "Create Sprint" trong giao diện Backlog hoặc Sprint management. \\\hline
 Kiểu sự kiện & External. \\\hline
 Luồng xử lý bình thường &
 \begin{minipage}{\linewidth}
     \vskip 4pt
     \begin{enumerate}
-        \item User chọn "Tạo workspace mới".
-        \item Hệ thống hiển thị form tạo workspace.
-        \item User nhập tên workspace và mô tả.
-        \item User upload logo (tùy chọn).
-        \item User chọn template (nếu có).
-        \item User nhấn "Tạo".
-        \item Hệ thống validate dữ liệu đầu vào.
-        \item Hệ thống tạo workspace trong database.
-        \item Hệ thống gán người tạo làm Owner.
-        \item Hệ thống tạo các channel mặc định (\#general, \#random).
-        \item Hệ thống chuyển hướng đến workspace mới.
+        \item User nhấn nút "Create Sprint" hoặc "New Sprint".
+        \item Hệ thống hiển thị modal/form tạo sprint với các trường: Sprint Name (tên sprint, ví dụ: "Sprint 1", "Sprint Planning Q1"), Sprint Goal (mục tiêu sprint, optional), Start Date (ngày bắt đầu, optional), End Date (ngày kết thúc dự kiến, optional).
+        \item User nhập thông tin sprint. Nếu không nhập Start Date/End Date, có thể để trống và cập nhật sau khi bắt đầu sprint.
+        \item User nhấn "Create Sprint".
+        \item Hệ thống validate dữ liệu: Sprint Name không trống, End Date phải sau Start Date (nếu có).
+        \item Backend tạo bản ghi Sprint mới trong database với status = FUTURE, projectId từ context.
+        \item Hệ thống tạo một sprint container rỗng trong backlog view.
+        \item Hệ thống hiển thị thông báo "Sprint created successfully".
+        \item User có thể bắt đầu kéo thả issue từ backlog vào sprint mới này.
     \end{enumerate}
     \vskip 1pt
 \end{minipage}
@@ -49,57 +55,66 @@ Các luồng sự kiện con & N/A \\\hline
 Luồng thay thế/ngoại lệ &
 \begin{minipage}{\linewidth}
     \vskip 4pt
-    \textbf{\textcolor{red}{E1}} -- Tên workspace trống: Hiển thị lỗi "Vui lòng nhập tên workspace".
+    \textbf{\textcolor{red}{E1}} -- Sprint Name trống: Hiển thị lỗi "Sprint name is required."
 
-    \textbf{\textcolor{red}{E2}} -- Tên workspace đã tồn tại: Hiển thị lỗi, yêu cầu đổi tên.
+    \textbf{\textcolor{red}{E2}} -- End Date trước Start Date: Hiển thị lỗi "End date must be after start date."
 
-    \textbf{\textcolor{red}{E3}} -- Logo vượt quá 5MB: Hiển thị lỗi kích thước file.
+    \textbf{\textcolor{red}{E3}} -- Không có quyền tạo sprint: Hiển thị lỗi "Only Project Lead can create sprints."
     \vskip 1pt
 \end{minipage}
 \\\hline
-Kết quả & Workspace mới được tạo thành công và user trở thành Owner. \\\hline
+Kết quả & Sprint mới được tạo thành công với trạng thái FUTURE, hiển thị trong backlog view như một container rỗng sẵn sàng nhận issue. \\\hline
 \end{longtblr}
 
 \vspace{1em}
 
-\textbf{UC02.2 - Cấu hình workspace}
+\textbf{UC02.2 - Bắt đầu sprint}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\textwidth]{images/uc02_2_configure_workspace.png}
-    \caption{Sơ đồ use case chức năng cấu hình workspace}
-    \label{fig:uc02_2_configure_workspace}
+    \includegraphics[width=0.7\textwidth]{images/uc02_2_start_sprint.png}
+    \caption{Sơ đồ use case chức năng bắt đầu sprint}
+    \label{fig:uc02_2_start_sprint}
 \end{figure}
 
 \begin{longtblr}[
-    caption = {Đặc tả use case UC02.2 - Cấu hình workspace},
+    caption = {Đặc tả use case UC02.2 - Bắt đầu sprint},
     label = {tab:uc02_2},
 ]{
     colspec={|l|p{.7\linewidth}|}
 }
 \hline
-\textbf{Tên chức năng} & \textbf{Cấu hình workspace} \\\hline
+\textbf{Tên chức năng} & \textbf{Bắt đầu sprint} \\\hline
 ID & UC02.2 \\\hline
-Người sử dụng & Workspace Owner \\\hline
+Người sử dụng & Project Lead \\\hline
 Mức độ cần thiết & Bắt buộc \\\hline
 Phân loại & Cao \\\hline
-Các thành phần tham gia & + \textbf{Workspace Owner:} Muốn thiết lập các tùy chọn và tích hợp cho workspace. \\\hline
-Mô tả tóm tắt & Chức năng cho phép Owner cấu hình các thiết lập của workspace như thông tin chung, tích hợp bên ngoài, và cấu hình AI. \\\hline
-Trigger & Owner truy cập Settings của workspace. \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{Project Lead:} Người quyết định bắt đầu sprint. \\
+    + \textbf{PM Service:} Xử lý chuyển đổi trạng thái sprint. \\
+    + \textbf{Database:} Cập nhật trạng thái sprint.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Cho phép Project Lead chuyển sprint từ trạng thái FUTURE sang ACTIVE, đánh dấu sprint chính thức bắt đầu. Chỉ có một sprint ACTIVE tại một thời điểm. \\\hline
+Trigger & User nhấn nút "Start Sprint" trong backlog view hoặc sprint detail. \\\hline
 Kiểu sự kiện & External. \\\hline
 Luồng xử lý bình thường &
 \begin{minipage}{\linewidth}
     \vskip 4pt
     \begin{enumerate}
-        \item Owner truy cập Workspace Settings.
-        \item Hệ thống hiển thị các tab cấu hình: General, Integrations, AI, Permissions.
-        \item Owner chỉnh sửa thông tin chung (tên, mô tả, logo).
-        \item Owner cấu hình tích hợp (PM Service, Chat Service, Meeting Service).
-        \item Owner cấu hình LLM Provider (API key, model).
-        \item Owner thiết lập quyền mặc định cho Member.
-        \item Owner nhấn "Lưu cấu hình".
-        \item Hệ thống validate và lưu settings.
-        \item Hệ thống hiển thị thông báo thành công.
+        \item User nhấn nút "Start Sprint" trên một sprint có status = FUTURE.
+        \item Hệ thống hiển thị modal xác nhận với tổng quan: số lượng issue trong sprint, sprint goal, start/end date.
+        \item Nếu Start Date hoặc End Date chưa được set, hệ thống yêu cầu user nhập.
+        \item User xác nhận thông tin và nhấn "Start Sprint".
+        \item Hệ thống kiểm tra không có sprint ACTIVE nào khác trong project.
+        \item Backend cập nhật sprint: status = ACTIVE, startDate = ngày hiện tại (nếu chưa có).
+        \item Hệ thống tạo snapshot về số lượng issue ban đầu trong sprint.
+        \item Sprint được di chuyển lên đầu backlog view với label "ACTIVE".
+        \item Board view được cập nhật để hiển thị các issue của sprint ACTIVE.
+        \item Hệ thống hiển thị thông báo "Sprint started successfully".
     \end{enumerate}
     \vskip 1pt
 \end{minipage}
@@ -108,288 +123,149 @@ Các luồng sự kiện con & N/A \\\hline
 Luồng thay thế/ngoại lệ &
 \begin{minipage}{\linewidth}
     \vskip 4pt
-    \textbf{\textcolor{red}{E1}} -- API key không hợp lệ: Hiển thị lỗi "Không thể kết nối đến dịch vụ".
+    \textbf{\textcolor{red}{A1}} -- Sprint không có issue: Hiển thị cảnh báo "This sprint has no issues. Are you sure you want to start it?" User có thể tiếp tục hoặc hủy.
 
-    \textbf{\textcolor{red}{E2}} -- LLM Provider không phản hồi: Hiển thị cảnh báo, vẫn cho phép lưu.
+    \textbf{\textcolor{red}{E1}} -- Đã có sprint ACTIVE khác: Hiển thị lỗi "Another sprint is already active. Please complete or close it first."
 
-    \textbf{\textcolor{red}{A1}} -- Test kết nối: Gửi request test đến service bên ngoài.
+    \textbf{\textcolor{red}{E2}} -- Start Date/End Date không hợp lệ: Yêu cầu user nhập lại dates hợp lệ.
+
+    \textbf{\textcolor{red}{E3}} -- Không có quyền bắt đầu sprint: Hiển thị lỗi "Only Project Lead can start sprints."
     \vskip 1pt
 \end{minipage}
 \\\hline
-Kết quả & Cấu hình workspace được lưu và áp dụng thành công. \\\hline
+Kết quả & Sprint được chuyển sang trạng thái ACTIVE, board view hiển thị các issue của sprint này, team bắt đầu làm việc trên sprint. \\\hline
 \end{longtblr}
 
 \vspace{1em}
 
-\textbf{UC02.3 - Xem danh sách workspace}
+\textbf{UC02.3 - Hoàn thành sprint}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\textwidth]{images/uc02_3_view_workspaces.png}
-    \caption{Sơ đồ use case chức năng xem danh sách workspace}
-    \label{fig:uc02_3_view_workspaces}
+    \includegraphics[width=0.7\textwidth]{images/uc02_3_complete_sprint.png}
+    \caption{Sơ đồ use case chức năng hoàn thành sprint}
+    \label{fig:uc02_3_complete_sprint}
 \end{figure}
 
 \begin{longtblr}[
-    caption = {Đặc tả use case UC02.3 - Xem danh sách workspace},
+    caption = {Đặc tả use case UC02.3 - Hoàn thành sprint},
     label = {tab:uc02_3},
 ]{
     colspec={|l|p{.7\linewidth}|}
 }
 \hline
-\textbf{Tên chức năng} & \textbf{Xem danh sách workspace} \\\hline
+\textbf{Tên chức năng} & \textbf{Hoàn thành sprint} \\\hline
 ID & UC02.3 \\\hline
-Người sử dụng & Super Admin, Workspace Owner, Member \\\hline
+Người sử dụng & Project Lead \\\hline
 Mức độ cần thiết & Bắt buộc \\\hline
-Phân loại & Trung bình \\\hline
+Phân loại & Cao \\\hline
 Các thành phần tham gia &
 \begin{minipage}{\linewidth}
     \vskip 4pt
-    + \textbf{User:} Muốn xem tất cả workspace mà mình tham gia. \\
-    + \textbf{Super Admin:} Muốn xem tất cả workspace trong hệ thống để quản lý.
+    + \textbf{Project Lead:} Người quyết định hoàn thành sprint. \\
+    + \textbf{PM Service:} Xử lý đóng sprint và di chuyển issue chưa hoàn thành. \\
+    + \textbf{AI Service (optional):} Tạo Sprint Summary report. \\
+    + \textbf{Database:} Cập nhật trạng thái sprint và issue.
     \vskip 1pt
 \end{minipage}
 \\\hline
-Mô tả tóm tắt & Chức năng hiển thị danh sách tất cả workspace mà người dùng có quyền truy cập. \\\hline
-Trigger & User truy cập trang Workspace/Dashboard. \\\hline
+Mô tả tóm tắt & Cho phép Project Lead đóng sprint ACTIVE, chuyển sang CLOSED. Hệ thống xử lý các issue chưa hoàn thành (di chuyển về backlog hoặc sang sprint kế tiếp) và tùy chọn tạo Sprint Summary tự động. \\\hline
+Trigger & User nhấn nút "Complete Sprint" trong sprint detail hoặc backlog view. \\\hline
 Kiểu sự kiện & External. \\\hline
 Luồng xử lý bình thường &
 \begin{minipage}{\linewidth}
     \vskip 4pt
     \begin{enumerate}
-        \item User truy cập trang Workspace.
-        \item Hệ thống truy vấn danh sách workspace của user.
-        \item Hệ thống hiển thị danh sách với thông tin: tên, role, số thành viên, trạng thái.
-        \item User chọn workspace để truy cập.
-        \item Hệ thống chuyển đến workspace được chọn.
+        \item User nhấn nút "Complete Sprint" trên sprint ACTIVE.
+        \item Hệ thống hiển thị modal với tổng quan sprint: số issue hoàn thành / tổng số issue, danh sách issue chưa hoàn thành.
+        \item Hệ thống hỏi user muốn xử lý issue chưa hoàn thành như thế nào: (a) Di chuyển về Backlog, (b) Di chuyển sang sprint kế tiếp (nếu có), (c) Giữ nguyên trong sprint đã đóng.
+        \item User chọn option và nhấn "Complete Sprint".
+        \item Backend cập nhật sprint: status = CLOSED, endDate = ngày hiện tại (nếu chưa có).
+        \item Backend di chuyển issue chưa hoàn thành theo lựa chọn của user (cập nhật sprintId).
+        \item Backend ghi lại metrics: tổng issue hoàn thành, velocity (story points completed).
+        \item Nếu user chọn tạo AI Sprint Summary, hệ thống gọi AI service để tạo báo cáo tự động.
+        \item Sprint được đánh dấu CLOSED và hiển thị ở cuối backlog view.
+        \item Hệ thống hiển thị thông báo "Sprint completed successfully" và link đến Sprint Summary (nếu có).
     \end{enumerate}
     \vskip 1pt
 \end{minipage}
 \\\hline
-Các luồng sự kiện con &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    + Extend UC02.4 (Khóa workspace) - chỉ Super Admin. \\
-    + Extend UC02.5 (Mở khóa workspace) - chỉ Super Admin.
-    \vskip 1pt
-\end{minipage}
-\\\hline
+Các luồng sự kiện con & Include UC06 (AI Sprint Summary) nếu user chọn. \\\hline
 Luồng thay thế/ngoại lệ &
 \begin{minipage}{\linewidth}
     \vskip 4pt
-    \textbf{\textcolor{red}{A1}} -- Tìm kiếm workspace: Lọc danh sách theo keyword.
+    \textbf{\textcolor{red}{A1}} -- Tất cả issue đã hoàn thành: Hiển thị congratulation message, không cần hỏi về issue chưa hoàn thành.
 
-    \textbf{\textcolor{red}{A2}} -- Sắp xếp theo tiêu chí: Sắp xếp theo tên/ngày tạo/số thành viên.
+    \textbf{\textcolor{red}{E1}} -- Sprint không phải ACTIVE: Hiển thị lỗi "Only active sprint can be completed."
 
-    \textbf{\textcolor{red}{A3}} -- Super Admin xem tất cả: Hiển thị tất cả workspace trong hệ thống.
+    \textbf{\textcolor{red}{E2}} -- Không có quyền hoàn thành sprint: Hiển thị lỗi "Only Project Lead can complete sprints."
+
+    \textbf{\textcolor{red}{E3}} -- Lỗi tạo AI Summary: Hiển thị cảnh báo "Failed to generate AI summary, but sprint is completed successfully."
     \vskip 1pt
 \end{minipage}
 \\\hline
-Kết quả & User xem được danh sách workspace và có thể truy cập vào workspace mong muốn. \\\hline
+Kết quả & Sprint được chuyển sang CLOSED, issue chưa hoàn thành được xử lý theo lựa chọn, metrics được ghi lại, Sprint Summary được tạo (optional). \\\hline
 \end{longtblr}
 
 \vspace{1em}
 
-\textbf{UC02.4 - Khóa workspace}
+\textbf{UC02.4 - Xem danh sách sprint}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.6\textwidth]{images/uc02_4_lock_workspace.png}
-    \caption{Sơ đồ use case chức năng khóa workspace}
-    \label{fig:uc02_4_lock_workspace}
+    \includegraphics[width=0.7\textwidth]{images/uc02_4_view_sprints.png}
+    \caption{Sơ đồ use case chức năng xem sprint}
+    \label{fig:uc02_4_view_sprints}
 \end{figure}
 
 \begin{longtblr}[
-    caption = {Đặc tả use case UC02.4 - Khóa workspace},
+    caption = {Đặc tả use case UC02.4 - Xem danh sách sprint},
     label = {tab:uc02_4},
 ]{
     colspec={|l|p{.7\linewidth}|}
 }
 \hline
-\textbf{Tên chức năng} & \textbf{Khóa workspace} \\\hline
+\textbf{Tên chức năng} & \textbf{Xem danh sách sprint} \\\hline
 ID & UC02.4 \\\hline
-Người sử dụng & Super Admin \\\hline
-Mức độ cần thiết & Bắt buộc \\\hline
-Phân loại & Cao \\\hline
-Các thành phần tham gia & + \textbf{Super Admin:} Muốn tạm ngưng hoạt động của workspace vi phạm chính sách. \\\hline
-Mô tả tóm tắt & Chức năng cho phép Super Admin khóa workspace, ngăn tất cả thành viên truy cập. \\\hline
-Trigger & Super Admin chọn "Khóa workspace" từ danh sách workspace. \\\hline
-Kiểu sự kiện & External. \\\hline
-Luồng xử lý bình thường &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \begin{enumerate}
-        \item Super Admin chọn workspace cần khóa từ danh sách.
-        \item Hệ thống hiển thị thông tin workspace.
-        \item Super Admin nhấn "Khóa workspace".
-        \item Hệ thống hiển thị dialog xác nhận với trường nhập lý do.
-        \item Super Admin nhập lý do khóa và xác nhận.
-        \item Hệ thống cập nhật trạng thái workspace thành "Locked".
-        \item Hệ thống gửi email thông báo cho Owner của workspace.
-        \item Hệ thống ghi audit log.
-    \end{enumerate}
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Các luồng sự kiện con & Extend từ UC02.3 (Xem danh sách workspace). \\\hline
-Luồng thay thế/ngoại lệ & N/A \\\hline
-Kết quả & Workspace bị khóa và tất cả thành viên không thể truy cập. \\\hline
-\end{longtblr}
-
-\vspace{1em}
-
-\textbf{UC02.5 - Mở khóa workspace}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.6\textwidth]{images/uc02_5_unlock_workspace.png}
-    \caption{Sơ đồ use case chức năng mở khóa workspace}
-    \label{fig:uc02_5_unlock_workspace}
-\end{figure}
-
-\begin{longtblr}[
-    caption = {Đặc tả use case UC02.5 - Mở khóa workspace},
-    label = {tab:uc02_5},
-]{
-    colspec={|l|p{.7\linewidth}|}
-}
-\hline
-\textbf{Tên chức năng} & \textbf{Mở khóa workspace} \\\hline
-ID & UC02.5 \\\hline
-Người sử dụng & Super Admin \\\hline
-Mức độ cần thiết & Bắt buộc \\\hline
-Phân loại & Cao \\\hline
-Các thành phần tham gia & + \textbf{Super Admin:} Muốn kích hoạt lại workspace sau khi vấn đề đã được giải quyết. \\\hline
-Mô tả tóm tắt & Chức năng cho phép Super Admin mở khóa workspace đã bị khóa trước đó. \\\hline
-Trigger & Super Admin chọn "Mở khóa" cho workspace đang bị khóa. \\\hline
-Kiểu sự kiện & External. \\\hline
-Luồng xử lý bình thường &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \begin{enumerate}
-        \item Super Admin chọn workspace bị khóa từ danh sách.
-        \item Hệ thống hiển thị thông tin workspace và lý do khóa.
-        \item Super Admin nhấn "Mở khóa".
-        \item Hệ thống hiển thị xác nhận.
-        \item Super Admin xác nhận mở khóa.
-        \item Hệ thống cập nhật trạng thái workspace thành "Active".
-        \item Hệ thống gửi email thông báo cho Owner.
-        \item Hệ thống ghi audit log.
-    \end{enumerate}
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Các luồng sự kiện con & Extend từ UC02.3 (Xem danh sách workspace). \\\hline
-Luồng thay thế/ngoại lệ & N/A \\\hline
-Kết quả & Workspace được mở khóa và hoạt động bình thường trở lại. \\\hline
-\end{longtblr}
-
-\vspace{1em}
-
-\textbf{UC02.6 - Xem dashboard}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\textwidth]{images/uc02_6_view_dashboard.png}
-    \caption{Sơ đồ use case chức năng xem dashboard}
-    \label{fig:uc02_6_view_dashboard}
-\end{figure}
-
-\begin{longtblr}[
-    caption = {Đặc tả use case UC02.6 - Xem dashboard},
-    label = {tab:uc02_6},
-]{
-    colspec={|l|p{.7\linewidth}|}
-}
-\hline
-\textbf{Tên chức năng} & \textbf{Xem dashboard} \\\hline
-ID & UC02.6 \\\hline
-Người sử dụng & Workspace Owner \\\hline
-Mức độ cần thiết & Bắt buộc \\\hline
-Phân loại & Trung bình \\\hline
-Các thành phần tham gia & + \textbf{Workspace Owner:} Muốn xem tổng quan hoạt động và thống kê của workspace. \\\hline
-Mô tả tóm tắt & Chức năng hiển thị dashboard với các thống kê và biểu đồ về hoạt động của workspace. \\\hline
-Trigger & Owner truy cập trang Dashboard của workspace. \\\hline
-Kiểu sự kiện & External. \\\hline
-Luồng xử lý bình thường &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \begin{enumerate}
-        \item Owner truy cập Dashboard.
-        \item Hệ thống truy vấn dữ liệu thống kê.
-        \item Hệ thống hiển thị các widget: số thành viên, số tệp tin, hoạt động gần đây.
-        \item Hệ thống hiển thị biểu đồ sử dụng AI (số request, token usage).
-        \item Hệ thống hiển thị top contributors.
-        \item Owner có thể chọn khoảng thời gian để filter dữ liệu.
-    \end{enumerate}
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Các luồng sự kiện con & N/A \\\hline
-Luồng thay thế/ngoại lệ &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \textbf{\textcolor{red}{A1}} -- Export báo cáo: Xuất dữ liệu dashboard sang PDF/Excel.
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Kết quả & Owner xem được tổng quan hoạt động của workspace. \\\hline
-\end{longtblr}
-
-\vspace{1em}
-
-\textbf{UC02.7 - Xem audit log}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\textwidth]{images/uc02_7_view_audit_log.png}
-    \caption{Sơ đồ use case chức năng xem audit log}
-    \label{fig:uc02_7_view_audit_log}
-\end{figure}
-
-\begin{longtblr}[
-    caption = {Đặc tả use case UC02.7 - Xem audit log},
-    label = {tab:uc02_7},
-]{
-    colspec={|l|p{.7\linewidth}|}
-}
-\hline
-\textbf{Tên chức năng} & \textbf{Xem audit log} \\\hline
-ID & UC02.7 \\\hline
-Người sử dụng & Workspace Owner, Super Admin \\\hline
+Người sử dụng & Project Lead, Team Member, Viewer \\\hline
 Mức độ cần thiết & Bắt buộc \\\hline
 Phân loại & Trung bình \\\hline
 Các thành phần tham gia &
 \begin{minipage}{\linewidth}
     \vskip 4pt
-    + \textbf{Workspace Owner:} Muốn theo dõi lịch sử hoạt động trong workspace. \\
-    + \textbf{Super Admin:} Muốn giám sát hoạt động của tất cả workspace.
+    + \textbf{User:} Muốn xem danh sách sprint và chi tiết sprint. \\
+    + \textbf{PM Service:} Cung cấp API lấy danh sách sprint theo project. \\
+    + \textbf{Database:} Truy vấn dữ liệu sprint.
     \vskip 1pt
 \end{minipage}
 \\\hline
-Mô tả tóm tắt & Chức năng hiển thị lịch sử các hoạt động trong workspace để theo dõi và kiểm tra. \\\hline
-Trigger & Owner/Super Admin truy cập trang Audit Log. \\\hline
+Mô tả tóm tắt & Cho phép user xem danh sách tất cả sprint trong dự án (ACTIVE, FUTURE, CLOSED) và xem chi tiết từng sprint với tổng quan số lượng issue theo trạng thái. \\\hline
+Trigger & User truy cập Backlog View hoặc Sprint List trong project. \\\hline
 Kiểu sự kiện & External. \\\hline
 Luồng xử lý bình thường &
 \begin{minipage}{\linewidth}
     \vskip 4pt
     \begin{enumerate}
-        \item User truy cập Audit Log.
-        \item Hệ thống truy vấn logs từ database.
-        \item Hệ thống hiển thị danh sách với: thời gian, user, hành động, đối tượng, IP.
-        \item User có thể lọc theo tiêu chí (user, action type, date range).
-        \item User có thể xuất báo cáo.
+        \item User truy cập Backlog View hoặc Sprint management page.
+        \item Hệ thống gọi API GET /api/projects/:projectId/sprints để lấy danh sách sprint.
+        \item Hệ thống hiển thị danh sách sprint được sắp xếp: ACTIVE sprint ở đầu, FUTURE sprints tiếp theo, CLOSED sprints ở cuối.
+        \item Mỗi sprint hiển thị: Sprint Name, Status badge (ACTIVE/FUTURE/CLOSED), Sprint Goal, Start Date - End Date, tổng số issue và số issue hoàn thành (ví dụ: "15/20 issues").
+        \item User có thể expand/collapse từng sprint để xem danh sách issue bên trong.
+        \item User có thể click vào sprint để xem chi tiết: danh sách đầy đủ issue, burndown chart (nếu có), activity log, comments.
+        \item Nếu là ACTIVE sprint, user thấy progress bar thể hiện tiến độ hoàn thành.
     \end{enumerate}
     \vskip 1pt
 \end{minipage}
 \\\hline
-Các luồng sự kiện con & N/A \\\hline
+Các luồng sự kiện con & Include UC05 (Backlog View). \\\hline
 Luồng thay thế/ngoại lệ &
 \begin{minipage}{\linewidth}
     \vskip 4pt
-    \textbf{\textcolor{red}{A1}} -- Export audit log: Tạo file CSV/PDF với dữ liệu đã filter.
+    \textbf{\textcolor{red}{A1}} -- Không có sprint nào: Hiển thị empty state với nút "Create your first sprint".
+
+    \textbf{\textcolor{red}{A2}} -- Filter sprint theo status: User có thể filter chỉ xem ACTIVE, FUTURE hoặc CLOSED sprints.
     \vskip 1pt
 \end{minipage}
 \\\hline
-Kết quả & User xem được lịch sử hoạt động trong workspace để theo dõi và audit. \\\hline
+Kết quả & User xem được danh sách đầy đủ sprint với thông tin tổng quan, có thể expand để xem chi tiết issue, theo dõi tiến độ sprint. \\\hline
 \end{longtblr}

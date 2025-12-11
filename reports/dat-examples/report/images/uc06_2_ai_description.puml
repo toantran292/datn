@@ -1,0 +1,29 @@
+@startuml
+!theme plain
+skinparam defaultFontSize 11
+skinparam usecaseFontSize 10
+
+left to right direction
+
+actor "Project Lead" as PL
+actor "Team Member" as TM
+
+usecase "AI Issue\nDescription\nGeneration" as UC_GenDesc
+usecase "Nhập\nissue title" as UC_InputTitle
+usecase "Tạo prompt\nvới context" as UC_CreatePrompt
+usecase "Call LLM API" as UC_CallAPI
+usecase "Generate\ndescription" as UC_Generate
+usecase "Hiển thị trong\neditor" as UC_ShowEditor
+usecase "User edit\nvà save" as UC_EditSave
+
+PL --> UC_GenDesc
+TM --> UC_GenDesc
+
+UC_InputTitle .up.> UC_GenDesc : <<include>>
+UC_CreatePrompt .up.> UC_GenDesc : <<include>>
+UC_CallAPI .up.> UC_GenDesc : <<include>>
+UC_Generate .up.> UC_GenDesc : <<include>>
+UC_ShowEditor .up.> UC_GenDesc : <<include>>
+UC_EditSave .up.> UC_GenDesc : <<include>>
+
+@enduml

@@ -1,0 +1,34 @@
+@startuml
+!theme plain
+skinparam defaultFontSize 11
+skinparam usecaseFontSize 10
+
+left to right direction
+
+actor "Project Lead" as PL
+
+usecase "Tạo custom\nstatus mới" as UC_Create
+usecase "Validate\nthông tin" as UC_Validate
+usecase "Tính order\ntự động" as UC_CalcOrder
+usecase "Tạo IssueStatus\nrecord" as UC_CreateRecord
+usecase "Thêm column\nvào board" as UC_AddColumn
+
+PL --> UC_Create
+
+UC_Validate .up.> UC_Create : <<include>>
+UC_CalcOrder .up.> UC_Create : <<include>>
+UC_CreateRecord .up.> UC_Create : <<include>>
+UC_AddColumn .up.> UC_Create : <<include>>
+
+note right of UC_CalcOrder
+  order = max(order) + 1
+  Status mới được
+  đặt ở cuối board
+end note
+
+note bottom of UC_Create
+  Nhập: Name, Description,
+  Color (hex: #3B82F6)
+end note
+
+@enduml

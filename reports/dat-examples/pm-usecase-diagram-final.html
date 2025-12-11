@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sơ đồ Use-Case - Hệ thống Quản lý Dự án</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background: #fff;
+            padding: 20px;
+        }
+
+        .diagram-container {
+            width: 1200px;
+            height: 900px;
+            border: 2px solid #000;
+            position: relative;
+            margin: 0 auto;
+            background: #fff;
+        }
+
+        .diagram-title {
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 10px;
+            position: absolute;
+            top: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+        }
+
+        .actor {
+            position: absolute;
+            text-align: center;
+            width: 90px;
+        }
+
+        .actor-icon {
+            width: 50px;
+            height: 70px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .actor-icon .head {
+            width: 18px;
+            height: 18px;
+            border: 1.5px solid #000;
+            border-radius: 50%;
+            margin: 0 auto;
+            background: #fff;
+        }
+
+        .actor-icon .body {
+            width: 1.5px;
+            height: 22px;
+            background: #000;
+            margin: 0 auto;
+        }
+
+        .actor-icon .arms {
+            width: 28px;
+            height: 1.5px;
+            background: #000;
+            margin: 0 auto;
+            margin-top: -18px;
+        }
+
+        .actor-icon .left-leg {
+            position: absolute;
+            width: 1.5px;
+            height: 22px;
+            background: #000;
+            transform: rotate(20deg);
+            left: 20px;
+            bottom: 0;
+        }
+
+        .actor-icon .right-leg {
+            position: absolute;
+            width: 1.5px;
+            height: 22px;
+            background: #000;
+            transform: rotate(-20deg);
+            right: 20px;
+            bottom: 0;
+        }
+
+        .actor-name {
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .usecase {
+            position: absolute;
+            border: 1.5px solid #000;
+            border-radius: 50%;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 11px;
+            padding: 5px 12px;
+        }
+
+        .usecase-small {
+            min-width: 100px;
+            min-height: 40px;
+        }
+
+        .usecase-medium {
+            min-width: 115px;
+            min-height: 45px;
+        }
+
+        .usecase-text {
+            line-height: 1.2;
+        }
+
+        .lines-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .solid-line {
+            stroke: #000;
+            stroke-width: 1.2;
+            fill: none;
+        }
+
+        .dashed-line {
+            stroke: #000;
+            stroke-width: 1.2;
+            stroke-dasharray: 6,3;
+            fill: none;
+        }
+
+        .include-label {
+            font-size: 9px;
+            font-style: italic;
+        }
+
+        .arrow-head {
+            fill: #000;
+        }
+
+        .inheritance-arrow {
+            fill: #fff;
+            stroke: #000;
+            stroke-width: 1.2;
+        }
+
+        .legend {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            text-align: center;
+        }
+
+        .legend-item {
+            display: inline-block;
+            margin: 0 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="diagram-container">
+        <div class="diagram-title">SƠ ĐỒ USE-CASE TỔNG QUÁT CỦA CÁC TÁC NHÂN - HỆ THỐNG QUẢN LÝ DỰ ÁN</div>
+
+        <svg class="lines-svg" viewBox="0 0 1200 900">
+            <defs>
+                <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+                    <polygon points="0 0, 8 3, 0 6" class="arrow-head"/>
+                </marker>
+                <marker id="inheritance" markerWidth="12" markerHeight="12" refX="12" refY="6" orient="auto">
+                    <polygon points="0 0, 12 6, 0 12" class="inheritance-arrow"/>
+                </marker>
+            </defs>
+
+            <!-- ===== PROJECT LEAD CONNECTIONS ===== -->
+            <line x1="95" y1="130" x2="175" y2="85" class="solid-line"/>
+            <line x1="95" y1="130" x2="175" y2="145" class="solid-line"/>
+            <line x1="95" y1="130" x2="175" y2="205" class="solid-line"/>
+
+            <!-- ===== MEMBER CONNECTIONS ===== -->
+            <!-- To Sprint Management -->
+            <line x1="95" y1="360" x2="315" y2="85" class="solid-line"/>
+            <line x1="95" y1="360" x2="315" y2="145" class="solid-line"/>
+            <line x1="95" y1="360" x2="315" y2="205" class="solid-line"/>
+            <line x1="95" y1="360" x2="315" y2="265" class="solid-line"/>
+
+            <!-- To Issue Management -->
+            <line x1="95" y1="360" x2="485" y2="85" class="solid-line"/>
+            <line x1="95" y1="360" x2="485" y2="145" class="solid-line"/>
+            <line x1="95" y1="360" x2="485" y2="205" class="solid-line"/>
+            <line x1="95" y1="360" x2="485" y2="265" class="solid-line"/>
+            <line x1="95" y1="360" x2="485" y2="325" class="solid-line"/>
+
+            <!-- To Comment & Activity -->
+            <line x1="95" y1="360" x2="655" y2="145" class="solid-line"/>
+            <line x1="95" y1="360" x2="655" y2="205" class="solid-line"/>
+            <line x1="95" y1="360" x2="655" y2="265" class="solid-line"/>
+
+            <!-- To Views -->
+            <line x1="95" y1="360" x2="825" y2="85" class="solid-line"/>
+            <line x1="95" y1="360" x2="825" y2="145" class="solid-line"/>
+            <line x1="95" y1="360" x2="825" y2="205" class="solid-line"/>
+
+            <!-- To Analytics -->
+            <line x1="95" y1="360" x2="825" y2="280" class="solid-line"/>
+            <line x1="95" y1="360" x2="825" y2="340" class="solid-line"/>
+
+            <!-- To View Members -->
+            <line x1="95" y1="360" x2="315" y2="415" class="solid-line"/>
+
+            <!-- ===== ADMIN CONNECTIONS ===== -->
+            <line x1="95" y1="640" x2="175" y2="505" class="solid-line"/>
+            <line x1="95" y1="640" x2="315" y2="565" class="solid-line"/>
+            <line x1="95" y1="640" x2="175" y2="645" class="solid-line"/>
+            <line x1="95" y1="640" x2="315" y2="705" class="solid-line"/>
+
+            <!-- ===== GUEST CONNECTIONS ===== -->
+            <line x1="1105" y1="200" x2="1020" y2="145" class="solid-line"/>
+            <line x1="1105" y1="200" x2="1020" y2="205" class="solid-line"/>
+            <line x1="1105" y1="200" x2="1020" y2="265" class="solid-line"/>
+
+            <!-- ===== MEMBER (REGISTERED) CONNECTIONS ===== -->
+            <line x1="1105" y1="500" x2="1020" y2="415" class="solid-line"/>
+            <line x1="1105" y1="500" x2="1020" y2="475" class="solid-line"/>
+
+            <!-- ===== INCLUDE RELATIONSHIPS ===== -->
+            <!-- Đăng nhập includes -->
+            <path d="M 430 435 Q 400 380 430 325" class="dashed-line" marker-end="url(#arrowhead)"/>
+            <text x="380" y="375" class="include-label">&lt;&lt;include&gt;&gt;</text>
+
+            <path d="M 530 435 Q 570 370 600 265" class="dashed-line" marker-end="url(#arrowhead)"/>
+            <text x="545" y="345" class="include-label">&lt;&lt;include&gt;&gt;</text>
+
+            <path d="M 530 435 Q 650 380 765 265" class="dashed-line" marker-end="url(#arrowhead)"/>
+            <text x="620" y="335" class="include-label">&lt;&lt;include&gt;&gt;</text>
+
+            <path d="M 370 455 Q 280 480 230 505" class="dashed-line" marker-end="url(#arrowhead)"/>
+            <text x="270" y="475" class="include-label">&lt;&lt;include&gt;&gt;</text>
+
+            <path d="M 600 455 Q 700 455 795 455" class="dashed-line" marker-end="url(#arrowhead)"/>
+            <text x="670" y="448" class="include-label">&lt;&lt;include&gt;&gt;</text>
+
+            <!-- Registered member to Đăng nhập -->
+            <path d="M 960 475 Q 750 470 600 455" class="dashed-line" marker-end="url(#arrowhead)"/>
+            <text x="780" y="460" class="include-label">&lt;&lt;include&gt;&gt;</text>
+
+            <!-- ===== INHERITANCE ARROWS ===== -->
+            <line x1="55" y1="310" x2="55" y2="180" class="solid-line" marker-end="url(#inheritance)"/>
+            <line x1="55" y1="590" x2="55" y2="410" class="solid-line" marker-end="url(#inheritance)"/>
+            <line x1="1120" y1="450" x2="1120" y2="260" class="solid-line" marker-end="url(#inheritance)"/>
+        </svg>
+
+        <!-- ===== ACTORS ===== -->
+        <div class="actor" style="left: 20px; top: 80px;">
+            <div class="actor-icon">
+                <div class="head"></div>
+                <div class="body"></div>
+                <div class="arms"></div>
+                <div class="left-leg"></div>
+                <div class="right-leg"></div>
+            </div>
+            <div class="actor-name">Project Lead</div>
+        </div>
+
+        <div class="actor" style="left: 20px; top: 310px;">
+            <div class="actor-icon">
+                <div class="head"></div>
+                <div class="body"></div>
+                <div class="arms"></div>
+                <div class="left-leg"></div>
+                <div class="right-leg"></div>
+            </div>
+            <div class="actor-name">Thành viên</div>
+        </div>
+
+        <div class="actor" style="left: 20px; top: 590px;">
+            <div class="actor-icon">
+                <div class="head"></div>
+                <div class="body"></div>
+                <div class="arms"></div>
+                <div class="left-leg"></div>
+                <div class="right-leg"></div>
+            </div>
+            <div class="actor-name">Admin</div>
+        </div>
+
+        <div class="actor" style="right: 25px; top: 150px;">
+            <div class="actor-icon">
+                <div class="head"></div>
+                <div class="body"></div>
+                <div class="arms"></div>
+                <div class="left-leg"></div>
+                <div class="right-leg"></div>
+            </div>
+            <div class="actor-name">Khách</div>
+        </div>
+
+        <div class="actor" style="right: 25px; top: 450px;">
+            <div class="actor-icon">
+                <div class="head"></div>
+                <div class="body"></div>
+                <div class="arms"></div>
+                <div class="left-leg"></div>
+                <div class="right-leg"></div>
+            </div>
+            <div class="actor-name">Thành viên<br/>đã đăng ký</div>
+        </div>
+
+        <!-- ===== USE CASES - QUẢN LÝ DỰ ÁN ===== -->
+        <div class="usecase usecase-small" style="left: 145px; top: 60px;">
+            <span class="usecase-text">Tạo dự án</span>
+        </div>
+        <div class="usecase usecase-small" style="left: 145px; top: 120px;">
+            <span class="usecase-text">Quản lý<br/>dự án</span>
+        </div>
+        <div class="usecase usecase-small" style="left: 145px; top: 180px;">
+            <span class="usecase-text">Xóa dự án</span>
+        </div>
+
+        <!-- ===== USE CASES - QUẢN LÝ SPRINT ===== -->
+        <div class="usecase usecase-small" style="left: 285px; top: 60px;">
+            <span class="usecase-text">Tạo Sprint</span>
+        </div>
+        <div class="usecase usecase-small" style="left: 285px; top: 120px;">
+            <span class="usecase-text">Quản lý<br/>Sprint</span>
+        </div>
+        <div class="usecase usecase-small" style="left: 285px; top: 180px;">
+            <span class="usecase-text">Bắt đầu<br/>Sprint</span>
+        </div>
+        <div class="usecase usecase-small" style="left: 285px; top: 240px;">
+            <span class="usecase-text">Hoàn thành<br/>Sprint</span>
+        </div>
+
+        <!-- ===== USE CASES - QUẢN LÝ ISSUE ===== -->
+        <div class="usecase usecase-small" style="left: 455px; top: 60px;">
+            <span class="usecase-text">Tạo Issue</span>
+        </div>
+        <div class="usecase usecase-small" style="left: 455px; top: 120px;">
+            <span class="usecase-text">Quản lý<br/>Issue</span>
+        </div>
+        <div class="usecase usecase-medium" style="left: 445px; top: 180px;">
+            <span class="usecase-text">Gán Issue cho<br/>thành viên</span>
+        </div>
+        <div class="usecase usecase-medium" style="left: 445px; top: 240px;">
+            <span class="usecase-text">Cập nhật trạng<br/>thái Issue</span>
+        </div>
+        <div class="usecase usecase-small" style="left: 455px; top: 300px;">
+            <span class="usecase-text">Xóa Issue</span>
+        </div>
+
+        <!-- ===== USE CASES - BÌNH LUẬN & HOẠT ĐỘNG ===== -->
+        <div class="usecase usecase-small" style="left: 625px; top: 120px;">
+            <span class="usecase-text">Thêm<br/>bình luận</span>
+        </div>
+        <div class="usecase usecase-small" style="left: 625px; top: 180px;">
+            <span class="usecase-text">Sửa/Xóa<br/>bình luận</span>
+        </div>
+        <div class="usecase usecase-medium" style="left: 615px; top: 240px;">
+            <span class="usecase-text">Xem lịch sử<br/>hoạt động</span>
+        </div>
+
+        <!-- ===== USE CASES - GIAO DIỆN LÀM VIỆC ===== -->
+        <div class="usecase usecase-medium" style="left: 785px; top: 60px;">
+            <span class="usecase-text">Xem Kanban<br/>Board</span>
+        </div>
+        <div class="usecase usecase-small" style="left: 795px; top: 120px;">
+            <span class="usecase-text">Xem Backlog</span>
+        </div>
+        <div class="usecase usecase-small" style="left: 795px; top: 180px;">
+            <span class="usecase-text">Kéo thả Issue</span>
+        </div>
+
+        <!-- ===== USE CASES - THỐNG KÊ & BÁO CÁO ===== -->
+        <div class="usecase usecase-medium" style="left: 785px; top: 255px;">
+            <span class="usecase-text">Xem báo cáo<br/>phân tích</span>
+        </div>
+        <div class="usecase usecase-medium" style="left: 785px; top: 315px;">
+            <span class="usecase-text">Xem thống kê<br/>Issue</span>
+        </div>
+
+        <!-- ===== USE CASES - XÁC THỰC & THÀNH VIÊN ===== -->
+        <div class="usecase usecase-medium" style="left: 285px; top: 390px;">
+            <span class="usecase-text">Xem danh sách<br/>thành viên</span>
+        </div>
+        <div class="usecase usecase-small" style="left: 465px; top: 410px;">
+            <span class="usecase-text">Đăng nhập</span>
+        </div>
+        <div class="usecase usecase-medium" style="left: 625px; top: 410px; min-width: 125px;">
+            <span class="usecase-text">Quản lý thông<br/>tin cá nhân</span>
+        </div>
+
+        <!-- ===== USE CASES - QUẢN TRỊ HỆ THỐNG ===== -->
+        <div class="usecase usecase-medium" style="left: 135px; top: 480px;">
+            <span class="usecase-text">Quản lý trạng<br/>thái Issue</span>
+        </div>
+        <div class="usecase usecase-small" style="left: 285px; top: 540px;">
+            <span class="usecase-text">Quản lý<br/>cấu hình</span>
+        </div>
+        <div class="usecase usecase-medium" style="left: 135px; top: 620px;">
+            <span class="usecase-text">Phân quyền<br/>Project Lead</span>
+        </div>
+        <div class="usecase usecase-medium" style="left: 275px; top: 680px;">
+            <span class="usecase-text">Quản lý<br/>Workspace</span>
+        </div>
+
+        <!-- ===== USE CASES - CHỨC NĂNG KHÁCH ===== -->
+        <div class="usecase usecase-medium" style="left: 960px; top: 120px;">
+            <span class="usecase-text">Xem thông tin<br/>dự án công khai</span>
+        </div>
+        <div class="usecase usecase-medium" style="left: 960px; top: 180px;">
+            <span class="usecase-text">Tìm kiếm<br/>dự án</span>
+        </div>
+        <div class="usecase usecase-small" style="left: 970px; top: 240px;">
+            <span class="usecase-text">Đăng ký</span>
+        </div>
+
+        <!-- ===== USE CASES - THÀNH VIÊN ĐÃ ĐĂNG KÝ ===== -->
+        <div class="usecase usecase-medium" style="left: 960px; top: 390px;">
+            <span class="usecase-text">Tham gia<br/>dự án</span>
+        </div>
+        <div class="usecase usecase-small" style="left: 970px; top: 450px;">
+            <span class="usecase-text">Đăng xuất</span>
+        </div>
+
+        <div class="legend">
+            <span class="legend-item">─── Quan hệ liên kết (Association)</span>
+            <span class="legend-item">- - - → Quan hệ include</span>
+            <span class="legend-item">──▷ Quan hệ kế thừa (Generalization)</span>
+        </div>
+    </div>
+</body>
+</html>

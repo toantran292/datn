@@ -1,103 +1,46 @@
-\paragraph{UC03: Quản lý Thành viên}
+\paragraph{UC03: Quản lý Issue}
 \mbox{}
 
-\textbf{UC03.1 - Mời thành viên}
+\textbf{UC03.1 - Tạo issue mới}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\textwidth]{images/uc03_1_invite_member.png}
-    \caption{Sơ đồ use case chức năng mời thành viên}
-    \label{fig:uc03_1_invite_member}
+    \includegraphics[width=0.7\textwidth]{images/uc03_1_create_issue.png}
+    \caption{Sơ đồ use case chức năng tạo issue}
+    \label{fig:uc03_1_create_issue}
 \end{figure}
 
 \begin{longtblr}[
-    caption = {Đặc tả use case UC03.1 - Mời thành viên},
+    caption = {Đặc tả use case UC03.1 - Tạo issue mới},
     label = {tab:uc03_1},
 ]{
     colspec={|l|p{.7\linewidth}|}
 }
 \hline
-\textbf{Tên chức năng} & \textbf{Mời thành viên} \\\hline
+\textbf{Tên chức năng} & \textbf{Tạo issue mới} \\\hline
 ID & UC03.1 \\\hline
-Người sử dụng & Workspace Owner \\\hline
+Người sử dụng & Project Lead, Team Member \\\hline
 Mức độ cần thiết & Bắt buộc \\\hline
 Phân loại & Cao \\\hline
-Các thành phần tham gia & + \textbf{Workspace Owner:} Muốn thêm thành viên mới vào workspace để cộng tác. \\\hline
-Mô tả tóm tắt & Chức năng cho phép Owner gửi lời mời tham gia workspace đến người dùng qua email. \\\hline
-Trigger & Owner chọn "Mời thành viên" trong trang quản lý thành viên. \\\hline
+Các thành phần tham gia & + \textbf{User:} Muốn tạo issue mới để theo dõi công việc, bug hoặc user story trong dự án. \\\hline
+Mô tả tóm tắt & Cho phép user tạo issue mới với thông tin: name, type (STORY/TASK/BUG/EPIC), priority (LOW/MEDIUM/HIGH/CRITICAL), description, sprint, assignees, story points. Issue được tự động gán identifier theo dự án (ví dụ: PM-1, PM-2). \\\hline
+Trigger & User nhấn "Create Issue" trong board view hoặc backlog view. \\\hline
 Kiểu sự kiện & External. \\\hline
 Luồng xử lý bình thường &
 \begin{minipage}{\linewidth}
     \vskip 4pt
     \begin{enumerate}
-        \item Owner chọn "Mời thành viên".
-        \item Hệ thống hiển thị form mời với trường nhập email.
-        \item Owner nhập một hoặc nhiều email.
-        \item Owner chọn role mặc định (Member).
-        \item Owner nhấn "Gửi lời mời".
-        \item Hệ thống validate định dạng email.
-        \item Hệ thống tạo invitation records.
-        \item Hệ thống gửi email mời (Include UC03.5).
-        \item Hệ thống hiển thị thông báo thành công.
-    \end{enumerate}
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Các luồng sự kiện con & Include UC03.5 (Gửi email mời). \\\hline
-Luồng thay thế/ngoại lệ &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \textbf{\textcolor{red}{E1}} -- Email đã là thành viên: Bỏ qua và thông báo "Đã là thành viên".
-
-    \textbf{\textcolor{red}{E2}} -- Email không hợp lệ: Hiển thị lỗi định dạng email.
-
-    \textbf{\textcolor{red}{A1}} -- Nhập nhiều email cùng lúc: Xử lý batch và hiển thị kết quả từng email.
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Kết quả & Lời mời được gửi đến email và người được mời có thể tham gia workspace. \\\hline
-\end{longtblr}
-
-\vspace{1em}
-
-\textbf{UC03.2 - Xóa thành viên}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\textwidth]{images/uc03_2_remove_member.png}
-    \caption{Sơ đồ use case chức năng xóa thành viên}
-    \label{fig:uc03_2_remove_member}
-\end{figure}
-
-\begin{longtblr}[
-    caption = {Đặc tả use case UC03.2 - Xóa thành viên},
-    label = {tab:uc03_2},
-]{
-    colspec={|l|p{.7\linewidth}|}
-}
-\hline
-\textbf{Tên chức năng} & \textbf{Xóa thành viên} \\\hline
-ID & UC03.2 \\\hline
-Người sử dụng & Workspace Owner \\\hline
-Mức độ cần thiết & Bắt buộc \\\hline
-Phân loại & Cao \\\hline
-Các thành phần tham gia & + \textbf{Workspace Owner:} Muốn loại bỏ thành viên không còn cần thiết hoặc vi phạm. \\\hline
-Mô tả tóm tắt & Chức năng cho phép Owner loại bỏ thành viên khỏi workspace. \\\hline
-Trigger & Owner chọn "Xóa" cho một thành viên trong danh sách. \\\hline
-Kiểu sự kiện & External. \\\hline
-Luồng xử lý bình thường &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \begin{enumerate}
-        \item Owner chọn thành viên cần xóa từ danh sách.
-        \item Hệ thống hiển thị thông tin thành viên.
-        \item Owner nhấn "Xóa khỏi workspace".
-        \item Hệ thống hiển thị xác nhận.
-        \item Owner xác nhận xóa.
-        \item Hệ thống cập nhật membership (soft delete).
-        \item Hệ thống thu hồi tất cả quyền của thành viên.
-        \item Hệ thống gửi email thông báo cho thành viên bị xóa.
-        \item Hệ thống ghi audit log.
+        \item User nhấn "Create Issue"
+        \item Form hiển thị với: Issue Name (required), Type, Priority, Description, Sprint (optional), Assignees (optional), Story Points (optional), Start Date, Target Date
+        \item User nhập thông tin issue
+        \item Backend validate: name không trống
+        \item Backend tự động tạo sequenceId tiếp theo (ví dụ: 1, 2, 3...)
+        \item Issue identifier = projectIdentifier + "-" + sequenceId (PM-1)
+        \item Nếu không chọn status, gán status đầu tiên (thường là TODO)
+        \item Nếu chọn sprint, gán vào sprint đó (hiển thị trong board nếu sprint đang ACTIVE)
+        \item Backend tính sortOrder để đặt issue ở cuối danh sách
+        \item Tạo IssueActivity record ghi log "created"
+        \item Hiển thị issue mới trong board/backlog
     \end{enumerate}
     \vskip 1pt
 \end{minipage}
@@ -106,53 +49,121 @@ Các luồng sự kiện con & N/A \\\hline
 Luồng thay thế/ngoại lệ &
 \begin{minipage}{\linewidth}
     \vskip 4pt
-    \textbf{\textcolor{red}{E1}} -- Xóa Owner cuối cùng: Không cho phép, yêu cầu chuyển quyền Owner trước.
+    \textbf{\textcolor{red}{E1}} -- Name trống: Hiển thị lỗi "Issue name is required".
 
-    \textbf{\textcolor{red}{A1}} -- Chọn giữ lại dữ liệu: Dữ liệu của thành viên được gán cho "Deleted User".
+    \textbf{\textcolor{red}{E2}} -- Sprint không thuộc project: Hiển thị lỗi "Sprint does not belong to project".
+
+    \textbf{\textcolor{red}{A1}} -- Tạo sub-issue: User có thể chọn parent issue để tạo sub-issue (parentId).
+
+    \textbf{\textcolor{red}{A2}} -- Tạo nhanh: User có thể tạo nhanh chỉ với name, các field khác dùng giá trị mặc định.
     \vskip 1pt
 \end{minipage}
 \\\hline
-Kết quả & Thành viên bị loại khỏi workspace và mất quyền truy cập. \\\hline
+Kết quả & Issue mới được tạo với identifier duy nhất (PM-1), hiển thị trong board/backlog view, có thể assign, comment và update sau. \\\hline
 \end{longtblr}
 
 \vspace{1em}
 
-\textbf{UC03.3 - Phân quyền}
+\textbf{UC03.2 - Cập nhật issue}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\textwidth]{images/uc03_3_assign_permissions.png}
-    \caption{Sơ đồ use case chức năng phân quyền}
-    \label{fig:uc03_3_assign_permissions}
+    \includegraphics[width=0.7\textwidth]{images/uc03_2_update_issue.png}
+    \caption{Sơ đồ use case chức năng cập nhật issue}
+    \label{fig:uc03_2_update_issue}
 \end{figure}
 
 \begin{longtblr}[
-    caption = {Đặc tả use case UC03.3 - Phân quyền},
-    label = {tab:uc03_3},
+    caption = {Đặc tả use case UC03.2 - Cập nhật issue},
+    label = {tab:uc03_2},
 ]{
     colspec={|l|p{.7\linewidth}|}
 }
 \hline
-\textbf{Tên chức năng} & \textbf{Phân quyền} \\\hline
-ID & UC03.3 \\\hline
-Người sử dụng & Workspace Owner \\\hline
+\textbf{Tên chức năng} & \textbf{Cập nhật issue} \\\hline
+ID & UC03.2 \\\hline
+Người sử dụng & Project Lead, Team Member, Viewer (read-only) \\\hline
 Mức độ cần thiết & Bắt buộc \\\hline
 Phân loại & Cao \\\hline
-Các thành phần tham gia & + \textbf{Workspace Owner:} Muốn quản lý quyền hạn của từng thành viên trong workspace. \\\hline
-Mô tả tóm tắt & Chức năng cho phép Owner thay đổi role và quyền hạn của thành viên. \\\hline
-Trigger & Owner chọn "Phân quyền" cho một thành viên. \\\hline
+Các thành phần tham gia & + \textbf{User:} Muốn cập nhật thông tin issue như status, priority, assignees, description, sprint. \\\hline
+Mô tả tóm tắt & Cho phép user cập nhật các thuộc tính của issue. Mỗi thay đổi được ghi log vào IssueActivity. \\\hline
+Trigger & User thay đổi field trong issue detail panel hoặc kéo thả issue trong board view. \\\hline
 Kiểu sự kiện & External. \\\hline
 Luồng xử lý bình thường &
 \begin{minipage}{\linewidth}
     \vskip 4pt
     \begin{enumerate}
-        \item Owner chọn thành viên cần phân quyền.
-        \item Hệ thống hiển thị quyền hiện tại của thành viên.
-        \item Owner chọn role mới hoặc tùy chỉnh permissions.
-        \item Owner nhấn "Lưu".
-        \item Hệ thống cập nhật permissions trong database.
-        \item Hệ thống gửi thông báo cho thành viên về thay đổi quyền.
-        \item Hệ thống ghi audit log.
+        \item User mở issue detail panel hoặc inline edit
+        \item User thay đổi field: status, priority, assignees, description, sprint, story points, dates
+        \item Backend validate thay đổi (ví dụ: status phải thuộc project)
+        \item Backend cập nhật issue
+        \item Backend tạo IssueActivity record ghi log thay đổi (field nào, giá trị cũ, giá trị mới)
+        \item Gửi notification cho assignees nếu có thay đổi về assignees
+        \item UI cập nhật real-time (hiển thị thay đổi ngay)
+        \item Hiển thị activity log trong tab Activity
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{A1}} -- Kéo thả issue trong board: User kéo issue sang column khác (status mới), backend cập nhật statusId và sortOrder.
+
+    \textbf{\textcolor{red}{A2}} -- Move issue to sprint: User kéo issue từ backlog vào sprint hoặc giữa các sprint.
+
+    \textbf{\textcolor{red}{A3}} -- Reorder issue: User kéo thả để thay đổi thứ tự, backend tính lại sortOrder giữa 2 issue lân cận.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Issue được cập nhật thành công, activity log ghi lại thay đổi, các member liên quan nhận notification. \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+\textbf{UC03.3 - Xem chi tiết issue}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc03_3_view_issue.png}
+    \caption{Sơ đồ use case chức năng xem chi tiết issue}
+    \label{fig:uc03_3_view_issue}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC03.3 - Xem chi tiết issue},
+    label = {tab:uc03_3},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Xem chi tiết issue} \\\hline
+ID & UC03.3 \\\hline
+Người sử dụng & Project Lead, Team Member, Viewer \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia & + \textbf{User:} Muốn xem thông tin đầy đủ của issue, bao gồm description, comments, activity log, sub-issues. \\\hline
+Mô tả tóm tắt & Hiển thị chi tiết issue trong panel bên phải với các tab: Details, Activity, Comments. \\\hline
+Trigger & User click vào issue card trong board view hoặc backlog view. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User click vào issue card
+        \item Backend query issue với relations: status, sprint, assignees, comments, activities, subIssues
+        \item Panel hiển thị:
+        \begin{itemize}
+            \item Header: Identifier (PM-1), Name, Close button
+            \item Properties: Type, Priority, Status, Sprint, Assignees, Story Points, Dates
+            \item Description (rich text editor với markdown support)
+            \item Tab Activity: Log tất cả thay đổi (created, status changed, assigned, etc.)
+            \item Tab Comments: Danh sách comments (include UC03.5)
+            \item Sub-issues (nếu có): Danh sách sub-issues
+        \end{itemize}
+        \item User có thể inline edit các field
+        \item User có thể thêm comment (UC03.5)
     \end{enumerate}
     \vskip 1pt
 \end{minipage}
@@ -160,50 +171,64 @@ Luồng xử lý bình thường &
 Các luồng sự kiện con &
 \begin{minipage}{\linewidth}
     \vskip 4pt
-    + Extend UC03.6 (Cấp quyền Owner). \\
-    + Extend UC03.7 (Thu hồi quyền Owner).
+    + Include UC03.5 (Thêm comment).
     \vskip 1pt
 \end{minipage}
 \\\hline
-Luồng thay thế/ngoại lệ & N/A \\\hline
-Kết quả & Quyền của thành viên được cập nhật thành công. \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{A1}} -- Xem sub-issues: Click vào sub-issue để mở detail panel của sub-issue đó.
+
+    \textbf{\textcolor{red}{A2}} -- Navigate bằng keyboard: User có thể dùng phím mũi tên để di chuyển giữa các issue.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & User xem được đầy đủ thông tin issue, có thể edit inline, thêm comment, xem activity history. \\\hline
 \end{longtblr}
 
 \vspace{1em}
 
-\textbf{UC03.4 - Xem danh sách thành viên}
+\textbf{UC03.4 - Xóa issue}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\textwidth]{images/uc03_4_view_members.png}
-    \caption{Sơ đồ use case chức năng xem danh sách thành viên}
-    \label{fig:uc03_4_view_members}
+    \includegraphics[width=0.7\textwidth]{images/uc03_4_delete_issue.png}
+    \caption{Sơ đồ use case chức năng xóa issue}
+    \label{fig:uc03_4_delete_issue}
 \end{figure}
 
 \begin{longtblr}[
-    caption = {Đặc tả use case UC03.4 - Xem danh sách thành viên},
+    caption = {Đặc tả use case UC03.4 - Xóa issue},
     label = {tab:uc03_4},
 ]{
     colspec={|l|p{.7\linewidth}|}
 }
 \hline
-\textbf{Tên chức năng} & \textbf{Xem danh sách thành viên} \\\hline
+\textbf{Tên chức năng} & \textbf{Xóa issue} \\\hline
 ID & UC03.4 \\\hline
-Người sử dụng & Workspace Owner, Member \\\hline
+Người sử dụng & Project Lead \\\hline
 Mức độ cần thiết & Bắt buộc \\\hline
 Phân loại & Trung bình \\\hline
-Các thành phần tham gia & + \textbf{User:} Muốn xem danh sách tất cả thành viên trong workspace. \\\hline
-Mô tả tóm tắt & Chức năng hiển thị danh sách tất cả thành viên trong workspace. \\\hline
-Trigger & User truy cập trang Members của workspace. \\\hline
+Các thành phần tham gia & + \textbf{Project Lead:} Muốn xóa issue không còn cần thiết hoặc tạo nhầm. \\\hline
+Mô tả tóm tắt & Cho phép Project Lead xóa issue. Nếu issue có sub-issues, phải xử lý sub-issues trước. \\\hline
+Trigger & Project Lead nhấn "Delete" trong issue detail panel. \\\hline
 Kiểu sự kiện & External. \\\hline
 Luồng xử lý bình thường &
 \begin{minipage}{\linewidth}
     \vskip 4pt
     \begin{enumerate}
-        \item User truy cập trang Members.
-        \item Hệ thống truy vấn danh sách thành viên.
-        \item Hệ thống hiển thị danh sách với: avatar, tên, email, role, ngày tham gia.
-        \item User có thể tìm kiếm hoặc lọc theo role.
+        \item Project Lead mở issue detail panel
+        \item Nhấn button "Delete Issue"
+        \item Backend kiểm tra quyền (chỉ Project Lead)
+        \item Backend kiểm tra sub-issues
+        \item Hiển thị dialog xác nhận với warning về sub-issues (nếu có)
+        \item Project Lead xác nhận
+        \item Backend cascade delete: comments, activities
+        \item Backend set parentId = NULL cho sub-issues (hoặc xóa nếu user chọn)
+        \item Backend xóa issue
+        \item UI remove issue khỏi board/backlog
+        \item Hiển thị toast "Issue deleted"
     \end{enumerate}
     \vskip 1pt
 \end{minipage}
@@ -212,165 +237,70 @@ Các luồng sự kiện con & N/A \\\hline
 Luồng thay thế/ngoại lệ &
 \begin{minipage}{\linewidth}
     \vskip 4pt
-    \textbf{\textcolor{red}{A1}} -- Tìm kiếm thành viên: Lọc theo tên hoặc email.
+    \textbf{\textcolor{red}{E1}} -- Không có quyền: Team Member và Viewer không thể xóa issue.
 
-    \textbf{\textcolor{red}{A2}} -- Lọc theo role: Hiển thị chỉ Owner hoặc Member.
+    \textbf{\textcolor{red}{A1}} -- Issue có sub-issues: Hỏi user chọn: (a) Xóa cả sub-issues, (b) Chuyển sub-issues thành issue độc lập.
     \vskip 1pt
 \end{minipage}
 \\\hline
-Kết quả & User xem được danh sách đầy đủ thành viên trong workspace. \\\hline
+Kết quả & Issue và tất cả dữ liệu liên quan (comments, activities) bị xóa, sub-issues được xử lý theo lựa chọn. \\\hline
 \end{longtblr}
 
 \vspace{1em}
 
-\textbf{UC03.5 - Gửi email mời}
+\textbf{UC03.5 - Thêm comment vào issue}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.6\textwidth]{images/uc03_5_send_invitation_email.png}
-    \caption{Sơ đồ use case chức năng gửi email mời}
-    \label{fig:uc03_5_send_invitation_email}
+    \includegraphics[width=0.7\textwidth]{images/uc03_5_add_comment.png}
+    \caption{Sơ đồ use case chức năng thêm comment}
+    \label{fig:uc03_5_add_comment}
 \end{figure}
 
 \begin{longtblr}[
-    caption = {Đặc tả use case UC03.5 - Gửi email mời},
+    caption = {Đặc tả use case UC03.5 - Thêm comment vào issue},
     label = {tab:uc03_5},
 ]{
     colspec={|l|p{.7\linewidth}|}
 }
 \hline
-\textbf{Tên chức năng} & \textbf{Gửi email mời} \\\hline
+\textbf{Tên chức năng} & \textbf{Thêm comment vào issue} \\\hline
 ID & UC03.5 \\\hline
-Người sử dụng & System \\\hline
+Người sử dụng & Project Lead, Team Member \\\hline
 Mức độ cần thiết & Bắt buộc \\\hline
-Phân loại & Cao \\\hline
-Các thành phần tham gia & + \textbf{System:} Cần gửi email chứa link mời tham gia workspace. \\\hline
-Mô tả tóm tắt & Chức năng hệ thống tự động gửi email chứa link invitation đến người được mời. \\\hline
-Trigger & Được gọi từ UC03.1 (Mời thành viên). \\\hline
-Kiểu sự kiện & Internal. \\\hline
-Luồng xử lý bình thường &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \begin{enumerate}
-        \item Hệ thống tạo invitation token (hết hạn sau 7 ngày).
-        \item Hệ thống render email template với link invite.
-        \item Hệ thống gửi email qua SMTP service.
-        \item Hệ thống cập nhật trạng thái invitation = "Sent".
-    \end{enumerate}
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Các luồng sự kiện con & Include bởi UC03.1 (Mời thành viên). \\\hline
-Luồng thay thế/ngoại lệ &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \textbf{\textcolor{red}{E1}} -- Email gửi thất bại: Retry 3 lần, sau đó đánh dấu "Failed".
-
-    \textbf{\textcolor{red}{A1}} -- Gửi lại lời mời: Hủy token cũ, tạo token mới.
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Kết quả & Email mời được gửi thành công đến người nhận. \\\hline
-\end{longtblr}
-
-\vspace{1em}
-
-\textbf{UC03.6 - Cấp quyền Owner}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.6\textwidth]{images/uc03_6_grant_owner.png}
-    \caption{Sơ đồ use case chức năng cấp quyền Owner}
-    \label{fig:uc03_6_grant_owner}
-\end{figure}
-
-\begin{longtblr}[
-    caption = {Đặc tả use case UC03.6 - Cấp quyền Owner},
-    label = {tab:uc03_6},
-]{
-    colspec={|l|p{.7\linewidth}|}
-}
-\hline
-\textbf{Tên chức năng} & \textbf{Cấp quyền Owner} \\\hline
-ID & UC03.6 \\\hline
-Người sử dụng & Workspace Owner \\\hline
-Mức độ cần thiết & Bắt buộc \\\hline
-Phân loại & Cao \\\hline
-Các thành phần tham gia & + \textbf{Workspace Owner:} Muốn nâng cấp một Member thành Owner để chia sẻ quyền quản lý. \\\hline
-Mô tả tóm tắt & Chức năng cho phép Owner hiện tại cấp quyền Owner cho một Member. \\\hline
-Trigger & Owner chọn "Cấp quyền Owner" cho một Member. \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia & + \textbf{User:} Muốn thêm comment để thảo luận, đặt câu hỏi, hoặc update thông tin về issue. \\\hline
+Mô tả tóm tắt & Cho phép user thêm comment vào issue với markdown support. Comment có thể mention user khác (@username). \\\hline
+Trigger & User nhập text vào comment box và nhấn "Add Comment" trong issue detail panel. \\\hline
 Kiểu sự kiện & External. \\\hline
 Luồng xử lý bình thường &
 \begin{minipage}{\linewidth}
     \vskip 4pt
     \begin{enumerate}
-        \item Owner chọn thành viên cần cấp quyền.
-        \item Hệ thống kiểm tra role hiện tại là Member.
-        \item Owner chọn "Cấp quyền Owner".
-        \item Hệ thống hiển thị cảnh báo về quyền hạn của Owner.
-        \item Owner xác nhận.
-        \item Hệ thống cập nhật role = Owner.
-        \item Hệ thống gửi email thông báo cho thành viên.
-        \item Hệ thống ghi audit log.
+        \item User mở tab Comments trong issue detail panel
+        \item User nhập comment text (hỗ trợ markdown)
+        \item User có thể mention user khác bằng @username
+        \item User nhấn "Add Comment"
+        \item Backend validate comment không trống
+        \item Backend tạo IssueComment record với: issueId, comment, commentHtml (rendered markdown), createdBy
+        \item Backend parse mentions (@username) và gửi notification cho user được mention
+        \item Hiển thị comment mới ở cuối danh sách với: avatar, username, timestamp, comment content
+        \item Gửi notification cho assignees và followers của issue
     \end{enumerate}
     \vskip 1pt
 \end{minipage}
 \\\hline
-Các luồng sự kiện con & Extend từ UC03.3 (Phân quyền). \\\hline
-Luồng thay thế/ngoại lệ & N/A \\\hline
-Kết quả & Member được nâng cấp thành Owner với đầy đủ quyền quản lý. \\\hline
-\end{longtblr}
-
-\vspace{1em}
-
-\textbf{UC03.7 - Thu hồi quyền Owner}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.6\textwidth]{images/uc03_7_revoke_owner.png}
-    \caption{Sơ đồ use case chức năng thu hồi quyền Owner}
-    \label{fig:uc03_7_revoke_owner}
-\end{figure}
-
-\begin{longtblr}[
-    caption = {Đặc tả use case UC03.7 - Thu hồi quyền Owner},
-    label = {tab:uc03_7},
-]{
-    colspec={|l|p{.7\linewidth}|}
-}
-\hline
-\textbf{Tên chức năng} & \textbf{Thu hồi quyền Owner} \\\hline
-ID & UC03.7 \\\hline
-Người sử dụng & Workspace Owner \\\hline
-Mức độ cần thiết & Bắt buộc \\\hline
-Phân loại & Cao \\\hline
-Các thành phần tham gia & + \textbf{Workspace Owner:} Muốn hạ cấp một Owner khác thành Member. \\\hline
-Mô tả tóm tắt & Chức năng cho phép Owner thu hồi quyền Owner của một Owner khác. \\\hline
-Trigger & Owner chọn "Thu hồi quyền Owner" cho một Owner khác. \\\hline
-Kiểu sự kiện & External. \\\hline
-Luồng xử lý bình thường &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \begin{enumerate}
-        \item Owner chọn Owner cần thu hồi quyền.
-        \item Hệ thống kiểm tra số lượng Owner trong workspace.
-        \item Owner chọn "Thu hồi quyền Owner".
-        \item Hệ thống hiển thị xác nhận.
-        \item Owner xác nhận.
-        \item Hệ thống cập nhật role = Member.
-        \item Hệ thống gửi email thông báo.
-        \item Hệ thống ghi audit log.
-    \end{enumerate}
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Các luồng sự kiện con & Extend từ UC03.3 (Phân quyền). \\\hline
+Các luồng sự kiện con & Include bởi UC03.3 (Xem chi tiết issue). \\\hline
 Luồng thay thế/ngoại lệ &
 \begin{minipage}{\linewidth}
     \vskip 4pt
-    \textbf{\textcolor{red}{E1}} -- Chỉ còn 1 Owner: Không cho phép thu hồi, hiển thị lỗi.
+    \textbf{\textcolor{red}{E1}} -- Comment trống: Hiển thị lỗi "Comment cannot be empty".
+
+    \textbf{\textcolor{red}{A1}} -- Edit comment: User có thể edit comment của mình (hiển thị "Edited" badge).
+
+    \textbf{\textcolor{red}{A2}} -- Delete comment: User có thể xóa comment của mình hoặc Project Lead xóa bất kỳ comment nào.
     \vskip 1pt
 \end{minipage}
 \\\hline
-Kết quả & Owner bị hạ cấp thành Member và mất quyền quản lý. \\\hline
+Kết quả & Comment được thêm vào issue, user được mention nhận notification, activity log ghi lại "commented". \\\hline
 \end{longtblr}

@@ -1,0 +1,51 @@
+@startuml
+!theme plain
+skinparam defaultFontSize 11
+skinparam usecaseFontSize 10
+
+left to right direction
+
+actor "Project Lead" as PL
+actor "Team Member" as TM
+
+usecase "Thêm comment\nvào issue" as UC_AddComment
+usecase "Validate\ncomment" as UC_Validate
+usecase "Parse\nmentions" as UC_ParseMention
+usecase "Tạo\nIssueComment" as UC_CreateComment
+usecase "Gửi notification\ncho mentions" as UC_NotifyMention
+usecase "Gửi notification\ncho assignees" as UC_NotifyAssignees
+usecase "Edit comment" as UC_EditComment
+usecase "Delete comment" as UC_DeleteComment
+
+PL --> UC_AddComment
+TM --> UC_AddComment
+
+UC_Validate .up.> UC_AddComment : <<include>>
+UC_ParseMention .up.> UC_AddComment : <<include>>
+UC_CreateComment .up.> UC_AddComment : <<include>>
+UC_NotifyMention .up.> UC_AddComment : <<include>>
+UC_NotifyAssignees .up.> UC_AddComment : <<include>>
+
+UC_EditComment ..> UC_AddComment : <<extend>>
+UC_DeleteComment ..> UC_AddComment : <<extend>>
+
+note right of UC_ParseMention
+  Parse @username
+  để gửi notification
+  cho user được mention
+end note
+
+note bottom of UC_CreateComment
+  Support markdown:
+  **bold**, *italic*
+  ```code```, [link](url)
+end note
+
+note left of UC_DeleteComment
+  User chỉ xóa được
+  comment của mình.
+  Project Lead xóa được
+  tất cả comment.
+end note
+
+@enduml

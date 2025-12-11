@@ -1,331 +1,232 @@
-\paragraph{UC04: Quản lý Tệp tin}
+\paragraph{UC04: Quản lý Custom Status}
 \mbox{}
 
-% UC04.1 - Upload tệp
-\textbf{UC04.1 - Upload tệp}
+\textbf{UC04.1 - Tạo custom status mới}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\textwidth]{images/uc04_1_upload_file.png}
-    \caption{Sơ đồ use case chức năng upload tệp}
-    \label{fig:uc04_1_upload_file}
+    \includegraphics[width=0.7\textwidth]{images/uc04_1_create_status.png}
+    \caption{Sơ đồ use case chức năng tạo custom status}
+    \label{fig:uc04_1_create_status}
 \end{figure}
 
 \begin{longtblr}[
-    caption = {Đặc tả use case UC04.1 - Upload tệp},
+    caption = {Đặc tả use case UC04.1 - Tạo custom status mới},
     label = {tab:uc04_1},
 ]{
     colspec={|l|p{.7\linewidth}|}
 }
 \hline
-\textbf{Tên chức năng} & \textbf{Upload tệp} \\\hline
+\textbf{Tên chức năng} & \textbf{Tạo custom status mới} \\\hline
 ID & UC04.1 \\\hline
-Người sử dụng & Workspace Owner, Member \\\hline
+Người sử dụng & Project Lead \\\hline
 Mức độ cần thiết & Bắt buộc \\\hline
 Phân loại & Cao \\\hline
-Các thành phần tham gia & + \textbf{User:} Muốn tải tệp tin lên workspace để chia sẻ với thành viên khác. \\\hline
-Mô tả tóm tắt & Chức năng cho phép thành viên tải tệp tin lên workspace. \\\hline
-Trigger & User chọn "Upload tệp" trong giao diện quản lý tệp. \\\hline
+Các thành phần tham gia & + \textbf{Project Lead:} Muốn tạo custom status để phù hợp với workflow của dự án (ví dụ: TO DO, IN REVIEW, TESTING, DONE). \\\hline
+Mô tả tóm tắt & Cho phép Project Lead tạo custom issue status với name, description, color (hex). Status được tự động gán order tiếp theo (hiển thị ở cuối board). \\\hline
+Trigger & Project Lead nhấn "Add Status" trong project settings. \\\hline
 Kiểu sự kiện & External. \\\hline
 Luồng xử lý bình thường &
 \begin{minipage}{\linewidth}
     \vskip 4pt
     \begin{enumerate}
-        \item User chọn "Upload tệp".
-        \item Hệ thống kiểm tra quyền truy cập (Include UC04.6).
-        \item Hệ thống hiển thị dialog upload.
-        \item User chọn tệp từ máy tính.
-        \item Hệ thống validate loại tệp và kích thước.
-        \item User chọn thư mục đích (nếu có).
-        \item User nhấn "Upload".
-        \item Hệ thống hiển thị progress bar.
-        \item Hệ thống lưu tệp vào storage.
-        \item Hệ thống tạo metadata record.
-        \item Hệ thống trigger AI để xử lý/index tệp (nếu cần).
-        \item Hệ thống hiển thị thông báo thành công.
+        \item Project Lead vào Settings > Issue Statuses
+        \item Nhấn "Add Status"
+        \item Form hiển thị: Status Name (required), Description (optional), Color (color picker)
+        \item Project Lead nhập thông tin
+        \item Backend validate: name không trống
+        \item Backend tự động tính order = max(order) + 1 (đặt ở cuối)
+        \item Backend tạo IssueStatus record
+        \item Board view tự động thêm column mới ở cuối
+        \item Hiển thị thông báo "Status created successfully"
     \end{enumerate}
     \vskip 1pt
 \end{minipage}
 \\\hline
-Các luồng sự kiện con & Include UC04.6 (Kiểm tra quyền truy cập). \\\hline
-Luồng luân phiên/đặc biệt &
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
 \begin{minipage}{\linewidth}
     \vskip 4pt
-    \textcolor{red}{+ E1: Vượt quá kích thước cho phép (100MB) → Hiển thị lỗi.} \\
-    \textcolor{red}{+ E2: Loại tệp không được hỗ trợ → Hiển thị danh sách loại tệp hợp lệ.} \\
-    \textcolor{red}{+ E3: Không có quyền upload → Hiển thị lỗi 403 Forbidden.} \\
-    \textcolor{red}{+ A1: Drag \& drop nhiều tệp → Xử lý batch upload.}
+    \textbf{\textcolor{red}{E1}} -- Name trống: Hiển thị lỗi "Status name is required".
+
+    \textbf{\textcolor{red}{A1}} -- Chọn color: Hỗ trợ color picker hoặc nhập hex code (ví dụ: \#3B82F6).
+
+    \textbf{\textcolor{red}{A2}} -- Tạo nhiều status: Project Lead có thể tạo nhiều status liên tiếp.
     \vskip 1pt
 \end{minipage}
 \\\hline
-Kết quả & Tệp được upload thành công và có thể truy cập bởi các thành viên. \\\hline
+Kết quả & Custom status mới được tạo, hiển thị ở cuối board view, có thể reorder sau. \\\hline
 \end{longtblr}
 
 \vspace{1em}
 
-% UC04.2 - Xem danh sách tệp
-\textbf{UC04.2 - Xem danh sách tệp}
+\textbf{UC04.2 - Cập nhật custom status}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\textwidth]{images/uc04_2_view_files.png}
-    \caption{Sơ đồ use case chức năng xem danh sách tệp}
-    \label{fig:uc04_2_view_files}
+    \includegraphics[width=0.7\textwidth]{images/uc04_2_update_status.png}
+    \caption{Sơ đồ use case chức năng cập nhật custom status}
+    \label{fig:uc04_2_update_status}
 \end{figure}
 
 \begin{longtblr}[
-    caption = {Đặc tả use case UC04.2 - Xem danh sách tệp},
+    caption = {Đặc tả use case UC04.2 - Cập nhật custom status},
     label = {tab:uc04_2},
 ]{
     colspec={|l|p{.7\linewidth}|}
 }
 \hline
-\textbf{Tên chức năng} & \textbf{Xem danh sách tệp} \\\hline
+\textbf{Tên chức năng} & \textbf{Cập nhật custom status} \\\hline
 ID & UC04.2 \\\hline
-Người sử dụng & Workspace Owner, Member \\\hline
+Người sử dụng & Project Lead \\\hline
 Mức độ cần thiết & Bắt buộc \\\hline
 Phân loại & Trung bình \\\hline
-Các thành phần tham gia & + \textbf{User:} Muốn xem tất cả tệp tin trong workspace. \\\hline
-Mô tả tóm tắt & Chức năng hiển thị danh sách tất cả tệp tin trong workspace. \\\hline
-Trigger & User truy cập trang Files của workspace. \\\hline
+Các thành phần tham gia & + \textbf{Project Lead:} Muốn thay đổi tên, mô tả hoặc màu sắc của status. \\\hline
+Mô tả tóm tắt & Cho phép Project Lead cập nhật thông tin của status: name, description, color. \\\hline
+Trigger & Project Lead click vào status trong settings và chọn "Edit". \\\hline
 Kiểu sự kiện & External. \\\hline
 Luồng xử lý bình thường &
 \begin{minipage}{\linewidth}
     \vskip 4pt
     \begin{enumerate}
-        \item User truy cập trang Files.
-        \item Hệ thống truy vấn danh sách tệp.
-        \item Hệ thống hiển thị danh sách với thông tin: tên, loại, kích thước, người upload, ngày.
-        \item User chọn chế độ xem (list/grid).
-        \item User sắp xếp theo tiêu chí.
+        \item Project Lead vào Settings > Issue Statuses
+        \item Click vào status cần edit
+        \item Form hiển thị với giá trị hiện tại
+        \item Project Lead thay đổi name, description hoặc color
+        \item Backend validate: name không trống
+        \item Backend cập nhật IssueStatus record
+        \item Board view cập nhật tên và màu column real-time
+        \item Tất cả issue với status này hiển thị màu badge mới
+        \item Hiển thị thông báo "Status updated"
     \end{enumerate}
     \vskip 1pt
 \end{minipage}
 \\\hline
 Các luồng sự kiện con & N/A \\\hline
-Luồng luân phiên/đặc biệt &
+Luồng thay thế/ngoại lệ &
 \begin{minipage}{\linewidth}
     \vskip 4pt
-    \textcolor{red}{+ A1: Lọc theo loại tệp → Hiển thị chỉ loại tệp được chọn.} \\
-    \textcolor{red}{+ A2: Phân trang → Hiển thị 20 tệp/trang.}
+    \textbf{\textcolor{red}{E1}} -- Name trống: Hiển thị lỗi "Status name is required".
+
+    \textbf{\textcolor{red}{A1}} -- Inline edit: Project Lead có thể edit trực tiếp từ board view (click vào column header).
     \vskip 1pt
 \end{minipage}
 \\\hline
-Kết quả & User xem được danh sách tệp tin trong workspace. \\\hline
+Kết quả & Status được cập nhật, tất cả issue với status này hiển thị thông tin mới (màu, tên). \\\hline
 \end{longtblr}
 
 \vspace{1em}
 
-% UC04.3 - Tải tệp
-\textbf{UC04.3 - Tải tệp}
+\textbf{UC04.3 - Reorder status columns}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\textwidth]{images/uc04_3_download_file.png}
-    \caption{Sơ đồ use case chức năng tải tệp}
-    \label{fig:uc04_3_download_file}
+    \includegraphics[width=0.7\textwidth]{images/uc04_3_reorder_status.png}
+    \caption{Sơ đồ use case chức năng reorder status columns}
+    \label{fig:uc04_3_reorder_status}
 \end{figure}
 
 \begin{longtblr}[
-    caption = {Đặc tả use case UC04.3 - Tải tệp},
+    caption = {Đặc tả use case UC04.3 - Reorder status columns},
     label = {tab:uc04_3},
 ]{
     colspec={|l|p{.7\linewidth}|}
 }
 \hline
-\textbf{Tên chức năng} & \textbf{Tải tệp} \\\hline
+\textbf{Tên chức năng} & \textbf{Reorder status columns} \\\hline
 ID & UC04.3 \\\hline
-Người sử dụng & Workspace Owner, Member \\\hline
+Người sử dụng & Project Lead \\\hline
 Mức độ cần thiết & Bắt buộc \\\hline
 Phân loại & Trung bình \\\hline
-Các thành phần tham gia & + \textbf{User:} Muốn tải tệp tin về máy tính cá nhân. \\\hline
-Mô tả tóm tắt & Chức năng cho phép thành viên download tệp tin từ workspace. \\\hline
-Trigger & User chọn "Tải xuống" cho một tệp. \\\hline
+Các thành phần tham gia & + \textbf{Project Lead:} Muốn thay đổi thứ tự hiển thị của status columns trong board view (ví dụ: TO DO → IN PROGRESS → IN REVIEW → DONE). \\\hline
+Mô tả tóm tắt & Cho phép Project Lead kéo thả status columns để reorder trong settings hoặc board view. \\\hline
+Trigger & Project Lead kéo thả status column trong settings hoặc board view. \\\hline
 Kiểu sự kiện & External. \\\hline
 Luồng xử lý bình thường &
 \begin{minipage}{\linewidth}
     \vskip 4pt
     \begin{enumerate}
-        \item User chọn tệp cần tải.
-        \item Hệ thống kiểm tra quyền truy cập (Include UC04.6).
-        \item User nhấn "Tải xuống".
-        \item Hệ thống tạo signed URL.
-        \item Hệ thống bắt đầu download.
-        \item Hệ thống ghi log download.
-    \end{enumerate}
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Các luồng sự kiện con & Include UC04.6 (Kiểm tra quyền truy cập). \\\hline
-Luồng luân phiên/đặc biệt &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \textcolor{red}{+ E1: Không có quyền → Hiển thị lỗi 403 Forbidden.} \\
-    \textcolor{red}{+ E2: Tệp không tồn tại → Hiển thị lỗi 404 Not Found.}
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Kết quả & Tệp được tải về máy tính của user thành công. \\\hline
-\end{longtblr}
-
-\vspace{1em}
-
-% UC04.4 - Xóa tệp
-\textbf{UC04.4 - Xóa tệp}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\textwidth]{images/uc04_4_delete_file.png}
-    \caption{Sơ đồ use case chức năng xóa tệp}
-    \label{fig:uc04_4_delete_file}
-\end{figure}
-
-\begin{longtblr}[
-    caption = {Đặc tả use case UC04.4 - Xóa tệp},
-    label = {tab:uc04_4},
-]{
-    colspec={|l|p{.7\linewidth}|}
-}
-\hline
-\textbf{Tên chức năng} & \textbf{Xóa tệp} \\\hline
-ID & UC04.4 \\\hline
-Người sử dụng & Workspace Owner, Member \\\hline
-Mức độ cần thiết & Bắt buộc \\\hline
-Phân loại & Trung bình \\\hline
-Các thành phần tham gia & + \textbf{User:} Muốn xóa tệp tin không còn cần thiết. \\\hline
-Mô tả tóm tắt & Chức năng cho phép xóa tệp tin khỏi workspace. \\\hline
-Trigger & User chọn "Xóa" cho một tệp. \\\hline
-Kiểu sự kiện & External. \\\hline
-Luồng xử lý bình thường &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \begin{enumerate}
-        \item User chọn tệp cần xóa.
-        \item Hệ thống kiểm tra quyền (Include UC04.6).
-        \item User nhấn "Xóa".
-        \item Hệ thống hiển thị xác nhận.
-        \item User xác nhận xóa.
-        \item Hệ thống soft delete (chuyển vào Trash).
-        \item Hệ thống ghi audit log.
-    \end{enumerate}
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Các luồng sự kiện con & Include UC04.6 (Kiểm tra quyền truy cập). \\\hline
-Luồng luân phiên/đặc biệt &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \textcolor{red}{+ E1: Không có quyền xóa → Hiển thị lỗi.} \\
-    \textcolor{red}{+ A1: Xóa vĩnh viễn từ Trash → Hard delete sau 30 ngày hoặc theo yêu cầu Owner.} \\
-    \textcolor{red}{+ A2: Khôi phục từ Trash → Chuyển tệp về vị trí ban đầu.}
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Kết quả & Tệp được chuyển vào Trash và có thể khôi phục trong 30 ngày. \\\hline
-\end{longtblr}
-
-\vspace{1em}
-
-% UC04.5 - Tìm kiếm tệp
-\textbf{UC04.5 - Tìm kiếm tệp}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\textwidth]{images/uc04_5_search_file.png}
-    \caption{Sơ đồ use case chức năng tìm kiếm tệp}
-    \label{fig:uc04_5_search_file}
-\end{figure}
-
-\begin{longtblr}[
-    caption = {Đặc tả use case UC04.5 - Tìm kiếm tệp},
-    label = {tab:uc04_5},
-]{
-    colspec={|l|p{.7\linewidth}|}
-}
-\hline
-\textbf{Tên chức năng} & \textbf{Tìm kiếm tệp} \\\hline
-ID & UC04.5 \\\hline
-Người sử dụng & Workspace Owner, Member \\\hline
-Mức độ cần thiết & Bắt buộc \\\hline
-Phân loại & Trung bình \\\hline
-Các thành phần tham gia & + \textbf{User:} Muốn tìm nhanh tệp tin theo từ khóa hoặc bộ lọc. \\\hline
-Mô tả tóm tắt & Chức năng tìm kiếm tệp tin trong workspace theo nhiều tiêu chí. \\\hline
-Trigger & User nhập từ khóa vào ô tìm kiếm. \\\hline
-Kiểu sự kiện & External. \\\hline
-Luồng xử lý bình thường &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \begin{enumerate}
-        \item User nhập từ khóa tìm kiếm.
-        \item User áp dụng bộ lọc (loại tệp, ngày, người upload).
-        \item User nhấn "Tìm kiếm" hoặc Enter.
-        \item Hệ thống tìm full-text trong metadata.
-        \item Hệ thống tìm trong nội dung tệp (nếu được index).
-        \item Hệ thống hiển thị kết quả với highlight.
+        \item Project Lead vào Settings > Issue Statuses hoặc board view
+        \item Kéo status column từ vị trí cũ sang vị trí mới
+        \item Frontend hiển thị preview drop zone
+        \item Project Lead thả column
+        \item Backend tính lại order cho tất cả status affected
+        \item Backend update order trong database (batch update)
+        \item Board view reorder columns real-time
+        \item Hiển thị thông báo "Status order updated"
     \end{enumerate}
     \vskip 1pt
 \end{minipage}
 \\\hline
 Các luồng sự kiện con & N/A \\\hline
-Luồng luân phiên/đặc biệt &
+Luồng thay thế/ngoại lệ &
 \begin{minipage}{\linewidth}
     \vskip 4pt
-    \textcolor{red}{+ A1: Tìm kiếm AI → Dùng semantic search để tìm tệp liên quan.} \\
-    \textcolor{red}{+ A2: Không có kết quả → Gợi ý từ khóa tương tự.}
+    \textbf{\textcolor{red}{A1}} -- Reorder từ settings: Project Lead có thể dùng up/down arrows để reorder thay vì kéo thả.
+
+    \textbf{\textcolor{red}{A2}} -- Batch reorder: Nếu nhiều status bị affect, backend tính lại order cho tất cả (0, 1, 2, ...).
     \vskip 1pt
 \end{minipage}
 \\\hline
-Kết quả & User tìm được tệp tin phù hợp với tiêu chí tìm kiếm. \\\hline
+Kết quả & Status columns hiển thị theo thứ tự mới trong board view, order được lưu vào database. \\\hline
 \end{longtblr}
 
 \vspace{1em}
 
-% UC04.6 - Kiểm tra quyền truy cập
-\textbf{UC04.6 - Kiểm tra quyền truy cập}
+\textbf{UC04.4 - Xóa custom status}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\textwidth]{images/uc04_6_check_permission.png}
-    \caption{Sơ đồ use case chức năng kiểm tra quyền truy cập}
-    \label{fig:uc04_6_check_permission}
+    \includegraphics[width=0.7\textwidth]{images/uc04_4_delete_status.png}
+    \caption{Sơ đồ use case chức năng xóa custom status}
+    \label{fig:uc04_4_delete_status}
 \end{figure}
 
 \begin{longtblr}[
-    caption = {Đặc tả use case UC04.6 - Kiểm tra quyền truy cập},
-    label = {tab:uc04_6},
+    caption = {Đặc tả use case UC04.4 - Xóa custom status},
+    label = {tab:uc04_4},
 ]{
     colspec={|l|p{.7\linewidth}|}
 }
 \hline
-\textbf{Tên chức năng} & \textbf{Kiểm tra quyền truy cập} \\\hline
-ID & UC04.6 \\\hline
-Người sử dụng & System \\\hline
+\textbf{Tên chức năng} & \textbf{Xóa custom status} \\\hline
+ID & UC04.4 \\\hline
+Người sử dụng & Project Lead \\\hline
 Mức độ cần thiết & Bắt buộc \\\hline
-Phân loại & Cao \\\hline
-Các thành phần tham gia & + \textbf{System:} Cần xác thực quyền của user trước khi thực hiện thao tác với tệp. \\\hline
-Mô tả tóm tắt & Chức năng hệ thống kiểm tra quyền truy cập của user đối với tệp/thư mục. \\\hline
-Trigger & Được gọi từ UC04.1, UC04.3, UC04.4. \\\hline
-Kiểu sự kiện & Internal. \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia & + \textbf{Project Lead:} Muốn xóa status không còn sử dụng hoặc thừa. \\\hline
+Mô tả tóm tắt & Cho phép Project Lead xóa custom status. Nếu status đang có issue, phải di chuyển issue sang status khác trước. \\\hline
+Trigger & Project Lead click "Delete" trên status trong settings. \\\hline
+Kiểu sự kiện & External. \\\hline
 Luồng xử lý bình thường &
 \begin{minipage}{\linewidth}
     \vskip 4pt
     \begin{enumerate}
-        \item Hệ thống lấy thông tin user và role.
-        \item Hệ thống lấy permission của tệp/thư mục.
-        \item Hệ thống kiểm tra: nếu user là Owner → cho phép tất cả.
-        \item Hệ thống kiểm tra quyền (read/write/delete).
-        \item Hệ thống trả kết quả: cho phép hoặc từ chối.
+        \item Project Lead vào Settings > Issue Statuses
+        \item Click "Delete" trên status
+        \item Backend kiểm tra số lượng issue với status này
+        \item Nếu có issue: Hiển thị dialog "Move N issues to:" với dropdown chọn status khác
+        \item Project Lead chọn target status
+        \item Project Lead xác nhận xóa
+        \item Backend move tất cả issue sang status mới (batch update)
+        \item Backend xóa IssueStatus record
+        \item Board view remove column
+        \item Hiển thị thông báo "Status deleted, N issues moved"
     \end{enumerate}
     \vskip 1pt
 \end{minipage}
 \\\hline
-Các luồng sự kiện con & Include bởi UC04.1, UC04.3, UC04.4. \\\hline
-Luồng luân phiên/đặc biệt &
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
 \begin{minipage}{\linewidth}
     \vskip 4pt
-    \textcolor{red}{+ E1: Không có quyền → Trả về lỗi 403 Forbidden.}
+    \textbf{\textcolor{red}{E1}} -- Xóa status cuối cùng: Không cho phép xóa nếu chỉ còn 1 status, hiển thị lỗi.
+
+    \textbf{\textcolor{red}{A1}} -- Không có issue: Nếu status không có issue nào, xóa trực tiếp không cần chọn target status.
+
+    \textbf{\textcolor{red}{A2}} -- Cancel: Project Lead có thể cancel nếu không muốn move issue.
     \vskip 1pt
 \end{minipage}
 \\\hline
-Kết quả & Hệ thống xác định được user có quyền thực hiện thao tác hay không. \\\hline
+Kết quả & Status bị xóa, tất cả issue được move sang status mới, board view cập nhật columns. \\\hline
 \end{longtblr}
