@@ -44,133 +44,122 @@ Giao diện trang chủ (Landing Page) được thiết kế với thanh điều
 
 Giao diện danh sách Projects hiển thị tất cả các projects mà người dùng là thành viên trong organization hiện tại. Mỗi project được hiển thị dưới dạng card bao gồm: project avatar, project key, tên project, mô tả ngắn, số lượng thành viên, active sprint (nếu có), và vai trò của người dùng (Project Lead/Team Member/Viewer).
 
-% TODO: Thêm ảnh ui_projects.png
-% \begin{figure}[H]
-% \centering
-% \includegraphics[width=0.55\textwidth]{images/ui_projects.png}
-% \caption{Giao diện phác thảo danh sách Projects}
-% \label{fig:ui_projects}
-% \end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.55\textwidth]{images/ui_projects.png}
+\caption{Giao diện phác thảo danh sách Projects}
+\label{fig:ui_projects}
+\end{figure}
 
 \textbf{Giao diện Board view:}
 
 Giao diện Board view hiển thị active sprint với issues được tổ chức theo custom status columns (ví dụ: To Do, In Progress, Code Review, Done). Mỗi issue card hiển thị: issue key (PROJ-123), title, assignee avatar, priority icon, story points, và type icon. Users có thể drag-and-drop issues giữa các columns để update status real-time. Top bar hiển thị sprint name, goal, progress bar, và actions: "Complete Sprint", "Add Issue". Filters và quick filters cho phép lọc issues theo assignee, type, priority.
 
-% TODO: Thêm ảnh ui_board.png
-% \begin{figure}[H]
-% \centering
-% \includegraphics[width=0.8\textwidth]{images/ui_board.png}
-% \caption{Giao diện phác thảo Board view với drag-and-drop}
-% \label{fig:ui_board}
-% \end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{images/ui_board.png}
+\caption{Giao diện phác thảo Board view với drag-and-drop}
+\label{fig:ui_board}
+\end{figure}
 
 \textbf{Giao diện Backlog view:}
 
 Giao diện Backlog view hiển thị tất cả issues chưa được assign vào sprint, được group theo EPIC hoặc flat list. Users có thể create issues, bulk assign issues vào sprint, reorder issues để prioritize backlog. Top bar có actions: "Create Sprint", "Start Sprint" (cho FUTURE sprints). Panel bên phải hiển thị sprint list với status (FUTURE/ACTIVE/CLOSED).
 
-% TODO: Thêm ảnh ui_backlog.png
-% \begin{figure}[H]
-% \centering
-% \includegraphics[width=0.8\textwidth]{images/ui_backlog.png}
-% \caption{Giao diện phác thảo Backlog view}
-% \label{fig:ui_backlog}
-% \end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{images/ui_backlog.png}
+\caption{Giao diện phác thảo Backlog view}
+\label{fig:ui_backlog}
+\end{figure}
 
 \textbf{Giao diện Issue Detail:}
 
 Giao diện Issue Detail hiển thị chi tiết đầy đủ của một issue trong modal hoặc side panel. Bao gồm: issue key và title (editable), type, status dropdown, priority dropdown, assignee selector, sprint selector, description editor (Markdown support với AI Generate button), comments section với mentions support, attachments section, activity timeline, và sub-tasks list (cho EPICs). AI features: "Generate Description" button call LLM để tạo description từ title, "Break Down Task" button cho EPICs để tạo sub-tasks.
 
-% TODO: Thêm ảnh ui_issue_detail.png
-% \begin{figure}[H]
-% \centering
-% \includegraphics[width=0.65\textwidth]{images/ui_issue_detail.png}
-% \caption{Giao diện phác thảo Issue Detail với AI features}
-% \label{fig:ui_issue_detail}
-% \end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{images/ui_issue_detail.png}
+\caption{Giao diện phác thảo Issue Detail với AI features}
+\label{fig:ui_issue_detail}
+\end{figure}
 
 \textbf{Giao diện quản lý Project Members:}
 
 Giao diện quản lý Project Members hiển thị danh sách tất cả thành viên trong project với thông tin: họ tên, email, vai trò (Project Lead/Team Member/Viewer), số issues assigned, và ngày tham gia. Project Lead có thể thêm members từ organization, thay đổi roles, và remove members.
 
-% TODO: Thêm ảnh ui_project_members.png
-% \begin{figure}[H]
-% \centering
-% \includegraphics[width=0.55\textwidth]{images/ui_project_members.png}
-% \caption{Giao diện phác thảo quản lý Project Members}
-% \label{fig:ui_project_members}
-% \end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.55\textwidth]{images/ui_project_members.png}
+\caption{Giao diện phác thảo quản lý Project Members}
+\label{fig:ui_project_members}
+\end{figure}
 
 \textbf{Giao diện Sprint Management:}
 
 Giao diện Sprint Management hiển thị danh sách tất cả sprints trong project với các tabs: ACTIVE (max 1), FUTURE, CLOSED. Mỗi sprint card hiển thị: sprint name, goal, date range, số issues (completed/total), progress bar, và actions. FUTURE sprints có action "Start Sprint" với validation. ACTIVE sprint có action "Complete Sprint" trigger AI Summary generation. CLOSED sprints hiển thị AI-generated summary preview và link "View Full Summary".
 
-% TODO: Thêm ảnh ui_sprints.png
-% \begin{figure}[H]
-% \centering
-% \includegraphics[width=0.65\textwidth]{images/ui_sprints.png}
-% \caption{Giao diện phác thảo Sprint Management}
-% \label{fig:ui_sprints}
-% \end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{images/ui_sprints.png}
+\caption{Giao diện phác thảo Sprint Management}
+\label{fig:ui_sprints}
+\end{figure}
 
 \textbf{Giao diện Sprint Summary (AI-generated):}
 
 Giao diện Sprint Summary hiển thị AI-generated retrospective khi Project Lead complete sprint. Bao gồm các sections: Overview (tổng quan sprint), Achievements (bullet points các thành tựu chính), Issues Found (các vấn đề phát hiện với title và description), Recommendations (khuyến nghị cho sprints tiếp theo), và Metrics (completed/incomplete issues, velocity, average completion time). Footer hiển thị LLM provider used, tokens consumed, và generated timestamp.
 
-% TODO: Thêm ảnh ui_sprint_summary.png
-% \begin{figure}[H]
-% \centering
-% \includegraphics[width=0.65\textwidth]{images/ui_sprint_summary.png}
-% \caption{Giao diện phác thảo AI-generated Sprint Summary}
-% \label{fig:ui_sprint_summary}
-% \end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{images/ui_sprint_summary.png}
+\caption{Giao diện phác thảo AI-generated Sprint Summary}
+\label{fig:ui_sprint_summary}
+\end{figure}
 
 \textbf{Giao diện Complete Sprint Dialog:}
 
 Giao diện Complete Sprint Dialog hiển thị khi Project Lead click "Complete Sprint". Dialog xác nhận: sprint name, số incomplete issues với options (move to backlog hoặc move to next sprint), checkbox "Generate AI Summary" (default checked), và LLM provider selector. Action buttons: "Cancel", "Complete Sprint" (trigger sprint completion và AI summary generation).
 
-% TODO: Thêm ảnh ui_complete_sprint.png
-% \begin{figure}[H]
-% \centering
-% \includegraphics[width=0.5\textwidth]{images/ui_complete_sprint.png}
-% \caption{Giao diện phác thảo Complete Sprint Dialog}
-% \label{fig:ui_complete_sprint}
-% \end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{images/ui_complete_sprint.png}
+\caption{Giao diện phác thảo Complete Sprint Dialog}
+\label{fig:ui_complete_sprint}
+\end{figure}
 
 \textbf{Giao diện Activity Feed:}
 
 Giao diện Activity Feed hiển thị timeline của tất cả activities trong project: issue created, status changed, sprint started, comment added, issue assigned, sprint completed, etc. Mỗi activity entry hiển thị: user avatar, action type, entity affected (issue key, sprint name), changes (before/after values), và timestamp. Filters cho phép lọc theo action type, user, date range.
 
-% TODO: Thêm ảnh ui_activity.png
-% \begin{figure}[H]
-% \centering
-% \includegraphics[width=0.55\textwidth]{images/ui_activity.png}
-% \caption{Giao diện phác thảo Activity Feed}
-% \label{fig:ui_activity}
-% \end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.55\textwidth]{images/ui_activity.png}
+\caption{Giao diện phác thảo Activity Feed}
+\label{fig:ui_activity}
+\end{figure}
 
 \textbf{Giao diện Custom Status Management:}
 
 Giao diện Custom Status Management cho phép Project Lead định nghĩa custom workflow cho project. Hiển thị danh sách statuses với drag-to-reorder functionality, mỗi status có: name (editable), category (TODO/IN\_PROGRESS/DONE), color picker, và position. Actions: "Add Status", "Delete Status", "Set as Default". Changes reflect immediately trên Board view columns.
 
-% TODO: Thêm ảnh ui_custom_statuses.png
-% \begin{figure}[H]
-% \centering
-% \includegraphics[width=0.55\textwidth]{images/ui_custom_statuses.png}
-% \caption{Giao diện phác thảo Custom Status Management}
-% \label{fig:ui_custom_statuses}
-% \end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.55\textwidth]{images/ui_custom_statuses.png}
+\caption{Giao diện phác thảo Custom Status Management}
+\label{fig:ui_custom_statuses}
+\end{figure}
 
 \textbf{Giao diện Project Settings:}
 
 Giao diện Project Settings cho phép Project Lead cấu hình project: thông tin cơ bản (name, key, description, avatar), default assignee, Board/Backlog config (column ordering, filters), AI settings (preferred LLM provider, custom prompts cho Sprint Summary và Task Breakdown), và archive project option.
 
-% TODO: Thêm ảnh ui_project_settings.png
-% \begin{figure}[H]
-% \centering
-% \includegraphics[width=0.5\textwidth]{images/ui_project_settings.png}
-% \caption{Giao diện phác thảo Project Settings}
-% \label{fig:ui_project_settings}
-% \end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{images/ui_project_settings.png}
+\caption{Giao diện phác thảo Project Settings}
+\label{fig:ui_project_settings}
+\end{figure}
 
 \textbf{Giao diện trang cá nhân của người dùng:}
 
@@ -187,10 +176,9 @@ Giao diện trang cá nhân của người dùng hiển thị thông tin tài kh
 
 Giao diện Organization Dashboard (dành cho Organization Owner) hiển thị tổng quan về organization: số projects, total members, storage usage, AI tokens consumed. Charts hiển thị: project creation trend, sprint velocity across projects, issue completion rates. Actions: "Create Project", "Manage Members", "Organization Settings". Danh sách recent activities across all projects trong organization.
 
-% TODO: Thêm ảnh ui_org_dashboard.png
-% \begin{figure}[H]
-% \centering
-% \includegraphics[width=0.65\textwidth]{images/ui_org_dashboard.png}
-% \caption{Giao diện phác thảo Organization Dashboard}
-% \label{fig:ui_org_dashboard}
-% \end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{images/ui_org_dashboard.png}
+\caption{Giao diện phác thảo Organization Dashboard}
+\label{fig:ui_org_dashboard}
+\end{figure}

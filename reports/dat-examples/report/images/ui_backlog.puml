@@ -1,0 +1,53 @@
+@startuml ui_backlog
+!theme plain
+skinparam backgroundColor white
+
+salt
+{+
+  {* Project: PROJ - Project Management System | Board | Backlog | Sprints | Settings }
+  {
+    [Create Issue +] | Search: [...........] | Filter: [All Types v] [All Priorities v]
+  }
+  {SI
+    .
+    {
+      **Sprint 4 (Future)** | Start: 2025-12-15 | End: 2025-12-29 | [Start Sprint] [Edit] | (5 issues, 21 points)
+      --
+      {#
+        | **Key** | **Summary** | **Type** | **Priority** | **Assignee** | **Points**
+        | PROJ-50 | User authentication | Story | High | John Doe | 5
+        | PROJ-51 | Database migration | Task | Medium | Jane Smith | 3
+        | PROJ-52 | Fix pagination bug | Bug | Critical | Mike Johnson | 8
+        | PROJ-53 | Add logging | Task | Low | Sarah Lee | 2
+        | PROJ-54 | Performance optimization | Story | High | John Doe | 3
+      }
+    }
+    ==
+    {
+      **Sprint 5 (Future)** | Start: TBD | End: TBD | [Start Sprint] [Edit] | (0 issues, 0 points)
+      --
+      {#
+        | | | | | |
+        | | Drag issues here to add to Sprint 5 | | | |
+      }
+    }
+    ==
+    {
+      **Backlog** | (8 issues, 28 points)
+      --
+      {#
+        | **Key** | **Summary** | **Type** | **Priority** | **Assignee** | **Points**
+        | PROJ-55 | Email notifications | Story | Medium | - | 5
+        | PROJ-56 | Export to CSV | Feature | Low | - | 3
+        | PROJ-57 | Dark mode support | Story | Medium | - | 8
+        | PROJ-58 | API documentation | Task | Low | - | 2
+        | PROJ-59 | Security audit | Task | High | - | 5
+        | PROJ-60 | Mobile responsive | Story | Medium | - | 3
+        | PROJ-61 | Webhook integration | Feature | Low | - | 2
+        | PROJ-62 | Add analytics | Story | Medium | - | -
+      }
+    }
+    .
+  }
+}
+@enduml

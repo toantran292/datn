@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sprints</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #1976d2;
+            color: white;
+            padding: 16px 24px;
+        }
+        .header h1 {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        .nav {
+            background: #fafafa;
+            padding: 12px 24px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            gap: 24px;
+        }
+        .nav-item {
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .nav-item.active {
+            color: #1976d2;
+            border-bottom: 2px solid #1976d2;
+            padding-bottom: 2px;
+        }
+        .toolbar {
+            padding: 16px 24px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .btn {
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .sprint-card {
+            margin: 16px 24px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .sprint-card.active {
+            border-color: #4caf50;
+        }
+        .sprint-card.future {
+            border-color: #2196f3;
+        }
+        .sprint-card.closed {
+            border-color: #9e9e9e;
+        }
+        .sprint-header {
+            padding: 16px;
+            background: #fafafa;
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+        }
+        .sprint-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .sprint-title.active {
+            color: #2e7d32;
+        }
+        .sprint-title.future {
+            color: #1976d2;
+        }
+        .sprint-title.closed {
+            color: #666;
+        }
+        .sprint-dates {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        .sprint-goal {
+            font-size: 13px;
+            color: #444;
+            font-style: italic;
+        }
+        .sprint-actions button {
+            background: transparent;
+            border: 1px solid #1976d2;
+            color: #1976d2;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+        .sprint-actions button.primary {
+            background: #1976d2;
+            color: white;
+        }
+        .sprint-actions button.danger {
+            border-color: #d32f2f;
+            color: #d32f2f;
+        }
+        .sprint-body {
+            padding: 16px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 24px;
+            background: #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #66bb6a);
+            display: flex;
+            align-items: center;
+            padding-left: 12px;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .sprint-stats {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+        .stat {
+            color: #666;
+        }
+        .stat strong {
+            color: #333;
+        }
+        .status-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+        .status-table th {
+            background: #f5f5f5;
+            padding: 8px;
+            text-align: left;
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+        }
+        .status-table td {
+            padding: 8px;
+            border-top: 1px solid #f0f0f0;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Project: PROJ - Project Management System</h1>
+        </div>
+        <div class="nav">
+            <a href="#" class="nav-item">Board</a>
+            <a href="#" class="nav-item">Backlog</a>
+            <a href="#" class="nav-item active">Sprints</a>
+            <a href="#" class="nav-item">Settings</a>
+        </div>
+        <div class="toolbar">
+            <button class="btn">+ Create Sprint</button>
+        </div>
+
+        <div class="sprint-card active">
+            <div class="sprint-header">
+                <div>
+                    <div class="sprint-title active">Sprint 3 (Active)</div>
+                    <div class="sprint-dates">Started: 2025-12-01 | Ends: 2025-12-14 (3 days remaining)</div>
+                    <div class="sprint-goal">Goal: Implement core database layer and API endpoints for issue management</div>
+                </div>
+                <div class="sprint-actions">
+                    <button class="danger">Complete Sprint</button>
+                </div>
+            </div>
+            <div class="sprint-body">
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 40%;">40%</div>
+                </div>
+                <div class="sprint-stats">
+                    <span class="stat">Issues: <strong>6/15 completed</strong></span>
+                    <span class="stat">Points: <strong>12/30 completed</strong></span>
+                </div>
+                <table class="status-table">
+                    <thead>
+                        <tr>
+                            <th>STATUS</th>
+                            <th>ISSUES</th>
+                            <th>POINTS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>To Do</td>
+                            <td>3</td>
+                            <td>9</td>
+                        </tr>
+                        <tr>
+                            <td>In Progress</td>
+                            <td>2</td>
+                            <td>5</td>
+                        </tr>
+                        <tr>
+                            <td>Code Review</td>
+                            <td>1</td>
+                            <td>4</td>
+                        </tr>
+                        <tr>
+                            <td>Done</td>
+                            <td>6</td>
+                            <td>12</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div style="margin-top: 12px;">
+                    <button class="btn" style="background: transparent; border: 1px solid #1976d2; color: #1976d2;">View Board</button>
+                    <button class="btn" style="background: transparent; border: 1px solid #1976d2; color: #1976d2; margin-left: 8px;">Sprint Report</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="sprint-card future">
+            <div class="sprint-header">
+                <div>
+                    <div class="sprint-title future">Sprint 4 (Future)</div>
+                    <div class="sprint-dates">Starts: 2025-12-15 | Ends: 2025-12-29</div>
+                    <div class="sprint-goal">Goal: Frontend development - implement board view and issue detail pages</div>
+                </div>
+                <div class="sprint-actions">
+                    <button class="primary">Start Sprint</button>
+                    <button>Edit</button>
+                    <button>Delete</button>
+                </div>
+            </div>
+            <div class="sprint-body">
+                <div class="sprint-stats">
+                    <span class="stat">Issues: <strong>5</strong></span>
+                    <span class="stat">Points: <strong>21</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sprint-card closed">
+            <div class="sprint-header">
+                <div>
+                    <div class="sprint-title closed">Sprint 2 (Closed)</div>
+                    <div class="sprint-dates">2025-11-17 - 2025-11-30</div>
+                    <div class="sprint-goal">Goal: Project setup and initial authentication implementation</div>
+                </div>
+                <div class="sprint-actions">
+                    <button>View Report</button>
+                </div>
+            </div>
+            <div class="sprint-body">
+                <div class="sprint-stats">
+                    <span class="stat">Completed: <strong>12/12 issues</strong></span>
+                    <span class="stat">Points: <strong>28/28</strong></span>
+                    <span class="stat">Duration: <strong>14 days</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="sprint-card closed">
+            <div class="sprint-header">
+                <div>
+                    <div class="sprint-title closed">Sprint 1 (Closed)</div>
+                    <div class="sprint-dates">2025-11-03 - 2025-11-16</div>
+                    <div class="sprint-goal">Goal: Initial project scaffolding and environment setup</div>
+                </div>
+                <div class="sprint-actions">
+                    <button>View Report</button>
+                </div>
+            </div>
+            <div class="sprint-body">
+                <div class="sprint-stats">
+                    <span class="stat">Completed: <strong>10/10 issues</strong></span>
+                    <span class="stat">Points: <strong>20/20</strong></span>
+                    <span class="stat">Duration: <strong>14 days</strong></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

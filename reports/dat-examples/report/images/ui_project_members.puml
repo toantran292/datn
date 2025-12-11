@@ -1,0 +1,38 @@
+@startuml ui_project_members
+!theme plain
+skinparam backgroundColor white
+
+salt
+{+
+  {* Project: PROJ - Project Management System | Board | Backlog | Members | Settings }
+  {
+    [Invite Member +] | Search: [...........] | Filter: [All Roles v]
+  }
+  {SI
+    .
+    {#
+      | **Member** | **Email** | **Role** | **Joined** | **Actions**
+      | John Doe | john.doe@example.com | Project Lead | 2025-11-01 | [Edit] [Remove]
+      | Jane Smith | jane.smith@example.com | Developer | 2025-11-05 | [Edit] [Remove]
+      | Mike Johnson | mike.johnson@example.com | Developer | 2025-11-10 | [Edit] [Remove]
+      | Sarah Lee | sarah.lee@example.com | QA Engineer | 2025-11-15 | [Edit] [Remove]
+      | Tom Wilson | tom.wilson@example.com | Designer | 2025-11-20 | [Edit] [Remove]
+      | Alice Brown | alice.brown@example.com | Developer | 2025-11-25 | [Edit] [Remove]
+    }
+    .
+  }
+  ==
+  {
+    **Project Roles:**
+
+    • **Project Lead** - Full access to project settings, can manage members
+    • **Developer** - Can create and edit issues, manage sprints
+    • **QA Engineer** - Can create and edit bugs, add comments
+    • **Designer** - Can view issues, add comments and attachments
+    • **Viewer** - Read-only access to project
+  }
+  {
+    Total Members: 6 | Active: 6 | Pending Invites: 0
+  }
+}
+@enduml
