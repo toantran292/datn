@@ -93,17 +93,6 @@ Giao diện Complete Sprint Dialog hiển thị khi Project Lead click "Complete
 \label{fig:ui_complete_sprint}
 \end{figure}
 
-\textbf{Giao diện Activity Feed:}
-
-Giao diện Activity Feed hiển thị timeline của tất cả activities trong project: issue created, status changed, sprint started, comment added, issue assigned, sprint completed, etc. Mỗi activity entry hiển thị: user avatar, action type, entity affected (issue key, sprint name), changes (before/after values), và timestamp. Filters cho phép lọc theo action type, user, date range.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.55\textwidth]{images/ui_activity.png}
-\caption{Giao diện phác thảo Activity Feed}
-\label{fig:ui_activity}
-\end{figure}
-
 \textbf{Giao diện Custom Status Management:}
 
 Giao diện Custom Status Management cho phép Project Lead định nghĩa custom workflow cho project. Hiển thị danh sách statuses với drag-to-reorder functionality, mỗi status có: name (editable), category (TODO/IN\_PROGRESS/DONE), color picker, và position. Actions: "Add Status", "Delete Status", "Set as Default". Changes reflect immediately trên Board view columns.
@@ -113,5 +102,27 @@ Giao diện Custom Status Management cho phép Project Lead định nghĩa custo
 \includegraphics[width=0.55\textwidth]{images/ui_custom_statuses.png}
 \caption{Giao diện phác thảo Custom Status Management}
 \label{fig:ui_custom_statuses}
+\end{figure}
+
+\textbf{Giao diện Calendar view:}
+
+Giao diện Calendar view hiển thị tất cả issues theo thời gian trong calendar view. Users có thể view issues theo ngày, tuần, tháng, năm. Users có thể create issues, bulk assign issues vào sprint, reorder issues để prioritize backlog. Top bar có actions: "Create Sprint", "Start Sprint" (cho FUTURE sprints). Panel bên phải hiển thị sprint list với status (FUTURE/ACTIVE/CLOSED).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{images/ui_calendar.png}
+\caption{Giao diện phác thảo Calendar view}
+\label{fig:ui_calendar}
+\end{figure}
+
+\textbf{Giao diện timeline view:}
+
+Giao diện Timeline view hiển thị tất cả issues theo thời gian trong timeline view. Users có thể view issues theo ngày, tuần, tháng, năm. Users có thể create issues, bulk assign issues vào sprint, reorder issues để prioritize backlog. Top bar có actions: "Create Sprint", "Start Sprint" (cho FUTURE sprints). Panel bên phải hiển thị sprint list với status (FUTURE/ACTIVE/CLOSED).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{images/ui_timeline.png}
+\caption{Giao diện phác thảo Timeline view}
+\label{fig:ui_timeline}
 \end{figure}
 
