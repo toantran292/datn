@@ -8,22 +8,40 @@ left to right direction
 actor "Project Lead" as PL
 actor "Team Member" as TM
 
-usecase "AI Issue\nDescription\nGeneration" as UC_GenDesc
-usecase "Nhập\nissue title" as UC_InputTitle
-usecase "Tạo prompt\nvới context" as UC_CreatePrompt
+usecase "AI tự động\ntinh chỉnh mô tả\ncông việc" as UC_RefineDesc
+usecase "Detect mô tả\ncần cải thiện" as UC_DetectDesc
+usecase "Format prompt\nvới context" as UC_FormatPrompt
 usecase "Call LLM API" as UC_CallAPI
-usecase "Generate\ndescription" as UC_Generate
-usecase "Hiển thị trong\neditor" as UC_ShowEditor
-usecase "User edit\nvà save" as UC_EditSave
+usecase "Refine và\nformat mô tả" as UC_Refine
+usecase "Preview refined\ndescription" as UC_Preview
+usecase "Apply hoặc\nreject changes" as UC_ApplyChanges
+usecase "Log AI\nrefinement" as UC_LogAI
 
-PL --> UC_GenDesc
-TM --> UC_GenDesc
+PL --> UC_RefineDesc
+TM --> UC_RefineDesc
 
-UC_InputTitle .up.> UC_GenDesc : <<include>>
-UC_CreatePrompt .up.> UC_GenDesc : <<include>>
-UC_CallAPI .up.> UC_GenDesc : <<include>>
-UC_Generate .up.> UC_GenDesc : <<include>>
-UC_ShowEditor .up.> UC_GenDesc : <<include>>
-UC_EditSave .up.> UC_GenDesc : <<include>>
+UC_DetectDesc .up.> UC_RefineDesc : <<include>>
+UC_FormatPrompt .up.> UC_RefineDesc : <<include>>
+UC_CallAPI .up.> UC_RefineDesc : <<include>>
+UC_Refine .up.> UC_RefineDesc : <<include>>
+UC_Preview .up.> UC_RefineDesc : <<include>>
+UC_ApplyChanges .up.> UC_RefineDesc : <<include>>
+UC_LogAI .up.> UC_RefineDesc : <<include>>
+
+note right of UC_Refine
+  AI sẽ:
+  - Format theo template chuẩn
+  - Bổ sung thông tin thiếu
+  - Làm rõ acceptance criteria
+  - Thêm technical notes nếu cần
+end note
+
+note bottom of UC_Preview
+  Users có thể:
+  - Review changes side-by-side
+  - Accept/reject từng section
+  - Edit thủ công
+  - Regenerate nếu cần
+end note
 
 @enduml

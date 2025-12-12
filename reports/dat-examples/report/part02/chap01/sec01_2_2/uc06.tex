@@ -85,60 +85,63 @@ Kết quả & Sprint summary được tạo tự động, giúp team review spri
 
 \vspace{1em}
 
-\textbf{UC06.2 - Tự động tạo mô tả công việc}
+\textbf{UC06.2 - AI tự động tinh chỉnh mô tả công việc}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.7\textwidth]{images/uc06_2_ai_description.png}
-    \caption{Sơ đồ use case chức năng tự động tạo mô tả công việc}
+    \caption{Sơ đồ use case chức năng AI tự động tinh chỉnh mô tả công việc}
     \label{fig:uc06_2_ai_description}
 \end{figure}
 
 \begin{longtblr}[
-    caption = {Đặc tả use case UC06.2 - Tự động tạo mô tả công việc},
+    caption = {Đặc tả use case UC06.2 - AI tự động tinh chỉnh mô tả công việc},
     label = {tab:uc06_2},
 ]{
     colspec={|l|p{.7\linewidth}|}
 }
 \hline
-\textbf{Tên chức năng} & \textbf{Tự động tạo mô tả công việc} \\\hline
+\textbf{Tên chức năng} & \textbf{AI tự động tinh chỉnh mô tả công việc} \\\hline
 ID & UC06.2 \\\hline
 Người sử dụng & Project Lead, Team Member \\\hline
 Mức độ cần thiết & Tùy chọn \\\hline
-Phân loại & Thấp \\\hline
+Phân loại & Trung bình \\\hline
 Các thành phần tham gia &
 \begin{minipage}{\linewidth}
     \vskip 4pt
-    + \textbf{User:} Muốn AI giúp generate issue description chi tiết từ title. \\
-    + \textbf{LLM Provider:} Expand title thành description đầy đủ.
+    + \textbf{User:} Muốn AI giúp refine và format lại issue description cho đẹp và đầy đủ hơn. \\
+    + \textbf{LLM Provider:} Phân tích description hiện tại và refine theo best practices.
     \vskip 1pt
 \end{minipage}
 \\\hline
-Mô tả tóm tắt & User có thể dùng AI để generate issue description từ issue title. AI sẽ suggest format với user story, acceptance criteria, technical notes. \\\hline
-Trigger & User nhấn "Generate Description with AI" button trong issue creation form. \\\hline
+Mô tả tóm tắt & AI tự động phát hiện và tinh chỉnh mô tả công việc để format đẹp hơn, bổ sung thông tin thiếu, làm rõ acceptance criteria và thêm technical notes nếu cần. \\\hline
+Trigger & User nhấn "Refine Description with AI" button trong issue detail hoặc issue edit form. \\\hline
 Kiểu sự kiện & External. \\\hline
 Luồng xử lý bình thường &
 \begin{minipage}{\linewidth}
     \vskip 4pt
     \begin{enumerate}
-        \item User nhập issue title (ví dụ: "Add user authentication")
-        \item User nhấn "Generate Description with AI"
+        \item User mở issue có description chưa đầy đủ hoặc chưa format tốt
+        \item User nhấn "Refine Description with AI"
+        \item Backend detect mô tả cần cải thiện (thiếu sections, format không chuẩn)
         \item Backend tạo prompt với:
         \begin{itemize}
-            \item Issue title
+            \item Description hiện tại
             \item Issue type (STORY, TASK, BUG, EPIC)
-            \item Project context (tên project, tech stack nếu có)
+            \item Project context, related issues
         \end{itemize}
         \item Backend gọi LLM API (UC06.4)
-        \item AI generate description với format:
+        \item AI refine description theo best practices:
         \begin{itemize}
-            \item User Story: "As a [user], I want [goal] so that [benefit]"
-            \item Acceptance Criteria: Bullet points
-            \item Technical Notes: Implementation hints
+            \item Format theo template chuẩn (User Story/Acceptance Criteria/Technical Notes)
+            \item Bổ sung thông tin thiếu (edge cases, error handling)
+            \item Làm rõ acceptance criteria thành bullet points cụ thể
+            \item Thêm technical notes về implementation approach
         \end{itemize}
-        \item Frontend hiển thị generated description trong editor
-        \item User có thể edit description trước khi save
-        \item User save issue với description
+        \item Frontend hiển thị side-by-side comparison (current vs refined)
+        \item User review changes, có thể accept/reject từng section
+        \item User apply changes hoặc edit thêm trước khi save
+        \item Backend log AI refinement activity
     \end{enumerate}
     \vskip 1pt
 \end{minipage}
@@ -153,15 +156,15 @@ Các luồng sự kiện con &
 Luồng thay thế/ngoại lệ &
 \begin{minipage}{\linewidth}
     \vskip 4pt
-    \textbf{\textcolor{red}{E1}} -- Title too vague: AI suggest user provide more context.
+    \textbf{\textcolor{red}{E1}} -- Description already good: AI suggest "Description looks good, no refinement needed".
 
-    \textbf{\textcolor{red}{A1}} -- Regenerate: User có thể nhấn "Regenerate" để AI tạo lại với approach khác.
+    \textbf{\textcolor{red}{A1}} -- Regenerate: User có thể nhấn "Regenerate" để AI refine lại với approach khác.
 
-    \textbf{\textcolor{red}{A2}} -- Use template: User có thể chọn template có sẵn thay vì AI generate.
+    \textbf{\textcolor{red}{A2}} -- Partial accept: User có thể chọn apply chỉ một số sections (ví dụ: chỉ lấy acceptance criteria).
     \vskip 1pt
 \end{minipage}
 \\\hline
-Kết quả & Issue description được generate tự động, tiết kiệm thời gian và đảm bảo format consistent. \\\hline
+Kết quả & Issue description được tinh chỉnh tự động với format đẹp, đầy đủ thông tin, giúp team hiểu rõ requirements. \\\hline
 \end{longtblr}
 
 
