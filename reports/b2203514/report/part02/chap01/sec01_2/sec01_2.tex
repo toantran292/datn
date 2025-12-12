@@ -14,16 +14,16 @@ Dựa trên mô tả bài toán ở mục 1.1, phân hệ truyền thông có 2 
         \label{fig:usecase_tongquan}
     \end{figure}
 
-    \item \textbf{Sơ đồ trường hợp sử dụng của Workspace Owner / Channel Admin:} Workspace Owner hoặc Channel Admin là tác nhân có quyền quản lý các kênh trò chuyện trong workspace.
+    \item \textbf{Sơ đồ trường hợp sử dụng của Workspace Owner / Channel Admin:}
 
     \begin{figure}[H]
         \centering
-        \includegraphics[width=\textwidth]{images/usecase_channel_admin.png}
+        \includegraphics[width=0.7\textwidth]{images/usecase_channel_admin.png}
         \caption{Sơ đồ trường hợp sử dụng của Workspace Owner / Channel Admin}
         \label{fig:usecase_channel_admin}
     \end{figure}
 
-    \item \textbf{Sơ đồ trường hợp sử dụng của Member:} Member là người tham gia vào một hoặc nhiều kênh trò chuyện trong workspace.
+    \item \textbf{Sơ đồ trường hợp sử dụng của Member:}
 
     \begin{figure}[H]
         \centering
@@ -33,11 +33,4 @@ Dựa trên mô tả bài toán ở mục 1.1, phân hệ truyền thông có 2 
     \end{figure}
 
     \item \textbf{Tích hợp với các hệ thống bên ngoài:} Ngoài hai tác nhân chính, phân hệ truyền thông còn tương tác với các hệ thống bên ngoài để cung cấp các chức năng mở rộng. Các hệ thống bên ngoài bao gồm: (1) File Service từ phân hệ nền tảng thực hiện lưu trữ, truy xuất và xóa tệp đính kèm; (2) AI Provider như OpenAI API hoặc Gemini API thực hiện tạo embedding cho tin nhắn và tài liệu phục vụ semantic search, đồng thời sinh văn bản (Chat Completion) để tóm tắt và trả lời câu hỏi theo kiến trúc RAG; (3) Các phân hệ chức năng khác như quản lý dự án và họp trực tuyến có thể gửi sự kiện để hiển thị thông báo hoặc tự động tạo tin nhắn trong kênh liên quan, đồng thời phân hệ truyền thông cũng cung cấp dữ liệu hội thoại khi được yêu cầu.
-
-    \begin{figure}[H]
-        \centering
-        \includegraphics[width=0.9\textwidth]{images/usecase_external.png}
-        \caption{Sơ đồ tích hợp với các hệ thống bên ngoài}
-        \label{fig:usecase_external}
-    \end{figure}
 \end{itemize}

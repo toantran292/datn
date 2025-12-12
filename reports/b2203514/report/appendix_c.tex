@@ -329,10 +329,10 @@ TC\_\-AI\_\-QA\_\-05 & TS\_\-AI\_\-QA & Kiểm thử hỏi follow-up & Câu hỏ
   row{1}={font=\bfseries, c, bg=gray9}
 }
 Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
-TC\_\-SUM\_\-01 & TS\_\-AI\_\-SUMMARY & Kiểm thử tóm tắt hội thoại từ lần truy cập cuối & Kênh có 50+ tin nhắn mới & 1. Vào kênh có tin nhắn mới\newline 2. Nhấn "Tóm tắt" & Hiển thị bản tóm tắt các điểm chính & Hiển thị bản tóm tắt các điểm chính & Pass \\
-TC\_\-SUM\_\-02 & TS\_\-AI\_\-SUMMARY & Kiểm thử tóm tắt thread dài & Thread có 20+ replies & 1. Mở thread dài\newline 2. Nhấn "Tóm tắt thread" & Hiển thị tóm tắt nội dung thread & Hiển thị tóm tắt nội dung thread & Pass \\
-TC\_\-SUM\_\-03 & TS\_\-AI\_\-SUMMARY & Kiểm thử tóm tắt kênh không có tin mới & Kênh đã đọc hết & 1. Vào kênh đã đọc\newline 2. Nhấn "Tóm tắt" & Thông báo: "Không có tin nhắn mới để tóm tắt" & Thông báo: "Không có tin nhắn mới để tóm tắt" & Pass \\
-TC\_\-SUM\_\-04 & TS\_\-AI\_\-SUMMARY & Kiểm thử format tóm tắt & Hội thoại phức tạp & 1. Tóm tắt hội thoại\newline 2. Kiểm tra format & Tóm tắt có cấu trúc rõ ràng với bullet points & Tóm tắt có cấu trúc rõ ràng với bullet points & Pass \\
+TC\_\-SUM\_\-01 & TS\_\-AI\_\-SUM\-MARY & Kiểm thử tóm tắt hội thoại từ lần truy cập cuối & Kênh có 50+ tin nhắn mới & 1. Vào kênh có tin nhắn mới\newline 2. Nhấn "Tóm tắt" & Hiển thị bản tóm tắt các điểm chính & Hiển thị bản tóm tắt các điểm chính & Pass \\
+TC\_\-SUM\_\-02 & TS\_\-AI\_\-SUM\-MARY & Kiểm thử tóm tắt thread dài & Thread có 20+ replies & 1. Mở thread dài\newline 2. Nhấn "Tóm tắt thread" & Hiển thị tóm tắt nội dung thread & Hiển thị tóm tắt nội dung thread & Pass \\
+TC\_\-SUM\_\-03 & TS\_\-AI\_\-SUM\-MARY & Kiểm thử tóm tắt kênh không có tin mới & Kênh đã đọc hết & 1. Vào kênh đã đọc\newline 2. Nhấn "Tóm tắt" & Thông báo: "Không có tin nhắn mới để tóm tắt" & Thông báo: "Không có tin nhắn mới để tóm tắt" & Pass \\
+TC\_\-SUM\_\-04 & TS\_\-AI\_\-SUM\-MARY & Kiểm thử format tóm tắt & Hội thoại phức tạp & 1. Tóm tắt hội thoại\newline 2. Kiểm tra format & Tóm tắt có cấu trúc rõ ràng với bullet points & Tóm tắt có cấu trúc rõ ràng với bullet points & Pass \\
 \end{longtblr}
 
 % TS_EXTRACT_ACT - Trích xuất action items
@@ -346,9 +346,9 @@ TC\_\-SUM\_\-04 & TS\_\-AI\_\-SUMMARY & Kiểm thử format tóm tắt & Hội t
   row{1}={font=\bfseries, c, bg=gray9}
 }
 Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
-TC\_\-ACT\_\-01 & TS\_\-EXTRACT\_\-ACT & Kiểm thử trích xuất action items từ hội thoại & Hội thoại chứa "@john cần hoàn thành báo cáo" & 1. Nhấn "Trích xuất Actions"\newline 2. Chọn khoảng thời gian & Hiển thị danh sách action items với người phụ trách & Hiển thị danh sách action items với người phụ trách & Pass \\
-TC\_\-ACT\_\-02 & TS\_\-EXTRACT\_\-ACT & Kiểm thử trích xuất với mention người dùng & Tin nhắn: "@mary review PR \#123 trước thứ 6" & 1. Trích xuất actions\newline 2. Kiểm tra kết quả & Action item gán cho mary, có deadline & Action item gán cho mary, có deadline & Pass \\
-TC\_\-ACT\_\-03 & TS\_\-EXTRACT\_\-ACT & Kiểm thử hội thoại không có action items & Hội thoại casual không có task & 1. Trích xuất actions\newline 2. Kiểm tra kết quả & Thông báo: "Không tìm thấy action items" & Thông báo: "Không tìm thấy action items" & Pass \\
+TC\_\-ACT\_\-01 & TS\_\-EX\-TRACT\_\-ACT & Kiểm thử trích xuất action items từ hội thoại & Hội thoại chứa "@john cần hoàn thành báo cáo" & 1. Nhấn "Trích xuất Actions"\newline 2. Chọn khoảng thời gian & Hiển thị danh sách action items với người phụ trách & Hiển thị danh sách action items với người phụ trách & Pass \\
+TC\_\-ACT\_\-02 & TS\_\-EX\-TRACT\_\-ACT & Kiểm thử trích xuất với mention người dùng & Tin nhắn: "@mary review PR \#123 trước thứ 6" & 1. Trích xuất actions\newline 2. Kiểm tra kết quả & Action item gán cho mary, có deadline & Action item gán cho mary, có deadline & Pass \\
+TC\_\-ACT\_\-03 & TS\_\-EX\-TRACT\_\-ACT & Kiểm thử hội thoại không có action items & Hội thoại casual không có task & 1. Trích xuất actions\newline 2. Kiểm tra kết quả & Thông báo: "Không tìm thấy action items" & Thông báo: "Không tìm thấy action items" & Pass \\
 \end{longtblr}
 
 % TS_SUMMARIZE_DOC - Tóm tắt tài liệu
@@ -362,10 +362,10 @@ TC\_\-ACT\_\-03 & TS\_\-EXTRACT\_\-ACT & Kiểm thử hội thoại không có a
   row{1}={font=\bfseries, c, bg=gray9}
 }
 Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
-TC\_\-DOC\_\-01 & TS\_\-SUMMARIZE\_\-DOC & Kiểm thử tóm tắt file PDF & File: report.pdf (10 trang) & 1. Upload PDF\newline 2. Nhấn "Tóm tắt"\newline 3. Chờ xử lý & Hiển thị bản tóm tắt nội dung PDF & Hiển thị bản tóm tắt nội dung PDF & Pass \\
-TC\_\-DOC\_\-02 & TS\_\-SUMMARIZE\_\-DOC & Kiểm thử tóm tắt file DOCX & File: proposal.docx & 1. Upload DOCX\newline 2. Nhấn "Tóm tắt" & Hiển thị bản tóm tắt nội dung DOCX & Hiển thị bản tóm tắt nội dung DOCX & Pass \\
-TC\_\-DOC\_\-03 & TS\_\-SUMMARIZE\_\-DOC & Kiểm thử tóm tắt file không hỗ trợ & File: image.png & 1. Upload file ảnh\newline 2. Kiểm tra nút tóm tắt & Không hiển thị nút "Tóm tắt" cho file ảnh & Không hiển thị nút "Tóm tắt" cho file ảnh & Pass \\
-TC\_\-DOC\_\-04 & TS\_\-SUMMARIZE\_\-DOC & Kiểm thử tài liệu đã được index cho RAG & File PDF đã tóm tắt & 1. Tóm tắt tài liệu\newline 2. Hỏi AI về nội dung & AI trả lời dựa trên nội dung tài liệu & AI trả lời dựa trên nội dung tài liệu & Pass \\
+TC\_\-DOC\_\-01 & TS\_\-SUM\-MA\-RIZE\_\-DOC & Kiểm thử tóm tắt file PDF & File: report.pdf (10 trang) & 1. Upload PDF\newline 2. Nhấn "Tóm tắt"\newline 3. Chờ xử lý & Hiển thị bản tóm tắt nội dung PDF & Hiển thị bản tóm tắt nội dung PDF & Pass \\
+TC\_\-DOC\_\-02 & TS\_\-SUM\-MA\-RIZE\_\-DOC & Kiểm thử tóm tắt file DOCX & File: proposal.docx & 1. Upload DOCX\newline 2. Nhấn "Tóm tắt" & Hiển thị bản tóm tắt nội dung DOCX & Hiển thị bản tóm tắt nội dung DOCX & Pass \\
+TC\_\-DOC\_\-03 & TS\_\-SUM\-MA\-RIZE\_\-DOC & Kiểm thử tóm tắt file không hỗ trợ & File: image.png & 1. Upload file ảnh\newline 2. Kiểm tra nút tóm tắt & Không hiển thị nút "Tóm tắt" cho file ảnh & Không hiển thị nút "Tóm tắt" cho file ảnh & Pass \\
+TC\_\-DOC\_\-04 & TS\_\-SUM\-MA\-RIZE\_\-DOC & Kiểm thử tài liệu đã được index cho RAG & File PDF đã tóm tắt & 1. Tóm tắt tài liệu\newline 2. Hỏi AI về nội dung & AI trả lời dựa trên nội dung tài liệu & AI trả lời dựa trên nội dung tài liệu & Pass \\
 \end{longtblr}
 
 \end{landscape}

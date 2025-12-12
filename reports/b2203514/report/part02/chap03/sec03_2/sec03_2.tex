@@ -25,13 +25,6 @@ Mỗi backend service trong phân hệ truyền thông được tổ chức theo
     \item \textbf{Data Access Layer (Repositories/Clients):} Tương tác với PostgreSQL qua Prisma ORM để thực hiện CRUD operations và vector queries với pgvector. Layer này cũng tương tác với Redis cho caching, Socket.io adapter, và BullMQ job management. Cache management được implement cho frequently accessed data như channel info và member lists.
 \end{itemize}
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.85\textwidth]{images/layered_architecture.png}
-\caption{Kiến trúc phân lớp trong NestJS Service}
-\label{fig:layered_architecture}
-\end{figure}
-
 \subsubsection{Mô tả sự phân rã}
 
 Hệ thống được phân rã theo hai chiều: phân rã theo nhóm người dùng và phân rã theo chức năng của từng nhóm, được thể hiện qua các sơ đồ sau:
@@ -51,7 +44,7 @@ Channel Admin (bao gồm cả Workspace Owner) có quyền quản lý kênh trò
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{images/func_channel_admin.png}
+\includegraphics[width=0.45\textwidth]{images/func_channel_admin.png}
 \caption{Sơ đồ phân rã chức năng của Channel Admin}
 \label{fig:func_channel_admin}
 \end{figure}
@@ -67,28 +60,28 @@ Member là người dùng thông thường trong kênh, có quyền tham gia, nh
 \label{fig:func_member}
 \end{figure}
 
-\subsubsection{Giao tiếp giữa các Services}
+% \subsubsection{Giao tiếp giữa các Services}
 
-Các services trong phân hệ truyền thông giao tiếp với nhau và với các services từ phân hệ nền tảng thông qua nhiều phương thức khác nhau:
+% Các services trong phân hệ truyền thông giao tiếp với nhau và với các services từ phân hệ nền tảng thông qua nhiều phương thức khác nhau:
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.9\textwidth]{images/services_communication.png}
-\caption{Sơ đồ giao tiếp giữa các Services}
-\label{fig:services_communication}
-\end{figure}
+% \begin{figure}[H]
+% \centering
+% \includegraphics[width=0.9\textwidth]{images/services_communication.png}
+% \caption{Sơ đồ giao tiếp giữa các Services}
+% \label{fig:services_communication}
+% \end{figure}
 
-\begin{itemize}
-    \item \textbf{Messaging Service $\leftrightarrow$ WebSocket Gateway:} Internal API calls và events. Khi tin nhắn mới được tạo, Messaging Service emit event đến WebSocket Gateway để broadcast đến các clients trong channel.
+% \begin{itemize}
+%     \item \textbf{Messaging Service $\leftrightarrow$ WebSocket Gateway:} Internal API calls và events. Khi tin nhắn mới được tạo, Messaging Service emit event đến WebSocket Gateway để broadcast đến các clients trong channel.
     
-    \item \textbf{Messaging Service $\rightarrow$ Document Processing Service:} BullMQ jobs. Khi có attachment mới hoặc tin nhắn cần tạo embedding, Messaging Service thêm job vào queue để Document Processing xử lý bất đồng bộ.
+%     \item \textbf{Messaging Service $\rightarrow$ Document Processing Service:} BullMQ jobs. Khi có attachment mới hoặc tin nhắn cần tạo embedding, Messaging Service thêm job vào queue để Document Processing xử lý bất đồng bộ.
     
-    \item \textbf{AI Service $\leftrightarrow$ Messaging Service:} API calls. AI Service gọi Messaging Service để lấy messages và context cho RAG pipeline.
+%     \item \textbf{AI Service $\leftrightarrow$ Messaging Service:} API calls. AI Service gọi Messaging Service để lấy messages và context cho RAG pipeline.
     
-    \item \textbf{Tất cả Services $\rightarrow$ Account Service:} JWT validation. Mọi request đều được xác thực thông qua Account Service của phân hệ nền tảng.
+%     \item \textbf{Tất cả Services $\rightarrow$ Account Service:} JWT validation. Mọi request đều được xác thực thông qua Account Service của phân hệ nền tảng.
     
-    \item \textbf{Messaging Service $\rightarrow$ File Service:} API calls. Khi có attachment, Messaging Service gọi File Service để lưu trữ file và lấy metadata.
-\end{itemize}
+%     \item \textbf{Messaging Service $\rightarrow$ File Service:} API calls. Khi có attachment, Messaging Service gọi File Service để lưu trữ file và lấy metadata.
+% \end{itemize}
 
 \subsubsection{Cơ sở thiết kế}
 
