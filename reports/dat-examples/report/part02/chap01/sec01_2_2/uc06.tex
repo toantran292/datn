@@ -164,95 +164,6 @@ Luồng thay thế/ngoại lệ &
 Kết quả & Issue description được generate tự động, tiết kiệm thời gian và đảm bảo format consistent. \\\hline
 \end{longtblr}
 
-\vspace{1em}
-
-\textbf{UC06.3 - AI Task Breakdown}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\textwidth]{images/uc06_3_ai_task_breakdown.png}
-    \caption{Sơ đồ use case chức năng AI Task Breakdown}
-    \label{fig:uc06_3_ai_task_breakdown}
-\end{figure}
-
-\begin{longtblr}[
-    caption = {Đặc tả use case UC06.3 - AI Task Breakdown},
-    label = {tab:uc06_3},
-]{
-    colspec={|l|p{.7\linewidth}|}
-}
-\hline
-\textbf{Tên chức năng} & \textbf{AI Task Breakdown} \\\hline
-ID & UC06.3 \\\hline
-Người sử dụng & Project Lead, Team Member \\\hline
-Mức độ cần thiết & Tùy chọn \\\hline
-Phân loại & Thấp \\\hline
-Các thành phần tham gia &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    + \textbf{User:} Muốn breakdown EPIC/STORY thành sub-tasks. \\
-    + \textbf{LLM Provider:} Phân tích và suggest sub-tasks.
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Mô tả tóm tắt & AI giúp breakdown issue lớn (EPIC hoặc STORY) thành các sub-tasks nhỏ hơn để dễ estimate và execute. \\\hline
-Trigger & User nhấn "AI Breakdown" trong issue detail panel. \\\hline
-Kiểu sự kiện & External. \\\hline
-Luồng xử lý bình thường &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \begin{enumerate}
-        \item User mở issue detail (type = EPIC hoặc STORY)
-        \item User nhấn "AI Breakdown" button
-        \item Backend tạo prompt với:
-        \begin{itemize}
-            \item Issue title, description
-            \item Issue type (EPIC or STORY)
-            \item Existing sub-issues (nếu có)
-        \end{itemize}
-        \item Backend gọi LLM API (UC06.4)
-        \item AI analyze và suggest breakdown:
-        \begin{itemize}
-            \item Danh sách sub-tasks với title và description
-            \item Estimated story points cho mỗi sub-task
-            \item Dependencies giữa các sub-tasks
-        \end{itemize}
-        \item Frontend hiển thị suggested sub-tasks trong modal
-        \item User có thể:
-        \begin{itemize}
-            \item Select/deselect sub-tasks
-            \item Edit title, description của mỗi sub-task
-            \item Adjust story points
-        \end{itemize}
-        \item User nhấn "Create Sub-tasks"
-        \item Backend tạo sub-issues với parentId = issue hiện tại
-        \item Sub-issues hiển thị trong issue detail panel
-    \end{enumerate}
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Các luồng sự kiện con &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    + Include UC06.4 (LLM API Integration).
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Luồng thay thế/ngoại lệ &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \textbf{\textcolor{red}{E1}} -- Issue too small: AI suggest không cần breakdown, issue đã đủ nhỏ.
-
-    \textbf{\textcolor{red}{A1}} -- Manual breakdown: User có thể create sub-issues manually thay vì dùng AI.
-
-    \textbf{\textcolor{red}{A2}} -- Adjust breakdown: User có thể adjust suggestions trước khi create.
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Kết quả & Issue được breakdown thành sub-tasks rõ ràng, dễ estimate và distribute cho team. \\\hline
-\end{longtblr}
-
-\vspace{1em}
 
 \textbf{UC06.4 - LLM API Integration}
 
@@ -284,7 +195,7 @@ Các thành phần tham gia &
 \end{minipage}
 \\\hline
 Mô tả tóm tắt & Backend service tích hợp với LLM providers (OpenAI, Anthropic, etc.) để xử lý các AI features. \\\hline
-Trigger & Được gọi từ UC06.1, UC06.2, UC06.3 khi cần AI processing. \\\hline
+Trigger & Được gọi từ UC06.1, UC06.2, UC03.6 khi cần AI processing. \\\hline
 Kiểu sự kiện & Internal. \\\hline
 Luồng xử lý bình thường &
 \begin{minipage}{\linewidth}
@@ -316,7 +227,7 @@ Luồng xử lý bình thường &
 Các luồng sự kiện con &
 \begin{minipage}{\linewidth}
     \vskip 4pt
-    + Include bởi UC06.1, UC06.2, UC06.3.
+    + Include bởi UC06.1, UC06.2, UC03.6.
     \vskip 1pt
 \end{minipage}
 \\\hline
