@@ -1,390 +1,44 @@
-\paragraph{UC03: Quản lý Thành viên}
+% UC03: Đăng xuất
+\paragraph{Chức năng đăng xuất}
 \mbox{}
 
-\textbf{UC03.1 - Mời thành viên}
-
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\textwidth]{images/uc03_1_invite_member.png}
-    \caption{Sơ đồ use case chức năng mời thành viên}
-    \label{fig:uc03_1_invite_member}
+    \includegraphics[width=0.6\textwidth]{images/uc03_logout.png}
+    \caption{Sơ đồ use case chức năng đăng xuất}
+    \label{fig:uc03_logout}
 \end{figure}
 
-\begin{adjustwidth}{-1.5cm}{-0.5cm}
 \begin{longtblr}[
-    caption = {Đặc tả use case UC03.1 - Mời thành viên},
-    label = {tab:uc03_1},
+    caption = {Bảng đặc tả chức năng đăng xuất},
+    label = {tab:uc03}
 ]{
-    colspec={|l|p{.7\linewidth}|}
+    colspec = {|l|X|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
 }
-\hline
-\textbf{Tên chức năng} & \textbf{Mời thành viên} \\\hline
-ID & UC03.1 \\\hline
-Người sử dụng & Workspace Owner \\\hline
-Mức độ cần thiết & Bắt buộc \\\hline
-Phân loại & Cao \\\hline
-Các thành phần tham gia & + \textbf{Workspace Owner:} Muốn thêm thành viên mới vào workspace để cộng tác. \\\hline
-Mô tả tóm tắt & Chức năng cho phép Owner gửi lời mời tham gia workspace đến người dùng qua email. \\\hline
-Trigger & Owner chọn "Mời thành viên" trong trang quản lý thành viên. \\\hline
-Kiểu sự kiện & External. \\\hline
+Tên chức năng & Đăng xuất \\
+ID & UC03 \\
+Mức độ cần thiết & Bắt buộc \\
+Người sử dụng & Người dùng đã đăng nhập vào hệ thống \\
+Phân loại & Đơn giản \\
+Các thành phần tham gia và mối quan tâm & \textbf{Người dùng:} Muốn kết thúc phiên làm việc an toàn. \\
+Mô tả tóm tắt & Chức năng cho phép người dùng đăng xuất khỏi hệ thống, hủy phiên làm việc hiện tại. \\
+Trigger & Người dùng nhấn nút "Đăng xuất" trong menu. \\
+Kiểu sự kiện & External \\
 Luồng xử lý bình thường &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \begin{enumerate}
-        \item Owner chọn "Mời thành viên".
-        \item Hệ thống hiển thị form mời với trường nhập email.
-        \item Owner nhập một hoặc nhiều email.
-        \item Owner chọn role mặc định (Member).
-        \item Owner nhấn "Gửi lời mời".
-        \item Hệ thống validate định dạng email.
-        \item Hệ thống tạo invitation records.
-        \item Hệ thống gửi email mời (Include UC03.5).
-        \item Hệ thống hiển thị thông báo thành công.
-    \end{enumerate}
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Các luồng sự kiện con & Include UC03.5 (Gửi email mời). \\\hline
-Luồng thay thế/ngoại lệ &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \textbf{\textcolor{red}{E1}} -- Email đã là thành viên: Bỏ qua và thông báo "Đã là thành viên".
-
-    \textbf{\textcolor{red}{E2}} -- Email không hợp lệ: Hiển thị lỗi định dạng email.
-
-    \textbf{\textcolor{red}{A1}} -- Nhập nhiều email cùng lúc: Xử lý batch và hiển thị kết quả từng email.
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Kết quả & Lời mời được gửi đến email và người được mời có thể tham gia workspace. \\\hline
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{enumerate}[nosep, leftmargin=*]
+    \item Người dùng nhấn nút "Đăng xuất" trong menu người dùng.
+    \item Hệ thống hủy phiên làm việc hiện tại.
+    \item Hệ thống ghi audit log.
+    \item Hệ thống chuyển hướng đến trang đăng nhập.
+\end{enumerate}
+\vspace{2pt}
+\end{minipage} \\
+Các luồng sự kiện con & N/A \\
+Luồng luân phiên/đặc biệt & N/A \\
+Kết quả & Người dùng đăng xuất thành công và được chuyển về trang đăng nhập. \\
 \end{longtblr}
-\end{adjustwidth}
-
-\vspace{1em}
-
-\textbf{UC03.2 - Xóa thành viên}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\textwidth]{images/uc03_2_remove_member.png}
-    \caption{Sơ đồ use case chức năng xóa thành viên}
-    \label{fig:uc03_2_remove_member}
-\end{figure}
-
-\begin{adjustwidth}{-1.5cm}{-0.5cm}
-\begin{longtblr}[
-    caption = {Đặc tả use case UC03.2 - Xóa thành viên},
-    label = {tab:uc03_2},
-]{
-    colspec={|l|p{.7\linewidth}|}
-}
-\hline
-\textbf{Tên chức năng} & \textbf{Xóa thành viên} \\\hline
-ID & UC03.2 \\\hline
-Người sử dụng & Workspace Owner \\\hline
-Mức độ cần thiết & Bắt buộc \\\hline
-Phân loại & Cao \\\hline
-Các thành phần tham gia & + \textbf{Workspace Owner:} Muốn loại bỏ thành viên không còn cần thiết hoặc vi phạm. \\\hline
-Mô tả tóm tắt & Chức năng cho phép Owner loại bỏ thành viên khỏi workspace. \\\hline
-Trigger & Owner chọn "Xóa" cho một thành viên trong danh sách. \\\hline
-Kiểu sự kiện & External. \\\hline
-Luồng xử lý bình thường &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \begin{enumerate}
-        \item Owner chọn thành viên cần xóa từ danh sách.
-        \item Hệ thống hiển thị thông tin thành viên.
-        \item Owner nhấn "Xóa khỏi workspace".
-        \item Hệ thống hiển thị xác nhận.
-        \item Owner xác nhận xóa.
-        \item Hệ thống cập nhật membership (soft delete).
-        \item Hệ thống thu hồi tất cả quyền của thành viên.
-        \item Hệ thống gửi email thông báo cho thành viên bị xóa.
-        \item Hệ thống ghi audit log.
-    \end{enumerate}
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Các luồng sự kiện con & N/A \\\hline
-Luồng thay thế/ngoại lệ &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \textbf{\textcolor{red}{E1}} -- Xóa Owner cuối cùng: Không cho phép, yêu cầu chuyển quyền Owner trước.
-
-    \textbf{\textcolor{red}{A1}} -- Chọn giữ lại dữ liệu: Dữ liệu của thành viên được gán cho "Deleted User".
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Kết quả & Thành viên bị loại khỏi workspace và mất quyền truy cập. \\\hline
-\end{longtblr}
-\end{adjustwidth}
-
-\vspace{1em}
-
-\textbf{UC03.3 - Phân quyền}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\textwidth]{images/uc03_3_assign_permissions.png}
-    \caption{Sơ đồ use case chức năng phân quyền}
-    \label{fig:uc03_3_assign_permissions}
-\end{figure}
-
-\begin{adjustwidth}{-1.5cm}{-0.5cm}
-\begin{longtblr}[
-    caption = {Đặc tả use case UC03.3 - Phân quyền},
-    label = {tab:uc03_3},
-]{
-    colspec={|l|p{.7\linewidth}|}
-}
-\hline
-\textbf{Tên chức năng} & \textbf{Phân quyền} \\\hline
-ID & UC03.3 \\\hline
-Người sử dụng & Workspace Owner \\\hline
-Mức độ cần thiết & Bắt buộc \\\hline
-Phân loại & Cao \\\hline
-Các thành phần tham gia & + \textbf{Workspace Owner:} Muốn quản lý quyền hạn của từng thành viên trong workspace. \\\hline
-Mô tả tóm tắt & Chức năng cho phép Owner thay đổi role và quyền hạn của thành viên. \\\hline
-Trigger & Owner chọn "Phân quyền" cho một thành viên. \\\hline
-Kiểu sự kiện & External. \\\hline
-Luồng xử lý bình thường &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \begin{enumerate}
-        \item Owner chọn thành viên cần phân quyền.
-        \item Hệ thống hiển thị quyền hiện tại của thành viên.
-        \item Owner chọn role mới hoặc tùy chỉnh permissions.
-        \item Owner nhấn "Lưu".
-        \item Hệ thống cập nhật permissions trong database.
-        \item Hệ thống gửi thông báo cho thành viên về thay đổi quyền.
-        \item Hệ thống ghi audit log.
-    \end{enumerate}
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Các luồng sự kiện con &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    + Extend UC03.6 (Cấp quyền Owner). \\
-    + Extend UC03.7 (Thu hồi quyền Owner).
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Luồng thay thế/ngoại lệ & N/A \\\hline
-Kết quả & Quyền của thành viên được cập nhật thành công. \\\hline
-\end{longtblr}
-\end{adjustwidth}
-
-\vspace{1em}
-
-\textbf{UC03.4 - Xem danh sách thành viên}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.7\textwidth]{images/uc03_4_view_members.png}
-    \caption{Sơ đồ use case chức năng xem danh sách thành viên}
-    \label{fig:uc03_4_view_members}
-\end{figure}
-
-\begin{adjustwidth}{-1.5cm}{-0.5cm}
-\begin{longtblr}[
-    caption = {Đặc tả use case UC03.4 - Xem danh sách thành viên},
-    label = {tab:uc03_4},
-]{
-    colspec={|l|p{.7\linewidth}|}
-}
-\hline
-\textbf{Tên chức năng} & \textbf{Xem danh sách thành viên} \\\hline
-ID & UC03.4 \\\hline
-Người sử dụng & Workspace Owner, Member \\\hline
-Mức độ cần thiết & Bắt buộc \\\hline
-Phân loại & Trung bình \\\hline
-Các thành phần tham gia & + \textbf{User:} Muốn xem danh sách tất cả thành viên trong workspace. \\\hline
-Mô tả tóm tắt & Chức năng hiển thị danh sách tất cả thành viên trong workspace. \\\hline
-Trigger & User truy cập trang Members của workspace. \\\hline
-Kiểu sự kiện & External. \\\hline
-Luồng xử lý bình thường &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \begin{enumerate}
-        \item User truy cập trang Members.
-        \item Hệ thống truy vấn danh sách thành viên.
-        \item Hệ thống hiển thị danh sách với: avatar, tên, email, role, ngày tham gia.
-        \item User có thể tìm kiếm hoặc lọc theo role.
-    \end{enumerate}
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Các luồng sự kiện con & N/A \\\hline
-Luồng thay thế/ngoại lệ &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \textbf{\textcolor{red}{A1}} -- Tìm kiếm thành viên: Lọc theo tên hoặc email.
-
-    \textbf{\textcolor{red}{A2}} -- Lọc theo role: Hiển thị chỉ Owner hoặc Member.
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Kết quả & User xem được danh sách đầy đủ thành viên trong workspace. \\\hline
-\end{longtblr}
-\end{adjustwidth}
-
-\vspace{1em}
-
-\textbf{UC03.5 - Gửi email mời}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.6\textwidth]{images/uc03_5_send_invitation_email.png}
-    \caption{Sơ đồ use case chức năng gửi email mời}
-    \label{fig:uc03_5_send_invitation_email}
-\end{figure}
-
-\begin{adjustwidth}{-1.5cm}{-0.5cm}
-\begin{longtblr}[
-    caption = {Đặc tả use case UC03.5 - Gửi email mời},
-    label = {tab:uc03_5},
-]{
-    colspec={|l|p{.7\linewidth}|}
-}
-\hline
-\textbf{Tên chức năng} & \textbf{Gửi email mời} \\\hline
-ID & UC03.5 \\\hline
-Người sử dụng & System \\\hline
-Mức độ cần thiết & Bắt buộc \\\hline
-Phân loại & Cao \\\hline
-Các thành phần tham gia & + \textbf{System:} Cần gửi email chứa link mời tham gia workspace. \\\hline
-Mô tả tóm tắt & Chức năng hệ thống tự động gửi email chứa link invitation đến người được mời. \\\hline
-Trigger & Được gọi từ UC03.1 (Mời thành viên). \\\hline
-Kiểu sự kiện & Internal. \\\hline
-Luồng xử lý bình thường &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \begin{enumerate}
-        \item Hệ thống tạo invitation token (hết hạn sau 7 ngày).
-        \item Hệ thống render email template với link invite.
-        \item Hệ thống gửi email qua SMTP service.
-        \item Hệ thống cập nhật trạng thái invitation = "Sent".
-    \end{enumerate}
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Các luồng sự kiện con & Include bởi UC03.1 (Mời thành viên). \\\hline
-Luồng thay thế/ngoại lệ &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \textbf{\textcolor{red}{E1}} -- Email gửi thất bại: Retry 3 lần, sau đó đánh dấu "Failed".
-
-    \textbf{\textcolor{red}{A1}} -- Gửi lại lời mời: Hủy token cũ, tạo token mới.
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Kết quả & Email mời được gửi thành công đến người nhận. \\\hline
-\end{longtblr}
-\end{adjustwidth}
-
-\vspace{1em}
-
-\textbf{UC03.6 - Cấp quyền Owner}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.6\textwidth]{images/uc03_6_grant_owner.png}
-    \caption{Sơ đồ use case chức năng cấp quyền Owner}
-    \label{fig:uc03_6_grant_owner}
-\end{figure}
-
-\begin{adjustwidth}{-1.5cm}{-0.5cm}
-\begin{longtblr}[
-    caption = {Đặc tả use case UC03.6 - Cấp quyền Owner},
-    label = {tab:uc03_6},
-]{
-    colspec={|l|p{.7\linewidth}|}
-}
-\hline
-\textbf{Tên chức năng} & \textbf{Cấp quyền Owner} \\\hline
-ID & UC03.6 \\\hline
-Người sử dụng & Workspace Owner \\\hline
-Mức độ cần thiết & Bắt buộc \\\hline
-Phân loại & Cao \\\hline
-Các thành phần tham gia & + \textbf{Workspace Owner:} Muốn nâng cấp một Member thành Owner để chia sẻ quyền quản lý. \\\hline
-Mô tả tóm tắt & Chức năng cho phép Owner hiện tại cấp quyền Owner cho một Member. \\\hline
-Trigger & Owner chọn "Cấp quyền Owner" cho một Member. \\\hline
-Kiểu sự kiện & External. \\\hline
-Luồng xử lý bình thường &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \begin{enumerate}
-        \item Owner chọn thành viên cần cấp quyền.
-        \item Hệ thống kiểm tra role hiện tại là Member.
-        \item Owner chọn "Cấp quyền Owner".
-        \item Hệ thống hiển thị cảnh báo về quyền hạn của Owner.
-        \item Owner xác nhận.
-        \item Hệ thống cập nhật role = Owner.
-        \item Hệ thống gửi email thông báo cho thành viên.
-        \item Hệ thống ghi audit log.
-    \end{enumerate}
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Các luồng sự kiện con & Extend từ UC03.3 (Phân quyền). \\\hline
-Luồng thay thế/ngoại lệ & N/A \\\hline
-Kết quả & Member được nâng cấp thành Owner với đầy đủ quyền quản lý. \\\hline
-\end{longtblr}
-\end{adjustwidth}
-
-\vspace{1em}
-
-\textbf{UC03.7 - Thu hồi quyền Owner}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.6\textwidth]{images/uc03_7_revoke_owner.png}
-    \caption{Sơ đồ use case chức năng thu hồi quyền Owner}
-    \label{fig:uc03_7_revoke_owner}
-\end{figure}
-
-\begin{adjustwidth}{-1.5cm}{-0.5cm}
-\begin{longtblr}[
-    caption = {Đặc tả use case UC03.7 - Thu hồi quyền Owner},
-    label = {tab:uc03_7},
-]{
-    colspec={|l|p{.7\linewidth}|}
-}
-\hline
-\textbf{Tên chức năng} & \textbf{Thu hồi quyền Owner} \\\hline
-ID & UC03.7 \\\hline
-Người sử dụng & Workspace Owner \\\hline
-Mức độ cần thiết & Bắt buộc \\\hline
-Phân loại & Cao \\\hline
-Các thành phần tham gia & + \textbf{Workspace Owner:} Muốn hạ cấp một Owner khác thành Member. \\\hline
-Mô tả tóm tắt & Chức năng cho phép Owner thu hồi quyền Owner của một Owner khác. \\\hline
-Trigger & Owner chọn "Thu hồi quyền Owner" cho một Owner khác. \\\hline
-Kiểu sự kiện & External. \\\hline
-Luồng xử lý bình thường &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \begin{enumerate}
-        \item Owner chọn Owner cần thu hồi quyền.
-        \item Hệ thống kiểm tra số lượng Owner trong workspace.
-        \item Owner chọn "Thu hồi quyền Owner".
-        \item Hệ thống hiển thị xác nhận.
-        \item Owner xác nhận.
-        \item Hệ thống cập nhật role = Member.
-        \item Hệ thống gửi email thông báo.
-        \item Hệ thống ghi audit log.
-    \end{enumerate}
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Các luồng sự kiện con & Extend từ UC03.3 (Phân quyền). \\\hline
-Luồng thay thế/ngoại lệ &
-\begin{minipage}{\linewidth}
-    \vskip 4pt
-    \textbf{\textcolor{red}{E1}} -- Chỉ còn 1 Owner: Không cho phép thu hồi, hiển thị lỗi.
-    \vskip 1pt
-\end{minipage}
-\\\hline
-Kết quả & Owner bị hạ cấp thành Member và mất quyền quản lý. \\\hline
-\end{longtblr}
-\end{adjustwidth}

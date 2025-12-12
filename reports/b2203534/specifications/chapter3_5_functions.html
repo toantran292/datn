@@ -2,765 +2,602 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3.5. Thiết kế theo chức năng - SaaS Platform</title>
+    <title>Chương 3.5 - Thiết kế giao diện chi tiết</title>
     <style>
-        body {
-            font-family: 'Times New Roman', Times, serif;
-            font-size: 13pt;
-            line-height: 1.5;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 40px;
-            text-align: justify;
-        }
-        h2 {
-            font-size: 14pt;
-            font-weight: bold;
-            margin-top: 24pt;
-            margin-bottom: 12pt;
-        }
-        h3 {
-            font-size: 13pt;
-            font-weight: bold;
-            font-style: italic;
-            margin-top: 18pt;
-            margin-bottom: 10pt;
-        }
-        p {
-            margin-bottom: 12pt;
-            text-indent: 1.27cm;
-        }
-        p.no-indent {
-            text-indent: 0;
-        }
-        .section-number {
-            font-weight: bold;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 12pt 0;
-            font-size: 12pt;
-        }
-        th, td {
-            border: 1px solid #000;
-            padding: 8px;
-            text-align: center;
-        }
-        th {
-            background-color: #f0f0f0;
-            font-weight: bold;
-        }
-        td:first-child {
-            width: 40px;
-        }
-        .table-caption {
-            font-style: italic;
-            font-size: 12pt;
-            text-align: center;
-            margin-top: 8pt;
-            margin-bottom: 16pt;
-            font-weight: bold;
-        }
-        .figure {
-            text-align: center;
-            margin: 16pt 0;
-        }
-        .figure img {
-            max-width: 100%;
-            height: auto;
-        }
-        .figure-caption {
-            font-style: italic;
-            font-size: 12pt;
-            margin-top: 8pt;
-            text-align: center;
-            font-weight: bold;
-        }
-        .function-section {
-            page-break-inside: avoid;
-            margin-bottom: 24pt;
-        }
+        body { font-family: 'Times New Roman', serif; font-size: 13pt; max-width: 750px; margin: 0 auto; padding: 20px; line-height: 1.6; }
+        h2 { font-size: 16pt; margin: 30px 0 20px; text-align: center; }
+        h3 { font-size: 14pt; margin: 28px 0 16px; }
+        h4 { font-size: 13pt; margin: 20px 0 12px; font-style: italic; }
+        table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 12pt; }
+        th, td { border: 1px solid #000; padding: 8px; text-align: left; vertical-align: top; }
+        th { background: #f5f5f5; font-weight: bold; }
+        .caption { font-style: italic; font-weight: bold; text-align: center; margin: 10px 0; font-size: 11pt; }
+        .figure { text-align: center; margin: 20px 0; }
+        .figure img { max-width: 85%; border: 1px solid #ddd; }
+        ul { margin: 8px 0 8px 20px; }
+        .center { text-align: center; }
+        .page-break { page-break-after: always; }
+        p { text-align: justify; }
     </style>
 </head>
 <body>
 
-<h2><span class="section-number">3.5.</span> Thiết kế theo chức năng</h2>
+<h2>3.5. THIẾT KẾ GIAO DIỆN CHI TIẾT</h2>
 
-<!-- ==================== NHÓM XÁC THỰC ==================== -->
+<p>Phần này trình bày thiết kế giao diện chi tiết cho từng chức năng của hệ thống, bao gồm: giao diện phác thảo, bảng mô tả các thành phần, bảng dữ liệu liên quan và sơ đồ hoạt động.</p>
 
-<!-- 3.5.1 Đăng ký -->
-<div class="function-section">
-<h3><span class="section-number">3.5.1.</span> Chức năng đăng ký</h3>
-<p class="no-indent">- Mục đích: Cho phép khách hàng tạo một tài khoản mới để có thể truy cập và sử dụng đầy đủ các chức năng dành cho thành viên.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<!-- UC01: Đăng ký tài khoản -->
+<h3>3.5.1. Chức năng đăng ký tài khoản (UC01)</h3>
+
+<ul><li><b>Mục đích:</b> Cho phép khách truy cập tạo tài khoản mới để sử dụng các chức năng của hệ thống.</li></ul>
+
+<ul><li><b>Giao diện:</b></li></ul>
+<div class="figure"><img src="uc01_02_auth_ui.png" alt="UI Đăng ký"></div>
+<p class="caption">Hình 3.1: Giao diện phác thảo chức năng đăng ký tài khoản</p>
+
+<ul><li><b>Các thành phần trong giao diện:</b></li></ul>
+<p class="caption">Bảng 3.1: Các thành phần trong giao diện đăng ký tài khoản</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>User</td><td>X</td><td></td><td></td><td>X</td></tr>
+    <tr><th width="8%">STT</th><th width="18%">Loại</th><th width="24%">Tên thành phần</th><th>Nội dung thực hiện</th></tr>
+    <tr><td class="center">1</td><td>Textbox</td><td>Full name</td><td>Nhập họ và tên đầy đủ của người dùng</td></tr>
+    <tr><td class="center">2</td><td>Textbox</td><td>Email address</td><td>Nhập địa chỉ email dùng để đăng ký và đăng nhập</td></tr>
+    <tr><td class="center">3</td><td>Textbox</td><td>Password</td><td>Nhập mật khẩu (tối thiểu 8 ký tự, bao gồm chữ và số)</td></tr>
+    <tr><td class="center">4</td><td>Textbox</td><td>Confirm password</td><td>Xác nhận lại mật khẩu đã nhập</td></tr>
+    <tr><td class="center">5</td><td>Button</td><td>Create Account</td><td>Gửi thông tin đăng ký đến hệ thống</td></tr>
+    <tr><td class="center">6</td><td>Button</td><td>Google</td><td>Đăng ký nhanh bằng tài khoản Google OAuth 2.0</td></tr>
 </table>
-<p class="table-caption">Bảng 3.1. Bảng dữ liệu được dùng cho chức năng đăng ký</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_register.png" alt="Activity Diagram - Đăng ký">
-    <p class="figure-caption">Hình 3.22. Sơ đồ hoạt động của chức năng đăng ký</p>
-</div>
-</div>
 
-<!-- 3.5.2 Đăng nhập -->
-<div class="function-section">
-<h3><span class="section-number">3.5.2.</span> Chức năng đăng nhập</h3>
-<p class="no-indent">- Mục đích: Cho phép người dùng đã có tài khoản đăng nhập vào hệ thống để sử dụng các chức năng được phân quyền.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Dữ liệu được dùng:</b></li></ul>
+<p class="caption">Bảng 3.2: Dữ liệu cho chức năng đăng ký tài khoản</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>User</td><td></td><td></td><td></td><td>X</td></tr>
-    <tr><td>2</td><td>UserSession</td><td>X</td><td></td><td></td><td></td></tr>
+    <tr><th width="8%">STT</th><th width="28%">Tên bảng</th><th width="14%">Thêm</th><th width="14%">Sửa</th><th width="14%">Xóa</th><th width="22%">Truy vấn</th></tr>
+    <tr><td class="center">1</td><td>User</td><td class="center">✓</td><td class="center"></td><td class="center"></td><td class="center">✓</td></tr>
+    <tr><td class="center">2</td><td>VerificationToken</td><td class="center">✓</td><td class="center"></td><td class="center"></td><td class="center"></td></tr>
 </table>
-<p class="table-caption">Bảng 3.2. Bảng dữ liệu được dùng cho chức năng đăng nhập</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_login.png" alt="Activity Diagram - Đăng nhập">
-    <p class="figure-caption">Hình 3.23. Sơ đồ hoạt động của chức năng đăng nhập</p>
-</div>
-</div>
 
-<!-- 3.5.3 Đăng xuất -->
-<div class="function-section">
-<h3><span class="section-number">3.5.3.</span> Chức năng đăng xuất</h3>
-<p class="no-indent">- Mục đích: Cho phép người dùng đăng xuất khỏi hệ thống một cách an toàn, hủy bỏ phiên làm việc hiện tại.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Xử lý:</b></li></ul>
+<div class="figure"><img src="uc01_register_activity.png" alt="Activity Đăng ký"></div>
+<p class="caption">Hình 3.2: Sơ đồ hoạt động chức năng đăng ký tài khoản</p>
+
+<div class="page-break"></div>
+
+<!-- UC02: Đăng nhập -->
+<h3>3.5.2. Chức năng đăng nhập (UC02)</h3>
+
+<ul><li><b>Mục đích:</b> Cho phép người dùng đã có tài khoản xác thực để truy cập vào hệ thống.</li></ul>
+
+<ul><li><b>Giao diện:</b></li></ul>
+<div class="figure"><img src="uc01_02_auth_ui.png" alt="UI Đăng nhập"></div>
+<p class="caption">Hình 3.3: Giao diện phác thảo chức năng đăng nhập</p>
+
+<ul><li><b>Các thành phần trong giao diện:</b></li></ul>
+<p class="caption">Bảng 3.3: Các thành phần trong giao diện đăng nhập</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>UserSession</td><td></td><td></td><td>X</td><td>X</td></tr>
-    <tr><td>2</td><td>AuditLog</td><td>X</td><td></td><td></td><td></td></tr>
+    <tr><th width="8%">STT</th><th width="18%">Loại</th><th width="24%">Tên thành phần</th><th>Nội dung thực hiện</th></tr>
+    <tr><td class="center">1</td><td>Textbox</td><td>Email address</td><td>Nhập địa chỉ email đã đăng ký</td></tr>
+    <tr><td class="center">2</td><td>Textbox</td><td>Password</td><td>Nhập mật khẩu tài khoản</td></tr>
+    <tr><td class="center">3</td><td>Link</td><td>Forget password?</td><td>Chuyển đến trang khôi phục mật khẩu</td></tr>
+    <tr><td class="center">4</td><td>Button</td><td>Sign In</td><td>Gửi thông tin đăng nhập để xác thực</td></tr>
+    <tr><td class="center">5</td><td>Button</td><td>Google</td><td>Đăng nhập nhanh bằng tài khoản Google OAuth 2.0</td></tr>
 </table>
-<p class="table-caption">Bảng 3.3. Bảng dữ liệu được dùng cho chức năng đăng xuất</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_logout.png" alt="Activity Diagram - Đăng xuất">
-    <p class="figure-caption">Hình 3.24. Sơ đồ hoạt động của chức năng đăng xuất</p>
-</div>
-</div>
 
-<!-- 3.5.4 Quên mật khẩu -->
-<div class="function-section">
-<h3><span class="section-number">3.5.4.</span> Chức năng quên mật khẩu</h3>
-<p class="no-indent">- Mục đích: Cho phép người dùng khôi phục mật khẩu khi quên thông qua email đã đăng ký.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Dữ liệu được dùng:</b></li></ul>
+<p class="caption">Bảng 3.4: Dữ liệu cho chức năng đăng nhập</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>User</td><td></td><td>X</td><td></td><td>X</td></tr>
+    <tr><th width="8%">STT</th><th width="28%">Tên bảng</th><th width="14%">Thêm</th><th width="14%">Sửa</th><th width="14%">Xóa</th><th width="22%">Truy vấn</th></tr>
+    <tr><td class="center">1</td><td>User</td><td class="center"></td><td class="center">✓</td><td class="center"></td><td class="center">✓</td></tr>
+    <tr><td class="center">2</td><td>Session</td><td class="center">✓</td><td class="center"></td><td class="center"></td><td class="center"></td></tr>
+    <tr><td class="center">3</td><td>AuditLog</td><td class="center">✓</td><td class="center"></td><td class="center"></td><td class="center"></td></tr>
 </table>
-<p class="table-caption">Bảng 3.4. Bảng dữ liệu được dùng cho chức năng quên mật khẩu</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_forgot_password.png" alt="Activity Diagram - Quên mật khẩu">
-    <p class="figure-caption">Hình 3.25. Sơ đồ hoạt động của chức năng quên mật khẩu</p>
-</div>
-</div>
 
-<!-- 3.5.5 Đổi mật khẩu -->
-<div class="function-section">
-<h3><span class="section-number">3.5.5.</span> Chức năng đổi mật khẩu</h3>
-<p class="no-indent">- Mục đích: Cho phép người dùng thay đổi mật khẩu hiện tại sang mật khẩu mới để tăng cường bảo mật.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Xử lý:</b></li></ul>
+<div class="figure"><img src="uc02_login_activity.png" alt="Activity Đăng nhập"></div>
+<p class="caption">Hình 3.4: Sơ đồ hoạt động chức năng đăng nhập</p>
+
+<div class="page-break"></div>
+
+<!-- UC03: Đăng xuất -->
+<h3>3.5.3. Chức năng đăng xuất (UC03)</h3>
+
+<ul><li><b>Mục đích:</b> Cho phép người dùng kết thúc phiên làm việc và thoát khỏi hệ thống một cách an toàn.</li></ul>
+
+<ul><li><b>Giao diện:</b></li></ul>
+<p>Chức năng đăng xuất được tích hợp trong menu người dùng (avatar dropdown) ở góc trên bên phải của mọi trang trong hệ thống.</p>
+
+<ul><li><b>Các thành phần trong giao diện:</b></li></ul>
+<p class="caption">Bảng 3.5: Các thành phần trong giao diện đăng xuất</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>User</td><td></td><td>X</td><td></td><td>X</td></tr>
-    <tr><td>2</td><td>AuditLog</td><td>X</td><td></td><td></td><td></td></tr>
+    <tr><th width="8%">STT</th><th width="18%">Loại</th><th width="24%">Tên thành phần</th><th>Nội dung thực hiện</th></tr>
+    <tr><td class="center">1</td><td>Button</td><td>Logout / Đăng xuất</td><td>Kết thúc phiên đăng nhập và chuyển về trang chủ</td></tr>
 </table>
-<p class="table-caption">Bảng 3.5. Bảng dữ liệu được dùng cho chức năng đổi mật khẩu</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_change_password.png" alt="Activity Diagram - Đổi mật khẩu">
-    <p class="figure-caption">Hình 3.26. Sơ đồ hoạt động của chức năng đổi mật khẩu</p>
-</div>
-</div>
 
-<!-- 3.5.6 Xác thực tài khoản -->
-<div class="function-section">
-<h3><span class="section-number">3.5.6.</span> Chức năng xác thực tài khoản</h3>
-<p class="no-indent">- Mục đích: Cho phép người dùng xác thực email đăng ký thông qua link được gửi đến email.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Dữ liệu được dùng:</b></li></ul>
+<p class="caption">Bảng 3.6: Dữ liệu cho chức năng đăng xuất</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>User</td><td></td><td>X</td><td></td><td>X</td></tr>
-    <tr><td>2</td><td>AuditLog</td><td>X</td><td></td><td></td><td></td></tr>
+    <tr><th width="8%">STT</th><th width="28%">Tên bảng</th><th width="14%">Thêm</th><th width="14%">Sửa</th><th width="14%">Xóa</th><th width="22%">Truy vấn</th></tr>
+    <tr><td class="center">1</td><td>Session</td><td class="center"></td><td class="center"></td><td class="center">✓</td><td class="center">✓</td></tr>
+    <tr><td class="center">2</td><td>AuditLog</td><td class="center">✓</td><td class="center"></td><td class="center"></td><td class="center"></td></tr>
 </table>
-<p class="table-caption">Bảng 3.6. Bảng dữ liệu được dùng cho chức năng xác thực tài khoản</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_verify_account.png" alt="Activity Diagram - Xác thực tài khoản">
-    <p class="figure-caption">Hình 3.27. Sơ đồ hoạt động của chức năng xác thực tài khoản</p>
-</div>
-</div>
 
-<!-- 3.5.7 Cập nhật thông tin cá nhân -->
-<div class="function-section">
-<h3><span class="section-number">3.5.7.</span> Chức năng cập nhật thông tin cá nhân</h3>
-<p class="no-indent">- Mục đích: Cho phép người dùng cập nhật thông tin cá nhân như họ tên, số điện thoại, ảnh đại diện.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Xử lý:</b></li></ul>
+<div class="figure"><img src="uc03_logout_activity.png" alt="Activity Đăng xuất"></div>
+<p class="caption">Hình 3.5: Sơ đồ hoạt động chức năng đăng xuất</p>
+
+<div class="page-break"></div>
+
+<!-- UC04: Quản lý mật khẩu -->
+<h3>3.5.4. Chức năng quản lý mật khẩu (UC04)</h3>
+
+<ul><li><b>Mục đích:</b> Cho phép người dùng đổi mật khẩu hoặc khôi phục mật khẩu khi quên.</li></ul>
+
+<ul><li><b>Giao diện:</b></li></ul>
+<div class="figure"><img src="uc04_password_ui.png" alt="UI Mật khẩu"></div>
+<p class="caption">Hình 3.6: Giao diện phác thảo chức năng quản lý mật khẩu</p>
+
+<ul><li><b>Các thành phần trong giao diện:</b></li></ul>
+<p class="caption">Bảng 3.7: Các thành phần trong giao diện quản lý mật khẩu</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>User</td><td></td><td>X</td><td></td><td>X</td></tr>
-    <tr><td>2</td><td>AuditLog</td><td>X</td><td></td><td></td><td></td></tr>
+    <tr><th width="8%">STT</th><th width="18%">Loại</th><th width="24%">Tên thành phần</th><th>Nội dung thực hiện</th></tr>
+    <tr><td class="center">1</td><td>Textbox</td><td>Email address</td><td>Nhập email để nhận link reset mật khẩu</td></tr>
+    <tr><td class="center">2</td><td>Button</td><td>Send Reset Link</td><td>Gửi email chứa link khôi phục mật khẩu</td></tr>
+    <tr><td class="center">3</td><td>Textbox</td><td>Current password</td><td>Nhập mật khẩu hiện tại (khi đổi mật khẩu)</td></tr>
+    <tr><td class="center">4</td><td>Textbox</td><td>New password</td><td>Nhập mật khẩu mới</td></tr>
+    <tr><td class="center">5</td><td>Textbox</td><td>Confirm password</td><td>Xác nhận mật khẩu mới</td></tr>
+    <tr><td class="center">6</td><td>Button</td><td>Update Password</td><td>Lưu mật khẩu mới vào hệ thống</td></tr>
 </table>
-<p class="table-caption">Bảng 3.7. Bảng dữ liệu được dùng cho chức năng cập nhật thông tin cá nhân</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_update_profile.png" alt="Activity Diagram - Cập nhật thông tin">
-    <p class="figure-caption">Hình 3.28. Sơ đồ hoạt động của chức năng cập nhật thông tin cá nhân</p>
-</div>
-</div>
 
-<!-- ==================== NHÓM WORKSPACE ==================== -->
-
-<!-- 3.5.8 Tạo Workspace -->
-<div class="function-section">
-<h3><span class="section-number">3.5.8.</span> Chức năng tạo Workspace</h3>
-<p class="no-indent">- Mục đích: Cho phép người dùng tạo một workspace mới để quản lý nhóm làm việc, tệp tin và báo cáo AI.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Dữ liệu được dùng:</b></li></ul>
+<p class="caption">Bảng 3.8: Dữ liệu cho chức năng quản lý mật khẩu</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>Workspace</td><td>X</td><td></td><td></td><td>X</td></tr>
-    <tr><td>2</td><td>Member</td><td>X</td><td></td><td></td><td></td></tr>
-    <tr><td>3</td><td>AuditLog</td><td>X</td><td></td><td></td><td></td></tr>
+    <tr><th width="8%">STT</th><th width="28%">Tên bảng</th><th width="14%">Thêm</th><th width="14%">Sửa</th><th width="14%">Xóa</th><th width="22%">Truy vấn</th></tr>
+    <tr><td class="center">1</td><td>User</td><td class="center"></td><td class="center">✓</td><td class="center"></td><td class="center">✓</td></tr>
+    <tr><td class="center">2</td><td>PasswordResetToken</td><td class="center">✓</td><td class="center"></td><td class="center">✓</td><td class="center">✓</td></tr>
+    <tr><td class="center">3</td><td>AuditLog</td><td class="center">✓</td><td class="center"></td><td class="center"></td><td class="center"></td></tr>
 </table>
-<p class="table-caption">Bảng 3.8. Bảng dữ liệu được dùng cho chức năng tạo Workspace</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_create_workspace.png" alt="Activity Diagram - Tạo Workspace">
-    <p class="figure-caption">Hình 3.29. Sơ đồ hoạt động của chức năng tạo Workspace</p>
-</div>
-</div>
 
-<!-- 3.5.9 Cấu hình Workspace -->
-<div class="function-section">
-<h3><span class="section-number">3.5.9.</span> Chức năng cấu hình Workspace</h3>
-<p class="no-indent">- Mục đích: Cho phép Owner hoặc Admin cấu hình thông tin workspace như tên, mô tả, logo, LLM provider mặc định.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Xử lý:</b></li></ul>
+<div class="figure"><img src="uc04_password_activity.png" alt="Activity Mật khẩu"></div>
+<p class="caption">Hình 3.7: Sơ đồ hoạt động chức năng quản lý mật khẩu</p>
+
+<div class="page-break"></div>
+
+<!-- UC05: Cập nhật thông tin cá nhân -->
+<h3>3.5.5. Chức năng cập nhật thông tin cá nhân (UC05)</h3>
+
+<ul><li><b>Mục đích:</b> Cho phép người dùng xem và chỉnh sửa thông tin cá nhân của mình.</li></ul>
+
+<ul><li><b>Giao diện:</b></li></ul>
+<div class="figure"><img src="uc05_profile_ui.png" alt="UI Profile"></div>
+<p class="caption">Hình 3.8: Giao diện phác thảo chức năng cập nhật thông tin cá nhân</p>
+
+<ul><li><b>Các thành phần trong giao diện:</b></li></ul>
+<p class="caption">Bảng 3.9: Các thành phần trong giao diện cập nhật thông tin cá nhân</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>Workspace</td><td></td><td>X</td><td></td><td>X</td></tr>
-    <tr><td>2</td><td>Member</td><td></td><td></td><td></td><td>X</td></tr>
-    <tr><td>3</td><td>AuditLog</td><td>X</td><td></td><td></td><td></td></tr>
+    <tr><th width="8%">STT</th><th width="18%">Loại</th><th width="24%">Tên thành phần</th><th>Nội dung thực hiện</th></tr>
+    <tr><td class="center">1</td><td>Navigation</td><td>Sidebar Menu</td><td>Điều hướng giữa các tab: Personal Info, Password, Notifications, Sessions</td></tr>
+    <tr><td class="center">2</td><td>Section</td><td>Personal Information</td><td>Hiển thị thông tin: họ tên, email, số điện thoại, role, trạng thái xác thực</td></tr>
+    <tr><td class="center">3</td><td>Section</td><td>Linked Accounts</td><td>Hiển thị các tài khoản liên kết (Google OAuth)</td></tr>
+    <tr><td class="center">4</td><td>Button</td><td>Edit</td><td>Mở form chỉnh sửa thông tin cá nhân</td></tr>
 </table>
-<p class="table-caption">Bảng 3.9. Bảng dữ liệu được dùng cho chức năng cấu hình Workspace</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_config_workspace.png" alt="Activity Diagram - Cấu hình Workspace">
-    <p class="figure-caption">Hình 3.30. Sơ đồ hoạt động của chức năng cấu hình Workspace</p>
-</div>
-</div>
 
-<!-- 3.5.10 Xem danh sách Workspace -->
-<div class="function-section">
-<h3><span class="section-number">3.5.10.</span> Chức năng xem danh sách Workspace</h3>
-<p class="no-indent">- Mục đích: Cho phép người dùng xem danh sách tất cả workspace mà mình là thành viên.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Dữ liệu được dùng:</b></li></ul>
+<p class="caption">Bảng 3.10: Dữ liệu cho chức năng cập nhật thông tin cá nhân</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>Workspace</td><td></td><td></td><td></td><td>X</td></tr>
-    <tr><td>2</td><td>Member</td><td></td><td></td><td></td><td>X</td></tr>
+    <tr><th width="8%">STT</th><th width="28%">Tên bảng</th><th width="14%">Thêm</th><th width="14%">Sửa</th><th width="14%">Xóa</th><th width="22%">Truy vấn</th></tr>
+    <tr><td class="center">1</td><td>User</td><td class="center"></td><td class="center">✓</td><td class="center"></td><td class="center">✓</td></tr>
+    <tr><td class="center">2</td><td>LinkedAccount</td><td class="center"></td><td class="center"></td><td class="center"></td><td class="center">✓</td></tr>
+    <tr><td class="center">3</td><td>AuditLog</td><td class="center">✓</td><td class="center"></td><td class="center"></td><td class="center"></td></tr>
 </table>
-<p class="table-caption">Bảng 3.10. Bảng dữ liệu được dùng cho chức năng xem danh sách Workspace</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_view_workspaces.png" alt="Activity Diagram - Xem danh sách Workspace">
-    <p class="figure-caption">Hình 3.31. Sơ đồ hoạt động của chức năng xem danh sách Workspace</p>
-</div>
-</div>
 
-<!-- 3.5.11 Khóa Workspace -->
-<div class="function-section">
-<h3><span class="section-number">3.5.11.</span> Chức năng khóa Workspace</h3>
-<p class="no-indent">- Mục đích: Cho phép Super Admin khóa một workspace khi vi phạm chính sách hoặc có yêu cầu bảo mật.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Xử lý:</b></li></ul>
+<div class="figure"><img src="uc05_profile_activity.png" alt="Activity Profile"></div>
+<p class="caption">Hình 3.9: Sơ đồ hoạt động chức năng cập nhật thông tin cá nhân</p>
+
+<div class="page-break"></div>
+
+<!-- UC06: Tạo Workspace -->
+<h3>3.5.6. Chức năng tạo Workspace (UC06)</h3>
+
+<ul><li><b>Mục đích:</b> Cho phép người dùng tạo không gian làm việc mới để quản lý nhóm và tệp tin.</li></ul>
+
+<ul><li><b>Giao diện:</b></li></ul>
+<div class="figure"><img src="uc06_workspaces_ui.png" alt="UI Workspaces"></div>
+<p class="caption">Hình 3.10: Giao diện phác thảo chức năng quản lý Workspaces</p>
+
+<ul><li><b>Các thành phần trong giao diện:</b></li></ul>
+<p class="caption">Bảng 3.11: Các thành phần trong giao diện tạo Workspace</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>Workspace</td><td></td><td>X</td><td></td><td>X</td></tr>
-    <tr><td>2</td><td>Notification</td><td>X</td><td></td><td></td><td></td></tr>
-    <tr><td>3</td><td>AuditLog</td><td>X</td><td></td><td></td><td></td></tr>
+    <tr><th width="8%">STT</th><th width="18%">Loại</th><th width="24%">Tên thành phần</th><th>Nội dung thực hiện</th></tr>
+    <tr><td class="center">1</td><td>Textbox</td><td>Search</td><td>Tìm kiếm workspace theo tên</td></tr>
+    <tr><td class="center">2</td><td>Button</td><td>+ Create Workspace</td><td>Mở form tạo workspace mới</td></tr>
+    <tr><td class="center">3</td><td>Card</td><td>Workspace Card</td><td>Hiển thị thông tin workspace: tên, số thành viên, role của user</td></tr>
+    <tr><td class="center">4</td><td>Badge</td><td>Role Badge</td><td>Hiển thị vai trò: Owner, Admin, Member</td></tr>
+    <tr><td class="center">5</td><td>Card</td><td>Create New Card</td><td>Card placeholder để tạo workspace mới</td></tr>
 </table>
-<p class="table-caption">Bảng 3.11. Bảng dữ liệu được dùng cho chức năng khóa Workspace</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_lock_workspace.png" alt="Activity Diagram - Khóa Workspace">
-    <p class="figure-caption">Hình 3.32. Sơ đồ hoạt động của chức năng khóa Workspace</p>
-</div>
-</div>
 
-<!-- 3.5.12 Mở khóa Workspace -->
-<div class="function-section">
-<h3><span class="section-number">3.5.12.</span> Chức năng mở khóa Workspace</h3>
-<p class="no-indent">- Mục đích: Cho phép Super Admin mở khóa một workspace đã bị khóa trước đó.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Dữ liệu được dùng:</b></li></ul>
+<p class="caption">Bảng 3.12: Dữ liệu cho chức năng tạo Workspace</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>Workspace</td><td></td><td>X</td><td></td><td>X</td></tr>
-    <tr><td>2</td><td>Notification</td><td>X</td><td></td><td></td><td></td></tr>
-    <tr><td>3</td><td>AuditLog</td><td>X</td><td></td><td></td><td></td></tr>
+    <tr><th width="8%">STT</th><th width="28%">Tên bảng</th><th width="14%">Thêm</th><th width="14%">Sửa</th><th width="14%">Xóa</th><th width="22%">Truy vấn</th></tr>
+    <tr><td class="center">1</td><td>Workspace</td><td class="center">✓</td><td class="center"></td><td class="center"></td><td class="center">✓</td></tr>
+    <tr><td class="center">2</td><td>WorkspaceMember</td><td class="center">✓</td><td class="center"></td><td class="center"></td><td class="center">✓</td></tr>
+    <tr><td class="center">3</td><td>AuditLog</td><td class="center">✓</td><td class="center"></td><td class="center"></td><td class="center"></td></tr>
 </table>
-<p class="table-caption">Bảng 3.12. Bảng dữ liệu được dùng cho chức năng mở khóa Workspace</p>
-<p class="no-indent">- Xử lý: Tương tự như chức năng khóa Workspace (Hình 3.32), chỉ khác ở việc cập nhật trạng thái từ locked sang active.</p>
-</div>
 
-<!-- 3.5.13 Xem Dashboard -->
-<div class="function-section">
-<h3><span class="section-number">3.5.13.</span> Chức năng xem Dashboard</h3>
-<p class="no-indent">- Mục đích: Cho phép thành viên xem tổng quan hoạt động của workspace bao gồm thống kê và biểu đồ.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Xử lý:</b></li></ul>
+<div class="figure"><img src="uc06_create_workspace_activity.png" alt="Activity Create Workspace"></div>
+<p class="caption">Hình 3.11: Sơ đồ hoạt động chức năng tạo Workspace</p>
+
+<div class="page-break"></div>
+
+<!-- UC07: Cấu hình Workspace -->
+<h3>3.5.7. Chức năng cấu hình Workspace (UC07)</h3>
+
+<ul><li><b>Mục đích:</b> Cho phép Owner/Admin cấu hình các thiết lập của workspace như thông tin cơ bản, LLM provider mặc định.</li></ul>
+
+<ul><li><b>Giao diện:</b></li></ul>
+<div class="figure"><img src="uc07_settings_ui.png" alt="UI Settings"></div>
+<p class="caption">Hình 3.12: Giao diện phác thảo chức năng cấu hình Workspace</p>
+
+<ul><li><b>Các thành phần trong giao diện:</b></li></ul>
+<p class="caption">Bảng 3.13: Các thành phần trong giao diện cấu hình Workspace</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>Workspace</td><td></td><td></td><td></td><td>X</td></tr>
-    <tr><td>2</td><td>Member</td><td></td><td></td><td></td><td>X</td></tr>
-    <tr><td>3</td><td>File</td><td></td><td></td><td></td><td>X</td></tr>
-    <tr><td>4</td><td>AIReport</td><td></td><td></td><td></td><td>X</td></tr>
-    <tr><td>5</td><td>AuditLog</td><td></td><td></td><td></td><td>X</td></tr>
+    <tr><th width="8%">STT</th><th width="18%">Loại</th><th width="24%">Tên thành phần</th><th>Nội dung thực hiện</th></tr>
+    <tr><td class="center">1</td><td>Tab</td><td>Settings Tabs</td><td>Chuyển đổi giữa các tab: General, AI Settings, Permissions, Danger</td></tr>
+    <tr><td class="center">2</td><td>Section</td><td>Basic Information</td><td>Cấu hình logo, tên workspace, slug</td></tr>
+    <tr><td class="center">3</td><td>Dropdown</td><td>Default LLM Provider</td><td>Chọn LLM mặc định: OpenAI, Anthropic, Google</td></tr>
+    <tr><td class="center">4</td><td>Button</td><td>Save</td><td>Lưu các thay đổi cấu hình</td></tr>
 </table>
-<p class="table-caption">Bảng 3.13. Bảng dữ liệu được dùng cho chức năng xem Dashboard</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_view_dashboard.png" alt="Activity Diagram - Xem Dashboard">
-    <p class="figure-caption">Hình 3.33. Sơ đồ hoạt động của chức năng xem Dashboard</p>
-</div>
-</div>
 
-<!-- 3.5.14 Xem Audit Log -->
-<div class="function-section">
-<h3><span class="section-number">3.5.14.</span> Chức năng xem Audit Log</h3>
-<p class="no-indent">- Mục đích: Cho phép Owner hoặc Admin xem lịch sử hoạt động trong workspace để theo dõi và kiểm tra.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Dữ liệu được dùng:</b></li></ul>
+<p class="caption">Bảng 3.14: Dữ liệu cho chức năng cấu hình Workspace</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>AuditLog</td><td></td><td></td><td></td><td>X</td></tr>
-    <tr><td>2</td><td>Member</td><td></td><td></td><td></td><td>X</td></tr>
-    <tr><td>3</td><td>User</td><td></td><td></td><td></td><td>X</td></tr>
+    <tr><th width="8%">STT</th><th width="28%">Tên bảng</th><th width="14%">Thêm</th><th width="14%">Sửa</th><th width="14%">Xóa</th><th width="22%">Truy vấn</th></tr>
+    <tr><td class="center">1</td><td>Workspace</td><td class="center"></td><td class="center">✓</td><td class="center"></td><td class="center">✓</td></tr>
+    <tr><td class="center">2</td><td>WorkspaceSettings</td><td class="center"></td><td class="center">✓</td><td class="center"></td><td class="center">✓</td></tr>
+    <tr><td class="center">3</td><td>AuditLog</td><td class="center">✓</td><td class="center"></td><td class="center"></td><td class="center"></td></tr>
 </table>
-<p class="table-caption">Bảng 3.14. Bảng dữ liệu được dùng cho chức năng xem Audit Log</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_view_audit_log.png" alt="Activity Diagram - Xem Audit Log">
-    <p class="figure-caption">Hình 3.34. Sơ đồ hoạt động của chức năng xem Audit Log</p>
-</div>
-</div>
 
-<!-- ==================== NHÓM THÀNH VIÊN ==================== -->
+<ul><li><b>Xử lý:</b></li></ul>
+<div class="figure"><img src="uc07_config_workspace_activity.png" alt="Activity Config"></div>
+<p class="caption">Hình 3.13: Sơ đồ hoạt động chức năng cấu hình Workspace</p>
 
-<!-- 3.5.15 Mời thành viên -->
-<div class="function-section">
-<h3><span class="section-number">3.5.15.</span> Chức năng mời thành viên</h3>
-<p class="no-indent">- Mục đích: Cho phép Owner hoặc Admin gửi lời mời cho người dùng khác tham gia workspace.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<div class="page-break"></div>
+
+<!-- UC08: Khóa/Mở khóa Workspace -->
+<h3>3.5.8. Chức năng khóa/mở khóa Workspace (UC08)</h3>
+
+<ul><li><b>Mục đích:</b> Cho phép Super Admin khóa hoặc mở khóa workspace khi cần thiết (vi phạm chính sách, bảo trì...).</li></ul>
+
+<ul><li><b>Giao diện:</b></li></ul>
+<div class="figure"><img src="uc08_admin_ui.png" alt="UI Admin"></div>
+<p class="caption">Hình 3.14: Giao diện phác thảo Admin Panel</p>
+
+<ul><li><b>Các thành phần trong giao diện:</b></li></ul>
+<p class="caption">Bảng 3.15: Các thành phần trong giao diện Admin Panel</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>Member</td><td></td><td></td><td></td><td>X</td></tr>
-    <tr><td>2</td><td>Invitation</td><td>X</td><td></td><td></td><td></td></tr>
-    <tr><td>3</td><td>Notification</td><td>X</td><td></td><td></td><td></td></tr>
-    <tr><td>4</td><td>AuditLog</td><td>X</td><td></td><td></td><td></td></tr>
+    <tr><th width="8%">STT</th><th width="18%">Loại</th><th width="24%">Tên thành phần</th><th>Nội dung thực hiện</th></tr>
+    <tr><td class="center">1</td><td>Card</td><td>Stats Cards</td><td>Hiển thị thống kê: Total Users, Workspaces, AI Reports, Storage</td></tr>
+    <tr><td class="center">2</td><td>Table</td><td>Workspaces Table</td><td>Danh sách workspace với thông tin: tên, số thành viên, trạng thái</td></tr>
+    <tr><td class="center">3</td><td>Button</td><td>Lock</td><td>Khóa workspace đang hoạt động</td></tr>
+    <tr><td class="center">4</td><td>Button</td><td>Unlock</td><td>Mở khóa workspace đã bị khóa</td></tr>
 </table>
-<p class="table-caption">Bảng 3.15. Bảng dữ liệu được dùng cho chức năng mời thành viên</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_invite_member.png" alt="Activity Diagram - Mời thành viên">
-    <p class="figure-caption">Hình 3.35. Sơ đồ hoạt động của chức năng mời thành viên</p>
-</div>
-</div>
 
-<!-- 3.5.16 Xóa thành viên -->
-<div class="function-section">
-<h3><span class="section-number">3.5.16.</span> Chức năng xóa thành viên</h3>
-<p class="no-indent">- Mục đích: Cho phép Owner hoặc Admin xóa một thành viên khỏi workspace.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Dữ liệu được dùng:</b></li></ul>
+<p class="caption">Bảng 3.16: Dữ liệu cho chức năng khóa/mở khóa Workspace</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>Member</td><td></td><td>X</td><td></td><td>X</td></tr>
-    <tr><td>2</td><td>Notification</td><td>X</td><td></td><td></td><td></td></tr>
-    <tr><td>3</td><td>AuditLog</td><td>X</td><td></td><td></td><td></td></tr>
+    <tr><th width="8%">STT</th><th width="28%">Tên bảng</th><th width="14%">Thêm</th><th width="14%">Sửa</th><th width="14%">Xóa</th><th width="22%">Truy vấn</th></tr>
+    <tr><td class="center">1</td><td>Workspace</td><td class="center"></td><td class="center">✓</td><td class="center"></td><td class="center">✓</td></tr>
+    <tr><td class="center">2</td><td>AuditLog</td><td class="center">✓</td><td class="center"></td><td class="center"></td><td class="center"></td></tr>
 </table>
-<p class="table-caption">Bảng 3.16. Bảng dữ liệu được dùng cho chức năng xóa thành viên</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_remove_member.png" alt="Activity Diagram - Xóa thành viên">
-    <p class="figure-caption">Hình 3.36. Sơ đồ hoạt động của chức năng xóa thành viên</p>
-</div>
-</div>
 
-<!-- 3.5.17 Phân quyền thành viên -->
-<div class="function-section">
-<h3><span class="section-number">3.5.17.</span> Chức năng phân quyền thành viên</h3>
-<p class="no-indent">- Mục đích: Cho phép Owner hoặc Admin thay đổi vai trò của thành viên trong workspace.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Xử lý:</b></li></ul>
+<div class="figure"><img src="uc08_workspace_status_activity.png" alt="Activity Lock"></div>
+<p class="caption">Hình 3.15: Sơ đồ hoạt động chức năng khóa/mở khóa Workspace</p>
+
+<div class="page-break"></div>
+
+<!-- UC09: Xem Dashboard -->
+<h3>3.5.9. Chức năng xem Dashboard (UC09)</h3>
+
+<ul><li><b>Mục đích:</b> Hiển thị tổng quan về hoạt động của workspace: thống kê, biểu đồ, hoạt động gần đây.</li></ul>
+
+<ul><li><b>Giao diện:</b></li></ul>
+<div class="figure"><img src="uc09_dashboard_ui.png" alt="UI Dashboard"></div>
+<p class="caption">Hình 3.16: Giao diện phác thảo Dashboard</p>
+
+<ul><li><b>Các thành phần trong giao diện:</b></li></ul>
+<p class="caption">Bảng 3.17: Các thành phần trong giao diện Dashboard</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>Member</td><td></td><td>X</td><td></td><td>X</td></tr>
-    <tr><td>2</td><td>Notification</td><td>X</td><td></td><td></td><td></td></tr>
-    <tr><td>3</td><td>AuditLog</td><td>X</td><td></td><td></td><td></td></tr>
+    <tr><th width="8%">STT</th><th width="18%">Loại</th><th width="24%">Tên thành phần</th><th>Nội dung thực hiện</th></tr>
+    <tr><td class="center">1</td><td>Card</td><td>Stats Cards</td><td>Hiển thị số liệu: Members, Files, AI Reports, Activities với % thay đổi</td></tr>
+    <tr><td class="center">2</td><td>Chart</td><td>Usage Overview</td><td>Biểu đồ cột hiển thị xu hướng hoạt động theo thời gian</td></tr>
+    <tr><td class="center">3</td><td>List</td><td>Recent Activity</td><td>Danh sách các hoạt động gần đây trong workspace</td></tr>
 </table>
-<p class="table-caption">Bảng 3.17. Bảng dữ liệu được dùng cho chức năng phân quyền thành viên</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_change_role.png" alt="Activity Diagram - Phân quyền">
-    <p class="figure-caption">Hình 3.37. Sơ đồ hoạt động của chức năng phân quyền thành viên</p>
-</div>
-</div>
 
-<!-- 3.5.18 Xem danh sách thành viên -->
-<div class="function-section">
-<h3><span class="section-number">3.5.18.</span> Chức năng xem danh sách thành viên</h3>
-<p class="no-indent">- Mục đích: Cho phép thành viên xem danh sách tất cả thành viên trong workspace.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Dữ liệu được dùng:</b></li></ul>
+<p class="caption">Bảng 3.18: Dữ liệu cho chức năng xem Dashboard</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>Member</td><td></td><td></td><td></td><td>X</td></tr>
-    <tr><td>2</td><td>User</td><td></td><td></td><td></td><td>X</td></tr>
+    <tr><th width="8%">STT</th><th width="28%">Tên bảng</th><th width="14%">Thêm</th><th width="14%">Sửa</th><th width="14%">Xóa</th><th width="22%">Truy vấn</th></tr>
+    <tr><td class="center">1</td><td>WorkspaceMember</td><td class="center"></td><td class="center"></td><td class="center"></td><td class="center">✓</td></tr>
+    <tr><td class="center">2</td><td>File</td><td class="center"></td><td class="center"></td><td class="center"></td><td class="center">✓</td></tr>
+    <tr><td class="center">3</td><td>AIReport</td><td class="center"></td><td class="center"></td><td class="center"></td><td class="center">✓</td></tr>
+    <tr><td class="center">4</td><td>AuditLog</td><td class="center"></td><td class="center"></td><td class="center"></td><td class="center">✓</td></tr>
 </table>
-<p class="table-caption">Bảng 3.18. Bảng dữ liệu được dùng cho chức năng xem danh sách thành viên</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_view_members.png" alt="Activity Diagram - Xem danh sách thành viên">
-    <p class="figure-caption">Hình 3.38. Sơ đồ hoạt động của chức năng xem danh sách thành viên</p>
-</div>
-</div>
 
-<!-- 3.5.19 Gửi email mời -->
-<div class="function-section">
-<h3><span class="section-number">3.5.19.</span> Chức năng gửi email mời</h3>
-<p class="no-indent">- Mục đích: Hệ thống tự động gửi email mời đến người được mời tham gia workspace.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Xử lý:</b></li></ul>
+<div class="figure"><img src="uc09_dashboard_activity.png" alt="Activity Dashboard"></div>
+<p class="caption">Hình 3.17: Sơ đồ hoạt động chức năng xem Dashboard</p>
+
+<div class="page-break"></div>
+
+<!-- UC10: Xem Audit Log -->
+<h3>3.5.10. Chức năng xem Audit Log (UC10)</h3>
+
+<ul><li><b>Mục đích:</b> Cho phép Owner/Admin theo dõi tất cả hoạt động trong workspace để kiểm soát và bảo mật.</li></ul>
+
+<ul><li><b>Giao diện:</b></li></ul>
+<div class="figure"><img src="uc10_audit_ui.png" alt="UI Audit"></div>
+<p class="caption">Hình 3.18: Giao diện phác thảo Audit Logs</p>
+
+<ul><li><b>Các thành phần trong giao diện:</b></li></ul>
+<p class="caption">Bảng 3.19: Các thành phần trong giao diện Audit Logs</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>Invitation</td><td></td><td>X</td><td></td><td>X</td></tr>
-    <tr><td>2</td><td>Workspace</td><td></td><td></td><td></td><td>X</td></tr>
-    <tr><td>3</td><td>User</td><td></td><td></td><td></td><td>X</td></tr>
-    <tr><td>4</td><td>AuditLog</td><td>X</td><td></td><td></td><td></td></tr>
+    <tr><th width="8%">STT</th><th width="18%">Loại</th><th width="24%">Tên thành phần</th><th>Nội dung thực hiện</th></tr>
+    <tr><td class="center">1</td><td>Dropdown</td><td>Filter Actions</td><td>Lọc theo loại hành động: All, File Upload, File Delete, Member Added...</td></tr>
+    <tr><td class="center">2</td><td>Dropdown</td><td>Filter Users</td><td>Lọc theo người thực hiện</td></tr>
+    <tr><td class="center">3</td><td>Table</td><td>Audit Logs Table</td><td>Hiển thị: Action, User, Time, IP Address</td></tr>
 </table>
-<p class="table-caption">Bảng 3.19. Bảng dữ liệu được dùng cho chức năng gửi email mời</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_send_invite_email.png" alt="Activity Diagram - Gửi email mời">
-    <p class="figure-caption">Hình 3.39. Sơ đồ hoạt động của chức năng gửi email mời</p>
-</div>
-</div>
 
-<!-- 3.5.20 Cấp quyền Owner -->
-<div class="function-section">
-<h3><span class="section-number">3.5.20.</span> Chức năng cấp quyền Owner</h3>
-<p class="no-indent">- Mục đích: Cho phép Owner hiện tại chuyển quyền Owner cho thành viên khác trong workspace.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Dữ liệu được dùng:</b></li></ul>
+<p class="caption">Bảng 3.20: Dữ liệu cho chức năng xem Audit Log</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>Member</td><td></td><td>X</td><td></td><td>X</td></tr>
-    <tr><td>2</td><td>Notification</td><td>X</td><td></td><td></td><td></td></tr>
-    <tr><td>3</td><td>AuditLog</td><td>X</td><td></td><td></td><td></td></tr>
+    <tr><th width="8%">STT</th><th width="28%">Tên bảng</th><th width="14%">Thêm</th><th width="14%">Sửa</th><th width="14%">Xóa</th><th width="22%">Truy vấn</th></tr>
+    <tr><td class="center">1</td><td>AuditLog</td><td class="center"></td><td class="center"></td><td class="center"></td><td class="center">✓</td></tr>
+    <tr><td class="center">2</td><td>User</td><td class="center"></td><td class="center"></td><td class="center"></td><td class="center">✓</td></tr>
 </table>
-<p class="table-caption">Bảng 3.20. Bảng dữ liệu được dùng cho chức năng cấp quyền Owner</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_transfer_owner.png" alt="Activity Diagram - Cấp quyền Owner">
-    <p class="figure-caption">Hình 3.40. Sơ đồ hoạt động của chức năng cấp quyền Owner</p>
-</div>
-</div>
 
-<!-- 3.5.21 Thu hồi quyền Owner -->
-<div class="function-section">
-<h3><span class="section-number">3.5.21.</span> Chức năng thu hồi quyền Owner</h3>
-<p class="no-indent">- Mục đích: Cho phép Super Admin thu hồi quyền Owner của một workspace và chỉ định Owner mới.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Xử lý:</b></li></ul>
+<div class="figure"><img src="uc10_audit_activity.png" alt="Activity Audit"></div>
+<p class="caption">Hình 3.19: Sơ đồ hoạt động chức năng xem Audit Log</p>
+
+<div class="page-break"></div>
+
+<!-- UC11: Quản lý thành viên -->
+<h3>3.5.11. Chức năng quản lý thành viên (UC11)</h3>
+
+<ul><li><b>Mục đích:</b> Cho phép Owner/Admin mời, xóa, thay đổi quyền của thành viên trong workspace.</li></ul>
+
+<ul><li><b>Giao diện:</b></li></ul>
+<div class="figure"><img src="uc11_members_ui.png" alt="UI Members"></div>
+<p class="caption">Hình 3.20: Giao diện phác thảo quản lý thành viên</p>
+
+<div class="figure"><img src="uc11_invite_ui.png" alt="UI Invite"></div>
+<p class="caption">Hình 3.21: Giao diện phác thảo mời thành viên</p>
+
+<ul><li><b>Các thành phần trong giao diện:</b></li></ul>
+<p class="caption">Bảng 3.21: Các thành phần trong giao diện quản lý thành viên</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>Member</td><td></td><td>X</td><td></td><td>X</td></tr>
-    <tr><td>2</td><td>Notification</td><td>X</td><td></td><td></td><td></td></tr>
-    <tr><td>3</td><td>AuditLog</td><td>X</td><td></td><td></td><td></td></tr>
+    <tr><th width="8%">STT</th><th width="18%">Loại</th><th width="24%">Tên thành phần</th><th>Nội dung thực hiện</th></tr>
+    <tr><td class="center">1</td><td>Textbox</td><td>Search</td><td>Tìm kiếm thành viên theo tên hoặc email</td></tr>
+    <tr><td class="center">2</td><td>Button</td><td>+ Invite</td><td>Mở modal mời thành viên mới</td></tr>
+    <tr><td class="center">3</td><td>Table</td><td>Members Table</td><td>Hiển thị: Member info, Role, Status, Joined date, Actions</td></tr>
+    <tr><td class="center">4</td><td>Textarea</td><td>Email addresses</td><td>Nhập danh sách email cần mời (modal)</td></tr>
+    <tr><td class="center">5</td><td>Dropdown</td><td>Role</td><td>Chọn role cho người được mời: Member, Admin</td></tr>
+    <tr><td class="center">6</td><td>Button</td><td>Send Invite</td><td>Gửi lời mời đến các email đã nhập</td></tr>
 </table>
-<p class="table-caption">Bảng 3.21. Bảng dữ liệu được dùng cho chức năng thu hồi quyền Owner</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_revoke_owner.png" alt="Activity Diagram - Thu hồi quyền Owner">
-    <p class="figure-caption">Hình 3.41. Sơ đồ hoạt động của chức năng thu hồi quyền Owner</p>
-</div>
-</div>
 
-<!-- ==================== NHÓM TỆP TIN ==================== -->
-
-<!-- 3.5.22 Upload tệp -->
-<div class="function-section">
-<h3><span class="section-number">3.5.22.</span> Chức năng upload tệp</h3>
-<p class="no-indent">- Mục đích: Cho phép thành viên tải lên các tệp tin vào workspace để lưu trữ và chia sẻ.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Dữ liệu được dùng:</b></li></ul>
+<p class="caption">Bảng 3.22: Dữ liệu cho chức năng quản lý thành viên</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>File</td><td>X</td><td></td><td></td><td></td></tr>
-    <tr><td>2</td><td>Member</td><td></td><td></td><td></td><td>X</td></tr>
-    <tr><td>3</td><td>Notification</td><td>X</td><td></td><td></td><td></td></tr>
-    <tr><td>4</td><td>AuditLog</td><td>X</td><td></td><td></td><td></td></tr>
+    <tr><th width="8%">STT</th><th width="28%">Tên bảng</th><th width="14%">Thêm</th><th width="14%">Sửa</th><th width="14%">Xóa</th><th width="22%">Truy vấn</th></tr>
+    <tr><td class="center">1</td><td>WorkspaceMember</td><td class="center">✓</td><td class="center">✓</td><td class="center">✓</td><td class="center">✓</td></tr>
+    <tr><td class="center">2</td><td>Invitation</td><td class="center">✓</td><td class="center">✓</td><td class="center"></td><td class="center">✓</td></tr>
+    <tr><td class="center">3</td><td>User</td><td class="center"></td><td class="center"></td><td class="center"></td><td class="center">✓</td></tr>
+    <tr><td class="center">4</td><td>AuditLog</td><td class="center">✓</td><td class="center"></td><td class="center"></td><td class="center"></td></tr>
 </table>
-<p class="table-caption">Bảng 3.22. Bảng dữ liệu được dùng cho chức năng upload tệp</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_upload_file.png" alt="Activity Diagram - Upload tệp">
-    <p class="figure-caption">Hình 3.42. Sơ đồ hoạt động của chức năng upload tệp</p>
-</div>
-</div>
 
-<!-- 3.5.23 Xem danh sách tệp -->
-<div class="function-section">
-<h3><span class="section-number">3.5.23.</span> Chức năng xem danh sách tệp</h3>
-<p class="no-indent">- Mục đích: Cho phép thành viên xem danh sách tất cả tệp tin trong workspace.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Xử lý:</b></li></ul>
+<div class="figure"><img src="uc11_members_activity.png" alt="Activity Members"></div>
+<p class="caption">Hình 3.22: Sơ đồ hoạt động chức năng quản lý thành viên</p>
+
+<div class="page-break"></div>
+
+<!-- UC12: Chuyển quyền sở hữu -->
+<h3>3.5.12. Chức năng chuyển quyền sở hữu Workspace (UC12)</h3>
+
+<ul><li><b>Mục đích:</b> Cho phép Owner chuyển quyền sở hữu workspace cho thành viên khác.</li></ul>
+
+<ul><li><b>Giao diện:</b></li></ul>
+<p>Chức năng được tích hợp trong giao diện quản lý thành viên (UC11), thông qua menu Actions của từng thành viên.</p>
+
+<ul><li><b>Các thành phần trong giao diện:</b></li></ul>
+<p class="caption">Bảng 3.23: Các thành phần trong giao diện chuyển quyền sở hữu</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>File</td><td></td><td></td><td></td><td>X</td></tr>
-    <tr><td>2</td><td>Member</td><td></td><td></td><td></td><td>X</td></tr>
+    <tr><th width="8%">STT</th><th width="18%">Loại</th><th width="24%">Tên thành phần</th><th>Nội dung thực hiện</th></tr>
+    <tr><td class="center">1</td><td>Button</td><td>Transfer Ownership</td><td>Mở dialog xác nhận chuyển quyền</td></tr>
+    <tr><td class="center">2</td><td>Dialog</td><td>Confirmation</td><td>Xác nhận hành động chuyển quyền sở hữu</td></tr>
+    <tr><td class="center">3</td><td>Button</td><td>Confirm</td><td>Xác nhận và thực hiện chuyển quyền</td></tr>
 </table>
-<p class="table-caption">Bảng 3.23. Bảng dữ liệu được dùng cho chức năng xem danh sách tệp</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_view_files.png" alt="Activity Diagram - Xem danh sách tệp">
-    <p class="figure-caption">Hình 3.43. Sơ đồ hoạt động của chức năng xem danh sách tệp</p>
-</div>
-</div>
 
-<!-- 3.5.24 Tải tệp -->
-<div class="function-section">
-<h3><span class="section-number">3.5.24.</span> Chức năng tải tệp</h3>
-<p class="no-indent">- Mục đích: Cho phép thành viên tải xuống các tệp tin từ workspace về máy tính cá nhân.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Dữ liệu được dùng:</b></li></ul>
+<p class="caption">Bảng 3.24: Dữ liệu cho chức năng chuyển quyền sở hữu</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>File</td><td></td><td></td><td></td><td>X</td></tr>
-    <tr><td>2</td><td>Member</td><td></td><td></td><td></td><td>X</td></tr>
-    <tr><td>3</td><td>AuditLog</td><td>X</td><td></td><td></td><td></td></tr>
+    <tr><th width="8%">STT</th><th width="28%">Tên bảng</th><th width="14%">Thêm</th><th width="14%">Sửa</th><th width="14%">Xóa</th><th width="22%">Truy vấn</th></tr>
+    <tr><td class="center">1</td><td>WorkspaceMember</td><td class="center"></td><td class="center">✓</td><td class="center"></td><td class="center">✓</td></tr>
+    <tr><td class="center">2</td><td>AuditLog</td><td class="center">✓</td><td class="center"></td><td class="center"></td><td class="center"></td></tr>
 </table>
-<p class="table-caption">Bảng 3.24. Bảng dữ liệu được dùng cho chức năng tải tệp</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_download_file.png" alt="Activity Diagram - Tải tệp">
-    <p class="figure-caption">Hình 3.44. Sơ đồ hoạt động của chức năng tải tệp</p>
-</div>
-</div>
 
-<!-- 3.5.25 Xóa tệp -->
-<div class="function-section">
-<h3><span class="section-number">3.5.25.</span> Chức năng xóa tệp</h3>
-<p class="no-indent">- Mục đích: Cho phép thành viên có quyền xóa các tệp tin không còn sử dụng khỏi workspace.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Xử lý:</b></li></ul>
+<div class="figure"><img src="uc12_ownership_activity.png" alt="Activity Ownership"></div>
+<p class="caption">Hình 3.23: Sơ đồ hoạt động chức năng chuyển quyền sở hữu</p>
+
+<div class="page-break"></div>
+
+<!-- UC13: Upload tệp tin -->
+<h3>3.5.13. Chức năng upload tệp tin (UC13)</h3>
+
+<ul><li><b>Mục đích:</b> Cho phép người dùng tải lên tệp tin để lưu trữ và chia sẻ trong workspace.</li></ul>
+
+<ul><li><b>Giao diện:</b></li></ul>
+<div class="figure"><img src="uc13_14_files_ui.png" alt="UI Files"></div>
+<p class="caption">Hình 3.24: Giao diện phác thảo quản lý tệp tin</p>
+
+<ul><li><b>Các thành phần trong giao diện:</b></li></ul>
+<p class="caption">Bảng 3.25: Các thành phần trong giao diện upload tệp tin</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>File</td><td></td><td>X</td><td></td><td>X</td></tr>
-    <tr><td>2</td><td>AuditLog</td><td>X</td><td></td><td></td><td></td></tr>
+    <tr><th width="8%">STT</th><th width="18%">Loại</th><th width="24%">Tên thành phần</th><th>Nội dung thực hiện</th></tr>
+    <tr><td class="center">1</td><td>Button</td><td>Upload</td><td>Mở file picker để chọn tệp cần upload</td></tr>
+    <tr><td class="center">2</td><td>Table</td><td>Files Table</td><td>Hiển thị danh sách file: Name, Size, Uploaded by, Date, Actions</td></tr>
 </table>
-<p class="table-caption">Bảng 3.25. Bảng dữ liệu được dùng cho chức năng xóa tệp</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_delete_file.png" alt="Activity Diagram - Xóa tệp">
-    <p class="figure-caption">Hình 3.45. Sơ đồ hoạt động của chức năng xóa tệp</p>
-</div>
-</div>
 
-<!-- 3.5.26 Tìm kiếm tệp -->
-<div class="function-section">
-<h3><span class="section-number">3.5.26.</span> Chức năng tìm kiếm tệp</h3>
-<p class="no-indent">- Mục đích: Cho phép thành viên tìm kiếm tệp tin theo tên hoặc loại tệp trong workspace.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Dữ liệu được dùng:</b></li></ul>
+<p class="caption">Bảng 3.26: Dữ liệu cho chức năng upload tệp tin</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>File</td><td></td><td></td><td></td><td>X</td></tr>
-    <tr><td>2</td><td>Member</td><td></td><td></td><td></td><td>X</td></tr>
+    <tr><th width="8%">STT</th><th width="28%">Tên bảng</th><th width="14%">Thêm</th><th width="14%">Sửa</th><th width="14%">Xóa</th><th width="22%">Truy vấn</th></tr>
+    <tr><td class="center">1</td><td>File</td><td class="center">✓</td><td class="center"></td><td class="center"></td><td class="center"></td></tr>
+    <tr><td class="center">2</td><td>AuditLog</td><td class="center">✓</td><td class="center"></td><td class="center"></td><td class="center"></td></tr>
 </table>
-<p class="table-caption">Bảng 3.26. Bảng dữ liệu được dùng cho chức năng tìm kiếm tệp</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_search_file.png" alt="Activity Diagram - Tìm kiếm tệp">
-    <p class="figure-caption">Hình 3.46. Sơ đồ hoạt động của chức năng tìm kiếm tệp</p>
-</div>
-</div>
 
-<!-- 3.5.27 Kiểm tra quyền truy cập tệp -->
-<div class="function-section">
-<h3><span class="section-number">3.5.27.</span> Chức năng kiểm tra quyền truy cập tệp</h3>
-<p class="no-indent">- Mục đích: Hệ thống kiểm tra quyền truy cập của người dùng trước khi cho phép thao tác với tệp tin.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Xử lý:</b></li></ul>
+<div class="figure"><img src="uc13_upload_activity.png" alt="Activity Upload"></div>
+<p class="caption">Hình 3.25: Sơ đồ hoạt động chức năng upload tệp tin</p>
+
+<div class="page-break"></div>
+
+<!-- UC14: Quản lý tệp tin -->
+<h3>3.5.14. Chức năng quản lý tệp tin (UC14)</h3>
+
+<ul><li><b>Mục đích:</b> Cho phép người dùng xem, tải xuống, xóa và tìm kiếm tệp tin trong workspace.</li></ul>
+
+<ul><li><b>Giao diện:</b></li></ul>
+<p>Sử dụng cùng giao diện với UC13 (Hình 3.24).</p>
+
+<ul><li><b>Các thành phần trong giao diện:</b></li></ul>
+<p class="caption">Bảng 3.27: Các thành phần trong giao diện quản lý tệp tin</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>File</td><td></td><td></td><td></td><td>X</td></tr>
-    <tr><td>2</td><td>Member</td><td></td><td></td><td></td><td>X</td></tr>
-    <tr><td>3</td><td>Workspace</td><td></td><td></td><td></td><td>X</td></tr>
-    <tr><td>4</td><td>AuditLog</td><td>X</td><td></td><td></td><td></td></tr>
+    <tr><th width="8%">STT</th><th width="18%">Loại</th><th width="24%">Tên thành phần</th><th>Nội dung thực hiện</th></tr>
+    <tr><td class="center">1</td><td>Button</td><td>Download</td><td>Tải file về máy tính</td></tr>
+    <tr><td class="center">2</td><td>Button</td><td>Preview</td><td>Xem trước nội dung file (nếu hỗ trợ)</td></tr>
+    <tr><td class="center">3</td><td>Button</td><td>Delete</td><td>Xóa file khỏi workspace</td></tr>
+    <tr><td class="center">4</td><td>Textbox</td><td>Search</td><td>Tìm kiếm file theo tên</td></tr>
 </table>
-<p class="table-caption">Bảng 3.27. Bảng dữ liệu được dùng cho chức năng kiểm tra quyền truy cập tệp</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_check_file_access.png" alt="Activity Diagram - Kiểm tra quyền truy cập">
-    <p class="figure-caption">Hình 3.47. Sơ đồ hoạt động của chức năng kiểm tra quyền truy cập tệp</p>
-</div>
-</div>
 
-<!-- ==================== NHÓM THÔNG BÁO ==================== -->
-
-<!-- 3.5.28 Xem thông báo -->
-<div class="function-section">
-<h3><span class="section-number">3.5.28.</span> Chức năng xem thông báo</h3>
-<p class="no-indent">- Mục đích: Cho phép người dùng xem danh sách thông báo về các hoạt động liên quan đến mình.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Dữ liệu được dùng:</b></li></ul>
+<p class="caption">Bảng 3.28: Dữ liệu cho chức năng quản lý tệp tin</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>Notification</td><td></td><td></td><td></td><td>X</td></tr>
+    <tr><th width="8%">STT</th><th width="28%">Tên bảng</th><th width="14%">Thêm</th><th width="14%">Sửa</th><th width="14%">Xóa</th><th width="22%">Truy vấn</th></tr>
+    <tr><td class="center">1</td><td>File</td><td class="center"></td><td class="center"></td><td class="center">✓</td><td class="center">✓</td></tr>
+    <tr><td class="center">2</td><td>AuditLog</td><td class="center">✓</td><td class="center"></td><td class="center"></td><td class="center"></td></tr>
 </table>
-<p class="table-caption">Bảng 3.28. Bảng dữ liệu được dùng cho chức năng xem thông báo</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_view_notifications.png" alt="Activity Diagram - Xem thông báo">
-    <p class="figure-caption">Hình 3.48. Sơ đồ hoạt động của chức năng xem thông báo</p>
-</div>
-</div>
 
-<!-- 3.5.29 Cấu hình thông báo -->
-<div class="function-section">
-<h3><span class="section-number">3.5.29.</span> Chức năng cấu hình thông báo</h3>
-<p class="no-indent">- Mục đích: Cho phép người dùng tùy chỉnh cài đặt nhận thông báo qua email, push notification hoặc in-app.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Xử lý:</b></li></ul>
+<div class="figure"><img src="uc14_files_activity.png" alt="Activity Files"></div>
+<p class="caption">Hình 3.26: Sơ đồ hoạt động chức năng quản lý tệp tin</p>
+
+<div class="page-break"></div>
+
+<!-- UC15: Quản lý thông báo -->
+<h3>3.5.15. Chức năng quản lý thông báo (UC15)</h3>
+
+<ul><li><b>Mục đích:</b> Cho phép người dùng xem, đánh dấu đã đọc và cấu hình thông báo.</li></ul>
+
+<ul><li><b>Giao diện:</b></li></ul>
+<div class="figure"><img src="uc15_notifications_ui.png" alt="UI Notifications"></div>
+<p class="caption">Hình 3.27: Giao diện phác thảo quản lý thông báo</p>
+
+<ul><li><b>Các thành phần trong giao diện:</b></li></ul>
+<p class="caption">Bảng 3.29: Các thành phần trong giao diện quản lý thông báo</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>NotificationSetting</td><td>X</td><td>X</td><td></td><td>X</td></tr>
-    <tr><td>2</td><td>AuditLog</td><td>X</td><td></td><td></td><td></td></tr>
+    <tr><th width="8%">STT</th><th width="18%">Loại</th><th width="24%">Tên thành phần</th><th>Nội dung thực hiện</th></tr>
+    <tr><td class="center">1</td><td>Link</td><td>Mark all read</td><td>Đánh dấu tất cả thông báo là đã đọc</td></tr>
+    <tr><td class="center">2</td><td>List Item</td><td>Notification Item</td><td>Hiển thị: icon, tiêu đề, mô tả, thời gian, trạng thái đọc</td></tr>
+    <tr><td class="center">3</td><td>Link</td><td>View all notifications</td><td>Xem tất cả thông báo (phân trang)</td></tr>
 </table>
-<p class="table-caption">Bảng 3.29. Bảng dữ liệu được dùng cho chức năng cấu hình thông báo</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_config_notification.png" alt="Activity Diagram - Cấu hình thông báo">
-    <p class="figure-caption">Hình 3.49. Sơ đồ hoạt động của chức năng cấu hình thông báo</p>
-</div>
-</div>
 
-<!-- 3.5.30 Đánh dấu đã đọc -->
-<div class="function-section">
-<h3><span class="section-number">3.5.30.</span> Chức năng đánh dấu thông báo đã đọc</h3>
-<p class="no-indent">- Mục đích: Cho phép người dùng đánh dấu một hoặc tất cả thông báo là đã đọc.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Dữ liệu được dùng:</b></li></ul>
+<p class="caption">Bảng 3.30: Dữ liệu cho chức năng quản lý thông báo</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>Notification</td><td></td><td>X</td><td></td><td>X</td></tr>
+    <tr><th width="8%">STT</th><th width="28%">Tên bảng</th><th width="14%">Thêm</th><th width="14%">Sửa</th><th width="14%">Xóa</th><th width="22%">Truy vấn</th></tr>
+    <tr><td class="center">1</td><td>Notification</td><td class="center"></td><td class="center">✓</td><td class="center"></td><td class="center">✓</td></tr>
+    <tr><td class="center">2</td><td>NotificationSettings</td><td class="center"></td><td class="center">✓</td><td class="center"></td><td class="center">✓</td></tr>
 </table>
-<p class="table-caption">Bảng 3.30. Bảng dữ liệu được dùng cho chức năng đánh dấu đã đọc</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_mark_read.png" alt="Activity Diagram - Đánh dấu đã đọc">
-    <p class="figure-caption">Hình 3.50. Sơ đồ hoạt động của chức năng đánh dấu thông báo đã đọc</p>
-</div>
-</div>
 
-<!-- ==================== NHÓM BÁO CÁO AI ==================== -->
+<ul><li><b>Xử lý:</b></li></ul>
+<div class="figure"><img src="uc15_notifications_activity.png" alt="Activity Notifications"></div>
+<p class="caption">Hình 3.28: Sơ đồ hoạt động chức năng quản lý thông báo</p>
 
-<!-- 3.5.31 Xem báo cáo tổng hợp -->
-<div class="function-section">
-<h3><span class="section-number">3.5.31.</span> Chức năng xem báo cáo tổng hợp</h3>
-<p class="no-indent">- Mục đích: Cho phép thành viên xem danh sách và nội dung các báo cáo AI đã được tạo trong workspace.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<div class="page-break"></div>
+
+<!-- UC16: Tạo báo cáo AI -->
+<h3>3.5.16. Chức năng tạo báo cáo AI (UC16)</h3>
+
+<ul><li><b>Mục đích:</b> Cho phép Owner/Admin tạo báo cáo tự động sử dụng các mô hình ngôn ngữ lớn (LLM).</li></ul>
+
+<ul><li><b>Giao diện:</b></li></ul>
+<div class="figure"><img src="uc16_17_reports_ui.png" alt="UI Reports"></div>
+<p class="caption">Hình 3.29: Giao diện phác thảo danh sách báo cáo AI</p>
+
+<div class="figure"><img src="uc16_generate_ui.png" alt="UI Generate"></div>
+<p class="caption">Hình 3.30: Giao diện phác thảo tạo báo cáo AI</p>
+
+<ul><li><b>Các thành phần trong giao diện:</b></li></ul>
+<p class="caption">Bảng 3.31: Các thành phần trong giao diện tạo báo cáo AI</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>AIReport</td><td></td><td></td><td></td><td>X</td></tr>
-    <tr><td>2</td><td>Member</td><td></td><td></td><td></td><td>X</td></tr>
+    <tr><th width="8%">STT</th><th width="18%">Loại</th><th width="24%">Tên thành phần</th><th>Nội dung thực hiện</th></tr>
+    <tr><td class="center">1</td><td>Dropdown</td><td>Report Type</td><td>Chọn loại báo cáo: Daily Summary, Weekly Digest, Custom</td></tr>
+    <tr><td class="center">2</td><td>Checkbox</td><td>Data Sources</td><td>Chọn nguồn dữ liệu: Files, Activities, Member Statistics</td></tr>
+    <tr><td class="center">3</td><td>DatePicker</td><td>Date Range</td><td>Chọn khoảng thời gian cho báo cáo</td></tr>
+    <tr><td class="center">4</td><td>Dropdown</td><td>LLM Provider</td><td>Chọn LLM: OpenAI GPT-4, Anthropic Claude, Google Gemini</td></tr>
+    <tr><td class="center">5</td><td>Textarea</td><td>Prompt</td><td>Nhập hướng dẫn/yêu cầu cho báo cáo</td></tr>
+    <tr><td class="center">6</td><td>Button</td><td>Generate</td><td>Bắt đầu tạo báo cáo</td></tr>
 </table>
-<p class="table-caption">Bảng 3.31. Bảng dữ liệu được dùng cho chức năng xem báo cáo tổng hợp</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_view_reports.png" alt="Activity Diagram - Xem báo cáo">
-    <p class="figure-caption">Hình 3.51. Sơ đồ hoạt động của chức năng xem báo cáo tổng hợp</p>
-</div>
-</div>
 
-<!-- 3.5.32 Tạo báo cáo tùy chỉnh -->
-<div class="function-section">
-<h3><span class="section-number">3.5.32.</span> Chức năng tạo báo cáo tùy chỉnh</h3>
-<p class="no-indent">- Mục đích: Cho phép Owner hoặc Admin tạo báo cáo AI tùy chỉnh dựa trên prompt và dữ liệu workspace.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<ul><li><b>Dữ liệu được dùng:</b></li></ul>
+<p class="caption">Bảng 3.32: Dữ liệu cho chức năng tạo báo cáo AI</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>AIReport</td><td>X</td><td></td><td></td><td></td></tr>
-    <tr><td>2</td><td>File</td><td></td><td></td><td></td><td>X</td></tr>
-    <tr><td>3</td><td>AuditLog</td><td></td><td></td><td></td><td>X</td></tr>
-    <tr><td>4</td><td>Notification</td><td>X</td><td></td><td></td><td></td></tr>
+    <tr><th width="8%">STT</th><th width="28%">Tên bảng</th><th width="14%">Thêm</th><th width="14%">Sửa</th><th width="14%">Xóa</th><th width="22%">Truy vấn</th></tr>
+    <tr><td class="center">1</td><td>AIReport</td><td class="center">✓</td><td class="center"></td><td class="center"></td><td class="center"></td></tr>
+    <tr><td class="center">2</td><td>File</td><td class="center"></td><td class="center"></td><td class="center"></td><td class="center">✓</td></tr>
+    <tr><td class="center">3</td><td>AuditLog</td><td class="center"></td><td class="center"></td><td class="center"></td><td class="center">✓</td></tr>
+    <tr><td class="center">4</td><td>WorkspaceMember</td><td class="center"></td><td class="center"></td><td class="center"></td><td class="center">✓</td></tr>
 </table>
-<p class="table-caption">Bảng 3.32. Bảng dữ liệu được dùng cho chức năng tạo báo cáo tùy chỉnh</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_create_ai_report.png" alt="Activity Diagram - Tạo báo cáo AI">
-    <p class="figure-caption">Hình 3.52. Sơ đồ hoạt động của chức năng tạo báo cáo tùy chỉnh</p>
-</div>
-</div>
 
-<!-- 3.5.33 Xuất báo cáo -->
-<div class="function-section">
-<h3><span class="section-number">3.5.33.</span> Chức năng xuất báo cáo</h3>
-<p class="no-indent">- Mục đích: Cho phép người dùng xuất báo cáo AI ra các định dạng PDF, DOCX hoặc Markdown.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
-<table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>AIReport</td><td></td><td></td><td></td><td>X</td></tr>
-    <tr><td>2</td><td>Member</td><td></td><td></td><td></td><td>X</td></tr>
-    <tr><td>3</td><td>AuditLog</td><td>X</td><td></td><td></td><td></td></tr>
-</table>
-<p class="table-caption">Bảng 3.33. Bảng dữ liệu được dùng cho chức năng xuất báo cáo</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_export_report.png" alt="Activity Diagram - Xuất báo cáo">
-    <p class="figure-caption">Hình 3.53. Sơ đồ hoạt động của chức năng xuất báo cáo</p>
-</div>
-</div>
+<ul><li><b>Xử lý:</b></li></ul>
+<div class="figure"><img src="uc16_create_report_activity.png" alt="Activity Create Report"></div>
+<p class="caption">Hình 3.31: Sơ đồ hoạt động chức năng tạo báo cáo AI</p>
 
-<!-- 3.5.34 Truy vấn LLM Provider -->
-<div class="function-section">
-<h3><span class="section-number">3.5.34.</span> Chức năng truy vấn LLM Provider</h3>
-<p class="no-indent">- Mục đích: Hệ thống kết nối và gửi request đến các LLM Provider (OpenAI, Anthropic, Google) để tạo nội dung báo cáo.</p>
-<p class="no-indent">- Dữ liệu được dùng:</p>
+<div class="page-break"></div>
+
+<!-- UC17: Xem và xuất báo cáo -->
+<h3>3.5.17. Chức năng xem và xuất báo cáo (UC17)</h3>
+
+<ul><li><b>Mục đích:</b> Cho phép người dùng xem nội dung báo cáo AI và xuất ra các định dạng file khác nhau.</li></ul>
+
+<ul><li><b>Giao diện:</b></li></ul>
+<p>Sử dụng cùng giao diện với UC16 (Hình 3.29).</p>
+
+<ul><li><b>Các thành phần trong giao diện:</b></li></ul>
+<p class="caption">Bảng 3.33: Các thành phần trong giao diện xem và xuất báo cáo</p>
 <table>
-    <tr><th rowspan="2">STT</th><th rowspan="2">Tên bảng</th><th colspan="4">Phương thức</th></tr>
-    <tr><th>Thêm</th><th>Sửa</th><th>Xóa</th><th>Truy vấn</th></tr>
-    <tr><td>1</td><td>AIReport</td><td></td><td>X</td><td></td><td>X</td></tr>
-    <tr><td>2</td><td>Workspace</td><td></td><td></td><td></td><td>X</td></tr>
+    <tr><th width="8%">STT</th><th width="18%">Loại</th><th width="24%">Tên thành phần</th><th>Nội dung thực hiện</th></tr>
+    <tr><td class="center">1</td><td>Card</td><td>Featured Report</td><td>Hiển thị báo cáo nổi bật với badge loại, tiêu đề, mô tả, LLM provider</td></tr>
+    <tr><td class="center">2</td><td>Button</td><td>View</td><td>Mở xem chi tiết nội dung báo cáo</td></tr>
+    <tr><td class="center">3</td><td>Button</td><td>Export</td><td>Xuất báo cáo ra file PDF hoặc DOCX</td></tr>
+    <tr><td class="center">4</td><td>List</td><td>Reports List</td><td>Danh sách các báo cáo với icon, tiêu đề, LLM provider, thời gian tạo</td></tr>
 </table>
-<p class="table-caption">Bảng 3.34. Bảng dữ liệu được dùng cho chức năng truy vấn LLM Provider</p>
-<p class="no-indent">- Xử lý:</p>
-<div class="figure">
-    <img src="act_query_llm.png" alt="Activity Diagram - Truy vấn LLM">
-    <p class="figure-caption">Hình 3.54. Sơ đồ hoạt động của chức năng truy vấn LLM Provider</p>
-</div>
-</div>
+
+<ul><li><b>Dữ liệu được dùng:</b></li></ul>
+<p class="caption">Bảng 3.34: Dữ liệu cho chức năng xem và xuất báo cáo</p>
+<table>
+    <tr><th width="8%">STT</th><th width="28%">Tên bảng</th><th width="14%">Thêm</th><th width="14%">Sửa</th><th width="14%">Xóa</th><th width="22%">Truy vấn</th></tr>
+    <tr><td class="center">1</td><td>AIReport</td><td class="center"></td><td class="center"></td><td class="center"></td><td class="center">✓</td></tr>
+    <tr><td class="center">2</td><td>AuditLog</td><td class="center">✓</td><td class="center"></td><td class="center"></td><td class="center"></td></tr>
+</table>
+
+<ul><li><b>Xử lý:</b></li></ul>
+<div class="figure"><img src="uc17_export_report_activity.png" alt="Activity Export"></div>
+<p class="caption">Hình 3.32: Sơ đồ hoạt động chức năng xem và xuất báo cáo</p>
 
 </body>
 </html>

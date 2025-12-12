@@ -1,0 +1,61 @@
+% UC17: Xem và xuất báo cáo
+\subsubsection{Chức năng xem và xuất báo cáo (UC17)}
+
+\begin{itemize}
+    \item \textbf{Mục đích:} Cho phép người dùng xem nội dung báo cáo AI và xuất ra các định dạng file khác nhau.
+\end{itemize}
+
+\begin{itemize}
+    \item \textbf{Giao diện:}
+\end{itemize}
+
+Sử dụng cùng giao diện với UC16 (Hình \ref{fig:ui_uc16_reports}).
+
+\begin{itemize}
+    \item \textbf{Các thành phần trong giao diện:}
+\end{itemize}
+
+\begin{longtblr}[
+    caption = {Các thành phần trong giao diện xem và xuất báo cáo},
+    label = {tab:ui_uc17}
+]{
+    colspec = {|c|l|l|X|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+STT & Loại & Tên thành phần & Nội dung thực hiện \\
+1 & Card & Featured Report & Hiển thị báo cáo nổi bật với badge loại, tiêu đề, mô tả, LLM pro\-vider \\
+2 & Button & View & Mở xem chi tiết nội dung báo cáo \\
+3 & Button & Export & Xuất báo cáo ra file PDF hoặc DOCX \\
+4 & List & Reports List & Danh sách các báo cáo với icon, tiêu đề, LLM pro\-vider, thời gian tạo \\
+\end{longtblr}
+
+\begin{itemize}
+    \item \textbf{Dữ liệu được dùng:}
+\end{itemize}
+
+\begin{longtblr}[
+    caption = {Dữ liệu cho chức năng xem và xuất báo cáo},
+    label = {tab:data_uc17}
+]{
+    colspec = {|c|X|c|c|c|c|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+STT & Tên bảng & Thêm & Sửa & Xóa & Truy vấn \\
+1 & AIReport & & & & X \\
+2 & AuditLog & X & & & \\
+\end{longtblr}
+
+\begin{itemize}
+    \item \textbf{Xử lý:}
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{part02/chap03/sec03_5/uc17_export_report_activity.png}
+    \caption{Sơ đồ hoạt động chức năng xem và xuất báo cáo}
+    \label{fig:act_uc17_export_report}
+\end{figure}

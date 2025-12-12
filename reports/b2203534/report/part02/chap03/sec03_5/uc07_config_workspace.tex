@@ -1,0 +1,67 @@
+% UC07: Cấu hình Workspace
+\subsubsection{Chức năng cấu hình Work\-space (UC07)}
+
+\begin{itemize}
+    \item \textbf{Mục đích:} Cho phép Owner/Admin cấu hình các thiết lập của work\-space như thông tin cơ bản, LLM pro\-vider mặc định.
+\end{itemize}
+
+\begin{itemize}
+    \item \textbf{Giao diện:}
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\textwidth]{part02/chap03/sec03_5/uc07_settings_ui.png}
+    \caption{Giao diện chức năng cấu hình Work\-space}
+    \label{fig:ui_uc07_settings}
+\end{figure}
+
+\begin{itemize}
+    \item \textbf{Các thành phần trong giao diện:}
+\end{itemize}
+
+\begin{longtblr}[
+    caption = {Các thành phần trong giao diện cấu hình Work\-space},
+    label = {tab:ui_uc07}
+]{
+    colspec = {|c|l|l|X|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+STT & Loại & Tên thành phần & Nội dung thực hiện \\
+1 & Tab & Settings Tabs & Chuyển đổi giữa các tab: General, AI Settings, Permissions, Danger \\
+2 & Section & Basic Information & Cấu hình logo, tên work\-space, slug \\
+3 & Dropdown & Default LLM Pro\-vider & Chọn LLM mặc định: OpenAI, Anthropic, Google \\
+4 & Button & Save & Lưu các thay đổi cấu hình \\
+\end{longtblr}
+
+\begin{itemize}
+    \item \textbf{Dữ liệu được dùng:}
+\end{itemize}
+
+\begin{longtblr}[
+    caption = {Dữ liệu cho chức năng cấu hình Work\-space},
+    label = {tab:data_uc07}
+]{
+    colspec = {|c|X|c|c|c|c|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+STT & Tên bảng & Thêm & Sửa & Xóa & Truy vấn \\
+1 & Work\-space & & X & & X \\
+2 & Work\-space\-Settings & & X & & X \\
+3 & AuditLog & X & & & \\
+\end{longtblr}
+
+\begin{itemize}
+    \item \textbf{Xử lý:}
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{part02/chap03/sec03_5/uc07_config_workspace_activity.png}
+    \caption{Sơ đồ hoạt động chức năng cấu hình Work\-space}
+    \label{fig:act_uc07_config_workspace}
+\end{figure}

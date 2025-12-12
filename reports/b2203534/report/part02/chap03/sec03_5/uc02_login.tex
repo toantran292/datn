@@ -1,0 +1,68 @@
+% UC02: Đăng nhập
+\subsubsection{Chức năng đăng nhập (UC02)}
+
+\begin{itemize}
+    \item \textbf{Mục đích:} Cho phép người dùng đã có tài khoản xác thực để truy cập vào hệ thống.
+\end{itemize}
+
+\begin{itemize}
+    \item \textbf{Giao diện:}
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\textwidth]{part02/chap03/sec03_5/uc02_login_ui.png}
+    \caption{Giao diện chức năng đăng nhập}
+    \label{fig:ui_uc02_login}
+\end{figure}
+
+\begin{itemize}
+    \item \textbf{Các thành phần trong giao diện:}
+\end{itemize}
+
+\begin{longtblr}[
+    caption = {Các thành phần trong giao diện đăng nhập},
+    label = {tab:ui_uc02}
+]{
+    colspec = {|c|l|l|X|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+STT & Loại & Tên thành phần & Nội dung thực hiện \\
+1 & Textbox & Email address & Nhập địa chỉ email đã đăng ký \\
+2 & Textbox & Password & Nhập mật khẩu tài khoản \\
+3 & Link & Forget password? & Chuyển đến trang khôi phục mật khẩu \\
+4 & Button & Sign In & Gửi thông tin đăng nhập để xác thực \\
+5 & Button & Google & Đăng nhập nhanh bằng tài khoản Google OAuth 2.0 \\
+\end{longtblr}
+
+\begin{itemize}
+    \item \textbf{Dữ liệu được dùng:}
+\end{itemize}
+
+\begin{longtblr}[
+    caption = {Dữ liệu cho chức năng đăng nhập},
+    label = {tab:data_uc02}
+]{
+    colspec = {|c|X|c|c|c|c|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+STT & Tên bảng & Thêm & Sửa & Xóa & Truy vấn \\
+1 & User & & X & & X \\
+2 & Session & X & & & \\
+3 & AuditLog & X & & & \\
+\end{longtblr}
+
+\begin{itemize}
+    \item \textbf{Xử lý:}
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{part02/chap03/sec03_5/uc02_login_activity.png}
+    \caption{Sơ đồ hoạt động chức năng đăng nhập}
+    \label{fig:act_uc02_login}
+\end{figure}

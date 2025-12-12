@@ -1,0 +1,60 @@
+% UC15: Quản lý thông báo
+\paragraph{Chức năng quản lý thông báo}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/uc15_notifications.png}
+    \caption{Sơ đồ use case chức năng quản lý thông báo}
+    \label{fig:uc15_notifications}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Bảng đặc tả chức năng quản lý thông báo},
+    label = {tab:uc15}
+]{
+    colspec = {|l|X|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+Tên chức năng & Quản lý thông báo \\
+ID & UC15 \\
+Mức độ cần thiết & Bắt buộc \\
+Người sử dụng & Người dùng đã đăng nhập \\
+Phân loại & Đơn giản \\
+Các thành phần tham gia và mối quan tâm & \textbf{Người dùng:} Muốn xem, cấu hình và quản lý các thông báo từ hệ thống. \\
+Mô tả tóm tắt & Chức năng cho phép xem danh sách thông báo, cấu hình cài đặt nhận thông báo và đánh dấu đã đọc. \\
+Trigger & Người dùng nhấn vào biểu tượng thông báo hoặc truy cập cài đặt thông báo. \\
+Kiểu sự kiện & External \\
+Luồng xử lý bình thường &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{enumerate}[nosep, leftmargin=*]
+    \item Người dùng mở trang thông báo.
+    \item Hệ thống hiển thị danh sách thông báo theo thời gian.
+    \item Người dùng có thể xem chi tiết, đánh dấu đã đọc hoặc cấu hình.
+    \item Hệ thống cập nhật trạng thái thông báo.
+\end{enumerate}
+\vspace{2pt}
+\end{minipage} \\
+Các luồng sự kiện con &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item Xem thông báo: Hiển thị danh sách với phân biệt đọc/chưa đọc.
+    \item Cấu hình thông báo: Bật/tắt email, push, in-app notification.
+    \item Đánh dấu đã đọc: Đánh dấu một hoặc tất cả thông báo.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Luồng luân phiên/đặc biệt &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item 2a. Không có thông báo: Hiển thị thông báo trống.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Kết quả & Thông báo được xem và quản lý thành công. \\
+\end{longtblr}

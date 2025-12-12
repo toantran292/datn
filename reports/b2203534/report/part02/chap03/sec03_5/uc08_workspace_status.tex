@@ -1,0 +1,66 @@
+% UC08: Khóa/Mở khóa Workspace
+\subsubsection{Chức năng khóa/mở khóa Work\-space (UC08)}
+
+\begin{itemize}
+    \item \textbf{Mục đích:} Cho phép Super Admin khóa hoặc mở khóa work\-space khi cần thiết (vi phạm chính sách, bảo trì...).
+\end{itemize}
+
+\begin{itemize}
+    \item \textbf{Giao diện:}
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\textwidth]{part02/chap03/sec03_5/uc08_admin_ui.png}
+    \caption{Giao diện Admin Panel}
+    \label{fig:ui_uc08_admin}
+\end{figure}
+
+\begin{itemize}
+    \item \textbf{Các thành phần trong giao diện:}
+\end{itemize}
+
+\begin{longtblr}[
+    caption = {Các thành phần trong giao diện Admin Panel},
+    label = {tab:ui_uc08}
+]{
+    colspec = {|c|l|l|X|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+STT & Loại & Tên thành phần & Nội dung thực hiện \\
+1 & Card & Stats Cards & Hiển thị thống kê: Total Users, Work\-spaces, AI Reports, Storage \\
+2 & Table & Work\-spaces Table & Danh sách work\-space với thông tin: tên, số thành viên, trạng thái \\
+3 & Button & Lock & Khóa work\-space đang hoạt động \\
+4 & Button & Unlock & Mở khóa work\-space đã bị khóa \\
+\end{longtblr}
+
+\begin{itemize}
+    \item \textbf{Dữ liệu được dùng:}
+\end{itemize}
+
+\begin{longtblr}[
+    caption = {Dữ liệu cho chức năng khóa/mở khóa Work\-space},
+    label = {tab:data_uc08}
+]{
+    colspec = {|c|X|c|c|c|c|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+STT & Tên bảng & Thêm & Sửa & Xóa & Truy vấn \\
+1 & Work\-space & & X & & X \\
+2 & AuditLog & X & & & \\
+\end{longtblr}
+
+\begin{itemize}
+    \item \textbf{Xử lý:}
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{part02/chap03/sec03_5/uc08_workspace_status_activity.png}
+    \caption{Sơ đồ hoạt động chức năng khóa/mở khóa Work\-space}
+    \label{fig:act_uc08_workspace_status}
+\end{figure}

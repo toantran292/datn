@@ -1,0 +1,67 @@
+% UC09: Xem Dashboard
+\subsubsection{Chức năng xem Dash\-board (UC09)}
+
+\begin{itemize}
+    \item \textbf{Mục đích:} Hiển thị tổng quan về hoạt động của work\-space: thống kê, biểu đồ, hoạt động gần đây.
+\end{itemize}
+
+\begin{itemize}
+    \item \textbf{Giao diện:}
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/uc09_dashboard_ui.png}
+    \caption{Giao diện Dash\-board}
+    \label{fig:ui_uc09_dashboard}
+\end{figure}
+
+\begin{itemize}
+    \item \textbf{Các thành phần trong giao diện:}
+\end{itemize}
+
+\begin{longtblr}[
+    caption = {Các thành phần trong giao diện Dash\-board},
+    label = {tab:ui_uc09}
+]{
+    colspec = {|c|l|l|X|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+STT & Loại & Tên thành phần & Nội dung thực hiện \\
+1 & Card & Stats Cards & Hiển thị số liệu: Members, Files, AI Reports, Activities với \% thay đổi \\
+2 & Chart & Usage Overview & Biểu đồ cột hiển thị xu hướng hoạt động theo thời gian \\
+3 & List & Recent Activity & Danh sách các hoạt động gần đây trong work\-space \\
+\end{longtblr}
+
+\begin{itemize}
+    \item \textbf{Dữ liệu được dùng:}
+\end{itemize}
+
+\begin{longtblr}[
+    caption = {Dữ liệu cho chức năng xem Dash\-board},
+    label = {tab:data_uc09}
+]{
+    colspec = {|c|X|c|c|c|c|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+STT & Tên bảng & Thêm & Sửa & Xóa & Truy vấn \\
+1 & Work\-space\-Member & & & & X \\
+2 & File & & & & X \\
+3 & AIReport & & & & X \\
+4 & AuditLog & & & & X \\
+\end{longtblr}
+
+\begin{itemize}
+    \item \textbf{Xử lý:}
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\textwidth]{part02/chap03/sec03_5/uc09_dashboard_activity.png}
+    \caption{Sơ đồ hoạt động chức năng xem Dash\-board}
+    \label{fig:act_uc09_dashboard}
+\end{figure}

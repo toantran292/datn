@@ -293,7 +293,7 @@ Phần này mô tả các ràng buộc dữ liệu cần được đảm bảo k
     \item Thuộc tính \texttt{sender\_id} phải là UUID hợp lệ tham chiếu đến user là member của channel.
     \item Thuộc tính \texttt{content} phải khác rỗng, có độ dài tối đa 10000 ký tự.
     \item Thuộc tính \texttt{content\_html} cho phép null, nếu có phải là HTML hợp lệ đã được sanitize.
-    \item Thuộc tính \texttt{mes\-sage\_type} phải có một trong các giá trị: TEXT, SYSTEM, AI\_RESPONSE.
+    \item Thuộc tính \texttt{mes\-sage\_type} phải có một trong các giá trị: TEXT, SYSTEM, AI\_RE\-SPONSE.
     \item Thuộc tính \texttt{meta\-data} phải là dữ liệu JSONB hợp lệ chứa mentions array, links array, và for\-mat\-ting info.
     \item Thuộc tính \texttt{thread\_id} nếu có phải tham chiếu đến thread tồn tại trong cùng channel.
     \item Thuộc tính \texttt{parent\_id} nếu có phải tham chiếu đến mes\-sage tồn tại trong cùng channel.
@@ -329,7 +329,7 @@ Phần này mô tả các ràng buộc dữ liệu cần được đảm bảo k
     \item Thuộc tính \texttt{mime\_type} phải khác rỗng và tuân theo chuẩn MIME type (ví dụ: ap\-pli\-ca\-tion/pdf, image/png).
     \item Thuộc tính \texttt{size} phải là số nguyên dương, được tính bằng bytes, giới hạn tối đa 50MB per file.
     \item Thuộc tính \texttt{thumb\-nail\_url} cho phép null, nếu có phải là URL hợp lệ pointing to image.
-    \item Thuộc tính \texttt{pro\-ces\-sing\_status} phải có một trong các giá trị: PENDING, PROCESSING, COM\-PLETED, FAILED.
+    \item Thuộc tính \texttt{pro\-ces\-sing\_status} phải có một trong các giá trị: PENDING, PR\-OCES\-SING, COM\-PLETED, FAILED.
 \end{itemize}
 
 \subsubsection*{Ràng buộc dữ liệu vector em\-bed\-ding (Mes\-sage Em\-bed\-dings \& Document Chunks)}
@@ -355,7 +355,7 @@ Phần này mô tả các ràng buộc dữ liệu cần được đảm bảo k
     \item Thuộc tính \texttt{con\-text\_mes\-sage\_ids} phải là mảng các UUID hợp lệ tham chiếu đến mes\-sages trong cùng channel.
     \item Thuộc tính \texttt{source\_re\-fer\-ences} phải là JSONB hợp lệ với structure: \{mes\-sage\_id, chunk\_id, re\-le\-vance\_score\}[].
     \item Thuộc tính \texttt{model\_used} phải có một trong các giá trị: gpt-4o-mini, gpt-4o, gpt-4-turbo.
-    \item Thuộc tính \texttt{tokens\_used} phải là số nguyên dương (prompt\_tokens + com\-ple\-tion\_tokens).
+    \item Thuộc tính \texttt{tokens\_used} phải là số nguyên dương (prompt\_tokens + com\-ple\-ti\-on\_\-to\-kens).
     \item Thuộc tính \texttt{re\-sponse\_time\_ms} cho phép null, nếu có phải là số nguyên dương.
 \end{itemize}
 

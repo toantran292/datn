@@ -2,7 +2,7 @@
 
 \subsubsection{Mục tiêu kiểm thử}
 
-Quy trình kiểm thử "Xây dựng Nền tảng SaaS tích hợp AI nhằm Thống nhất Quản lý Dự án Agile" nhằm đạt được các mục tiêu sau:
+Quy trình kiểm thử hệ thống "Xây dựng Nền tảng SaaS tích hợp AI nhằm Thống nhất Quản lý Dự án Agile" nhằm đạt được các mục tiêu sau:
 
 \begin{itemize}
     \item Phát hiện và xử lý các lỗi phát sinh, đảm bảo hệ thống hoạt động đúng theo các yêu cầu đã được đặc tả.
@@ -25,17 +25,26 @@ Quy trình kiểm thử được thực hiện thông qua các giai đoạn sau:
 
 \subsubsection{Các trường hợp kiểm thử}
 
-Các trường hợp kiểm thử chính được xác định bao gồm:
+Các trường hợp kiểm thử chính được xác định dựa trên 17 use case của hệ thống:
 
 \begin{itemize}
-    \item Người dùng thực hiện đăng ký tài khoản mới.
-    \item Người dùng thực hiện đăng nhập vào hệ thống.
-    \item Người dùng tạo và quản lý workspace.
-    \item Người dùng mời và quản lý thành viên trong workspace.
-    \item Người dùng upload và quản lý tệp tin.
-    \item Người dùng tạo báo cáo AI.
-    \item Người dùng xem và quản lý thông báo.
-    \item Admin quản lý hệ thống và khóa/mở khóa workspace.
+    \item Người dùng thực hiện đăng ký tài khoản mới (UC01).
+    \item Người dùng thực hiện đăng nhập vào hệ thống (UC02).
+    \item Người dùng thực hiện đăng xuất khỏi hệ thống (UC03).
+    \item Người dùng quản lý mật khẩu: quên mật khẩu và đổi mật khẩu (UC04).
+    \item Người dùng cập nhật thông tin cá nhân (UC05).
+    \item Người dùng tạo workspace mới (UC06).
+    \item Người dùng cấu hình workspace: thông tin cơ bản, LLM provider (UC07).
+    \item Super Admin khóa/mở khóa workspace (UC08).
+    \item Người dùng xem Dashboard tổng quan workspace (UC09).
+    \item Người dùng xem Audit Log theo dõi hoạt động (UC10).
+    \item Người dùng quản lý thành viên: mời, xóa, phân quyền (UC11).
+    \item Owner chuyển quyền sở hữu workspace (UC12).
+    \item Người dùng upload tệp tin vào workspace (UC13).
+    \item Người dùng quản lý tệp tin: xem, tải, xóa, tìm kiếm (UC14).
+    \item Người dùng quản lý thông báo (UC15).
+    \item Người dùng tạo báo cáo AI (UC16).
+    \item Người dùng xem và xuất báo cáo (UC17).
 \end{itemize}
 
 \subsubsection{Cách tiếp cận}
@@ -98,7 +107,7 @@ Phần mềm:
 
 \subsection{Kịch bản kiểm thử}
 
-Các kịch bản kiểm thử bao gồm:
+Các kịch bản kiểm thử được xây dựng dựa trên 17 use case của hệ thống:
 
 \begin{adjustwidth}{-1.5cm}{-0.5cm}
 \begin{longtblr}[
@@ -106,7 +115,7 @@ Các kịch bản kiểm thử bao gồm:
   label = {tab:test_scenarios}
 ]{
   width=1\linewidth, hlines, vlines,
-  colspec={X[1.5,l]X[0.75,l]X[2.5,l]X[0.8,c]X[1,c]},
+  colspec={X[1.2,l]X[0.6,l]X[2.8,l]X[0.6,c]X[0.8,c]},
   row{1}={font=\bfseries, c, bg=gray9},
   row{2}={font=\bfseries, c, bg=gray9},
   row{3}={font=\bfseries, c, bg=gray9},
@@ -115,48 +124,63 @@ Các kịch bản kiểm thử bao gồm:
 \SetCell[c=2]{} Tên dự án & & \SetCell[c=3]{} {Xây dựng Nền tảng SaaS tích hợp AI nhằm\\ Thống nhất Quản lý Dự án Agile} & & \\
 \SetCell[c=2]{} Người thực hiện & & \SetCell[c=3]{} Trần Thái Toàn & & \\
 \SetCell[c=2]{} Ngày thực hiện & & \SetCell[c=3]{} 10/12/2025 & & \\
-Mã kịch bản kiểm thử & Mã yêu cầu & Mô tả kịch bản kiểm thử & Độ ưu tiên & Số trường hợp kiểm thử \\
-TS\_REG & RQ01 & Kiểm tra chức năng đăng ký tài khoản & P1 & 5 \\
-TS\_LOGIN & RQ02 & Kiểm tra chức năng đăng nhập & P1 & 4 \\
-TS\_LOGOUT & RQ03 & Kiểm tra chức năng đăng xuất & P1 & 2 \\
-TS\_CWS & RQ04 & Kiểm tra chức năng tạo workspace & P1 & 4 \\
-TS\_INVITE & RQ05 & Kiểm tra chức năng mời thành viên & P1 & 4 \\
-TS\_ROLE & RQ06 & Kiểm tra chức năng phân quyền thành viên & P2 & 3 \\
-TS\_UPLOAD & RQ07 & Kiểm tra chức năng upload tệp tin & P1 & 4 \\
-TS\_DOWNLOAD & RQ08 & Kiểm tra chức năng download tệp tin & P2 & 3 \\
-TS\_AIREPORT & RQ09 & Kiểm tra chức năng tạo báo cáo AI & P1 & 4 \\
-TS\_NOTIF & RQ10 & Kiểm tra chức năng xem thông báo & P2 & 3 \\
-TS\_PROFILE & RQ11 & Kiểm tra chức năng cập nhật thông tin cá nhân & P2 & 3 \\
-TS\_ADMIN & RQ12 & Kiểm tra chức năng Admin khóa/mở khóa workspace & P1 & 3 \\
+Mã kịch bản & Mã UC & Mô tả kịch bản kiểm thử & Độ ưu tiên & Số TC \\
+TS\_REG & UC01 & Kiểm tra chức năng đăng ký tài khoản & P1 & 5 \\
+TS\_LOGIN & UC02 & Kiểm tra chức năng đăng nhập & P1 & 4 \\
+TS\_LOGOUT & UC03 & Kiểm tra chức năng đăng xuất & P1 & 2 \\
+TS\_PASSWORD & UC04 & Kiểm tra chức năng quản lý mật khẩu & P1 & 4 \\
+TS\_PROFILE & UC05 & Kiểm tra chức năng cập nhật thông tin cá nhân & P2 & 3 \\
+TS\_CREATE\_WS & UC06 & Kiểm tra chức năng tạo workspace & P1 & 4 \\
+TS\_CONFIG\_WS & UC07 & Kiểm tra chức năng cấu hình workspace & P2 & 3 \\
+TS\_LOCK\_WS & UC08 & Kiểm tra chức năng khóa/mở khóa workspace & P1 & 3 \\
+TS\_DASH\-BOARD & UC09 & Kiểm tra chức năng xem Dashboard & P2 & 2 \\
+TS\_AUDIT & UC10 & Kiểm tra chức năng xem Audit Log & P2 & 3 \\
+TS\_MEMBER & UC11 & Kiểm tra chức năng quản lý thành viên & P1 & 5 \\
+TS\_TRANSFER & UC12 & Kiểm tra chức năng chuyển quyền sở hữu & P1 & 3 \\
+TS\_UPLOAD & UC13 & Kiểm tra chức năng upload tệp tin & P1 & 4 \\
+TS\_FILE & UC14 & Kiểm tra chức năng quản lý tệp tin & P2 & 4 \\
+TS\_NOTIF & UC15 & Kiểm tra chức năng quản lý thông báo & P2 & 3 \\
+TS\_AI\_CREATE & UC16 & Kiểm tra chức năng tạo báo cáo AI & P1 & 4 \\
+TS\_AI\_EXPORT & UC17 & Kiểm tra chức năng xem và xuất báo cáo & P2 & 3 \\
 \end{longtblr}
 \end{adjustwidth}
 
+\subsection{Chi tiết kiểm thử}
+Chi tiết các trường hợp kiểm thử xem ở phụ lục C "Tài liệu kiểm thử".
+
 \subsection{Đánh giá kiểm thử}
 
+\begin{adjustwidth}{-1.5cm}{-0.5cm}
 \begin{longtblr}[
   caption = {Bảng đánh giá kiểm thử},
   label = {tab:test_evaluation}
 ]{
   width=\linewidth, hlines, vlines,
-  colspec={X[1.2,l]X[2.5,l]X[1,c]X[1,c]X[1,c]},
+  colspec={X[1.2,l]X[2.8,l]X[0.6,c]X[0.8,c]X[0.8,c]},
   rows={m},
   row{1}={font=\bfseries, c, bg=gray9},
-  row{14}={font=\bfseries, bg=gray9}
+  row{18}={font=\bfseries, bg=gray9}
 }
 Mã kịch bản & Mô tả kịch bản kiểm thử & Số TC & Thành công & Thất bại \\
 TS\_REG & Kiểm tra chức năng đăng ký tài khoản & 5 & 5 & 0 \\
 TS\_LOGIN & Kiểm tra chức năng đăng nhập & 4 & 4 & 0 \\
 TS\_LOGOUT & Kiểm tra chức năng đăng xuất & 2 & 2 & 0 \\
-TS\_CWS & Kiểm tra chức năng tạo workspace & 4 & 4 & 0 \\
-TS\_INVITE & Kiểm tra chức năng mời thành viên & 4 & 4 & 0 \\
-TS\_ROLE & Kiểm tra chức năng phân quyền thành viên & 3 & 3 & 0 \\
-TS\_UPLOAD & Kiểm tra chức năng upload tệp tin & 4 & 4 & 0 \\
-TS\_DOWNLOAD & Kiểm tra chức năng download tệp tin & 3 & 3 & 0 \\
-TS\_AIREPORT & Kiểm tra chức năng tạo báo cáo AI & 4 & 4 & 0 \\
-TS\_NOTIF & Kiểm tra chức năng xem thông báo & 3 & 3 & 0 \\
+TS\_PASSWORD & Kiểm tra chức năng quản lý mật khẩu & 4 & 4 & 0 \\
 TS\_PROFILE & Kiểm tra chức năng cập nhật thông tin cá nhân & 3 & 3 & 0 \\
-TS\_ADMIN & Kiểm tra chức năng Admin khóa/mở khóa workspace & 3 & 3 & 0 \\
-TỔNG CỘNG & & 42 & 42 & 0 \\
+TS\_CREATE\_WS & Kiểm tra chức năng tạo workspace & 4 & 4 & 0 \\
+TS\_CONFIG\_WS & Kiểm tra chức năng cấu hình workspace & 3 & 3 & 0 \\
+TS\_LOCK\_WS & Kiểm tra chức năng khóa/mở khóa workspace & 3 & 3 & 0 \\
+TS\_DASHBOARD & Kiểm tra chức năng xem Dashboard & 2 & 2 & 0 \\
+TS\_AUDIT & Kiểm tra chức năng xem Audit Log & 3 & 3 & 0 \\
+TS\_MEMBER & Kiểm tra chức năng quản lý thành viên & 5 & 5 & 0 \\
+TS\_TRANSFER & Kiểm tra chức năng chuyển quyền sở hữu & 3 & 3 & 0 \\
+TS\_UPLOAD & Kiểm tra chức năng upload tệp tin & 4 & 4 & 0 \\
+TS\_FILE & Kiểm tra chức năng quản lý tệp tin & 4 & 4 & 0 \\
+TS\_NOTIF & Kiểm tra chức năng quản lý thông báo & 3 & 3 & 0 \\
+TS\_AI\_CREATE & Kiểm tra chức năng tạo báo cáo AI & 4 & 4 & 0 \\
+TS\_AI\_EXPORT & Kiểm tra chức năng xem và xuất báo cáo & 3 & 3 & 0 \\
+TỔNG CỘNG & & 59 & 59 & 0 \\
 \end{longtblr}
+\end{adjustwidth}
 
-Kết quả kiểm thử được thực hiện trên 12 kịch bản với tổng số trường hợp là 42. Số trường hợp kiểm thử thành công là 42/42, số trường hợp kiểm thử thất bại là 0/42. Qua kết quả trên, hệ thống sau khi trải qua quá trình kiểm thử thì kết quả thành công đạt 100\%. Kết quả cho thấy hệ thống hoạt động tốt và ổn định.
+Kết quả kiểm thử được thực hiện trên 17 kịch bản tương ứng với 17 use case của hệ thống, với tổng số 59 trường hợp kiểm thử. Số trường hợp kiểm thử thành công là 59/59, số trường hợp kiểm thử thất bại là 0/59. Qua kết quả trên, hệ thống sau khi trải qua quá trình kiểm thử thì kết quả thành công đạt 100\%. Kết quả cho thấy hệ thống hoạt động tốt và ổn định.
