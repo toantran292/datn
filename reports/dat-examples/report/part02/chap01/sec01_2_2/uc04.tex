@@ -1,29 +1,29 @@
-\paragraph{UC04: Quản lý Custom Status}
+\paragraph{UC04: Quản lý trạng thái công việc}
 \mbox{}
 
-\textbf{UC04.1 - Tạo custom status mới}
+\textbf{UC04.1 - Tạo trạng thái công việc mới}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.7\textwidth]{images/uc04_1_create_status.png}
-    \caption{Sơ đồ use case chức năng tạo custom status}
+    \caption{Sơ đồ use case chức năng tạo trạng thái công việc}
     \label{fig:uc04_1_create_status}
 \end{figure}
 
 \begin{longtblr}[
-    caption = {Đặc tả use case UC04.1 - Tạo custom status mới},
+    caption = {Đặc tả use case UC04.1 - Tạo trạng thái công việc mới},
     label = {tab:uc04_1},
 ]{
     colspec={|l|p{.7\linewidth}|}
 }
 \hline
-\textbf{Tên chức năng} & \textbf{Tạo custom status mới} \\\hline
+\textbf{Tên chức năng} & \textbf{Tạo trạng thái công việc mới} \\\hline
 ID & UC04.1 \\\hline
 Người sử dụng & Project Lead \\\hline
 Mức độ cần thiết & Bắt buộc \\\hline
 Phân loại & Cao \\\hline
-Các thành phần tham gia & + \textbf{Project Lead:} Muốn tạo custom status để phù hợp với workflow của dự án (ví dụ: TO DO, IN REVIEW, TESTING, DONE). \\\hline
-Mô tả tóm tắt & Cho phép Project Lead tạo custom issue status với name, description, color (hex). Status được tự động gán order tiếp theo (hiển thị ở cuối board). \\\hline
+Các thành phần tham gia & + \textbf{Project Lead:} Muốn tạo trạng thái công việc để phù hợp với workflow của dự án (ví dụ: TO DO, IN REVIEW, TESTING, DONE). \\\hline
+Mô tả tóm tắt & Cho phép Project Lead tạo trạng thái công việc với name, description, color (hex). Status được tự động gán order tiếp theo (hiển thị ở cuối board). \\\hline
 Trigger & Project Lead nhấn "Add Status" trong project settings. \\\hline
 Kiểu sự kiện & External. \\\hline
 Luồng xử lý bình thường &
@@ -55,28 +55,28 @@ Luồng thay thế/ngoại lệ &
     \vskip 1pt
 \end{minipage}
 \\\hline
-Kết quả & Custom status mới được tạo, hiển thị ở cuối board view, có thể reorder sau. \\\hline
+Kết quả & Trạng thái công việc mới được tạo, hiển thị ở cuối board view, có thể reorder sau. \\\hline
 \end{longtblr}
 
 \vspace{1em}
 
-\textbf{UC04.2 - Cập nhật custom status}
+\textbf{UC04.2 - Cập nhật trạng thái công việc}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.7\textwidth]{images/uc04_2_update_status.png}
-    \caption{Sơ đồ use case chức năng cập nhật custom status}
+    \caption{Sơ đồ use case chức năng cập nhật trạng thái công việc}
     \label{fig:uc04_2_update_status}
 \end{figure}
 
 \begin{longtblr}[
-    caption = {Đặc tả use case UC04.2 - Cập nhật custom status},
+    caption = {Đặc tả use case UC04.2 - Cập nhật trạng thái công việc},
     label = {tab:uc04_2},
 ]{
     colspec={|l|p{.7\linewidth}|}
 }
 \hline
-\textbf{Tên chức năng} & \textbf{Cập nhật custom status} \\\hline
+\textbf{Tên chức năng} & \textbf{Cập nhật trạng thái công việc} \\\hline
 ID & UC04.2 \\\hline
 Người sử dụng & Project Lead \\\hline
 Mức độ cần thiết & Bắt buộc \\\hline
@@ -173,29 +173,29 @@ Kết quả & Status columns hiển thị theo thứ tự mới trong board view
 
 \vspace{1em}
 
-\textbf{UC04.4 - Xóa custom status}
+\textbf{UC04.4 - Xóa trạng thái công việc}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.7\textwidth]{images/uc04_4_delete_status.png}
-    \caption{Sơ đồ use case chức năng xóa custom status}
+    \caption{Sơ đồ use case chức năng xóa trạng thái công việc}
     \label{fig:uc04_4_delete_status}
 \end{figure}
 
 \begin{longtblr}[
-    caption = {Đặc tả use case UC04.4 - Xóa custom status},
+    caption = {Đặc tả use case UC04.4 - Xóa trạng thái công việc},
     label = {tab:uc04_4},
 ]{
     colspec={|l|p{.7\linewidth}|}
 }
 \hline
-\textbf{Tên chức năng} & \textbf{Xóa custom status} \\\hline
+\textbf{Tên chức năng} & \textbf{Xóa trạng thái công việc} \\\hline
 ID & UC04.4 \\\hline
 Người sử dụng & Project Lead \\\hline
 Mức độ cần thiết & Bắt buộc \\\hline
 Phân loại & Trung bình \\\hline
 Các thành phần tham gia & + \textbf{Project Lead:} Muốn xóa status không còn sử dụng hoặc thừa. \\\hline
-Mô tả tóm tắt & Cho phép Project Lead xóa custom status. Nếu status đang có issue, phải di chuyển issue sang status khác trước. \\\hline
+Mô tả tóm tắt & Cho phép Project Lead xóa trạng thái công việc. Nếu status đang có issue, phải di chuyển issue sang status khác trước. \\\hline
 Trigger & Project Lead click "Delete" trên status trong settings. \\\hline
 Kiểu sự kiện & External. \\\hline
 Luồng xử lý bình thường &

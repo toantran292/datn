@@ -71,6 +71,17 @@ Giao diện tự động tạo công việc bằng AI cho phép người dùng n
 \label{fig:ui_auto_generate_issue}
 \end{figure}
 
+\textbf{Giao diện AI tinh chỉnh mô tả công việc:}
+
+Giao diện AI tinh chỉnh mô tả công việc cho phép người dùng tự động cải thiện chất lượng mô tả công việc bằng AI. Chức năng này giúp format mô tả theo template chuẩn, bổ sung thông tin thiếu, làm rõ acceptance criteria và thêm technical notes nếu cần. Giao diện bao gồm: (1) Issue detail view với mô tả hiện tại và nút "Refine Description with AI" có icon sparkle gradient tím, (2) Loading state khi AI đang xử lý với progress indicator, (3) Preview panel hiển thị comparison giữa original description (bên trái) và refined description (bên phải) với highlighted differences. Refined description được format theo sections: User Story template (As a... I want... So that...), Acceptance Criteria (bullet points với checkboxes), Technical Notes (nếu có), và Suggested Story Points. Action buttons bao gồm "Apply Changes" để replace mô tả hiện tại, "Reject" để giữ nguyên original, và "Regenerate" để AI tạo lại với approach khác. Footer hiển thị LLM provider used và tokens consumed.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{images/refine_description.png}
+\caption{Giao diện phác thảo AI tinh chỉnh mô tả công việc}
+\label{fig:ui_refine_description}
+\end{figure}
+
 \textbf{Giao diện project summary:}
 
 Giao diện project summary hiển thị tổng quan về project: số lượng issues, số lượng sprints, số lượng thành viên, số lượng comments, số lượng attachments, và số lượng activities.

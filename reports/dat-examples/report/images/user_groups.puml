@@ -7,43 +7,52 @@ skinparam rectangleBorderThickness 2
 
 title Sơ đồ nhóm đối tượng người dùng - Phân hệ quản lý dự án
 
-class "Guest" as Guest {
-    + Đăng nhập
-    + Đăng ký
+class "Viewer/Stakeholder" as Viewer {
+    + Xem thông tin project
+    + Xem thành viên
+    + Xem danh sách sprints
+    + Xem chi tiết sprint
+    + Xem danh sách công việc
+    + Xem chi tiết công việc
+    + Xem comments (read-only)
+    + Xem activities (read-only)
+    + Xem Board view
+    + Xem Backlog view
+    + Xem AI Sprint Summary
 }
 
-class "Member" as Member {
-    + Xem danh sách issues
-    + Xem Backlog
-    + Xem Board Kanban
-    + Kéo thả issue
-    + Tạo issue
+class "Team Member" as TeamMember {
+    + Tạo công việc
+    + Cập nhật công việc
+    + Xóa công việc
+    + Assign công việc
+    + Reorder công việc
     + Thêm comment
-    + Upload/Download tệp
-    + Xem thông báo
+    + Upload file đính kèm
+    + Xem Calendar view
+    + Xem Timeline view
+    + AI tạo công việc từ mô tả
+    + AI tinh chỉnh mô tả công việc
 }
 
 class "Project Lead" as Lead {
     + Tạo project
-    + Cấu hình custom status
+    + Cập nhật project
+    + Cấu hình trạng thái công việc
+    + Cấu hình thông báo
     + Tạo sprint
+    + Cập nhật sprint
     + Bắt đầu sprint
     + Hoàn thành sprint
     + Mời thành viên
     + Xóa thành viên
     + Phân quyền
-    + Hỏi đáp AI
+    + AI Sprint Summary
     + Xem báo cáo tuần
+    + Thu thập dữ liệu analytics
 }
 
-class "Workspace Owner" as Owner {
-    + Khóa project
-    + Xem thống kê tổng hợp
-    + Quản lý organization
-}
-
-Guest <|-- Member : kế thừa
-Member <|-- Lead : kế thừa
-Lead <|-- Owner : kế thừa
+Viewer <|-- TeamMember : kế thừa
+TeamMember <|-- Lead : kế thừa
 
 @enduml
