@@ -60,6 +60,17 @@ Giao diện Issue Detail hiển thị chi tiết đầy đủ của một issue 
 \label{fig:ui_issue_detail}
 \end{figure}
 
+\textbf{Giao diện tự động tạo công việc bằng AI:}
+
+Giao diện tự động tạo công việc bằng AI cho phép người dùng nhập mô tả tổng quan hoặc user story, sau đó hệ thống sử dụng LLM để phân tích và tạo danh sách công việc tự động. Giao diện bao gồm hai bước chính: (1) Dialog input với textarea để nhập mô tả (requirements, user story, hoặc feature description), LLM provider selector, và nút "Tạo tự động", (2) Preview screen hiển thị danh sách công việc được AI generate với các thông tin: name, description, type (STORY/TASK/BUG), priority, story points. Người dùng có thể: edit từng công việc (inline editing), uncheck công việc không muốn tạo, và adjust priority/story points. Action buttons bao gồm "Regenerate" để AI tạo lại với approach khác và "Tạo tất cả" để confirm và tạo các công việc đã chọn vào project.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{images/ui_auto_generate_issue.png}
+\caption{Giao diện phác thảo tự động tạo công việc bằng AI}
+\label{fig:ui_auto_generate_issue}
+\end{figure}
+
 \textbf{Giao diện project summary:}
 
 Giao diện project summary hiển thị tổng quan về project: số lượng issues, số lượng sprints, số lượng thành viên, số lượng comments, số lượng attachments, và số lượng activities.
