@@ -1,0 +1,48 @@
+@startuml
+!theme plain
+skinparam defaultFontSize 11
+skinparam packageStyle rectangle
+
+title Phân rã chức năng của Viewer/Stakeholder
+
+rectangle "Viewer/Stakeholder" {
+
+  rectangle "Xem thông tin\nDự án" {
+    rectangle "Xem thông tin\nproject"
+    rectangle "Xem thành viên"
+    rectangle "Xem project\nsettings"
+  }
+
+  rectangle "Xem thông tin\nSprint" {
+    rectangle "Xem danh sách\nsprints"
+    rectangle "Xem chi tiết\nsprint"
+    rectangle "Xem sprint\nlifecycle"
+  }
+
+  rectangle "Xem thông tin\nCông việc" {
+    rectangle "Xem danh sách\ncông việc"
+    rectangle "Xem chi tiết\ncông việc"
+    rectangle "Xem assignees"
+  }
+
+  rectangle "Xem Collaboration\nHistory" {
+    rectangle "Xem comments\n(read-only)"
+    rectangle "Xem activities\n(read-only)"
+    rectangle "Xem audit trail\n(read-only)"
+  }
+
+  rectangle "Views\n(Read-Only)" {
+    rectangle "Xem Board view"
+    rectangle "Xem Backlog view"
+    rectangle "Xem Calendar view"
+    rectangle "Xem Timeline view"
+  }
+
+  rectangle "Xem AI\nContent" {
+    rectangle "Xem AI Sprint\nSummary"
+    rectangle "Xem AI-generated\ncontent"
+  }
+
+}
+
+@enduml
