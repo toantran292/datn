@@ -4,45 +4,58 @@
 
 Giao diện người dùng của hệ thống SaaS Platform tích hợp AI được thiết kế hướng đến tính trực quan, thẩm mỹ, hiện đại và dễ sử dụng, đảm bảo UX/UI tốt nhất và đồng bộ với nhận diện thương hiệu doanh nghiệp. Thiết kế lấy cảm hứng từ các nền tảng SaaS hiện đại như Linear và Stripe Dashboard.
 
-Về màu sắc chủ đạo, ứng dụng sử dụng màu cam (Primary Orange - \#FF8800) làm màu chủ đạo để tạo cảm giác năng động, sáng tạo và hiện đại. Màu xanh ngọc (Secondary Teal - \#00C4AB) được sử dụng cho các điểm nhấn phụ. Màu nền chủ yếu là xám rất nhạt (\#F9FAFB) và trắng, kết hợp với chữ màu đen đậm (\#1A1A1A) để tạo sự tương phản rõ ràng.
+Về màu sắc chủ đạo, ứng dụng sử dụng màu cam (Primary Orange - \#FF8800) làm màu chủ đạo để tạo cảm giác năng động, sáng tạo và hiện đại. Màu xanh ngọc (Secondary Teal - \#00B894) được sử dụng cho các điểm nhấn phụ. Màu nền chủ yếu là xám rất nhạt (\#F8F9FA) và trắng, kết hợp với chữ màu đen đậm (\#1A1A1A) để tạo sự tương phản rõ ràng.
 
-Các thành phần nổi bật như nút hành động (CTA) sử dụng gradient màu cam để thu hút sự chú ý. Hệ thống sử dụng soft shadows, rounded corners (12-16px), và subtle gradients để tạo chiều sâu.
+Các thành phần nổi bật như nút hành động (CTA) sử dụng gradient màu cam để thu hút sự chú ý. Hệ thống sử dụng soft shadows, rounded corners (10-20px), và subtle gradients để tạo chiều sâu.
 
 Ở thanh điều hướng (Sidebar), được đặt cố định ở phía trái của trang với màu nền trắng, hiển thị logo workspace, tên và plan. Sidebar giúp người dùng dễ dàng truy cập các chức năng chính như Overview, Members, Files, AI Reports, Audit Logs và Settings.
 
 Về thiết kế các nút chức năng: Nút primary sử dụng gradient cam (\#FF8800) cho hành động chính. Nút secondary sử dụng màu trắng với border cho hành động phụ. Nút danger dùng màu đỏ nhạt cho các hành động cảnh báo.
 
-Bố cục tổng thể được chia thành: Sidebar (200px), Top bar với search và user info, và Content area. Sử dụng font Inter hoặc Plus Jakarta Sans. Layout width 1440px với generous spacing và light card separation. Responsive design đảm bảo hiển thị tốt trên các thiết bị.
+Bố cục tổng thể được chia thành: Sidebar (200px), Top bar với search và user info, và Content area. Sử dụng font system (-apple-system, BlinkMacSystemFont, Segoe UI, Roboto). Responsive design đảm bảo hiển thị tốt trên các thiết bị.
 
 \subsubsection{Phác thảo thiết kế giao diện}
 
 \textbf{Giao diện đăng ký và đăng nhập:}
 
-Giao diện chức năng đăng ký cho phép người dùng tạo tài khoản để đăng nhập vào hệ thống. Để đăng ký, người dùng cần nhập họ tên, email, mật khẩu và xác nhận mật khẩu. Ngoài ra, người dùng có thể đăng ký nhanh bằng tài khoản Google (Google OAuth).
+Giao diện chức năng đăng ký cho phép người dùng tạo tài khoản để đăng nhập vào hệ thống. Để đăng ký, người dùng cần nhập họ tên, email, mật khẩu và xác nhận mật khẩu. Ngoài ra, người dùng có thể đăng ký nhanh bằng tài khoản Google (Google OAuth 2.0).
 
 Giao diện chức năng đăng nhập cho phép người dùng đăng nhập vào hệ thống. Để đăng nhập, người dùng cần nhập email, mật khẩu. Nếu quên mật khẩu, người dùng có thể nhấn vào link "Forgot password?" để được hướng dẫn reset.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.55\textwidth]{images/ui_auth.png}
+\includegraphics[width=0.6\textwidth]{images/uc01_02_auth_ui.png}
 \caption{Giao diện phác thảo chức năng đăng ký và chức năng đăng nhập}
 \label{fig:ui_auth}
 \end{figure}
 
-\textbf{Giao diện trang chủ (Landing Page):}
+\textbf{Giao diện quản lý mật khẩu:}
 
-Giao diện trang chủ (Landing Page) được thiết kế với thanh điều hướng ở phía trên, hero section với slogan và nút CTA, và các section giới thiệu tính năng chính của sản phẩm.
+Giao diện quản lý mật khẩu bao gồm hai phần: quên mật khẩu và đổi mật khẩu. Chức năng quên mật khẩu cho phép người dùng nhập email để nhận link reset. Chức năng đổi mật khẩu yêu cầu nhập mật khẩu hiện tại, mật khẩu mới và xác nhận mật khẩu mới.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.55\textwidth,height=0.35\textheight,keepaspectratio]{images/ui_landing.png}
-\caption{Giao diện phác thảo trang chủ (Landing Page)}
-\label{fig:ui_landing}
+\includegraphics[width=0.6\textwidth]{images/uc04_password_ui.png}
+\caption{Giao diện phác thảo chức năng quản lý mật khẩu}
+\label{fig:ui_password}
+\end{figure}
+
+\newpage
+
+\textbf{Giao diện trang cá nhân của người dùng:}
+
+Giao diện trang cá nhân của người dùng hiển thị thông tin tài khoản bao gồm: họ tên, email, số điện thoại, vai trò và trạng thái xác thực. Sidebar điều hướng cho phép chuyển đổi giữa các tab: Personal Info, Password, Notifications và Sessions. Phần Linked Accounts hiển thị các tài khoản liên kết như Google OAuth.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.55\textwidth]{images/uc05_profile_ui.png}
+\caption{Giao diện phác thảo trang cá nhân của người dùng}
+\label{fig:ui_profile}
 \end{figure}
 
 \textbf{Giao diện danh sách Workspaces:}
 
-Giao diện danh sách Workspaces hiển thị tất cả các workspaces mà người dùng là thành viên. Mỗi workspace được hiển thị dưới dạng card bao gồm: logo, tên workspace, mô tả ngắn, số lượng thành viên và vai trò của người dùng.
+Giao diện danh sách Workspaces hiển thị tất cả các workspaces mà người dùng là thành viên. Mỗi workspace được hiển thị dưới dạng card bao gồm: logo, tên workspace, số lượng thành viên và vai trò của người dùng (Owner, Admin, Member). Thanh tìm kiếm cho phép lọc workspace theo tên. Nút "Create Workspace" cho phép tạo workspace mới.
 
 \begin{figure}[H]
 \centering
@@ -51,112 +64,101 @@ Giao diện danh sách Workspaces hiển thị tất cả các workspaces mà ng
 \label{fig:ui_workspaces}
 \end{figure}
 
-\textbf{Giao diện Dashboard của Workspace:}
+\textbf{Giao diện Cài đặt Workspace:}
 
-Giao diện Dashboard của Workspace hiển thị tổng quan về hoạt động trong workspace. Phần trên cùng gồm các thẻ thống kê (stats cards), bên dưới là biểu đồ Usage Overview và danh sách Recent Activity.
+Giao diện Cài đặt Workspace cho phép Owner/Admin cấu hình thông tin workspace. Các tab bao gồm: General (thông tin cơ bản như logo, tên, slug), AI Settings (LLM provider mặc định: OpenAI, Anthropic, Google), Permissions và Danger Zone. Phần Basic Information cho phép thay đổi logo và tên workspace.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.55\textwidth]{images/ui_dashboard.png}
+\includegraphics[width=0.35\textwidth]{images/uc07_settings_ui.png}
+\caption{Giao diện phác thảo chức năng cài đặt Workspace}
+\label{fig:ui_settings}
+\end{figure}
+
+\textbf{Giao diện Admin Dashboard:}
+
+Giao diện Admin Dashboard (dành cho Super Admin) hiển thị tổng quan toàn bộ hệ thống. Phần trên cùng gồm các thẻ thống kê: Total Users, Workspaces, AI Reports và Storage. Bảng Manage Workspaces hiển thị danh sách tất cả workspace với thông tin: tên, số thành viên, trạng thái (Active/Locked) và các nút hành động Lock/Unlock.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{images/uc08_admin_ui.png}
+\caption{Giao diện phác thảo Admin Dashboard}
+\label{fig:ui_admin}
+\end{figure}
+
+\textbf{Giao diện Dashboard của Workspace:}
+
+Giao diện Dashboard của Workspace hiển thị tổng quan về hoạt động trong workspace. Phần trên cùng gồm các thẻ thống kê (stats cards) hiển thị: Members, Files, AI Reports và Activities kèm theo phần trăm thay đổi. Biểu đồ Usage Overview thể hiện xu hướng hoạt động theo thời gian. Danh sách Recent Activity hiển thị các hoạt động gần đây.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\textwidth]{images/uc09_dashboard_ui.png}
 \caption{Giao diện phác thảo Dashboard của Workspace}
 \label{fig:ui_dashboard}
 \end{figure}
 
-\textbf{Giao diện quản lý thành viên (Members):}
+\textbf{Giao diện Audit Logs:}
 
-Giao diện quản lý thành viên (Members) hiển thị danh sách tất cả thành viên trong workspace với thông tin: họ tên, email, vai trò, trạng thái và ngày tham gia.
+Giao diện Audit Logs cho phép Owner/Admin theo dõi tất cả hoạt động trong workspace. Các bộ lọc cho phép lọc theo loại hành động (File Upload, File Delete, Member Added...) và theo người thực hiện. Bảng hiển thị: Action (loại hành động và chi tiết), User (người thực hiện), Time (thời gian) và IP Address.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.55\textwidth]{images/ui_members.png}
+\includegraphics[width=0.6\textwidth]{images/uc10_audit_ui.png}
+\caption{Giao diện phác thảo chức năng xem Audit Logs}
+\label{fig:ui_audit}
+\end{figure}
+
+\textbf{Giao diện quản lý thành viên (Members):}
+
+Giao diện quản lý thành viên (Members) hiển thị danh sách tất cả thành viên trong workspace. Bảng thông tin bao gồm: Member (avatar, họ tên, email), Role (Owner, Admin, Member), Status (Active, Pending), Joined (ngày tham gia) và Actions (Edit, Remove). Thanh tìm kiếm cho phép lọc theo tên hoặc email.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\textwidth]{images/uc11_members_ui.png}
 \caption{Giao diện phác thảo chức năng quản lý thành viên}
 \label{fig:ui_members}
 \end{figure}
 
 \textbf{Giao diện biểu mẫu mời thành viên:}
 
-Giao diện biểu mẫu mời thành viên cho phép Owner/Admin nhập email của người muốn mời, chọn vai trò dự kiến và gửi lời mời.
+Giao diện biểu mẫu mời thành viên (modal) cho phép Owner/Admin mời người mới vào workspace. Các thành phần bao gồm: textarea nhập danh sách email (mỗi email một dòng), dropdown chọn vai trò (Member hoặc Admin), textarea nhập tin nhắn đính kèm và nút Send Invites để gửi lời mời.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.55\textwidth]{images/ui_invite.png}
+\includegraphics[width=0.45\textwidth]{images/uc11_invite_ui.png}
 \caption{Giao diện phác thảo biểu mẫu mời thành viên}
 \label{fig:ui_invite}
 \end{figure}
 
 \textbf{Giao diện quản lý tệp tin (Files):}
 
-Giao diện quản lý tệp tin (Files) hiển thị danh sách tất cả tệp tin đã upload trong workspace với các chức năng upload, download, xem và xóa.
+Giao diện quản lý tệp tin (Files) hiển thị danh sách tất cả tệp tin đã upload trong workspace. Bảng thông tin bao gồm: Name (icon loại file và tên), Size (dung lượng), Uploaded by (người upload), Date (ngày upload) và Actions (Download, Preview, Delete). Nút Upload cho phép tải lên tệp mới.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.55\textwidth]{images/ui_files.png}
+\includegraphics[width=0.6\textwidth]{images/uc13_14_files_ui.png}
 \caption{Giao diện phác thảo chức năng quản lý tệp tin}
 \label{fig:ui_files}
 \end{figure}
 
-\textbf{Giao diện Báo cáo AI (AI Reports):}
-
-Giao diện Báo cáo AI (AI Reports) hiển thị danh sách các báo cáo đã được tạo bởi AI với các loại: Daily Summary, Weekly Digest, Custom.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.55\textwidth]{images/ui_ai_reports.png}
-\caption{Giao diện phác thảo chức năng xem Báo cáo AI}
-\label{fig:ui_ai_reports}
-\end{figure}
-
-\textbf{Giao diện tạo báo cáo AI tùy chỉnh:}
-
-Giao diện tạo báo cáo AI tùy chỉnh cho phép Workspace Owner chọn nguồn dữ liệu, khoảng thời gian, LLM Provider và nhập prompt.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.45\textwidth]{images/ui_generate_report.png}
-\caption{Giao diện phác thảo biểu mẫu tạo báo cáo AI}
-\label{fig:ui_generate_report}
-\end{figure}
-
 \textbf{Giao diện Thông báo (Notifications):}
 
-Giao diện Thông báo (Notifications) hiển thị danh sách tất cả thông báo của người dùng với các loại: invitation, file upload, AI report ready, settings update.
+Giao diện Thông báo (Notifications) hiển thị danh sách tất cả thông báo của người dùng. Mỗi thông báo bao gồm: icon loại thông báo, tiêu đề, mô tả chi tiết và thời gian. Các loại thông báo: Workspace invitation, New file uploaded, AI Report ready, Settings updated. Link "Mark all read" cho phép đánh dấu tất cả đã đọc. Thông báo chưa đọc có indicator màu cam.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.5\textwidth]{images/ui_notifications.png}
+\includegraphics[width=0.35\textwidth]{images/uc15_notifications_ui.png}
 \caption{Giao diện phác thảo trang thông báo}
 \label{fig:ui_notifications}
 \end{figure}
 
-\textbf{Giao diện Cài đặt Workspace:}
+\textbf{Giao diện Báo cáo AI (AI Reports):}
 
-Giao diện Cài đặt Workspace cho phép Owner cấu hình thông tin cơ bản, LLM provider mặc định và các cài đặt nâng cao.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.45\textwidth]{images/ui_settings.png}
-\caption{Giao diện phác thảo chức năng cài đặt Workspace}
-\label{fig:ui_settings}
-\end{figure}
-
-\textbf{Giao diện trang cá nhân của người dùng:}
-
-Giao diện trang cá nhân của người dùng hiển thị thông tin tài khoản và các tùy chọn quản lý như đổi mật khẩu, cài đặt thông báo.
+Giao diện Báo cáo AI (AI Reports) hiển thị danh sách các báo cáo đã được tạo bởi AI. Featured Report (báo cáo nổi bật) hiển thị ở trên cùng với badge loại báo cáo, tiêu đề, mô tả và LLM provider đã sử dụng. Danh sách Reports List hiển thị các báo cáo khác với các loại: Daily Summary, Weekly Digest, Custom. Mỗi báo cáo có badge màu tương ứng với loại.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.55\textwidth]{images/ui_profile.png}
-\caption{Giao diện phác thảo trang cá nhân của người dùng}
-\label{fig:ui_profile}
-\end{figure}
-
-\textbf{Giao diện Admin Dashboard:}
-
-Giao diện Admin Dashboard (dành cho Super Admin) hiển thị tổng quan toàn bộ hệ thống với khả năng quản lý users và workspaces.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.55\textwidth]{images/ui_admin.png}
-\caption{Giao diện phác thảo Admin Dashboard}
-\label{fig:ui_admin}
+\includegraphics[width=0.6\textwidth]{images/uc16_17_reports_ui.png}
+\caption{Giao diện phác thảo chức năng xem Báo cáo AI}
+\label{fig:ui_ai_reports}
 \end{figure}

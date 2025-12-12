@@ -1,0 +1,72 @@
+% UC14: Quản lý tệp
+\paragraph{Chức năng quản lý tệp}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/uc14_files.png}
+    \caption{Sơ đồ use case chức năng quản lý tệp}
+    \label{fig:uc14_files}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Bảng đặc tả chức năng quản lý tệp},
+    label = {tab:uc14}
+]{
+    colspec = {|l|X|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+Tên chức năng & Quản lý tệp \\
+ID & UC14 \\
+Mức độ cần thiết & Bắt buộc \\
+Người sử dụng & Thành viên của Work\-space (quyền xem/tải), Owner/Admin (quyền xóa) \\
+Phân loại & Trung bình \\
+Các thành phần tham gia và mối quan tâm &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item \textbf{Thành viên:} Muốn xem, tải và tìm kiếm tệp trong work\-space.
+    \item \textbf{Owner/Admin:} Muốn xóa tệp không cần thiết.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Mô tả tóm tắt & Chức năng cho phép xem danh sách, tải xuống, xóa và tìm kiếm tệp trong work\-space. \\
+Trigger & Người dùng truy cập trang quản lý tệp của work\-space. \\
+Kiểu sự kiện & External \\
+Luồng xử lý bình thường &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{enumerate}[nosep, leftmargin=*]
+    \item Người dùng truy cập trang quản lý tệp.
+    \item Hệ thống hiển thị danh sách tệp theo cấu trúc thư mục.
+    \item Người dùng chọn thao tác: xem, tải, xóa hoặc tìm kiếm.
+    \item Hệ thống kiểm tra quyền truy cập.
+    \item Hệ thống thực hiện thao tác được yêu cầu.
+    \item Hệ thống ghi audit log (nếu là tải hoặc xóa).
+\end{enumerate}
+\vspace{2pt}
+\end{minipage} \\
+Các luồng sự kiện con &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item Xem danh sách: Hiển thị tất cả tệp với thông tin chi tiết.
+    \item Tải tệp: Download tệp về máy tính.
+    \item Xóa tệp: Xác nhận và xóa tệp khỏi work\-space.
+    \item Tìm kiếm: Lọc tệp theo tên hoặc loại.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Luồng luân phiên/đặc biệt &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item 4a. Không có quyền xóa: Ẩn nút xóa với Member thường.
+    \item 5a. Tệp đang được sử dụng: Cảnh báo trước khi xóa.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Kết quả & Thao tác quản lý tệp được thực hiện thành công. \\
+\end{longtblr}

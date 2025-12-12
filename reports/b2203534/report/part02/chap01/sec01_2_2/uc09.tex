@@ -1,0 +1,59 @@
+% UC09: Xem Dashboard
+\paragraph{Chức năng xem Dash\-board}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/uc09_dashboard.png}
+    \caption{Sơ đồ use case chức năng xem Dash\-board}
+    \label{fig:uc09_dashboard}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Bảng đặc tả chức năng xem Dash\-board},
+    label = {tab:uc09}
+]{
+    colspec = {|l|X|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+Tên chức năng & Xem Dash\-board \\
+ID & UC09 \\
+Mức độ cần thiết & Bắt buộc \\
+Người sử dụng & Thành viên của Work\-space \\
+Phân loại & Đơn giản \\
+Các thành phần tham gia và mối quan tâm & \textbf{Người dùng:} Muốn xem tổng quan hoạt động và thống kê của work\-space. \\
+Mô tả tóm tắt & Chức năng hiển thị tổng quan work\-space gồm thống kê số liệu và hoạt động gần đây. \\
+Trigger & Người dùng truy cập work\-space hoặc nhấn vào tab Dash\-board. \\
+Kiểu sự kiện & External \\
+Luồng xử lý bình thường &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{enumerate}[nosep, leftmargin=*]
+    \item Người dùng truy cập Dash\-board của work\-space.
+    \item Hệ thống tải và tính toán các thống kê.
+    \item Hệ thống hiển thị số lượng thành viên, tệp, báo cáo.
+    \item Hệ thống hiển thị danh sách hoạt động gần đây.
+\end{enumerate}
+\vspace{2pt}
+\end{minipage} \\
+Các luồng sự kiện con &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item Xem thống kê: Hiển thị các số liệu tổng hợp.
+    \item Xem hoạt động gần đây: Danh sách các thao tác mới nhất trong work\-space.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Luồng luân phiên/đặc biệt &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item 2a. Work\-space trống: Hiển thị hướng dẫn bắt đầu.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Kết quả & Dash\-board được hiển thị với thông tin tổng quan của work\-space. \\
+\end{longtblr}

@@ -1,0 +1,334 @@
+% ==================== NHÓM QUẢN LÝ KÊNH ====================
+
+% 3.5.1 Tạo kênh mới
+\subsubsection{Chức năng tạo kênh mới}
+
+Mục đích: Cho phép người dùng tạo kênh truyền thông mới trong work\-space để tổ chức các cuộc thảo luận theo chủ đề, dự án hoặc nhóm công việc. Hỗ trợ ba loại kênh: public (công khai), private (riêng tư) và project (theo dự án).
+
+Giao diện:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/ui_create_channel_numbered.png}
+\caption{Giao diện chức năng tạo kênh mới}
+\label{fig:ui_create_channel}
+\end{figure}
+
+Các thành phần trong giao diện:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|l|p{5.5cm}|}
+\hline
+\textbf{STT} & \textbf{Loại điều khiển} & \textbf{Tên điều khiển} & \textbf{Nội dung thực hiện} \\
+\hline
+1 & Radio Button & Channel Type & Chọn loại kênh (Public/Private/Project) \\
+\hline
+2 & Textbox & Channel Name & Nhập tên kênh \\
+\hline
+3 & Textarea & Description & Nhập mô tả cho kênh \\
+\hline
+4 & Toggle & AI Q\&A & Bật/tắt tính năng hỏi đáp AI \\
+\hline
+5 & Toggle & Auto Summary & Bật/tắt tính năng tóm tắt tự động \\
+\hline
+6 & Button & Cancel & Hủy bỏ thao tác tạo kênh \\
+\hline
+7 & Button & Create Channel & Xác nhận tạo kênh mới \\
+\hline
+\end{tabular}
+\caption{Bảng các thành phần trong giao diện tạo kênh mới}
+\label{tab:ui_create_channel}
+\end{table}
+
+Dữ liệu được dùng:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|c|c|c|c|}
+\hline
+\multirow{2}{*}{\textbf{STT}} & \multirow{2}{*}{\textbf{Tên bảng}} & \multicolumn{4}{c|}{\textbf{Phương thức}} \\
+\cline{3-6}
+& & \textbf{Thêm} & \textbf{Sửa} & \textbf{Xóa} & \textbf{Truy vấn} \\
+\hline
+1 & channels & X & & & X \\
+\hline
+2 & channel\_members & X & & & \\
+\hline
+\end{tabular}
+\caption{Bảng dữ liệu được dùng cho chức năng tạo kênh mới}
+\label{tab:func_create_channel}
+\end{table}
+
+Xử lý:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/act_create_channel.png}
+\caption{Sơ đồ hoạt động của chức năng tạo kênh mới}
+\label{fig:act_create_channel}
+\end{figure}
+
+% 3.5.2 Tham gia kênh
+\subsubsection{Chức năng tham gia kênh}
+
+Mục đích: Cho phép người dùng tham gia vào các kênh public có sẵn hoặc các kênh private/project khi được mời, để có thể xem và tham gia thảo luận trong kênh đó.
+
+Giao diện:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/ui_join_channel_numbered.png}
+\caption{Giao diện chức năng tham gia kênh}
+\label{fig:ui_join_channel}
+\end{figure}
+
+Các thành phần trong giao diện:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|l|p{5.5cm}|}
+\hline
+\textbf{STT} & \textbf{Loại điều khiển} & \textbf{Tên điều khiển} & \textbf{Nội dung thực hiện} \\
+\hline
+1 & Textbox & Search Channels & Tìm kiếm kênh theo tên \\
+\hline
+2 & List & Channel List & Hiển thị danh sách kênh có thể tham gia \\
+\hline
+3 & Label & Channel Info & Hiển thị thông tin kênh (tên, mô tả, số thành viên) \\
+\hline
+4 & Button & Join & Nhấn để tham gia kênh được chọn \\
+\hline
+\end{tabular}
+\caption{Bảng các thành phần trong giao diện tham gia kênh}
+\label{tab:ui_join_channel}
+\end{table}
+
+Dữ liệu được dùng:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|c|c|c|c|}
+\hline
+\multirow{2}{*}{\textbf{STT}} & \multirow{2}{*}{\textbf{Tên bảng}} & \multicolumn{4}{c|}{\textbf{Phương thức}} \\
+\cline{3-6}
+& & \textbf{Thêm} & \textbf{Sửa} & \textbf{Xóa} & \textbf{Truy vấn} \\
+\hline
+1 & channels & & & & X \\
+\hline
+2 & channel\_members & X & & & X \\
+\hline
+\end{tabular}
+\caption{Bảng dữ liệu được dùng cho chức năng tham gia kênh}
+\label{tab:func_join_channel}
+\end{table}
+
+Xử lý:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/act_join_channel.png}
+\caption{Sơ đồ hoạt động của chức năng tham gia kênh}
+\label{fig:act_join_channel}
+\end{figure}
+
+% 3.5.3 Rời kênh
+\subsubsection{Chức năng rời kênh}
+
+Mục đích: Cho phép người dùng rời khỏi kênh mà họ không còn muốn tham gia. Lưu ý: Owner duy nhất của kênh cần chuyển quyền trước khi rời.
+
+Giao diện:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/ui_leave_channel_numbered.png}
+\caption{Giao diện chức năng rời kênh}
+\label{fig:ui_leave_channel}
+\end{figure}
+
+Các thành phần trong giao diện:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|l|p{5.5cm}|}
+\hline
+\textbf{STT} & \textbf{Loại điều khiển} & \textbf{Tên điều khiển} & \textbf{Nội dung thực hiện} \\
+\hline
+1 & Label & Channel Name & Hiển thị tên kênh sẽ rời \\
+\hline
+2 & Label & Warning Message & Hiển thị cảnh báo về việc rời kênh \\
+\hline
+3 & Button & Cancel & Hủy bỏ thao tác rời kênh \\
+\hline
+4 & Button & Leave Channel & Xác nhận rời khỏi kênh \\
+\hline
+\end{tabular}
+\caption{Bảng các thành phần trong giao diện rời kênh}
+\label{tab:ui_leave_channel}
+\end{table}
+
+Dữ liệu được dùng:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|c|c|c|c|}
+\hline
+\multirow{2}{*}{\textbf{STT}} & \multirow{2}{*}{\textbf{Tên bảng}} & \multicolumn{4}{c|}{\textbf{Phương thức}} \\
+\cline{3-6}
+& & \textbf{Thêm} & \textbf{Sửa} & \textbf{Xóa} & \textbf{Truy vấn} \\
+\hline
+1 & channel\_members & & & X & X \\
+\hline
+2 & channels & & X & & X \\
+\hline
+\end{tabular}
+\caption{Bảng dữ liệu được dùng cho chức năng rời kênh}
+\label{tab:func_leave_channel}
+\end{table}
+
+Xử lý:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/act_leave_channel.png}
+\caption{Sơ đồ hoạt động của chức năng rời kênh}
+\label{fig:act_leave_channel}
+\end{figure}
+
+% 3.5.4 Mời thành viên vào kênh
+\subsubsection{Chức năng mời thành viên vào kênh}
+
+Mục đích: Cho phép Admin hoặc Owner của kênh mời thêm thành viên mới vào kênh private hoặc project, đồng thời có thể chỉ định vai trò cho thành viên được mời.
+
+Giao diện:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/ui_channel_members_numbered.png}
+\caption{Giao diện chức năng mời thành viên vào kênh}
+\label{fig:ui_invite_member}
+\end{figure}
+
+Các thành phần trong giao diện:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|l|p{5.5cm}|}
+\hline
+\textbf{STT} & \textbf{Loại điều khiển} & \textbf{Tên điều khiển} & \textbf{Nội dung thực hiện} \\
+\hline
+1 & Textbox & Search Members & Tìm kiếm thành viên trong work\-space \\
+\hline
+2 & Dropdown & User Select & Chọn người dùng để mời \\
+\hline
+3 & Dropdown & Role Select & Chọn vai trò (Admin/Member) \\
+\hline
+4 & Button & Invite & Gửi lời mời tham gia kênh \\
+\hline
+5 & List & Pending Invites & Hiển thị danh sách lời mời đang chờ \\
+\hline
+6 & List & Member List & Hiển thị danh sách thành viên hiện tại \\
+\hline
+\end{tabular}
+\caption{Bảng các thành phần trong giao diện mời thành viên}
+\label{tab:ui_invite_member}
+\end{table}
+
+Dữ liệu được dùng:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|c|c|c|c|}
+\hline
+\multirow{2}{*}{\textbf{STT}} & \multirow{2}{*}{\textbf{Tên bảng}} & \multicolumn{4}{c|}{\textbf{Phương thức}} \\
+\cline{3-6}
+& & \textbf{Thêm} & \textbf{Sửa} & \textbf{Xóa} & \textbf{Truy vấn} \\
+\hline
+1 & channel\_members & X & & & X \\
+\hline
+2 & channels & & & & X \\
+\hline
+3 & users & & & & X \\
+\hline
+\end{tabular}
+\caption{Bảng dữ liệu được dùng cho chức năng mời thành viên vào kênh}
+\label{tab:func_invite_member}
+\end{table}
+
+Xử lý:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/act_invite_member.png}
+\caption{Sơ đồ hoạt động của chức năng mời thành viên vào kênh}
+\label{fig:act_invite_member}
+\end{figure}
+
+% 3.5.5 Cài đặt kênh
+\subsubsection{Chức năng cài đặt kênh}
+
+Mục đích: Cho phép Admin hoặc Owner cập nhật thông tin kênh như tên, mô tả, loại kênh và cấu hình các tính năng AI (Q\&A, Auto Summary, Action Items, Document Summary).
+
+Giao diện:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/ui_channel_settings_numbered.png}
+\caption{Giao diện chức năng cài đặt kênh}
+\label{fig:ui_channel_settings}
+\end{figure}
+
+Các thành phần trong giao diện:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|l|p{5.5cm}|}
+\hline
+\textbf{STT} & \textbf{Loại điều khiển} & \textbf{Tên điều khiển} & \textbf{Nội dung thực hiện} \\
+\hline
+1 & Tab & Settings Tabs & Chuyển đổi giữa các tab (Over\-view/Mem\-bers/AI/Noti\-fi\-ca\-tions) \\
+\hline
+2 & Textbox & Channel Name & Chỉnh sửa tên kênh \\
+\hline
+3 & Textarea & Description & Chỉnh sửa mô tả kênh \\
+\hline
+4 & Toggle & AI Q\&A & Bật/tắt tính năng hỏi đáp AI \\
+\hline
+5 & Toggle & Auto Summary & Bật/tắt tính năng tóm tắt tự động \\
+\hline
+6 & Toggle & Action Items & Bật/tắt tính năng trích xuất action items \\
+\hline
+7 & Toggle & Document Summary & Bật/tắt tính năng tóm tắt tài liệu \\
+\hline
+8 & Button & Save Changes & Lưu các thay đổi cài đặt \\
+\hline
+\end{tabular}
+\caption{Bảng các thành phần trong giao diện cài đặt kênh}
+\label{tab:ui_channel_settings}
+\end{table}
+
+Dữ liệu được dùng:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|c|c|c|c|}
+\hline
+\multirow{2}{*}{\textbf{STT}} & \multirow{2}{*}{\textbf{Tên bảng}} & \multicolumn{4}{c|}{\textbf{Phương thức}} \\
+\cline{3-6}
+& & \textbf{Thêm} & \textbf{Sửa} & \textbf{Xóa} & \textbf{Truy vấn} \\
+\hline
+1 & channels & & X & & X \\
+\hline
+\end{tabular}
+\caption{Bảng dữ liệu được dùng cho chức năng cài đặt kênh}
+\label{tab:func_channel_settings}
+\end{table}
+
+Xử lý:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/act_channel_settings.png}
+\caption{Sơ đồ hoạt động của chức năng cài đặt kênh}
+\label{fig:act_channel_settings}
+\end{figure}

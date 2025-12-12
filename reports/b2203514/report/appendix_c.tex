@@ -206,4 +206,166 @@ TC\_\-ADMIN\_\-01 & TS\_\-ADMIN & Kiểm thử Super Admin khóa workspace & Wor
 TC\_\-ADMIN\_\-02 & TS\_\-ADMIN & Kiểm thử Super Admin mở khóa workspace & Workspace đang bị khóa & 1. Đăng nhập Super Admin\newline 2. Vào Admin Panel\newline 3. Chọn workspace bị khóa\newline 4. Nhấn Mở khóa & Hiển thị thông báo: "Đã mở khóa workspace!" & Hiển thị thông báo: "Đã mở khóa workspace!" & Pass \\
 TC\_\-ADMIN\_\-03 & TS\_\-ADMIN & Kiểm thử user thường không truy cập được Admin Panel & User thường & 1. Đăng nhập user thường\newline 2. Truy cập URL /admin & Chuyển hướng về trang 403 hoặc Dashboard & Chuyển hướng về trang 403 hoặc Dashboard & Pass \\
 \end{longtblr}
+
+% ==================== PHÂN HỆ TRUYỀN THÔNG ====================
+
+\subsection*{Các trường hợp kiểm thử phân hệ Truyền thông}
+
+% TS_CREATE_CH - Tạo kênh
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng tạo kênh mới},
+  label = {tab:tc_create_channel}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-CH\_\-01 & TS\_\-CREATE\_\-CH & Kiểm thử tạo kênh public với thông tin hợp lệ & Tên: general\newline Loại: Public\newline Mô tả: Kênh chung & 1. Nhấn "Tạo kênh"\newline 2. Nhập tên kênh\newline 3. Chọn loại Public\newline 4. Nhập mô tả\newline 5. Nhấn Tạo & Hiển thị thông báo: "Tạo kênh thành công!" & Hiển thị thông báo: "Tạo kênh thành công!" & Pass \\
+TC\_\-CH\_\-02 & TS\_\-CREATE\_\-CH & Kiểm thử tạo kênh private & Tên: team-lead\newline Loại: Private & 1. Nhấn "Tạo kênh"\newline 2. Nhập tên kênh\newline 3. Chọn loại Private\newline 4. Nhấn Tạo & Kênh được tạo với biểu tượng khóa & Kênh được tạo với biểu tượng khóa & Pass \\
+TC\_\-CH\_\-03 & TS\_\-CREATE\_\-CH & Kiểm thử tạo kênh với tên trống & Tên: (trống)\newline Loại: Public & 1. Nhấn "Tạo kênh"\newline 2. Để trống tên\newline 3. Nhấn Tạo & Hiển thị thông báo: "Tên kênh không được để trống!" & Hiển thị thông báo: "Tên kênh không được để trống!" & Pass \\
+TC\_\-CH\_\-04 & TS\_\-CREATE\_\-CH & Kiểm thử tạo kênh trùng tên & Tên: general (đã tồn tại) & 1. Nhấn "Tạo kênh"\newline 2. Nhập tên kênh đã tồn tại\newline 3. Nhấn Tạo & Hiển thị thông báo: "Tên kênh đã tồn tại!" & Hiển thị thông báo: "Tên kênh đã tồn tại!" & Pass \\
+TC\_\-CH\_\-05 & TS\_\-CREATE\_\-CH & Kiểm thử Member không có quyền tạo kênh & User có vai trò Member & 1. Đăng nhập với Member\newline 2. Kiểm tra nút "Tạo kênh" & Không hiển thị nút "Tạo kênh" & Không hiển thị nút "Tạo kênh" & Pass \\
+\end{longtblr}
+
+% TS_JOIN_CH - Tham gia kênh
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng tham gia kênh},
+  label = {tab:tc_join_channel}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-JOIN\_\-01 & TS\_\-JOIN\_\-CH & Kiểm thử tham gia kênh public & Kênh: general (public) & 1. Mở danh sách kênh\newline 2. Chọn kênh public\newline 3. Nhấn "Tham gia" & User được thêm vào kênh & User được thêm vào kênh & Pass \\
+TC\_\-JOIN\_\-02 & TS\_\-JOIN\_\-CH & Kiểm thử không thể tham gia kênh private chưa được mời & Kênh: team-lead (private) & 1. Truy cập kênh private\newline 2. Không có lời mời & Hiển thị thông báo: "Bạn không có quyền truy cập!" & Hiển thị thông báo: "Bạn không có quyền truy cập!" & Pass \\
+TC\_\-JOIN\_\-03 & TS\_\-JOIN\_\-CH & Kiểm thử tham gia kênh đã là thành viên & Kênh đã tham gia & 1. Mở kênh đã tham gia\newline 2. Kiểm tra nút Tham gia & Không hiển thị nút "Tham gia" & Không hiển thị nút "Tham gia" & Pass \\
+TC\_\-JOIN\_\-04 & TS\_\-JOIN\_\-CH & Kiểm thử tham gia kênh qua lời mời & Lời mời vào kênh private & 1. Nhận lời mời\newline 2. Nhấn "Chấp nhận" & User được thêm vào kênh private & User được thêm vào kênh private & Pass \\
+\end{longtblr}
+
+% TS_SEND_MSG - Gửi tin nhắn
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng gửi tin nhắn},
+  label = {tab:tc_send_message}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-MSG\_\-01 & TS\_\-SEND\_\-MSG & Kiểm thử gửi tin nhắn văn bản & Nội dung: "Xin chào mọi người!" & 1. Mở kênh\newline 2. Nhập tin nhắn\newline 3. Nhấn Gửi & Tin nhắn hiển thị trong kênh real-time (< 500ms) & Tin nhắn hiển thị trong kênh real-time (< 500ms) & Pass \\
+TC\_\-MSG\_\-02 & TS\_\-SEND\_\-MSG & Kiểm thử gửi tin nhắn với file đính kèm & File: document.pdf\newline Nội dung: "Đây là tài liệu" & 1. Nhấn icon đính kèm\newline 2. Chọn file\newline 3. Nhập tin nhắn\newline 4. Nhấn Gửi & Tin nhắn và file được hiển thị & Tin nhắn và file được hiển thị & Pass \\
+TC\_\-MSG\_\-03 & TS\_\-SEND\_\-MSG & Kiểm thử mention người dùng & Nội dung: "@john cần review" & 1. Nhập @\newline 2. Chọn user từ danh sách\newline 3. Hoàn thành tin nhắn\newline 4. Nhấn Gửi & Tin nhắn với mention được highlight, user nhận thông báo & Tin nhắn với mention được highlight, user nhận thông báo & Pass \\
+TC\_\-MSG\_\-04 & TS\_\-SEND\_\-MSG & Kiểm thử gửi tin nhắn trống & Nội dung: (trống) & 1. Không nhập gì\newline 2. Nhấn Gửi & Nút Gửi bị vô hiệu hóa & Nút Gửi bị vô hiệu hóa & Pass \\
+TC\_\-MSG\_\-05 & TS\_\-SEND\_\-MSG & Kiểm thử real-time đồng bộ & 2 users cùng kênh & 1. User A gửi tin\newline 2. Kiểm tra User B & User B thấy tin nhắn ngay lập tức & User B thấy tin nhắn ngay lập tức & Pass \\
+TC\_\-MSG\_\-06 & TS\_\-SEND\_\-MSG & Kiểm thử gửi tin với emoji & Nội dung: "Tuyệt vời!" kèm emoji & 1. Nhập tin với emoji\newline 2. Nhấn Gửi & Emoji hiển thị đúng & Emoji hiển thị đúng & Pass \\
+\end{longtblr}
+
+% TS_CREATE_THR - Tạo thread
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng tạo thread thảo luận},
+  label = {tab:tc_create_thread}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-THR\_\-01 & TS\_\-CREATE\_\-THR & Kiểm thử tạo thread từ tin nhắn & Tin nhắn gốc đã có & 1. Hover vào tin nhắn\newline 2. Nhấn "Trả lời trong thread"\newline 3. Nhập nội dung\newline 4. Gửi & Thread được tạo, hiển thị panel bên phải & Thread được tạo, hiển thị panel bên phải & Pass \\
+TC\_\-THR\_\-02 & TS\_\-CREATE\_\-THR & Kiểm thử thread hiển thị số replies & Thread có 3 replies & 1. Xem tin nhắn có thread\newline 2. Kiểm tra badge & Hiển thị "3 replies" dưới tin nhắn & Hiển thị "3 replies" dưới tin nhắn & Pass \\
+TC\_\-THR\_\-03 & TS\_\-CREATE\_\-THR & Kiểm thử đóng/mở panel thread & Thread đang mở & 1. Nhấn X để đóng\newline 2. Nhấn vào thread badge để mở & Panel đóng/mở đúng & Panel đóng/mở đúng & Pass \\
+TC\_\-THR\_\-04 & TS\_\-CREATE\_\-THR & Kiểm thử thread không làm loãng kênh chính & Tin nhắn trong thread & 1. Trả lời trong thread\newline 2. Kiểm tra kênh chính & Tin nhắn thread không xuất hiện trong kênh chính & Tin nhắn thread không xuất hiện trong kênh chính & Pass \\
+\end{longtblr}
+
+% TS_SEARCH_MSG - Tìm kiếm tin nhắn
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng tìm kiếm tin nhắn},
+  label = {tab:tc_search_message}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-SEARCH\_\-01 & TS\_\-SEARCH\_\-MSG & Kiểm thử tìm kiếm full-text & Từ khóa: "báo cáo" & 1. Nhấn icon tìm kiếm\newline 2. Nhập từ khóa\newline 3. Nhấn Enter & Hiển thị danh sách tin nhắn chứa "báo cáo" & Hiển thị danh sách tin nhắn chứa "báo cáo" & Pass \\
+TC\_\-SEARCH\_\-02 & TS\_\-SEARCH\_\-MSG & Kiểm thử tìm kiếm semantic & Câu hỏi: "deadline dự án" & 1. Chọn chế độ Semantic\newline 2. Nhập câu hỏi\newline 3. Nhấn Enter & Hiển thị tin nhắn liên quan đến deadline, kể cả không chứa từ khóa chính xác & Hiển thị tin nhắn liên quan đến deadline, kể cả không chứa từ khóa chính xác & Pass \\
+TC\_\-SEARCH\_\-03 & TS\_\-SEARCH\_\-MSG & Kiểm thử tìm kiếm không có kết quả & Từ khóa: "xyz123abc" & 1. Nhập từ khóa không tồn tại\newline 2. Nhấn Enter & Hiển thị: "Không tìm thấy kết quả" & Hiển thị: "Không tìm thấy kết quả" & Pass \\
+TC\_\-SEARCH\_\-04 & TS\_\-SEARCH\_\-MSG & Kiểm thử filter theo kênh & Từ khóa: "meeting"\newline Filter: general & 1. Nhập từ khóa\newline 2. Chọn filter kênh\newline 3. Tìm kiếm & Chỉ hiển thị kết quả từ kênh general & Chỉ hiển thị kết quả từ kênh general & Pass \\
+TC\_\-SEARCH\_\-05 & TS\_\-SEARCH\_\-MSG & Kiểm thử click vào kết quả để đến tin nhắn & Kết quả tìm kiếm & 1. Tìm kiếm\newline 2. Click vào kết quả & Chuyển đến kênh và highlight tin nhắn & Chuyển đến kênh và highlight tin nhắn & Pass \\
+\end{longtblr}
+
+% TS_AI_QA - Hỏi đáp AI (RAG)
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng hỏi đáp AI (RAG)},
+  label = {tab:tc_ai_qa}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-AI\_\-QA\_\-01 & TS\_\-AI\_\-QA & Kiểm thử hỏi AI câu hỏi về nội dung kênh & Câu hỏi: "Deadline của sprint 5 là khi nào?" & 1. Mở AI Assistant\newline 2. Nhập câu hỏi\newline 3. Nhấn Gửi & AI trả lời dựa trên context kênh, có trích dẫn nguồn & AI trả lời dựa trên context kênh, có trích dẫn nguồn & Pass \\
+TC\_\-AI\_\-QA\_\-02 & TS\_\-AI\_\-QA & Kiểm thử AI trích dẫn nguồn chính xác & Câu hỏi có context rõ ràng & 1. Hỏi AI\newline 2. Kiểm tra nguồn trích dẫn & Hiển thị link đến tin nhắn gốc & Hiển thị link đến tin nhắn gốc & Pass \\
+TC\_\-AI\_\-QA\_\-03 & TS\_\-AI\_\-QA & Kiểm thử AI khi không có context phù hợp & Câu hỏi: "Thời tiết hôm nay thế nào?" & 1. Hỏi câu không liên quan\newline 2. Kiểm tra response & AI thông báo không tìm thấy thông tin liên quan & AI thông báo không tìm thấy thông tin liên quan & Pass \\
+TC\_\-AI\_\-QA\_\-04 & TS\_\-AI\_\-QA & Kiểm thử hiệu năng response & Câu hỏi thông thường & 1. Hỏi AI\newline 2. Đo thời gian response & Response trong vòng 5 giây & Response trong vòng 5 giây & Pass \\
+TC\_\-AI\_\-QA\_\-05 & TS\_\-AI\_\-QA & Kiểm thử hỏi follow-up & Câu hỏi tiếp theo liên quan & 1. Hỏi câu đầu\newline 2. Hỏi câu follow-up & AI hiểu context từ câu hỏi trước & AI hiểu context từ câu hỏi trước & Pass \\
+\end{longtblr}
+
+% TS_AI_SUMMARY - Tóm tắt hội thoại
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng tóm tắt hội thoại},
+  label = {tab:tc_ai_summary}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-SUM\_\-01 & TS\_\-AI\_\-SUMMARY & Kiểm thử tóm tắt hội thoại từ lần truy cập cuối & Kênh có 50+ tin nhắn mới & 1. Vào kênh có tin nhắn mới\newline 2. Nhấn "Tóm tắt" & Hiển thị bản tóm tắt các điểm chính & Hiển thị bản tóm tắt các điểm chính & Pass \\
+TC\_\-SUM\_\-02 & TS\_\-AI\_\-SUMMARY & Kiểm thử tóm tắt thread dài & Thread có 20+ replies & 1. Mở thread dài\newline 2. Nhấn "Tóm tắt thread" & Hiển thị tóm tắt nội dung thread & Hiển thị tóm tắt nội dung thread & Pass \\
+TC\_\-SUM\_\-03 & TS\_\-AI\_\-SUMMARY & Kiểm thử tóm tắt kênh không có tin mới & Kênh đã đọc hết & 1. Vào kênh đã đọc\newline 2. Nhấn "Tóm tắt" & Thông báo: "Không có tin nhắn mới để tóm tắt" & Thông báo: "Không có tin nhắn mới để tóm tắt" & Pass \\
+TC\_\-SUM\_\-04 & TS\_\-AI\_\-SUMMARY & Kiểm thử format tóm tắt & Hội thoại phức tạp & 1. Tóm tắt hội thoại\newline 2. Kiểm tra format & Tóm tắt có cấu trúc rõ ràng với bullet points & Tóm tắt có cấu trúc rõ ràng với bullet points & Pass \\
+\end{longtblr}
+
+% TS_EXTRACT_ACT - Trích xuất action items
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng trích xuất action items},
+  label = {tab:tc_extract_actions}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-ACT\_\-01 & TS\_\-EXTRACT\_\-ACT & Kiểm thử trích xuất action items từ hội thoại & Hội thoại chứa "@john cần hoàn thành báo cáo" & 1. Nhấn "Trích xuất Actions"\newline 2. Chọn khoảng thời gian & Hiển thị danh sách action items với người phụ trách & Hiển thị danh sách action items với người phụ trách & Pass \\
+TC\_\-ACT\_\-02 & TS\_\-EXTRACT\_\-ACT & Kiểm thử trích xuất với mention người dùng & Tin nhắn: "@mary review PR \#123 trước thứ 6" & 1. Trích xuất actions\newline 2. Kiểm tra kết quả & Action item gán cho mary, có deadline & Action item gán cho mary, có deadline & Pass \\
+TC\_\-ACT\_\-03 & TS\_\-EXTRACT\_\-ACT & Kiểm thử hội thoại không có action items & Hội thoại casual không có task & 1. Trích xuất actions\newline 2. Kiểm tra kết quả & Thông báo: "Không tìm thấy action items" & Thông báo: "Không tìm thấy action items" & Pass \\
+\end{longtblr}
+
+% TS_SUMMARIZE_DOC - Tóm tắt tài liệu
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng tóm tắt tài liệu đính kèm},
+  label = {tab:tc_summarize_doc}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-DOC\_\-01 & TS\_\-SUMMARIZE\_\-DOC & Kiểm thử tóm tắt file PDF & File: report.pdf (10 trang) & 1. Upload PDF\newline 2. Nhấn "Tóm tắt"\newline 3. Chờ xử lý & Hiển thị bản tóm tắt nội dung PDF & Hiển thị bản tóm tắt nội dung PDF & Pass \\
+TC\_\-DOC\_\-02 & TS\_\-SUMMARIZE\_\-DOC & Kiểm thử tóm tắt file DOCX & File: proposal.docx & 1. Upload DOCX\newline 2. Nhấn "Tóm tắt" & Hiển thị bản tóm tắt nội dung DOCX & Hiển thị bản tóm tắt nội dung DOCX & Pass \\
+TC\_\-DOC\_\-03 & TS\_\-SUMMARIZE\_\-DOC & Kiểm thử tóm tắt file không hỗ trợ & File: image.png & 1. Upload file ảnh\newline 2. Kiểm tra nút tóm tắt & Không hiển thị nút "Tóm tắt" cho file ảnh & Không hiển thị nút "Tóm tắt" cho file ảnh & Pass \\
+TC\_\-DOC\_\-04 & TS\_\-SUMMARIZE\_\-DOC & Kiểm thử tài liệu đã được index cho RAG & File PDF đã tóm tắt & 1. Tóm tắt tài liệu\newline 2. Hỏi AI về nội dung & AI trả lời dựa trên nội dung tài liệu & AI trả lời dựa trên nội dung tài liệu & Pass \\
+\end{longtblr}
+
 \end{landscape}

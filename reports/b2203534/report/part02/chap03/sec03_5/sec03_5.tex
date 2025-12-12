@@ -1,23 +1,54 @@
-\subsection{Thiết kế theo chức năng}
+\subsection{Thiết kế giao diện chi tiết}
 
-Phần này trình bày chi tiết thiết kế cho các chức năng chính của hệ thống SaaS Platform, bao gồm mục đích, dữ liệu được sử dụng và sơ đồ hoạt động cho từng chức năng. Các chức năng được nhóm thành 5 nhóm chính: Xác thực, Quản lý Workspace, Quản lý thành viên, Quản lý tệp tin, Thông báo và Báo cáo AI.
+Phần này trình bày thiết kế giao diện chi tiết cho từng chức năng của hệ thống, bao gồm: giao diện phác thảo, bảng mô tả các thành phần, bảng dữ liệu liên quan và sơ đồ hoạt động.
 
-Do giới hạn về số trang, phần này trình bày chi tiết các chức năng quan trọng nhất đại diện cho mỗi nhóm. Các chức năng còn lại tuân theo cùng cấu trúc thiết kế tương tự.
+% UC01: Đăng ký tài khoản
+\input{part02/chap03/sec03_5/uc01_register.tex}
 
-% Nhóm xác thực
-\input{part02/chap03/sec03_5/auth_functions.tex}
+% UC02: Đăng nhập
+\input{part02/chap03/sec03_5/uc02_login.tex}
 
-% Nhóm workspace
-\input{part02/chap03/sec03_5/workspace_core_functions.tex}
+% UC03: Đăng xuất
+\input{part02/chap03/sec03_5/uc03_logout.tex}
 
-% Nhóm thành viên
-\input{part02/chap03/sec03_5/member_functions.tex}
+% UC04: Quản lý mật khẩu
+\input{part02/chap03/sec03_5/uc04_password.tex}
 
-% Nhóm file
-\input{part02/chap03/sec03_5/file_functions.tex}
+% UC05: Cập nhật thông tin cá nhân
+\input{part02/chap03/sec03_5/uc05_profile.tex}
 
-% Nhóm thông báo
-\input{part02/chap03/sec03_5/notification_functions.tex}
+% UC06: Tạo Workspace
+\input{part02/chap03/sec03_5/uc06_create_workspace.tex}
 
-% Nhóm báo cáo AI
-\input{part02/chap03/sec03_5/report_functions.tex}
+% UC07: Cấu hình Workspace
+\input{part02/chap03/sec03_5/uc07_config_workspace.tex}
+
+% UC08: Khóa/Mở khóa Workspace
+\input{part02/chap03/sec03_5/uc08_workspace_status.tex}
+
+% UC09: Xem Dashboard
+\input{part02/chap03/sec03_5/uc09_dashboard.tex}
+
+% UC10: Xem Audit Log
+\input{part02/chap03/sec03_5/uc10_audit.tex}
+
+% UC11: Quản lý thành viên
+\input{part02/chap03/sec03_5/uc11_members.tex}
+
+% UC12: Chuyển quyền sở hữu
+\input{part02/chap03/sec03_5/uc12_ownership.tex}
+
+% UC13: Upload tệp tin
+\input{part02/chap03/sec03_5/uc13_upload.tex}
+
+% UC14: Quản lý tệp tin
+\input{part02/chap03/sec03_5/uc14_files.tex}
+
+% UC15: Quản lý thông báo
+\input{part02/chap03/sec03_5/uc15_notifications.tex}
+
+% UC16: Tạo báo cáo AI
+\input{part02/chap03/sec03_5/uc16_create_report.tex}
+
+% UC17: Xem và xuất báo cáo
+\input{part02/chap03/sec03_5/uc17_export_report.tex}

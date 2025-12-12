@@ -1,0 +1,470 @@
+% ==================== NHÓM TIN NHẮN VÀ THREAD ====================
+
+% 3.5.6 Gửi tin nhắn
+\subsubsection{Chức năng gửi tin nhắn}
+
+Mục đích: Cho phép người dùng gửi tin nhắn văn bản vào kênh, có thể đính kèm file và mention các thành viên khác. Tin nhắn được broad\-cast real-time đến tất cả thành viên trong kênh.
+
+Giao diện:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/ui_chat_main_numbered.png}
+\caption{Giao diện chức năng gửi tin nhắn}
+\label{fig:ui_send_message}
+\end{figure}
+
+Các thành phần trong giao diện:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|l|p{5.5cm}|}
+\hline
+\textbf{STT} & \textbf{Loại điều khiển} & \textbf{Tên điều khiển} & \textbf{Nội dung thực hiện} \\
+\hline
+1 & List & Channel Sidebar & Hiển thị danh sách kênh \\
+\hline
+2 & List & Mes\-sage List & Hiển thị các tin nhắn trong kênh \\
+\hline
+3 & Textarea & Mes\-sage Input & Nhập nội dung tin nhắn \\
+\hline
+4 & Button & Attach File & Đính kèm file vào tin nhắn \\
+\hline
+5 & Button & Mention & Mention thành viên (@) \\
+\hline
+6 & Button & Emoji & Chèn emoji vào tin nhắn \\
+\hline
+7 & Button & Send & Gửi tin nhắn \\
+\hline
+8 & Panel & AI As\-sis\-tant & Hiển thị AI As\-sis\-tant panel \\
+\hline
+\end{tabular}
+\caption{Bảng các thành phần trong giao diện gửi tin nhắn}
+\label{tab:ui_send_message}
+\end{table}
+
+Dữ liệu được dùng:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|c|c|c|c|}
+\hline
+\multirow{2}{*}{\textbf{STT}} & \multirow{2}{*}{\textbf{Tên bảng}} & \multicolumn{4}{c|}{\textbf{Phương thức}} \\
+\cline{3-6}
+& & \textbf{Thêm} & \textbf{Sửa} & \textbf{Xóa} & \textbf{Truy vấn} \\
+\hline
+1 & mes\-sages & X & & & X \\
+\hline
+2 & at\-tach\-ments & X & & & \\
+\hline
+3 & mentions & X & & & \\
+\hline
+4 & mes\-sage\_em\-bed\-dings & X & & & \\
+\hline
+5 & channel\_members & & X & & X \\
+\hline
+\end{tabular}
+\caption{Bảng dữ liệu được dùng cho chức năng gửi tin nhắn}
+\label{tab:func_send_message}
+\end{table}
+
+Xử lý:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/act_send_message.png}
+\caption{Sơ đồ hoạt động của chức năng gửi tin nhắn}
+\label{fig:act_send_message}
+\end{figure}
+
+% 3.5.7 Chỉnh sửa tin nhắn
+\subsubsection{Chức năng chỉnh sửa tin nhắn}
+
+Mục đích: Cho phép người dùng chỉnh sửa nội dung tin nhắn đã gửi. Chỉ chủ sở hữu tin nhắn mới có quyền chỉnh sửa. Tin nhắn đã sửa sẽ hiển thị trạng thái "đã chỉnh sửa".
+
+Giao diện:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/ui_edit_message_numbered.png}
+\caption{Giao diện chức năng chỉnh sửa tin nhắn}
+\label{fig:ui_edit_message}
+\end{figure}
+
+Các thành phần trong giao diện:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|l|p{5.5cm}|}
+\hline
+\textbf{STT} & \textbf{Loại điều khiển} & \textbf{Tên điều khiển} & \textbf{Nội dung thực hiện} \\
+\hline
+1 & Context Menu & Mes\-sage Actions & Hiển thị menu thao tác với tin nhắn \\
+\hline
+2 & Menu Item & Edit & Chọn để chỉnh sửa tin nhắn \\
+\hline
+3 & Textarea & Edit Input & Chỉnh sửa nội dung tin nhắn \\
+\hline
+4 & Button & Cancel & Hủy bỏ chỉnh sửa \\
+\hline
+5 & Button & Save & Lưu nội dung đã chỉnh sửa \\
+\hline
+\end{tabular}
+\caption{Bảng các thành phần trong giao diện chỉnh sửa tin nhắn}
+\label{tab:ui_edit_message}
+\end{table}
+
+Dữ liệu được dùng:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|c|c|c|c|}
+\hline
+\multirow{2}{*}{\textbf{STT}} & \multirow{2}{*}{\textbf{Tên bảng}} & \multicolumn{4}{c|}{\textbf{Phương thức}} \\
+\cline{3-6}
+& & \textbf{Thêm} & \textbf{Sửa} & \textbf{Xóa} & \textbf{Truy vấn} \\
+\hline
+1 & mes\-sages & & X & & X \\
+\hline
+2 & mes\-sage\_em\-bed\-dings & & X & & \\
+\hline
+\end{tabular}
+\caption{Bảng dữ liệu được dùng cho chức năng chỉnh sửa tin nhắn}
+\label{tab:func_edit_message}
+\end{table}
+
+Xử lý:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/act_edit_message.png}
+\caption{Sơ đồ hoạt động của chức năng chỉnh sửa tin nhắn}
+\label{fig:act_edit_message}
+\end{figure}
+
+% 3.5.8 Xóa tin nhắn
+\subsubsection{Chức năng xóa tin nhắn}
+
+Mục đích: Cho phép người dùng xóa tin nhắn của mình hoặc Admin/Owner xóa bất kỳ tin nhắn nào trong kênh. Thực hiện soft delete để bảo toàn lịch sử.
+
+Giao diện:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/ui_delete_message_numbered.png}
+\caption{Giao diện chức năng xóa tin nhắn}
+\label{fig:ui_delete_message}
+\end{figure}
+
+Các thành phần trong giao diện:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|l|p{5.5cm}|}
+\hline
+\textbf{STT} & \textbf{Loại điều khiển} & \textbf{Tên điều khiển} & \textbf{Nội dung thực hiện} \\
+\hline
+1 & Context Menu & Mes\-sage Actions & Hiển thị menu thao tác với tin nhắn \\
+\hline
+2 & Menu Item & Delete & Chọn để xóa tin nhắn \\
+\hline
+3 & Dialog & Confirm Dialog & Hiển thị dialog xác nhận xóa \\
+\hline
+4 & Button & Cancel & Hủy bỏ thao tác xóa \\
+\hline
+5 & Button & Delete & Xác nhận xóa tin nhắn \\
+\hline
+\end{tabular}
+\caption{Bảng các thành phần trong giao diện xóa tin nhắn}
+\label{tab:ui_delete_message}
+\end{table}
+
+Dữ liệu được dùng:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|c|c|c|c|}
+\hline
+\multirow{2}{*}{\textbf{STT}} & \multirow{2}{*}{\textbf{Tên bảng}} & \multicolumn{4}{c|}{\textbf{Phương thức}} \\
+\cline{3-6}
+& & \textbf{Thêm} & \textbf{Sửa} & \textbf{Xóa} & \textbf{Truy vấn} \\
+\hline
+1 & mes\-sages & & X & & X \\
+\hline
+2 & channel\_members & & & & X \\
+\hline
+\end{tabular}
+\caption{Bảng dữ liệu được dùng cho chức năng xóa tin nhắn}
+\label{tab:func_delete_message}
+\end{table}
+
+Xử lý:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/act_delete_message.png}
+\caption{Sơ đồ hoạt động của chức năng xóa tin nhắn}
+\label{fig:act_delete_message}
+\end{figure}
+
+% 3.5.9 React tin nhắn
+\subsubsection{Chức năng react tin nhắn}
+
+Mục đích: Cho phép người dùng thêm emoji re\-ac\-tion vào tin nhắn để thể hiện cảm xúc hoặc phản hồi nhanh mà không cần gửi tin nhắn mới.
+
+Giao diện:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/ui_react_message_numbered.png}
+\caption{Giao diện chức năng react tin nhắn}
+\label{fig:ui_react_message}
+\end{figure}
+
+Các thành phần trong giao diện:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|l|p{5.5cm}|}
+\hline
+\textbf{STT} & \textbf{Loại điều khiển} & \textbf{Tên điều khiển} & \textbf{Nội dung thực hiện} \\
+\hline
+1 & Icon Button & Add Re\-ac\-tion & Mở emoji picker \\
+\hline
+2 & Popup & Emoji Picker & Hiển thị danh sách emoji \\
+\hline
+3 & Emoji Button & Emoji & Chọn emoji để react \\
+\hline
+4 & Badge & Re\-ac\-tion Count & Hiển thị số lượng re\-ac\-tion \\
+\hline
+\end{tabular}
+\caption{Bảng các thành phần trong giao diện react tin nhắn}
+\label{tab:ui_react_message}
+\end{table}
+
+Dữ liệu được dùng:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|c|c|c|c|}
+\hline
+\multirow{2}{*}{\textbf{STT}} & \multirow{2}{*}{\textbf{Tên bảng}} & \multicolumn{4}{c|}{\textbf{Phương thức}} \\
+\cline{3-6}
+& & \textbf{Thêm} & \textbf{Sửa} & \textbf{Xóa} & \textbf{Truy vấn} \\
+\hline
+1 & re\-ac\-tions & X & & X & X \\
+\hline
+2 & mes\-sages & & & & X \\
+\hline
+\end{tabular}
+\caption{Bảng dữ liệu được dùng cho chức năng react tin nhắn}
+\label{tab:func_react_message}
+\end{table}
+
+Xử lý:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/act_react_message.png}
+\caption{Sơ đồ hoạt động của chức năng react tin nhắn}
+\label{fig:act_react_message}
+\end{figure}
+
+% 3.5.10 Ghim tin nhắn
+\subsubsection{Chức năng ghim tin nhắn}
+
+Mục đích: Cho phép Admin/Owner ghim các tin nhắn quan trọng để dễ dàng truy cập. Mỗi kênh có giới hạn tối đa 50 tin nhắn được ghim.
+
+Giao diện:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/ui_pin_message_numbered.png}
+\caption{Giao diện chức năng ghim tin nhắn}
+\label{fig:ui_pin_message}
+\end{figure}
+
+Các thành phần trong giao diện:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|l|p{5.5cm}|}
+\hline
+\textbf{STT} & \textbf{Loại điều khiển} & \textbf{Tên điều khiển} & \textbf{Nội dung thực hiện} \\
+\hline
+1 & Context Menu & Mes\-sage Actions & Hiển thị menu thao tác với tin nhắn \\
+\hline
+2 & Menu Item & Pin Mes\-sage & Ghim tin nhắn \\
+\hline
+3 & Icon & Pin Badge & Hiển thị icon ghim trên tin nhắn \\
+\hline
+4 & Button & View Pinned & Xem danh sách tin nhắn đã ghim \\
+\hline
+\end{tabular}
+\caption{Bảng các thành phần trong giao diện ghim tin nhắn}
+\label{tab:ui_pin_message}
+\end{table}
+
+Dữ liệu được dùng:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|c|c|c|c|}
+\hline
+\multirow{2}{*}{\textbf{STT}} & \multirow{2}{*}{\textbf{Tên bảng}} & \multicolumn{4}{c|}{\textbf{Phương thức}} \\
+\cline{3-6}
+& & \textbf{Thêm} & \textbf{Sửa} & \textbf{Xóa} & \textbf{Truy vấn} \\
+\hline
+1 & mes\-sages & & X & & X \\
+\hline
+2 & channel\_members & & & & X \\
+\hline
+\end{tabular}
+\caption{Bảng dữ liệu được dùng cho chức năng ghim tin nhắn}
+\label{tab:func_pin_message}
+\end{table}
+
+Xử lý:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/act_pin_message.png}
+\caption{Sơ đồ hoạt động của chức năng ghim tin nhắn}
+\label{fig:act_pin_message}
+\end{figure}
+
+% 3.5.11 Tạo thread thảo luận
+\subsubsection{Chức năng tạo thread thảo luận}
+
+Mục đích: Cho phép người dùng tạo thread thảo luận từ một tin nhắn để thảo luận chuyên sâu mà không làm gián đoạn luồng chat chính của kênh.
+
+Giao diện:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/ui_thread_numbered.png}
+\caption{Giao diện chức năng tạo thread}
+\label{fig:ui_create_thread}
+\end{figure}
+
+Các thành phần trong giao diện:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|l|p{5.5cm}|}
+\hline
+\textbf{STT} & \textbf{Loại điều khiển} & \textbf{Tên điều khiển} & \textbf{Nội dung thực hiện} \\
+\hline
+1 & Button & Reply in Thread & Mở panel thread \\
+\hline
+2 & Panel & Thread Panel & Hiển thị thread thảo luận \\
+\hline
+3 & Label & Root Mes\-sage & Hiển thị tin nhắn gốc \\
+\hline
+4 & List & Reply List & Hiển thị danh sách reply \\
+\hline
+5 & Avatar Group & Par\-ti\-ci\-pants & Hiển thị avatar người tham gia \\
+\hline
+6 & Textarea & Reply Input & Nhập nội dung reply \\
+\hline
+7 & Button & Send Reply & Gửi reply \\
+\hline
+\end{tabular}
+\caption{Bảng các thành phần trong giao diện tạo thread}
+\label{tab:ui_create_thread}
+\end{table}
+
+Dữ liệu được dùng:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|c|c|c|c|}
+\hline
+\multirow{2}{*}{\textbf{STT}} & \multirow{2}{*}{\textbf{Tên bảng}} & \multicolumn{4}{c|}{\textbf{Phương thức}} \\
+\cline{3-6}
+& & \textbf{Thêm} & \textbf{Sửa} & \textbf{Xóa} & \textbf{Truy vấn} \\
+\hline
+1 & threads & X & & & X \\
+\hline
+2 & mes\-sages & X & & & X \\
+\hline
+\end{tabular}
+\caption{Bảng dữ liệu được dùng cho chức năng tạo thread}
+\label{tab:func_create_thread}
+\end{table}
+
+Xử lý:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/act_create_thread.png}
+\caption{Sơ đồ hoạt động của chức năng tạo thread thảo luận}
+\label{fig:act_create_thread}
+\end{figure}
+
+% 3.5.12 Trả lời thread
+\subsubsection{Chức năng trả lời thread}
+
+Mục đích: Cho phép người dùng trả lời trong thread đã tồn tại, có thể mention các thành viên khác và đính kèm file.
+
+Giao diện:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/ui_reply_thread_numbered.png}
+\caption{Giao diện chức năng trả lời thread}
+\label{fig:ui_reply_thread}
+\end{figure}
+
+Các thành phần trong giao diện:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|l|p{5.5cm}|}
+\hline
+\textbf{STT} & \textbf{Loại điều khiển} & \textbf{Tên điều khiển} & \textbf{Nội dung thực hiện} \\
+\hline
+1 & Panel & Thread Panel & Hiển thị thread đang mở \\
+\hline
+2 & Textarea & Reply Input & Nhập nội dung reply \\
+\hline
+3 & Button & Attach File & Đính kèm file \\
+\hline
+4 & Button & Mention & Mention thành viên \\
+\hline
+5 & Button & Send & Gửi reply \\
+\hline
+\end{tabular}
+\caption{Bảng các thành phần trong giao diện trả lời thread}
+\label{tab:ui_reply_thread}
+\end{table}
+
+Dữ liệu được dùng:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|c|c|c|c|}
+\hline
+\multirow{2}{*}{\textbf{STT}} & \multirow{2}{*}{\textbf{Tên bảng}} & \multicolumn{4}{c|}{\textbf{Phương thức}} \\
+\cline{3-6}
+& & \textbf{Thêm} & \textbf{Sửa} & \textbf{Xóa} & \textbf{Truy vấn} \\
+\hline
+1 & mes\-sages & X & & & X \\
+\hline
+2 & threads & & X & & X \\
+\hline
+3 & mentions & X & & & \\
+\hline
+\end{tabular}
+\caption{Bảng dữ liệu được dùng cho chức năng trả lời thread}
+\label{tab:func_reply_thread}
+\end{table}
+
+Xử lý:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/act_reply_thread.png}
+\caption{Sơ đồ hoạt động của chức năng trả lời thread}
+\label{fig:act_reply_thread}
+\end{figure}

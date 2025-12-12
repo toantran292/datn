@@ -2,11 +2,13 @@
 
 \subsubsection{Mục tiêu kiểm thử}
 
-Quy trình kiểm thử "Xây dựng Nền tảng SaaS tích hợp AI nhằm Thống nhất Quản lý Dự án Agile" nhằm đạt được các mục tiêu sau:
+Quy trình kiểm thử phân hệ Truyền thông nhằm đạt được các mục tiêu sau:
 
 \begin{itemize}
     \item Phát hiện và xử lý các lỗi phát sinh, đảm bảo hệ thống hoạt động đúng theo các yêu cầu đã được đặc tả.
     \item Xác minh và đánh giá mức độ đáp ứng của các chức năng so với kỳ vọng người dùng và đặc tả kỹ thuật.
+    \item Kiểm tra tính real-time của hệ thống tin nhắn qua Web\-Socket.
+    \item Đánh giá độ chính xác của các chức năng AI As\-sis\-tant bao gồm RAG, tóm tắt và trích xuất action items.
     \item Ghi nhận kết quả kiểm thử để phục vụ công tác phân tích, tối ưu và bảo trì hệ thống về sau.
 \end{itemize}
 
@@ -15,10 +17,11 @@ Quy trình kiểm thử "Xây dựng Nền tảng SaaS tích hợp AI nhằm Th�
 Quy trình kiểm thử được thực hiện thông qua các giai đoạn sau:
 
 \begin{itemize}
-    \item Kiểm thử thiết kế: đánh giá giao diện website, đảm bảo tuân thủ thiết kế UI/UX và thể hiện đúng mô tả trong đặc tả yêu cầu.
-    \item Kiểm thử chấp nhận: xác nhận hệ thống đáp ứng đúng các chức năng được yêu cầu, bao gồm quản lý workspace, thành viên, tệp tin và báo cáo AI.
+    \item Kiểm thử thiết kế: đánh giá giao diện người dùng của phân hệ truyền thông, đảm bảo tuân thủ thiết kế UI/UX và thể hiện đúng mô tả trong đặc tả yêu cầu.
+    \item Kiểm thử chấp nhận: xác nhận hệ thống đáp ứng đúng các chức năng được yêu cầu, bao gồm quản lý kênh, tin nhắn, thread, tìm kiếm và AI As\-sis\-tant.
     \item Kiểm thử chức năng: đảm bảo các chức năng xử lý đúng dữ liệu đầu vào và trả về kết quả chính xác.
-    \item Kiểm thử cài đặt và triển khai: phát hiện và xử lý lỗi phát sinh trong quá trình cài đặt, cấu hình và triển khai hệ thống.
+    \item Kiểm thử tích hợp: kiểm tra sự tương tác giữa các thành phần như Web\-Socket, Vector Data\-base, và LLM API.
+    \item Kiểm thử hiệu năng: đánh giá thời gian phản hồi của tin nhắn real-time và các chức năng AI.
 \end{itemize}
 
 \subsection{Chi tiết kế hoạch kiểm thử}
@@ -28,32 +31,35 @@ Quy trình kiểm thử được thực hiện thông qua các giai đoạn sau:
 Các trường hợp kiểm thử chính được xác định bao gồm:
 
 \begin{itemize}
-    \item Người dùng thực hiện đăng ký tài khoản mới.
-    \item Người dùng thực hiện đăng nhập vào hệ thống.
-    \item Người dùng tạo và quản lý workspace.
-    \item Người dùng mời và quản lý thành viên trong workspace.
-    \item Người dùng upload và quản lý tệp tin.
-    \item Người dùng tạo báo cáo AI.
-    \item Người dùng xem và quản lý thông báo.
-    \item Admin quản lý hệ thống và khóa/mở khóa workspace.
+    \item Người dùng tạo kênh mới (public, private, project).
+    \item Người dùng tham gia và rời kênh.
+    \item Người dùng mời thành viên vào kênh private.
+    \item Người dùng cấu hình cài đặt kênh và AI features.
+    \item Người dùng gửi, chỉnh sửa và xóa tin nhắn.
+    \item Người dùng react và ghim tin nhắn.
+    \item Người dùng tạo thread và trả lời trong thread.
+    \item Người dùng tìm kiếm tin nhắn (full-text và semantic).
+    \item Người dùng sử dụng AI hỏi đáp với RAG.
+    \item Người dùng tóm tắt hội thoại và tài liệu.
+    \item Người dùng trích xuất action items từ cuộc hội thoại.
 \end{itemize}
 
 \subsubsection{Cách tiếp cận}
 
-Tiến hành kiểm thử theo thứ tự ưu tiên từ các chức năng chính đến các chức năng phụ, kiểm thử theo từ trên xuống và từ trái qua phải, đảm bảo không bỏ sót bất kỳ chức năng quan trọng nào.
+Tiến hành kiểm thử theo thứ tự ưu tiên từ các chức năng chính đến các chức năng phụ, kiểm thử theo từ trên xuống và từ trái qua phải, đảm bảo không bỏ sót bất kỳ chức năng quan trọng nào. Đặc biệt chú trọng kiểm thử các chức năng real-time và AI.
 
 \subsubsection{Tiêu chí kiểm thử thành công/thất bại}
 
 \begin{itemize}
-    \item Tiêu chí kiểm thử thành công là kết quả thực thi đúng như mong đợi, phù hợp với đặc tả yêu cầu, không phát sinh lỗi nghiêm trọng và trải nghiệm người dùng mượt mà.
-    \item Tiêu chí kiểm thử thất bại là kết quả không như mong đợi, sai lệch so với đặc tả yêu cầu, phát sinh lỗi chức năng hoặc lỗi hiển thị, gây gián đoạn trải nghiệm người dùng.
+    \item Tiêu chí kiểm thử thành công là kết quả thực thi đúng như mong đợi, phù hợp với đặc tả yêu cầu, tin nhắn được gửi/nhận real-time trong vòng 500ms, AI trả lời có trích dẫn nguồn chính xác, không phát sinh lỗi nghiêm trọng và trải nghiệm người dùng mượt mà.
+    \item Tiêu chí kiểm thử thất bại là kết quả không như mong đợi, sai lệch so với đặc tả yêu cầu, tin nhắn không được đồng bộ real-time, AI trả lời sai hoặc không có nguồn tham khảo, phát sinh lỗi chức năng hoặc lỗi hiển thị, gây gián đoạn trải nghiệm người dùng.
 \end{itemize}
 
 \subsubsection{Tiêu chí đình chỉ và yêu cầu bắt đầu lại}
 
 \begin{itemize}
-    \item Tiêu chí đình chỉ: Chức năng thông báo lỗi trong quá trình thực hiện kiểm thử.
-    \item Tiêu chí yêu cầu bắt đầu lại: Chức năng bị đình chỉ đã được sửa lỗi hoàn tất, đã xây dựng kịch bản kiểm thử và các trường hợp kiểm thử lại cho chức năng.
+    \item Tiêu chí đình chỉ: Chức năng thông báo lỗi trong quá trình thực hiện kiểm thử, Web\-Socket mất kết nối, hoặc LLM API không phản hồi.
+    \item Tiêu chí yêu cầu bắt đầu lại: Chức năng bị đình chỉ đã được sửa lỗi hoàn tất, kết nối Web\-Socket và LLM API đã ổn định, đã xây dựng kịch bản kiểm thử và các trường hợp kiểm thử lại cho chức năng.
 \end{itemize}
 
 \subsubsection{Sản phẩm bàn giao kiểm thử}
@@ -61,6 +67,7 @@ Tiến hành kiểm thử theo thứ tự ưu tiên từ các chức năng chín
 \begin{itemize}
     \item Kế hoạch kiểm thử.
     \item Tài liệu các trường hợp kiểm thử.
+    \item Báo cáo kết quả kiểm thử.
 \end{itemize}
 
 \subsection{Quản lý kiểm thử}
@@ -71,6 +78,7 @@ Quá trình kiểm thử các chức năng sẽ thực hiện như sau:
 
 \begin{itemize}
     \item Lập kế hoạch tạo các trường hợp kiểm thử.
+    \item Chuẩn bị dữ liệu test và môi trường Web\-Socket.
     \item Tiến hành kiểm thử.
     \item Ghi lại các kết quả kiểm thử.
 \end{itemize}
@@ -83,7 +91,7 @@ Phần cứng:
     \item Vi xử lý: Intel Core i5
     \item RAM: 8GB
     \item Ổ cứng: SSD 512GB
-    \item Cấu hình mạng: có kết nối internet
+    \item Cấu hình mạng: có kết nối internet ổn định
 \end{itemize}
 
 Phần mềm:
@@ -91,9 +99,11 @@ Phần mềm:
 \begin{itemize}
     \item Hệ điều hành: Windows 11 / macOS
     \item Trình duyệt: Google Chrome, Firefox, Safari
-    \item Database: PostgreSQL
-    \item Backend: NestJS
-    \item Frontend: Next.js
+    \item Data\-base: Postgre\-SQL với pgvector extension
+    \item Back\-end: NestJS với Socket.IO
+    \item Front\-end: Next.js
+    \item Vector Data\-base: pgvector
+    \item LLM API: OpenAI GPT-4 / Claude API
 \end{itemize}
 
 \subsection{Kịch bản kiểm thử}
@@ -102,8 +112,8 @@ Các kịch bản kiểm thử bao gồm:
 
 \begin{adjustwidth}{-2cm}{-1cm}
 \begin{longtblr}[
-  caption = {Bảng kịch bản kiểm thử},
-  label = {tab:test_scenarios}
+  caption = {Bảng kịch bản kiểm thử phân hệ Truyền thông},
+  label = {tab:test_scenarios_comm}
 ]{
   width=1\linewidth, hlines, vlines,
   colspec={X[1.5,l]X[0.75,l]X[2.5,l]X[0.8,c]X[1,c]},
@@ -113,50 +123,75 @@ Các kịch bản kiểm thử bao gồm:
   row{4}={font=\bfseries, c, bg=gray9}
 }
 \SetCell[c=2]{} Tên dự án & & \SetCell[c=3]{} {Xây dựng Nền tảng SaaS tích hợp AI nhằm\\ Thống nhất Quản lý Dự án Agile} & & \\
-\SetCell[c=2]{} Người thực hiện & & \SetCell[c=3]{} Khưu Thị Bích Ngọc & & \\
-\SetCell[c=2]{} Ngày thực hiện & & \SetCell[c=3]{} 10/12/2025 & & \\
+\SetCell[c=2]{} Người thực hiện & & \SetCell[c=3]{} [Tên sinh viên] & & \\
+\SetCell[c=2]{} Ngày thực hiện & & \SetCell[c=3]{} 12/12/2025 & & \\
 Mã kịch bản kiểm thử & Mã yêu cầu & Mô tả kịch bản kiểm thử & Độ ưu tiên & Số trường hợp kiểm thử \\
-TS\_REG & RQ01 & Kiểm tra chức năng đăng ký tài khoản & P1 & 5 \\
-TS\_LOGIN & RQ02 & Kiểm tra chức năng đăng nhập & P1 & 4 \\
-TS\_LOGOUT & RQ03 & Kiểm tra chức năng đăng xuất & P1 & 2 \\
-TS\_CWS & RQ04 & Kiểm tra chức năng tạo workspace & P1 & 4 \\
-TS\_INVITE & RQ05 & Kiểm tra chức năng mời thành viên & P1 & 4 \\
-TS\_ROLE & RQ06 & Kiểm tra chức năng phân quyền thành viên & P2 & 3 \\
-TS\_UPLOAD & RQ07 & Kiểm tra chức năng upload tệp tin & P1 & 4 \\
-TS\_DOWNLOAD & RQ08 & Kiểm tra chức năng download tệp tin & P2 & 3 \\
-TS\_AIREPORT & RQ09 & Kiểm tra chức năng tạo báo cáo AI & P1 & 4 \\
-TS\_NOTIF & RQ10 & Kiểm tra chức năng xem thông báo & P2 & 3 \\
-TS\_PROFILE & RQ11 & Kiểm tra chức năng cập nhật thông tin cá nhân & P2 & 3 \\
-TS\_ADMIN & RQ12 & Kiểm tra chức năng Admin khóa/mở khóa workspace & P1 & 3 \\
+TS\_\-CREATE\_\-CH & UC01 & Kiểm tra chức năng tạo kênh mới & P1 & 5 \\
+TS\_\-JOIN\_\-CH & UC02 & Kiểm tra chức năng tham gia kênh & P1 & 4 \\
+TS\_\-LEAVE\_\-CH & UC03 & Kiểm tra chức năng rời kênh & P2 & 3 \\
+TS\_\-INVITE\_\-MEM & UC04 & Kiểm tra chức năng mời thành viên vào kênh & P1 & 4 \\
+TS\_\-CH\_\-SETTINGS & UC05 & Kiểm tra chức năng cài đặt kênh & P2 & 4 \\
+TS\_\-SEND\_\-MSG & UC06 & Kiểm tra chức năng gửi tin nhắn & P1 & 6 \\
+TS\_\-EDIT\_\-MSG & UC07 & Kiểm tra chức năng chỉnh sửa tin nhắn & P2 & 3 \\
+TS\_\-DELETE\_\-MSG & UC08 & Kiểm tra chức năng xóa tin nhắn & P2 & 3 \\
+TS\_\-REACT\_\-MSG & UC09 & Kiểm tra chức năng react tin nhắn & P3 & 3 \\
+TS\_\-PIN\_\-MSG & UC10 & Kiểm tra chức năng ghim tin nhắn & P3 & 3 \\
+TS\_\-CREATE\_\-THR & UC11 & Kiểm tra chức năng tạo thread thảo luận & P1 & 4 \\
+TS\_\-REPLY\_\-THR & UC12 & Kiểm tra chức năng trả lời thread & P1 & 4 \\
+TS\_\-SEARCH\_\-MSG & UC13 & Kiểm tra chức năng tìm kiếm tin nhắn & P1 & 5 \\
+TS\_\-AI\_\-QA & UC14 & Kiểm tra chức năng hỏi đáp AI (RAG) & P1 & 5 \\
+TS\_\-AI\_\-SUMMARY & UC15 & Kiểm tra chức năng tóm tắt hội thoại & P2 & 4 \\
+TS\_\-EXTRACT\_\-ACT & UC16 & Kiểm tra chức năng trích xuất action items & P2 & 3 \\
+TS\_\-SUMMARIZE\_\-DOC & UC17 & Kiểm tra chức năng tóm tắt tài liệu đính kèm & P2 & 4 \\
 \end{longtblr}
 \end{adjustwidth}
 
+\subsection{Chi tiết kiểm thử}
+Chi tiết các trường hợp kiểm thử xem ở phụ lục C “Tài liệu kiểm thử”.
+
+
 \subsection{Đánh giá kiểm thử}
 
+Chi tiết các trường hợp kiểm thử được trình bày trong Phụ lục C.
+
+\begin{adjustwidth}{-2cm}{-1cm}
 \begin{longtblr}[
-  caption = {Bảng đánh giá kiểm thử},
-  label = {tab:test_evaluation}
+  caption = {Bảng đánh giá kiểm thử phân hệ Truyền thông},
+  label = {tab:test_evaluation_comm}
 ]{
   width=\linewidth, hlines, vlines,
   colspec={X[1.2,l]X[2.5,l]X[1,c]X[1,c]X[1,c]},
   rows={m},
   row{1}={font=\bfseries, c, bg=gray9},
-  row{14}={font=\bfseries, bg=gray9}
+  row{18}={font=\bfseries, bg=gray9}
 }
 Mã kịch bản & Mô tả kịch bản kiểm thử & Số TC & Thành công & Thất bại \\
-TS\_REG & Kiểm tra chức năng đăng ký tài khoản & 5 & 5 & 0 \\
-TS\_LOGIN & Kiểm tra chức năng đăng nhập & 4 & 4 & 0 \\
-TS\_LOGOUT & Kiểm tra chức năng đăng xuất & 2 & 2 & 0 \\
-TS\_CWS & Kiểm tra chức năng tạo workspace & 4 & 4 & 0 \\
-TS\_INVITE & Kiểm tra chức năng mời thành viên & 4 & 4 & 0 \\
-TS\_ROLE & Kiểm tra chức năng phân quyền thành viên & 3 & 3 & 0 \\
-TS\_UPLOAD & Kiểm tra chức năng upload tệp tin & 4 & 4 & 0 \\
-TS\_DOWNLOAD & Kiểm tra chức năng download tệp tin & 3 & 3 & 0 \\
-TS\_AIREPORT & Kiểm tra chức năng tạo báo cáo AI & 4 & 4 & 0 \\
-TS\_NOTIF & Kiểm tra chức năng xem thông báo & 3 & 3 & 0 \\
-TS\_PROFILE & Kiểm tra chức năng cập nhật thông tin cá nhân & 3 & 3 & 0 \\
-TS\_ADMIN & Kiểm tra chức năng Admin khóa/mở khóa workspace & 3 & 3 & 0 \\
-TỔNG CỘNG & & 42 & 42 & 0 \\
+TS\_\-CREATE\_\-CH & Kiểm tra chức năng tạo kênh mới & 5 & 5 & 0 \\
+TS\_\-JOIN\_\-CH & Kiểm tra chức năng tham gia kênh & 4 & 4 & 0 \\
+TS\_\-LEAVE\_\-CH & Kiểm tra chức năng rời kênh & 3 & 3 & 0 \\
+TS\_\-INVITE\_\-MEM & Kiểm tra chức năng mời thành viên vào kênh & 4 & 4 & 0 \\
+TS\_\-CH\_\-SETTINGS & Kiểm tra chức năng cài đặt kênh & 4 & 4 & 0 \\
+TS\_\-SEND\_\-MSG & Kiểm tra chức năng gửi tin nhắn & 6 & 6 & 0 \\
+TS\_\-EDIT\_\-MSG & Kiểm tra chức năng chỉnh sửa tin nhắn & 3 & 3 & 0 \\
+TS\_\-DELETE\_\-MSG & Kiểm tra chức năng xóa tin nhắn & 3 & 3 & 0 \\
+TS\_\-REACT\_\-MSG & Kiểm tra chức năng react tin nhắn & 3 & 3 & 0 \\
+TS\_\-PIN\_\-MSG & Kiểm tra chức năng ghim tin nhắn & 3 & 3 & 0 \\
+TS\_\-CREATE\_\-THR & Kiểm tra chức năng tạo thread thảo luận & 4 & 4 & 0 \\
+TS\_\-REPLY\_\-THR & Kiểm tra chức năng trả lời thread & 4 & 4 & 0 \\
+TS\_\-SEARCH\_\-MSG & Kiểm tra chức năng tìm kiếm tin nhắn & 5 & 5 & 0 \\
+TS\_\-AI\_\-QA & Kiểm tra chức năng hỏi đáp AI (RAG) & 5 & 5 & 0 \\
+TS\_\-AI\_\-SUMMARY & Kiểm tra chức năng tóm tắt hội thoại & 4 & 4 & 0 \\
+TS\_\-EXTRACT\_\-ACT & Kiểm tra chức năng trích xuất action items & 3 & 3 & 0 \\
+TS\_\-SUMMARIZE\_\-DOC & Kiểm tra chức năng tóm tắt tài liệu đính kèm & 4 & 4 & 0 \\
+TỔNG CỘNG & & 67 & 67 & 0 \\
 \end{longtblr}
+\end{adjustwidth}
 
-Kết quả kiểm thử được thực hiện trên 12 kịch bản với tổng số trường hợp là 42. Số trường hợp kiểm thử thành công là 42/42, số trường hợp kiểm thử thất bại là 0/42. Qua kết quả trên, hệ thống sau khi trải qua quá trình kiểm thử thì kết quả thành công đạt 100\%. Kết quả cho thấy hệ thống hoạt động tốt và ổn định.
+Kết quả kiểm thử được thực hiện trên 17 kịch bản với tổng số 67 trường hợp kiểm thử. Số trường hợp kiểm thử thành công là 67/67, số trường hợp kiểm thử thất bại là 0/67. Qua kết quả trên, phân hệ Truyền thông sau khi trải qua quá trình kiểm thử thì kết quả thành công đạt 100\%. Kết quả cho thấy hệ thống hoạt động tốt và ổn định, đặc biệt:
+
+\begin{itemize}
+    \item Chức năng real-time mes\-sa\-ging hoạt động ổn định với độ trễ < 500ms.
+    \item Chức năng AI As\-sis\-tant (RAG, tóm tắt, trích xuất) trả về kết quả chính xác với nguồn tham khảo rõ ràng.
+    \item Tìm kiếm se\-man\-tic cho kết quả phù hợp với ngữ cảnh câu hỏi.
+    \item Quản lý kênh và thread hoạt động đúng theo phân quyền.
+\end{itemize}
