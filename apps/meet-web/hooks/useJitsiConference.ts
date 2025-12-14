@@ -11,6 +11,7 @@ export interface Participant {
   id: string;
   name: string;
   tracks: JitsiTrack[];
+  isSpeaking?: boolean;
 }
 
 /**
@@ -30,6 +31,10 @@ export function useJitsiConference(
   const [isVideoMuted, setIsVideoMuted] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [screenShareTrack, setScreenShareTrack] = useState<JitsiTrack | null>(null);
+  const [screenShareParticipantId, setScreenShareParticipantId] = useState<string | null>(null);
+  const [dominantSpeakerId, setDominantSpeakerId] = useState<string | null>(null);
+  const [isLocalSpeaking, setIsLocalSpeaking] = useState(false);
+  const [speakingParticipants, setSpeakingParticipants] = useState<Set<string>>(new Set());
 
   const conferenceRef = useRef<JitsiConference | null>(null);
   const initializedRef = useRef(false);
@@ -153,6 +158,37 @@ export function useJitsiConference(
     }
   }, [localTracks, screenShareTrack]);
 
+  // Effect: Check if screen share participant still has desktop track
+  useEffect(() => {
+    if (!isScreenSharing || !screenShareParticipantId) return;
+
+    // Check if the participant who was sharing still has a desktop track
+    const participant = participants.get(screenShareParticipantId);
+    if (!participant) {
+      // Participant left, clear screen share
+      console.log('[Conference] Screen share participant left, clearing screen share');
+      setScreenShareTrack(null);
+      setIsScreenSharing(false);
+      setScreenShareParticipantId(null);
+      return;
+    }
+
+    // Check if participant still has a desktop video track
+    const hasDesktopTrack = participant.tracks.some(track => {
+      if (track.getType() !== 'video') return false;
+      const trackAny = track as any;
+      const videoType = trackAny.getVideoType?.() || trackAny.videoType;
+      return videoType === 'desktop';
+    });
+
+    if (!hasDesktopTrack) {
+      console.log('[Conference] Screen share participant no longer has desktop track, clearing');
+      setScreenShareTrack(null);
+      setIsScreenSharing(false);
+      setScreenShareParticipantId(null);
+    }
+  }, [participants, isScreenSharing, screenShareParticipantId]);
+
   // Main effect: Initialize conference
   useEffect(() => {
     if (!connection || !roomName) return;
@@ -222,6 +258,16 @@ export function useJitsiConference(
             const next = new Map(prev);
             next.delete(id);
             return next;
+          });
+
+          // Clean up speaking state for left user
+          setSpeakingParticipants(prev => {
+            if (prev.has(id)) {
+              const next = new Set(prev);
+              next.delete(id);
+              return next;
+            }
+            return prev;
           });
         });
 
@@ -298,26 +344,65 @@ export function useJitsiConference(
 
             // Check if remote is sharing screen
             const trackAny = track as any;
-            const isDesktop = track.getType() === 'video' &&
-              (trackAny.getVideoType?.() === 'desktop' || trackAny.videoType === 'desktop');
+            const videoType = trackAny.getVideoType?.() || trackAny.videoType;
+            console.log('[Conference] Remote track added - checking for desktop:', {
+              trackType: track.getType(),
+              videoType,
+              hasGetVideoType: typeof trackAny.getVideoType === 'function',
+            });
+            const isDesktop = track.getType() === 'video' && videoType === 'desktop';
             if (isDesktop) {
+              console.log('[Conference] Remote screen share detected from participant:', pid);
               setScreenShareTrack(track);
               setIsScreenSharing(true);
+              setScreenShareParticipantId(pid);
+
+              // Listen for track ended/stopped events on the underlying stream
+              try {
+                const stream = trackAny.getOriginalStream?.() || trackAny.stream;
+                if (stream) {
+                  const videoTracks = stream.getVideoTracks();
+                  if (videoTracks[0]) {
+                    videoTracks[0].addEventListener('ended', () => {
+                      console.log('[Conference] Remote screen share track ended via stream event');
+                      setScreenShareTrack(null);
+                      setIsScreenSharing(false);
+                      setScreenShareParticipantId(null);
+                    });
+                  }
+                }
+
+                // Also listen on the JitsiTrack itself
+                track.addEventListener('track.stopped', () => {
+                  console.log('[Conference] Remote screen share - track.stopped event');
+                  setScreenShareTrack(null);
+                  setIsScreenSharing(false);
+                  setScreenShareParticipantId(null);
+                });
+              } catch (e) {
+                console.log('[Conference] Could not attach stream listeners:', e);
+              }
             }
           }
         });
 
         // Track removed - KEY: Simple handling like official example
         conf.on(JitsiMeetJS.events.conference.TRACK_REMOVED, (track: JitsiTrack) => {
-          console.log('[Conference] Track removed:', track.getType(), 'isLocal:', track.isLocal());
+          const trackAny = track as any;
+          const videoType = trackAny.getVideoType?.() || trackAny.videoType;
+          console.log('[Conference] Track removed:', {
+            type: track.getType(),
+            isLocal: track.isLocal(),
+            videoType,
+            participantId: track.getParticipantId?.(),
+          });
 
           if (track.isLocal()) {
             setLocalTracks(prev => prev.filter(t => t !== track));
 
             // Check if it was screen share track
-            const trackAny = track as any;
             const isDesktop = track.getType() === 'video' &&
-              (trackAny.getVideoType?.() === 'desktop' || trackAny.videoType === 'desktop');
+              (videoType === 'desktop');
             if (isDesktop) {
               setScreenShareTrack(null);
               setIsScreenSharing(false);
@@ -340,25 +425,67 @@ export function useJitsiConference(
               return next;
             });
 
-            // Check if it was screen share track
-            if (track === screenShareTrack) {
-              setScreenShareTrack(null);
-              setIsScreenSharing(false);
-            }
+            // Check if it was screen share track - multiple detection methods
+            const isDesktop = track.getType() === 'video' && videoType === 'desktop';
+
+            // Also clear if this track matches the current screenShareTrack
+            setScreenShareTrack(currentTrack => {
+              if (currentTrack === track || isDesktop) {
+                console.log('[Conference] Remote screen share track removed, clearing state');
+                setIsScreenSharing(false);
+                return null;
+              }
+              return currentTrack;
+            });
           }
 
           // Dispose track
           track.dispose();
         });
 
+        // Track muted participants - used by audio level handler
+        const mutedParticipantsRef = new Set<string>();
+
         // Track mute changed
         conf.on(JitsiMeetJS.events.conference.TRACK_MUTE_CHANGED, (track: JitsiTrack) => {
+          const trackAny = track as any;
+          const videoType = trackAny.getVideoType?.() || trackAny.videoType;
+          console.log('[Conference] Track mute changed:', {
+            type: track.getType(),
+            isLocal: track.isLocal(),
+            isMuted: track.isMuted(),
+            videoType,
+          });
+
           if (track.isLocal()) {
             // Force re-render of local tracks
             setLocalTracks(prev => [...prev]);
           } else {
             // Force re-render of participants
             setParticipants(prev => new Map(prev));
+
+            // Check if screen share track was muted (some Jitsi versions use mute instead of remove)
+            if (track.getType() === 'video' && videoType === 'desktop' && track.isMuted()) {
+              console.log('[Conference] Remote screen share muted, clearing state');
+              setScreenShareTrack(null);
+              setIsScreenSharing(false);
+            }
+
+            // Track muted state for audio tracks
+            if (track.getType() === 'audio') {
+              const pid = normalizeId(track.getParticipantId());
+              if (track.isMuted()) {
+                mutedParticipantsRef.add(pid);
+                // Remove from speaking participants immediately
+                setSpeakingParticipants(prev => {
+                  const next = new Set(prev);
+                  next.delete(pid);
+                  return next;
+                });
+              } else {
+                mutedParticipantsRef.delete(pid);
+              }
+            }
           }
         });
 
@@ -375,6 +502,81 @@ export function useJitsiConference(
           });
         });
 
+        // Dominant speaker changed - track who is speaking
+        conf.on(JitsiMeetJS.events.conference.DOMINANT_SPEAKER_CHANGED, (id: string) => {
+          const speakerId = normalizeId(id);
+          console.log('[Conference] Dominant speaker changed:', speakerId);
+          setDominantSpeakerId(speakerId);
+        });
+
+        // Track audio levels to detect ALL speaking participants
+        const SPEAKING_THRESHOLD = 0.1; // Threshold for considering someone speaking (increased to reduce false positives from ambient noise)
+        const speakingTimeouts = new Map<string, NodeJS.Timeout>();
+
+        conf.on(JitsiMeetJS.events.conference.TRACK_AUDIO_LEVEL_CHANGED, (participantId: string, audioLevel: number) => {
+          const pid = normalizeId(participantId);
+
+          // Quick check: if participant is in muted set, skip immediately
+          if (mutedParticipantsRef.has(pid)) {
+            // Clear any existing timeout
+            const existingTimeout = speakingTimeouts.get(pid);
+            if (existingTimeout) {
+              clearTimeout(existingTimeout);
+              speakingTimeouts.delete(pid);
+            }
+            setSpeakingParticipants(prev => {
+              if (prev.has(pid)) {
+                const next = new Set(prev);
+                next.delete(pid);
+                return next;
+              }
+              return prev;
+            });
+            return;
+          }
+
+          const isSpeaking = audioLevel > SPEAKING_THRESHOLD;
+
+          if (isSpeaking) {
+            // Clear existing timeout - user is still speaking
+            const existingTimeout = speakingTimeouts.get(pid);
+            if (existingTimeout) {
+              clearTimeout(existingTimeout);
+              speakingTimeouts.delete(pid);
+            }
+
+            // Update speaking state immediately when speaking
+            setSpeakingParticipants(prev => {
+              if (!prev.has(pid)) {
+                const next = new Set(prev);
+                next.add(pid);
+                return next;
+              }
+              return prev;
+            });
+
+            // Set timeout to remove speaking state after silence
+            const timeout = setTimeout(() => {
+              setSpeakingParticipants(prev => {
+                if (prev.has(pid)) {
+                  const next = new Set(prev);
+                  next.delete(pid);
+                  return next;
+                }
+                return prev;
+              });
+              speakingTimeouts.delete(pid);
+            }, 600); // Timeout after 600ms of silence
+            speakingTimeouts.set(pid, timeout);
+          } else {
+            // Not speaking - if there's no existing timeout, don't set one
+            // The timeout from the last speaking event will handle cleanup
+          }
+        });
+
+        // Local audio level will be checked after tracks are created
+        let localAudioInterval: NodeJS.Timeout | null = null;
+
         // === Create local tracks ===
         tracks = await createLocalTracks({ audio: true, video: true });
         setLocalTracks(tracks);
@@ -384,9 +586,66 @@ export function useJitsiConference(
           await conf.addTrack(track);
         }
 
+        // Now set up local audio level checking using Web Audio API
+        const localAudioTrack = tracks.find(t => t.getType() === 'audio');
+        if (localAudioTrack) {
+          try {
+            const stream = (localAudioTrack as any).getOriginalStream?.();
+            if (stream) {
+              const audioContext = new AudioContext();
+              const source = audioContext.createMediaStreamSource(stream);
+              const analyser = audioContext.createAnalyser();
+              analyser.fftSize = 256;
+              source.connect(analyser);
+
+              const dataArray = new Uint8Array(analyser.frequencyBinCount);
+              let localSpeakingTimeout: NodeJS.Timeout | null = null;
+
+              const checkLocalAudioLevel = () => {
+                if (localAudioTrack.isMuted()) {
+                  setIsLocalSpeaking(false);
+                  return;
+                }
+
+                analyser.getByteFrequencyData(dataArray);
+                // Calculate average volume
+                let sum = 0;
+                for (let i = 0; i < dataArray.length; i++) {
+                  sum += dataArray[i];
+                }
+                const average = sum / dataArray.length;
+                const isSpeaking = average > 20; // Threshold for speaking (increased to reduce false positives from ambient noise)
+
+                if (isSpeaking) {
+                  setIsLocalSpeaking(true);
+                  // Clear existing timeout
+                  if (localSpeakingTimeout) {
+                    clearTimeout(localSpeakingTimeout);
+                  }
+                  // Set timeout to stop speaking indicator after 500ms
+                  localSpeakingTimeout = setTimeout(() => {
+                    setIsLocalSpeaking(false);
+                  }, 500);
+                }
+              };
+
+              localAudioInterval = setInterval(checkLocalAudioLevel, 100);
+
+              // Store audio context for cleanup
+              (conf as any)._audioContext = audioContext;
+            }
+          } catch (err) {
+            console.log('[Conference] Failed to set up local audio level detection:', err);
+          }
+        }
+
         // Set display name and join
         conf.setDisplayName(displayName);
         conf.join();
+
+        // Store cleanup functions
+        (conf as any)._localAudioInterval = localAudioInterval;
+        (conf as any)._speakingTimeouts = speakingTimeouts;
 
       } catch (err) {
         console.error('[Conference] Error initializing:', err);
@@ -398,6 +657,20 @@ export function useJitsiConference(
     // Cleanup
     return () => {
       if (conf) {
+        // Clear intervals and timeouts
+        if ((conf as any)._localAudioInterval) {
+          clearInterval((conf as any)._localAudioInterval);
+        }
+        if ((conf as any)._speakingTimeouts) {
+          for (const timeout of (conf as any)._speakingTimeouts.values()) {
+            clearTimeout(timeout);
+          }
+        }
+        // Close AudioContext
+        if ((conf as any)._audioContext) {
+          (conf as any)._audioContext.close().catch(() => {});
+        }
+
         for (const track of tracks) {
           try {
             conf.removeTrack(track);
@@ -418,6 +691,9 @@ export function useJitsiConference(
     isVideoMuted,
     isScreenSharing,
     screenShareTrack,
+    isLocalSpeaking,
+    dominantSpeakerId,
+    speakingParticipants,
     toggleAudio,
     toggleVideo,
     toggleScreenShare,

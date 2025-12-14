@@ -62,6 +62,8 @@ export default function MeetingPage() {
     isVideoMuted,
     isScreenSharing,
     screenShareTrack,
+    isLocalSpeaking,
+    speakingParticipants,
     toggleAudio,
     toggleVideo,
     toggleScreenShare,
@@ -188,6 +190,8 @@ export default function MeetingPage() {
             sharerName={screenSharerName}
             screenShareTrack={screenShareTrack}
             roomId={roomId}
+            isLocalSpeaking={isLocalSpeaking}
+            speakingParticipants={speakingParticipants}
           />
         ) : (
           <MeetingGrid
@@ -196,6 +200,8 @@ export default function MeetingPage() {
               name: displayName,
               tracks: filteredLocalTracks,
             }}
+            isLocalSpeaking={isLocalSpeaking}
+            speakingParticipants={speakingParticipants}
           />
         )}
       </div>

@@ -21,6 +21,8 @@ interface ScreenShareViewProps {
   sharerName: string;
   screenShareTrack: JitsiTrack | null;
   roomId: string;
+  isLocalSpeaking?: boolean;
+  speakingParticipants?: Set<string>;
 }
 
 export function ScreenShareView({
@@ -29,6 +31,8 @@ export function ScreenShareView({
   sharerName,
   screenShareTrack,
   roomId,
+  isLocalSpeaking = false,
+  speakingParticipants = new Set(),
 }: ScreenShareViewProps) {
   const [scrollPosition, setScrollPosition] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -47,6 +51,7 @@ export function ScreenShareView({
         return !isDesktop;
       }),
       isLocal: true,
+      isSpeaking: isLocalSpeaking,
     },
     ...participants.map(p => ({
       id: p.id,
@@ -59,6 +64,7 @@ export function ScreenShareView({
         return !isDesktop;
       }),
       isLocal: false,
+      isSpeaking: speakingParticipants.has(p.id),
     })),
   ];
 
@@ -242,6 +248,7 @@ export function ScreenShareView({
                       tracks={participant.tracks}
                       isLocal={participant.isLocal}
                       size="small"
+                      isSpeaking={participant.isSpeaking}
                     />
                   </motion.div>
                 ))}

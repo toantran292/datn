@@ -2,7 +2,7 @@
 
 import { useMemo, useEffect, useRef, useState } from 'react';
 import { JitsiAudio } from './JitsiAudio';
-import { MicOff } from 'lucide-react';
+import { MicOff, Mic } from 'lucide-react';
 import type { JitsiTrack } from '@/types/jitsi';
 
 interface ParticipantTileProps {
@@ -11,6 +11,7 @@ interface ParticipantTileProps {
   tracks: JitsiTrack[];
   isLocal?: boolean;
   size?: 'small' | 'medium' | 'large';
+  isSpeaking?: boolean;
 }
 
 /**
@@ -23,6 +24,7 @@ export function ParticipantTile({
   tracks,
   isLocal = false,
   size = 'medium',
+  isSpeaking = false,
 }: ParticipantTileProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [showVideo, setShowVideo] = useState(false);
@@ -255,13 +257,29 @@ export function ParticipantTile({
   };
 
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="flex flex-col items-center gap-3 relative">
+      {/* Speaking indicator badge */}
+      {isSpeaking && (
+        <div
+          className="absolute -top-1 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 px-3 py-1 rounded-full"
+          style={{
+            backgroundColor: 'var(--ts-orange)',
+            boxShadow: '0 2px 8px rgba(255, 136, 0, 0.4)',
+          }}
+        >
+          <Mic className="w-3 h-3 text-white" />
+          <span className="text-xs font-medium text-white">Speaking</span>
+        </div>
+      )}
+
       {/* Video/Avatar container */}
       <div
-        className={`${sizeClasses[size]} rounded-full overflow-hidden relative border-2`}
+        className={`${sizeClasses[size]} rounded-full overflow-hidden relative`}
         style={{
           backgroundColor: 'var(--ts-card-surface)',
-          borderColor: 'var(--ts-border)',
+          border: isSpeaking ? '3px solid var(--ts-orange)' : '2px solid var(--ts-border)',
+          boxShadow: isSpeaking ? '0 0 20px rgba(255, 136, 0, 0.4)' : 'none',
+          transition: 'border 0.2s ease, box-shadow 0.2s ease',
         }}
       >
         {/* Video element - always render */}

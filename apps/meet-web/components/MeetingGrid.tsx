@@ -10,6 +10,7 @@ interface Participant {
   id: string;
   name: string;
   tracks: JitsiTrack[];
+  isSpeaking?: boolean;
 }
 
 interface MeetingGridProps {
@@ -18,13 +19,15 @@ interface MeetingGridProps {
     name: string;
     tracks: JitsiTrack[];
   };
+  isLocalSpeaking?: boolean;
+  speakingParticipants?: Set<string>;
 }
 
 /**
  * Simple meeting grid component.
  * Displays all participants in a responsive grid layout.
  */
-export function MeetingGrid({ participants, localParticipant }: MeetingGridProps) {
+export function MeetingGrid({ participants, localParticipant, isLocalSpeaking = false, speakingParticipants = new Set() }: MeetingGridProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
 
@@ -36,15 +39,18 @@ export function MeetingGrid({ participants, localParticipant }: MeetingGridProps
         name: localParticipant.name,
         tracks: localParticipant.tracks,
         isLocal: true,
+        isSpeaking: isLocalSpeaking,
       },
       ...participants.map(p => ({
         id: p.id,
         name: p.name,
         tracks: p.tracks,
         isLocal: false,
+        // Check if participant is in speakingParticipants set
+        isSpeaking: speakingParticipants.has(p.id) || p.isSpeaking || false,
       })),
     ];
-  }, [localParticipant, participants]);
+  }, [localParticipant, participants, isLocalSpeaking, speakingParticipants]);
 
   // Grid configuration based on participant count
   const getGridConfig = () => {
@@ -128,6 +134,7 @@ export function MeetingGrid({ participants, localParticipant }: MeetingGridProps
                   tracks={participant.tracks}
                   isLocal={participant.isLocal}
                   size={config.size}
+                  isSpeaking={participant.isSpeaking}
                 />
               </motion.div>
             ))}
