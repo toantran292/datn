@@ -1,8 +1,8 @@
 'use client';
-import { useEffect, useRef, memo } from 'react';
+import { useEffect, useRef } from 'react';
 import type { JitsiTrack } from '@/types/jitsi';
 
-interface VideoProps {
+export interface VideoProps {
   videoTrack?: JitsiTrack;
   autoPlay?: boolean;
   className?: string;
@@ -10,7 +10,7 @@ interface VideoProps {
   id?: string;
 }
 
-function VideoComponent({
+export function Video({
   videoTrack,
   autoPlay = true,
   className = '',
@@ -78,10 +78,3 @@ function VideoComponent({
     />
   );
 }
-
-// Memo to prevent unnecessary re-renders
-export const Video = memo(VideoComponent, (prev, next) => {
-  // Compare track objects directly, not IDs
-  return prev.videoTrack === next.videoTrack &&
-         prev.className === next.className;
-});

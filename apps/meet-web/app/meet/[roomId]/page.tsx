@@ -1,4 +1,5 @@
 'use client';
+
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { initializeJitsi } from '@/lib/jitsi';
@@ -52,18 +53,14 @@ export default function MeetingPage() {
     jwtToken
   );
 
-  // Jitsi conference
+  // Jitsi conference - simplified hook
   const {
-    conference,
     isJoined,
     participants,
     localTracks,
     isAudioMuted,
     isVideoMuted,
     isScreenSharing,
-    screenSharingParticipantId,
-    dominantSpeakerId,
-    localIsSpeaking,
     screenShareTrack,
     toggleAudio,
     toggleVideo,
@@ -74,12 +71,14 @@ export default function MeetingPage() {
     isConnected ? roomId : null,
     displayName
   );
+
   // Handle leave
   const handleLeave = async () => {
     await leaveConference();
     router.push('/join');
   };
 
+  // Loading state
   if (!isInitialized) {
     return (
       <div className="w-screen h-screen flex items-center justify-center bg-ts-bg-dark">
@@ -91,6 +90,7 @@ export default function MeetingPage() {
     );
   }
 
+  // Connection error
   if (connectionError) {
     return (
       <div className="w-screen h-screen flex items-center justify-center bg-ts-bg-dark">
@@ -125,82 +125,24 @@ export default function MeetingPage() {
   // Convert participants Map to array
   const participantsArray = Array.from(participants.values());
 
-  // Get local participant speaking state (from hook)
-  const localIsMuted = isAudioMuted;
+  // Filter local tracks - exclude screen share track from grid display
+  const filteredLocalTracks = localTracks.filter((t: JitsiTrack) => {
+    if (t.getType() !== 'video') return true;
+    const tAny = t as any;
+    const isDesktop = tAny.getVideoType?.() === 'desktop' || tAny.videoType === 'desktop';
+    return !isDesktop;
+  });
 
-  // Filter local tracks - always keep camera track even when sharing screen
-  // Only exclude desktop track when NOT in screen share view (for MeetingGrid)
-  const isLocalSharing = screenSharingParticipantId === 'local' || (screenShareTrack && screenShareTrack.isLocal());
-  const filteredLocalTracks: JitsiTrack[] = isScreenSharing && isLocalSharing && screenShareTrack
-    ? localTracks.filter((t: JitsiTrack) => {
-      // When local is sharing screen, include BOTH camera and desktop tracks
-      // Camera will be shown in participant strip, desktop will be shown as main screen
-      const type = t.getType();
-      if (type === 'video') {
-        const tAny = t as any;
-        const isDesktop = tAny.getVideoType?.() === 'desktop' || tAny.videoType === 'desktop';
-        // Include camera track (not desktop) for participant strip
-        return !isDesktop;
-      }
-      // Keep audio track
-      return true;
-    })
-    : localTracks.filter((t: JitsiTrack) => {
-      // When not sharing or remote is sharing, exclude desktop track, only show camera
-      const type = t.getType();
-      if (type === 'video') {
-        const tAny = t as any;
-        const isDesktop = tAny.getVideoType?.() === 'desktop' || tAny.videoType === 'desktop';
-        return !isDesktop;
-      }
-      // Keep audio track
-      return true;
-    });
-
-  // Get screen share track - either local or from remote participant
-  let activeScreenShareTrack = screenShareTrack;
+  // Determine screen sharer name
   let screenSharerName = displayName;
-
-  if (isScreenSharing && screenSharingParticipantId) {
-    if (screenShareTrack && screenShareTrack.isLocal()) {
-      // Local screen share
-      screenSharerName = displayName;
-      activeScreenShareTrack = screenShareTrack;
-    } else if (screenShareTrack && !screenShareTrack.isLocal()) {
-      // Remote participant is sharing screen - use the track from hook
-      const sharingParticipant = participants.get(screenSharingParticipantId);
-      if (sharingParticipant) {
-        screenSharerName = sharingParticipant.name;
-        activeScreenShareTrack = screenShareTrack;
-      } else {
-        // Participant not found, clear screen sharing state
-        activeScreenShareTrack = null;
+  if (screenShareTrack && !screenShareTrack.isLocal()) {
+    const sharerId = screenShareTrack.getParticipantId();
+    // Find participant by matching ID
+    for (const p of participantsArray) {
+      if (sharerId.includes(p.id) || p.id.includes(sharerId)) {
+        screenSharerName = p.name;
+        break;
       }
-    } else {
-      // Fallback: try to find desktop track from participants if screenShareTrack is not set
-      const sharingParticipant = participants.get(screenSharingParticipantId);
-      if (sharingParticipant) {
-        screenSharerName = sharingParticipant.name;
-        activeScreenShareTrack = sharingParticipant.tracks.find((t: any) => {
-          const type = t.getType();
-          if (type !== 'video') return false;
-          const tAny = t as any;
-          return (
-            tAny.getVideoType?.() === 'desktop' ||
-            tAny.videoType === 'desktop' ||
-            tAny.videoType === 'screen' ||
-            (tAny.getOriginalStream && tAny.getOriginalStream().getVideoTracks()[0]?.getSettings().displaySurface)
-          );
-        }) || null;
-      } else {
-        // Participant not found, clear screen sharing state
-        activeScreenShareTrack = null;
-      }
-    }
-
-    // If no track found, should not be in screen share view
-    if (!activeScreenShareTrack) {
-      console.log('[Meeting] No screen share track found, but isScreenSharing is true - this should be cleared by hook');
     }
   }
 
@@ -211,10 +153,7 @@ export default function MeetingPage() {
         <div className="flex items-center justify-between px-6 py-4 border-b" style={{ backgroundColor: 'var(--ts-card-surface)', borderColor: 'var(--ts-border)' }}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, var(--ts-orange) 0%, var(--ts-teal) 100%)' }}>
-              {/* <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M15.5 2v6h3l-6 6-6-6h3V2h6zm-6 14h6v6h-6v-6z" stroke="currentColor" strokeWidth="2" />
-              </svg> */}
-              <Video />
+              <Video className="w-5 h-5 text-white" />
             </div>
             <div>
               <h1 className="text-white font-semibold">UTS Meet</h1>
@@ -239,19 +178,15 @@ export default function MeetingPage() {
 
       {/* Video Grid or Screen Share View */}
       <div className="flex-1 overflow-hidden">
-        {isScreenSharing && screenSharingParticipantId && activeScreenShareTrack ? (
+        {isScreenSharing && screenShareTrack ? (
           <ScreenShareView
             participants={participantsArray}
             localParticipant={{
               name: displayName,
               tracks: filteredLocalTracks,
-              isSpeaking: localIsSpeaking,
-              isMuted: localIsMuted,
             }}
             sharerName={screenSharerName}
-            screenShareTrack={activeScreenShareTrack}
-            screenSharingParticipantId={screenSharingParticipantId}
-            dominantSpeakerId={dominantSpeakerId}
+            screenShareTrack={screenShareTrack}
             roomId={roomId}
           />
         ) : (
@@ -260,8 +195,6 @@ export default function MeetingPage() {
             localParticipant={{
               name: displayName,
               tracks: filteredLocalTracks,
-              isSpeaking: localIsSpeaking,
-              isMuted: localIsMuted,
             }}
           />
         )}

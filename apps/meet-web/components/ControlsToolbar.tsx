@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 import { Mic, MicOff, Video, VideoOff, Monitor, Users, Settings, PhoneOff, MessageSquare } from 'lucide-react';
 
 interface ControlsToolbarProps {
@@ -234,7 +234,7 @@ export function ControlsToolbar({
 }
 
 interface ControlButtonProps {
-  icon: React.ReactNode;
+  icon: React.ReactElement;
   active?: boolean;
   onClick: () => void;
   activeColor?: 'orange' | 'teal';
@@ -267,7 +267,7 @@ function ControlButton({ icon, active, onClick, activeColor = 'orange', label }:
           }`}
         style={active ? activeStyles[activeColor] : undefined}
       >
-        {icon}
+        <span>{icon}</span>
       </motion.button>
 
       {/* Tooltip label */}

@@ -1,15 +1,15 @@
-import { motion, AnimatePresence } from 'motion/react';
-import { ParticipantAvatar } from './ParticipantAvatar';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+'use client';
+
 import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ParticipantTile } from './ParticipantTile';
 import type { JitsiTrack } from '@/types/jitsi';
 
 interface Participant {
   id: string;
   name: string;
   tracks: JitsiTrack[];
-  isSpeaking?: boolean;
-  isMuted?: boolean;
 }
 
 interface MeetingGridProps {
@@ -17,52 +17,54 @@ interface MeetingGridProps {
   localParticipant: {
     name: string;
     tracks: JitsiTrack[];
-    isSpeaking?: boolean;
-    isMuted?: boolean;
   };
 }
 
+/**
+ * Simple meeting grid component.
+ * Displays all participants in a responsive grid layout.
+ */
 export function MeetingGrid({ participants, localParticipant }: MeetingGridProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
 
   // Combine local + remote participants
-  const allParticipants = useMemo(() => [
-    {
-      id: 'local',
-      name: localParticipant.name,
-      tracks: localParticipant.tracks,
-      isSpeaking: localParticipant.isSpeaking || false,
-      isMuted: localParticipant.isMuted ?? (localParticipant.tracks.find(t => t.getType() === 'audio')?.isMuted() || false),
-    },
-    ...Array.from(participants).map(p => ({
-      id: p.id,
-      name: p.name,
-      tracks: p.tracks,
-      isSpeaking: p.isSpeaking || false,
-      isMuted: p.isMuted ?? (p.tracks.find(t => t.getType() === 'audio')?.isMuted() || false),
-    }))
-  ], [localParticipant, participants]);
+  const allParticipants = useMemo(() => {
+    return [
+      {
+        id: 'local',
+        name: localParticipant.name,
+        tracks: localParticipant.tracks,
+        isLocal: true,
+      },
+      ...participants.map(p => ({
+        id: p.id,
+        name: p.name,
+        tracks: p.tracks,
+        isLocal: false,
+      })),
+    ];
+  }, [localParticipant, participants]);
 
-  // Determine grid layout based on participant count
+  // Grid configuration based on participant count
   const getGridConfig = () => {
     const count = allParticipants.length;
     if (count > 50) {
-      return { perPage: 16, cols: 4, size: 'medium' as const }; // 4x4 grid
+      return { perPage: 16, cols: 4, size: 'medium' as const };
     } else if (count > 20) {
-      return { perPage: 9, cols: 3, size: 'medium' as const }; // 3x3 grid
+      return { perPage: 9, cols: 3, size: 'medium' as const };
     } else if (count > 16) {
-      return { perPage: 16, cols: 4, size: 'medium' as const }; // 4x4 for compactness
+      return { perPage: 16, cols: 4, size: 'medium' as const };
     } else {
-      return { perPage: 9, cols: 3, size: 'large' as const }; // 3x3 with larger avatars
+      return { perPage: 9, cols: 3, size: 'large' as const };
     }
   };
 
   const config = getGridConfig();
   const totalPages = Math.ceil(allParticipants.length / config.perPage);
   const startIndex = currentPage * config.perPage;
-  const endIndex = Math.min(startIndex + config.perPage, allParticipants.length);
-  const currentParticipants = allParticipants.slice(startIndex, endIndex);
+  const currentParticipants = allParticipants.slice(startIndex, startIndex + config.perPage);
+
   const slideVariants = {
     initial: (direction: string) => ({
       opacity: 0,
@@ -120,19 +122,17 @@ export function MeetingGrid({ participants, localParticipant }: MeetingGridProps
                 transition={{ delay: index * 0.05 }}
                 className="flex items-center justify-center"
               >
-                <ParticipantAvatar
+                <ParticipantTile
+                  id={participant.id}
                   name={participant.name}
                   tracks={participant.tracks}
-                  isLocal={participant.id === 'local'}
-                  isSpeaking={participant.isSpeaking || false}
-                  isMuted={participant.isMuted || false}
+                  isLocal={participant.isLocal}
                   size={config.size}
                 />
               </motion.div>
             ))}
           </motion.div>
         </AnimatePresence>
-
 
         {/* Navigation arrows */}
         {totalPages > 1 && (
