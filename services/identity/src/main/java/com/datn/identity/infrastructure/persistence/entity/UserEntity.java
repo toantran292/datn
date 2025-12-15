@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -26,6 +27,14 @@ public class UserEntity {
     private boolean mustChangePassword;
     @Column(name = "display_name")
     private String displayName;
+    @Column(name = "email_verified_at")
+    private Instant emailVerifiedAt;
+    @Column(name = "phone", length = 20)
+    private String phone;
+    @Column(name = "bio", columnDefinition = "TEXT")
+    private String bio;
+    @Column(name = "avatar_asset_id")
+    private UUID avatarAssetId;
 
     // getters/setters
     public UUID getId() {
@@ -74,5 +83,37 @@ public class UserEntity {
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    public Instant getEmailVerifiedAt() {
+        return emailVerifiedAt;
+    }
+
+    public void setEmailVerifiedAt(Instant emailVerifiedAt) {
+        this.emailVerifiedAt = emailVerifiedAt;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+
+    public UUID getAvatarAssetId() {
+        return avatarAssetId;
+    }
+
+    public void setAvatarAssetId(UUID avatarAssetId) {
+        this.avatarAssetId = avatarAssetId;
     }
 }

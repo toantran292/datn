@@ -1,0 +1,238 @@
+package com.datn.identity.infrastructure.outbox;
+
+import com.datn.identity.domain.outbox.OutboxMessage;
+import com.datn.identity.domain.outbox.OutboxRepository;
+import com.datn.identity.infrastructure.notification.NotificationClient;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.util.List;
+
+/**
+ * Outbox Relay Service - polls outbox table and dispatches messages to external services.
+ *
+ * Flow:
+ * 1. @Scheduled job runs every 5 seconds
+ * 2. Polls unpublished messages from outbox table
+ * 3. Routes each message based on topic to appropriate handler
+ * 4. Marks message as published after successful delivery
+ *
+ * Topics handled:
+ * - notification.email.send -> NotificationClient.sendEmail()
+ * - identity.* -> Domain events (for audit/analytics, not critical)
+ */
+@Service
+public class OutboxRelayService {
+    private static final Logger log = LoggerFactory.getLogger(OutboxRelayService.class);
+    private static final int BATCH_SIZE = 50;
+
+    private final OutboxRepository outbox;
+    private final NotificationClient notificationClient;
+    private final ObjectMapper objectMapper;
+
+    public OutboxRelayService(OutboxRepository outbox,
+                               NotificationClient notificationClient,
+                               ObjectMapper objectMapper) {
+        this.outbox = outbox;
+        this.notificationClient = notificationClient;
+        this.objectMapper = objectMapper;
+    }
+
+    /**
+     * Scheduled job to poll and relay outbox messages.
+     * Runs every 5 seconds with 10 second initial delay.
+     */
+    @Scheduled(fixedDelay = 5000, initialDelay = 10000)
+    public void relayMessages() {
+        List<OutboxMessage> messages = outbox.listUnpublished(BATCH_SIZE);
+
+        if (messages.isEmpty()) {
+            return;
+        }
+
+        log.debug("Processing {} outbox messages", messages.size());
+
+        for (OutboxMessage msg : messages) {
+            try {
+                processMessage(msg);
+                outbox.markPublished(msg.id(), Instant.now());
+                log.debug("Successfully relayed message id={} topic={}", msg.id(), msg.topic());
+            } catch (Exception e) {
+                log.error("Failed to relay message id={} topic={}: {}",
+                        msg.id(), msg.topic(), e.getMessage(), e);
+                // Don't mark as published - will retry on next poll
+            }
+        }
+    }
+
+    private void processMessage(OutboxMessage msg) throws Exception {
+        String topic = msg.topic();
+
+        if (topic.startsWith("notification.email")) {
+            handleEmailNotification(msg);
+        } else if (topic.startsWith("identity.")) {
+            // Domain events - log for now, could forward to analytics/audit service
+            handleDomainEvent(msg);
+        } else {
+            log.warn("Unknown topic: {}, skipping", topic);
+            // Mark as published anyway to avoid infinite loop
+        }
+    }
+
+    /**
+     * Handle email notification messages.
+     * Expected payload: { toEmail, subject, templateType, resetLink, occurredAt }
+     */
+    private void handleEmailNotification(OutboxMessage msg) throws Exception {
+        JsonNode payload = objectMapper.readTree(msg.payloadJson());
+
+        String toEmail = payload.get("toEmail").asText();
+        String subject = payload.get("subject").asText();
+        String templateType = payload.has("templateType") ? payload.get("templateType").asText() : "GENERIC";
+
+        String htmlContent = buildEmailHtml(templateType, payload);
+
+        notificationClient.sendEmail(toEmail, subject, htmlContent);
+        log.info("Email notification sent to: {}", toEmail);
+    }
+
+    /**
+     * Build HTML content based on template type.
+     */
+    private String buildEmailHtml(String templateType, JsonNode payload) {
+        return switch (templateType) {
+            case "PASSWORD_RESET" -> buildPasswordResetEmail(payload);
+            case "EMAIL_VERIFICATION" -> buildEmailVerificationEmail(payload);
+            case "WELCOME" -> buildWelcomeEmail(payload);
+            default -> buildGenericEmail(payload);
+        };
+    }
+
+    private String buildPasswordResetEmail(JsonNode payload) {
+        String resetLink = payload.get("resetLink").asText();
+        return """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background: #4F46E5; color: white; padding: 20px; text-align: center; }
+                    .content { padding: 30px; background: #f9fafb; }
+                    .button { display: inline-block; background: #4F46E5; color: white; padding: 12px 30px;
+                              text-decoration: none; border-radius: 5px; margin: 20px 0; }
+                    .footer { padding: 20px; text-align: center; color: #666; font-size: 12px; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>Password Reset Request</h1>
+                    </div>
+                    <div class="content">
+                        <p>Hello,</p>
+                        <p>We received a request to reset your password. Click the button below to create a new password:</p>
+                        <p style="text-align: center;">
+                            <a href="%s" class="button">Reset Password</a>
+                        </p>
+                        <p>This link will expire in <strong>1 hour</strong>.</p>
+                        <p>If you didn't request this, you can safely ignore this email.</p>
+                        <p style="color: #666; font-size: 12px; margin-top: 30px;">
+                            If the button doesn't work, copy and paste this link:<br>
+                            <a href="%s">%s</a>
+                        </p>
+                    </div>
+                    <div class="footer">
+                        <p>This is an automated message. Please do not reply.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """.formatted(resetLink, resetLink, resetLink);
+    }
+
+    private String buildEmailVerificationEmail(JsonNode payload) {
+        String verifyLink = payload.has("verifyLink") ? payload.get("verifyLink").asText() : "#";
+        return """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background: #10B981; color: white; padding: 20px; text-align: center; }
+                    .content { padding: 30px; background: #f9fafb; }
+                    .button { display: inline-block; background: #10B981; color: white; padding: 12px 30px;
+                              text-decoration: none; border-radius: 5px; margin: 20px 0; }
+                    .footer { padding: 20px; text-align: center; color: #666; font-size: 12px; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>Verify Your Email Address</h1>
+                    </div>
+                    <div class="content">
+                        <p>Hello,</p>
+                        <p>Thank you for registering! Please verify your email address by clicking the button below:</p>
+                        <p style="text-align: center;">
+                            <a href="%s" class="button">Verify Email</a>
+                        </p>
+                        <p>This link will expire in <strong>24 hours</strong>.</p>
+                        <p>If you didn't create an account, you can safely ignore this email.</p>
+                        <p style="color: #666; font-size: 12px; margin-top: 30px;">
+                            If the button doesn't work, copy and paste this link:<br>
+                            <a href="%s">%s</a>
+                        </p>
+                    </div>
+                    <div class="footer">
+                        <p>This is an automated message. Please do not reply.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """.formatted(verifyLink, verifyLink, verifyLink);
+    }
+
+    private String buildWelcomeEmail(JsonNode payload) {
+        return """
+            <!DOCTYPE html>
+            <html>
+            <head><meta charset="UTF-8"></head>
+            <body>
+                <h2>Welcome!</h2>
+                <p>Thank you for registering. Your account has been created successfully.</p>
+            </body>
+            </html>
+            """;
+    }
+
+    private String buildGenericEmail(JsonNode payload) {
+        String message = payload.has("message") ? payload.get("message").asText() : "No message content";
+        return """
+            <!DOCTYPE html>
+            <html>
+            <head><meta charset="UTF-8"></head>
+            <body>
+                <p>%s</p>
+            </body>
+            </html>
+            """.formatted(message);
+    }
+
+    /**
+     * Handle domain events (identity.*).
+     * These are logged for audit purposes. Could be forwarded to analytics service.
+     */
+    private void handleDomainEvent(OutboxMessage msg) {
+        log.info("Domain event: topic={}, payload={}", msg.topic(), msg.payloadJson());
+        // Future: Forward to analytics/audit service
+    }
+}

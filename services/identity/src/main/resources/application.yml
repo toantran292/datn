@@ -71,3 +71,8 @@ uts:
 
 file-storage:
   base-url: ${FILE_STORAGE_BASE_URL:http://file-storage-api:3000}  # For Docker: http://file-storage-api:3000
+
+# Application config for password reset and notifications
+app:
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
+  notification-service-url: ${NOTIFICATION_SERVICE_URL:http://notification-api:3004}

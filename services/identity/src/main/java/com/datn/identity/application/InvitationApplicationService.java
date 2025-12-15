@@ -1,6 +1,9 @@
 package com.datn.identity.application;
 
 import com.datn.identity.common.Email;
+import com.datn.identity.domain.audit.AuditAction;
+import com.datn.identity.domain.audit.AuditLog;
+import com.datn.identity.domain.audit.AuditLogRepository;
 import com.datn.identity.domain.events.IdentityEvents;
 import com.datn.identity.domain.invite.Invitation;
 import com.datn.identity.domain.invite.InvitationRepository;
@@ -19,6 +22,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -29,6 +33,7 @@ public class InvitationApplicationService {
     private final PasswordHasher hasher;
     private final PasswordPolicy pwdPolicy;
     private final OutboxRepository outbox;
+    private final AuditLogRepository auditLogs;
     private final ObjectMapper mapper;
 
     public InvitationApplicationService(InvitationRepository invites,
@@ -37,9 +42,11 @@ public class InvitationApplicationService {
                                         PasswordHasher hasher,
                                         PasswordPolicy pwdPolicy,
                                         OutboxRepository outbox,
+                                        AuditLogRepository auditLogs,
                                         ObjectMapper mapper) {
         this.invites = invites; this.memberships = memberships; this.users = users;
-        this.hasher = hasher; this.pwdPolicy = pwdPolicy; this.outbox = outbox; this.mapper = mapper;
+        this.hasher = hasher; this.pwdPolicy = pwdPolicy; this.outbox = outbox;
+        this.auditLogs = auditLogs; this.mapper = mapper;
     }
 
     @Transactional
@@ -55,6 +62,12 @@ public class InvitationApplicationService {
 
         var evt = new IdentityEvents.InvitationCreated(orgId, email, inv.memberType().name());
         outbox.append(OutboxMessage.create(evt.topic(), toJson(evt)));
+
+        // Audit log
+        auditLogs.save(AuditLog.create(orgId, actorUserId, AuditAction.MEMBER_INVITED,
+            "Invitation sent to " + email,
+            Map.of("email", email, "memberType", type.name())));
+
         return inv.token();
     }
 
@@ -94,6 +107,14 @@ public class InvitationApplicationService {
 
         var evt = new IdentityEvents.InvitationAccepted(orgId, user.id(), email);
         outbox.append(OutboxMessage.create(evt.topic(), toJson(evt)));
+
+        // Audit log
+        auditLogs.save(AuditLog.create(orgId, user.id(), AuditAction.INVITATION_ACCEPTED,
+            "Invitation accepted by " + email,
+            Map.of("email", email)));
+        auditLogs.save(AuditLog.create(orgId, user.id(), AuditAction.MEMBER_JOINED,
+            "Member joined: " + email,
+            Map.of("email", email, "memberType", inv.memberType().name())));
 
         return new AcceptResult(user.id(), orgId);
     }

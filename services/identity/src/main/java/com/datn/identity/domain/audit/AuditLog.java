@@ -4,8 +4,60 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 
-public record AuditLog(Long id, UUID actorUserId, UUID orgId, String action, Map<String,Object> meta, Instant at) {
-    public static AuditLog create(UUID actorUserId, UUID orgId, String action, Map<String,Object> meta){
-        return new AuditLog(null, actorUserId, orgId, action, meta, Instant.now());
+/**
+ * Domain entity representing an audit log entry.
+ * Immutable record that captures who did what, when, and where.
+ */
+public record AuditLog(
+    UUID id,
+    UUID orgId,
+    UUID userId,
+    AuditAction action,
+    String description,
+    Map<String, Object> metadata,
+    String ipAddress,
+    String userAgent,
+    Instant createdAt
+) {
+    /**
+     * Creates a new audit log entry.
+     */
+    public static AuditLog create(
+            UUID orgId,
+            UUID userId,
+            AuditAction action,
+            String description,
+            Map<String, Object> metadata,
+            String ipAddress,
+            String userAgent) {
+        return new AuditLog(
+            UUID.randomUUID(),
+            orgId,
+            userId,
+            action,
+            description,
+            metadata != null ? metadata : Map.of(),
+            ipAddress,
+            userAgent,
+            Instant.now()
+        );
+    }
+
+    /**
+     * Creates a simple audit log without request context.
+     */
+    public static AuditLog create(
+            UUID orgId,
+            UUID userId,
+            AuditAction action,
+            String description) {
+        return create(orgId, userId, action, description, null, null, null);
+    }
+
+    /**
+     * Returns the category of this audit action.
+     */
+    public String category() {
+        return action.getCategory();
     }
 }

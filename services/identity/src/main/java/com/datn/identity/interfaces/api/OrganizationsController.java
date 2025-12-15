@@ -270,6 +270,176 @@ public class OrganizationsController {
         }
     }
 
+    // ==================== UC07 - Organization Settings ====================
+
+    /**
+     * Get organization details (UC07).
+     */
+    @GetMapping("/{orgId}")
+    public ResponseEntity<?> getOrgDetail(@PathVariable String orgId) {
+        UUID userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "not_authenticated"));
+        }
+
+        if (!orgs.isMember(userId, UUID.fromString(orgId))) {
+            return ResponseEntity.status(403).body(Map.of("error", "forbidden"));
+        }
+
+        try {
+            var detail = orgs.getOrgDetail(UUID.fromString(orgId));
+            return ResponseEntity.ok(detail);
+        } catch (IllegalStateException e) {
+            if ("org_not_found".equals(e.getMessage())) {
+                return ResponseEntity.status(404).body(Map.of("error", "org_not_found"));
+            }
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Update organization info (UC07).
+     * Partial update - only provided fields will be updated.
+     */
+    @PatchMapping("/{orgId}")
+    public ResponseEntity<?> updateOrg(
+            @PathVariable String orgId,
+            @RequestBody UpdateOrgReq req) {
+        UUID userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "not_authenticated"));
+        }
+
+        UUID orgUuid = UUID.fromString(orgId);
+        if (!orgs.isMember(userId, orgUuid)) {
+            return ResponseEntity.status(403).body(Map.of("error", "forbidden"));
+        }
+
+        // Check if org is locked
+        if (orgs.isOrgLocked(orgUuid)) {
+            return ResponseEntity.status(403).body(Map.of("error", "org_locked", "message", "Organization is locked"));
+        }
+
+        try {
+            var updated = orgs.updateOrg(orgUuid, req);
+            return ResponseEntity.ok(updated);
+        } catch (IllegalStateException e) {
+            if ("org_not_found".equals(e.getMessage())) {
+                return ResponseEntity.status(404).body(Map.of("error", "org_not_found"));
+            }
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Get organization settings (UC07).
+     */
+    @GetMapping("/{orgId}/settings")
+    public ResponseEntity<?> getOrgSettings(@PathVariable String orgId) {
+        UUID userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "not_authenticated"));
+        }
+
+        if (!orgs.isMember(userId, UUID.fromString(orgId))) {
+            return ResponseEntity.status(403).body(Map.of("error", "forbidden"));
+        }
+
+        try {
+            var settings = orgs.getOrgSettings(UUID.fromString(orgId));
+            return ResponseEntity.ok(settings);
+        } catch (IllegalStateException e) {
+            if ("org_not_found".equals(e.getMessage())) {
+                return ResponseEntity.status(404).body(Map.of("error", "org_not_found"));
+            }
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Update organization settings (UC07).
+     * Partial update - only provided fields will be updated.
+     */
+    @PatchMapping("/{orgId}/settings")
+    public ResponseEntity<?> updateOrgSettings(
+            @PathVariable String orgId,
+            @RequestBody UpdateOrgSettingsReq req) {
+        UUID userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "not_authenticated"));
+        }
+
+        UUID orgUuid = UUID.fromString(orgId);
+        if (!orgs.isMember(userId, orgUuid)) {
+            return ResponseEntity.status(403).body(Map.of("error", "forbidden"));
+        }
+
+        // Check if org is locked
+        if (orgs.isOrgLocked(orgUuid)) {
+            return ResponseEntity.status(403).body(Map.of("error", "org_locked", "message", "Organization is locked"));
+        }
+
+        try {
+            var settings = orgs.updateOrgSettings(orgUuid, req);
+            return ResponseEntity.ok(settings);
+        } catch (IllegalStateException e) {
+            if ("org_not_found".equals(e.getMessage())) {
+                return ResponseEntity.status(404).body(Map.of("error", "org_not_found"));
+            }
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // ==================== UC12 - Transfer Ownership ====================
+
+    /**
+     * Transfer organization ownership (UC12).
+     * POST /orgs/{orgId}/transfer-ownership
+     * Requires: current user is OWNER, password verification, confirmation text "TRANSFER"
+     */
+    @PostMapping("/{orgId}/transfer-ownership")
+    public ResponseEntity<?> transferOwnership(
+            @PathVariable String orgId,
+            @Valid @RequestBody TransferOwnershipReq req) {
+        UUID userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "not_authenticated"));
+        }
+
+        // Validate confirmation text
+        if (!"TRANSFER".equals(req.confirmation())) {
+            return ResponseEntity.badRequest().body(Map.of("error", "invalid_confirmation", "message", "Confirmation must be 'TRANSFER'"));
+        }
+
+        UUID orgUuid = UUID.fromString(orgId);
+        UUID newOwnerId;
+        try {
+            newOwnerId = UUID.fromString(req.newOwnerId());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "invalid_new_owner_id"));
+        }
+
+        // Cannot transfer to self
+        if (userId.equals(newOwnerId)) {
+            return ResponseEntity.badRequest().body(Map.of("error", "cannot_transfer_to_self"));
+        }
+
+        try {
+            var result = orgs.transferOwnership(userId, orgUuid, newOwnerId, req.password());
+            return ResponseEntity.ok(result);
+        } catch (IllegalStateException e) {
+            return switch (e.getMessage()) {
+                case "org_not_found" -> ResponseEntity.status(404).body(Map.of("error", "org_not_found"));
+                case "org_locked" -> ResponseEntity.status(403).body(Map.of("error", "org_locked", "message", "Organization is locked"));
+                case "not_member" -> ResponseEntity.status(403).body(Map.of("error", "not_member"));
+                case "not_owner" -> ResponseEntity.status(403).body(Map.of("error", "not_owner", "message", "Only owner can transfer ownership"));
+                case "invalid_password" -> ResponseEntity.status(401).body(Map.of("error", "invalid_password"));
+                case "new_owner_not_member" -> ResponseEntity.status(400).body(Map.of("error", "new_owner_not_member", "message", "New owner must be a member of the organization"));
+                default -> ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+            };
+        }
+    }
+
     private String normalizeSlug(String in) {
         if (in == null) return "";
         var s = in.trim().toLowerCase(Locale.ROOT);

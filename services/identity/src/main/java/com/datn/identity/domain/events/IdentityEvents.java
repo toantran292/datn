@@ -56,4 +56,34 @@ public final class IdentityEvents {
         public RoleBindingDeleted(UUID id, UUID orgId, UUID userId){ this(id, orgId, userId, Instant.now()); }
         @Override public String topic(){ return "identity.rolebinding.deleted"; }
     }
+
+    public record PasswordResetRequested(UUID userId, String email, String resetToken, Instant occurredAt) implements DomainEvent {
+        public PasswordResetRequested(UUID userId, String email, String resetToken){ this(userId, email, resetToken, Instant.now()); }
+        @Override public String topic(){ return "identity.password.reset_requested"; }
+    }
+
+    public record PasswordReset(UUID userId, Instant occurredAt) implements DomainEvent {
+        public PasswordReset(UUID userId){ this(userId, Instant.now()); }
+        @Override public String topic(){ return "identity.password.reset"; }
+    }
+
+    public record EmailVerified(UUID userId, String email, Instant occurredAt) implements DomainEvent {
+        public EmailVerified(UUID userId, String email){ this(userId, email, Instant.now()); }
+        @Override public String topic(){ return "identity.email.verified"; }
+    }
+
+    public record ProfileUpdated(UUID userId, Instant occurredAt) implements DomainEvent {
+        public ProfileUpdated(UUID userId){ this(userId, Instant.now()); }
+        @Override public String topic(){ return "identity.profile.updated"; }
+    }
+
+    public record OrganizationUpdated(UUID orgId, Instant occurredAt) implements DomainEvent {
+        public OrganizationUpdated(UUID orgId){ this(orgId, Instant.now()); }
+        @Override public String topic(){ return "identity.organization.updated"; }
+    }
+
+    public record OrganizationSettingsUpdated(UUID orgId, Instant occurredAt) implements DomainEvent {
+        public OrganizationSettingsUpdated(UUID orgId){ this(orgId, Instant.now()); }
+        @Override public String topic(){ return "identity.organization.settings_updated"; }
+    }
 }
