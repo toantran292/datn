@@ -137,20 +137,6 @@ services:
       retries: 30
     networks: [uts_net]
 
-  mailhog:
-    image: mailhog/mailhog:latest
-    container_name: uts_mailhog
-    restart: unless-stopped
-    ports:
-      - "${MAILHOG_HTTP_PORT}:8025"
-      - "${MAILHOG_SMTP_PORT}:1025"
-    healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "8025"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-    networks: [uts_net]
-
   mongodb:
     image: mongo:7-jammy
     container_name: uts_mongodb
@@ -170,46 +156,6 @@ services:
       timeout: 5s
       retries: 10
     networks: [uts_net]
-
-  cassandra:
-    image: cassandra:latest
-    container_name: uts_cassandra
-    restart: unless-stopped
-    environment:
-      CASSANDRA_CLUSTER_NAME: uts-dev
-      CASSANDRA_DC: dc1
-      CASSANDRA_RACK: rack1
-      CASSANDRA_PASSWORD_SEEDER: "yes"     # tạo user/password lần đầu
-      CASSANDRA_USER: cassandra
-      CASSANDRA_PASSWORD: cassandra
-      CASSANDRA_NUM_TOKENS: "256"
-      CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
-    volumes:
-      - cassandra_data:/var/lib/cassandra
-    ports:
-      - "41600:9042"
-    healthcheck:
-      test: [ "CMD-SHELL", "cqlsh -e 'DESCRIBE KEYSPACES' 127.0.0.1 9042 >/dev/null 2>&1 || exit 1" ]
-      interval: 15s
-      timeout: 10s
-      retries: 30
-    networks: [ uts_net ]
-
-  cass_init:
-    image: cassandra:latest
-    container_name: uts_cassandra_init
-    depends_on:
-      cassandra:
-        condition: service_healthy
-    entrypoint: [ "/bin/bash","-lc" ]
-    command:
-      - |
-        cqlsh cassandra 9042 -e "
-        CREATE KEYSPACE IF NOT EXISTS chat
-        WITH replication = {'class': 'SimpleStrategy','replication_factor': 1}
-        AND durable_writes = true;"
-    networks: [ uts_net ]
-    restart: "no"
 
   tenant-bff:
     build:
@@ -338,10 +284,17 @@ services:
     environment:
       NODE_ENV: development
       PORT: 3000
-      SMTP_HOST: mailhog
-      SMTP_PORT: 1025
-      SMTP_SECURE: "false"
-      EMAIL_FROM: noreply@uts.local
+      # Email provider: 'sendgrid' or 'smtp'
+      EMAIL_PROVIDER: sendgrid
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-noreply@uts.local}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME:-UTS Notification}
+      # SMTP fallback (optional)
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       # PostgreSQL for notification persistence
       DB_HOST: postgres
       DB_PORT: 5432
@@ -349,7 +302,6 @@ services:
       DB_PASS: ${PG_PASSWORD}
       DB_NAME: notification_db
     depends_on:
-      mailhog: { condition: service_healthy }
       postgres: { condition: service_healthy }
     expose:
       - "3000"
