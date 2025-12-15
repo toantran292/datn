@@ -170,8 +170,9 @@ export class VideoProcessor implements DocumentProcessor {
     buffer: Buffer,
     metadata: DocumentMetadata,
   ): Promise<string> {
-    // Convert Buffer to File-like object for OpenAI API
-    const file = new File([buffer], 'audio.mp3', {
+    // Convert Buffer to Uint8Array then to File for OpenAI API
+    const uint8Array = new Uint8Array(buffer);
+    const file = new File([uint8Array], 'audio.mp3', {
       type: 'audio/mpeg',
     });
 

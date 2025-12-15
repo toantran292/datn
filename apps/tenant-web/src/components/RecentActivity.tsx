@@ -1,86 +1,116 @@
 import { Card } from "./ui/card";
-import { UserPlus, Receipt, Upload, Settings, FolderPlus, Mail } from "lucide-react";
+import { UserPlus, Upload, Settings, LogOut, FileText, LucideIcon } from "lucide-react";
 import { Badge } from "./ui/badge";
+import { Activity } from "../lib/api";
+import { Skeleton } from "./ui/skeleton";
 
-interface Activity {
-  id: number;
-  type: "member" | "invoice" | "file" | "settings" | "project" | "invite";
-  title: string;
-  description: string;
-  time: string;
-  badge?: string;
+type ActivityType = "member" | "file" | "settings" | "report" | "left";
+
+interface RecentActivityProps {
+  activities?: Activity[];
+  isLoading?: boolean;
+  hasMore?: boolean;
+  onViewAll?: () => void;
 }
 
-const activities: Activity[] = [
-  {
-    id: 1,
-    type: "member",
-    title: "New member joined",
-    description: "Sarah Chen joined Marketing Campaign 2025",
-    time: "2 hours ago",
-    badge: "Team"
-  },
-  {
-    id: 2,
-    type: "invoice",
-    title: "Invoice paid",
-    description: "Monthly subscription payment of $2,847 processed",
-    time: "5 hours ago",
-    badge: "Billing"
-  },
-  {
-    id: 3,
-    type: "file",
-    title: "File uploaded",
-    description: "Q4-Presentation.pdf uploaded to Marketing Campaign 2025",
-    time: "8 hours ago",
-    badge: "Files"
-  },
-  {
-    id: 4,
-    type: "project",
-    title: "New project created",
-    description: "Customer Success Hub workspace initialized",
-    time: "Yesterday",
-    badge: "Projects"
-  },
-  {
-    id: 5,
-    type: "invite",
-    title: "Invitation sent",
-    description: "Michael Park invited to join the organization",
-    time: "Yesterday",
-    badge: "Team"
-  },
-  {
-    id: 6,
-    type: "settings",
-    title: "Settings updated",
-    description: "Billing email changed to billing@acmecorp.com",
-    time: "2 days ago",
-    badge: "Settings"
-  }
-];
+const activityTypeMap: Record<Activity['type'], ActivityType> = {
+  MEMBER_JOINED: "member",
+  MEMBER_LEFT: "left",
+  FILE_UPLOADED: "file",
+  REPORT_CREATED: "report",
+  SETTINGS_UPDATED: "settings"
+};
 
-const iconMap = {
+const activityTitleMap: Record<Activity['type'], string> = {
+  MEMBER_JOINED: "New member joined",
+  MEMBER_LEFT: "Member left",
+  FILE_UPLOADED: "File uploaded",
+  REPORT_CREATED: "Report created",
+  SETTINGS_UPDATED: "Settings updated"
+};
+
+const activityBadgeMap: Record<Activity['type'], string> = {
+  MEMBER_JOINED: "Team",
+  MEMBER_LEFT: "Team",
+  FILE_UPLOADED: "Files",
+  REPORT_CREATED: "Reports",
+  SETTINGS_UPDATED: "Settings"
+};
+
+const iconMap: Record<ActivityType, LucideIcon> = {
   member: UserPlus,
-  invoice: Receipt,
+  left: LogOut,
   file: Upload,
   settings: Settings,
-  project: FolderPlus,
-  invite: Mail
+  report: FileText
 };
 
-const iconColors = {
+const iconColors: Record<ActivityType, { bg: string; color: string }> = {
   member: { bg: "#EEF4FF", color: "#3B82F6" },
-  invoice: { bg: "#F0FDF4", color: "#00C4AB" },
+  left: { bg: "#FEF2F2", color: "#EF4444" },
   file: { bg: "#FFF4E6", color: "#FF8800" },
   settings: { bg: "#F5F3FF", color: "#8B5CF6" },
-  project: { bg: "#ECFDF5", color: "#00C4AB" },
-  invite: { bg: "#FFF4E6", color: "#FF8800" }
+  report: { bg: "#ECFDF5", color: "#00C4AB" }
 };
 
-export function RecentActivity() {
+function formatTimeAgo(dateString: string): string {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return "Just now";
+  if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays} days ago`;
+  return date.toLocaleDateString();
+}
+
+export function RecentActivity({ activities = [], isLoading = false, hasMore = false, onViewAll }: RecentActivityProps) {
+  if (isLoading) {
+    return (
+      <Card className="p-6 border border-border shadow-md rounded-2xl bg-white">
+        <div className="mb-6">
+          <h3 style={{ fontWeight: 600 }}>Activity Timeline</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Recent actions across your organization
+          </p>
+        </div>
+        <div className="space-y-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="flex items-start gap-4">
+              <Skeleton className="w-10 h-10 rounded-xl" />
+              <div className="flex-1">
+                <Skeleton className="h-4 w-32 mb-2" />
+                <Skeleton className="h-3 w-48 mb-1" />
+                <Skeleton className="h-3 w-20" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
+    );
+  }
+
+  if (activities.length === 0) {
+    return (
+      <Card className="p-6 border border-border shadow-md rounded-2xl bg-white">
+        <div className="mb-6">
+          <h3 style={{ fontWeight: 600 }}>Activity Timeline</h3>
+          <p className="text-sm text-muted-foreground mt-1">
+            Recent actions across your organization
+          </p>
+        </div>
+        <div className="py-8 text-center text-muted-foreground">
+          <p>No recent activity</p>
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <Card className="p-6 border border-border shadow-md rounded-2xl bg-white">
       <div className="mb-6">
@@ -92,8 +122,11 @@ export function RecentActivity() {
 
       <div className="space-y-4">
         {activities.map((activity, index) => {
-          const Icon = iconMap[activity.type];
-          const colors = iconColors[activity.type];
+          const activityType = activityTypeMap[activity.type];
+          const Icon = iconMap[activityType];
+          const colors = iconColors[activityType];
+          const title = activityTitleMap[activity.type];
+          const badge = activityBadgeMap[activity.type];
 
           return (
             <div key={activity.id} className="relative">
@@ -114,21 +147,19 @@ export function RecentActivity() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <p style={{ fontWeight: 600 }} className="text-sm">
-                      {activity.title}
+                      {title}
                     </p>
-                    {activity.badge && (
-                      <Badge
-                        variant="outline"
-                        className="text-xs flex-shrink-0 bg-muted border-border"
-                      >
-                        {activity.badge}
-                      </Badge>
-                    )}
+                    <Badge
+                      variant="outline"
+                      className="text-xs flex-shrink-0 bg-muted border-border"
+                    >
+                      {badge}
+                    </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground mb-1.5">
                     {activity.description}
                   </p>
-                  <p className="text-xs text-muted-foreground">{activity.time}</p>
+                  <p className="text-xs text-muted-foreground">{formatTimeAgo(activity.createdAt)}</p>
                 </div>
               </div>
             </div>
@@ -136,9 +167,15 @@ export function RecentActivity() {
         })}
       </div>
 
-      <button className="w-full mt-6 py-2 text-sm text-secondary hover:text-secondary/80 transition-colors rounded-lg hover:bg-secondary/5" style={{ fontWeight: 600 }}>
-        View all activity →
-      </button>
+      {(hasMore || onViewAll) && (
+        <button
+          onClick={onViewAll}
+          className="w-full mt-6 py-2 text-sm text-secondary hover:text-secondary/80 transition-colors rounded-lg hover:bg-secondary/5"
+          style={{ fontWeight: 600 }}
+        >
+          View all activity →
+        </button>
+      )}
     </Card>
   );
 }

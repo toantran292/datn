@@ -107,8 +107,9 @@ export class AudioProcessor implements DocumentProcessor {
     buffer: Buffer,
     metadata: DocumentMetadata,
   ): Promise<string> {
-    // Convert Buffer to File-like object for OpenAI API
-    const file = new File([buffer], metadata.fileName, {
+    // Convert Buffer to Uint8Array then to File for OpenAI API
+    const uint8Array = new Uint8Array(buffer);
+    const file = new File([uint8Array], metadata.fileName, {
       type: metadata.mimeType,
     });
 

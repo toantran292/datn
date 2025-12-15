@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080';
 
 export class ApiError extends Error {
   constructor(
@@ -180,6 +180,91 @@ export async function apiDelete<T>(path: string, init?: RequestInit): Promise<T>
   });
 
   return handleResponse<T>(response);
+}
+
+// Dashboard types
+export interface WorkspaceInfo {
+  id: string;
+  name: string;
+  status: 'ACTIVE' | 'LOCKED';
+}
+
+export interface StorageInfo {
+  usedGb: number;
+  limitGb: number;
+  usedPercent: number;
+}
+
+export interface WorkspaceStats {
+  memberCount: number;
+  fileCount: number;
+  reportCount: number;
+  storage: StorageInfo;
+  trend?: {
+    files: { thisWeek: number; lastWeek: number; change: number };
+    reports: { thisWeek: number; lastWeek: number; change: number };
+  };
+}
+
+export interface ActivityUser {
+  id: string;
+  name: string;
+  avatar?: string;
+}
+
+export interface Activity {
+  id: string;
+  type: 'FILE_UPLOADED' | 'REPORT_CREATED' | 'MEMBER_JOINED' | 'MEMBER_LEFT' | 'SETTINGS_UPDATED';
+  user: ActivityUser;
+  description: string;
+  metadata: Record<string, any>;
+  createdAt: string;
+}
+
+export interface QuickAction {
+  id: string;
+  type: string;
+  label: string;
+  description?: string;
+}
+
+export interface DashboardResponse {
+  workspace: WorkspaceInfo;
+  stats: WorkspaceStats;
+  recentActivities: Activity[];
+  quickActions: QuickAction[];
+}
+
+export interface StatsResponse {
+  memberCount: number;
+  fileCount: number;
+  reportCount: number;
+  storage: {
+    usedGb: number;
+    limitGb: number;
+  };
+  trend: {
+    files: { thisWeek: number; lastWeek: number; change: number };
+    reports: { thisWeek: number; lastWeek: number; change: number };
+  };
+}
+
+export interface ActivitiesResponse {
+  activities: Activity[];
+  hasMore: boolean;
+}
+
+// Dashboard API functions
+export async function getDashboard(): Promise<DashboardResponse> {
+  return apiGet<DashboardResponse>('/tenant/dashboard');
+}
+
+export async function getStats(): Promise<StatsResponse> {
+  return apiGet<StatsResponse>('/tenant/stats');
+}
+
+export async function getActivities(limit: number = 10): Promise<ActivitiesResponse> {
+  return apiGet<ActivitiesResponse>(`/tenant/activities?limit=${limit}`);
 }
 
 // Member types

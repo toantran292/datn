@@ -24,13 +24,13 @@ export class Room {
   orgId: string;
 
   @Column('uuid', { name: 'project_id', nullable: true })
-  projectId: string | null;
+  projectId!: string | null;
 
-  @Column({ length: 100, nullable: true })
-  name: string | null;
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  name!: string | null;
 
   @Column({ type: 'text', nullable: true })
-  description: string | null;
+  description!: string | null;
 
   @Column({
     type: 'varchar',
@@ -49,20 +49,20 @@ export class Room {
   })
   status: RoomStatus;
 
-  @Column({ name: 'avatar_url', length: 500, nullable: true })
-  avatarUrl: string | null;
+  @Column({ type: 'varchar', name: 'avatar_url', length: 500, nullable: true })
+  avatarUrl!: string | null;
 
   @Column('uuid', { name: 'created_by', nullable: true })
-  createdBy: string | null;
+  createdBy!: string | null;
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @Column({ name: 'archived_at', type: 'timestamp', nullable: true })
-  archivedAt: Date | null;
+  archivedAt!: Date | null;
 
   @OneToMany(() => RoomMember, (member) => member.room)
   members: RoomMember[];

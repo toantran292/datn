@@ -66,7 +66,10 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ className }) => {
 
           <WorkspaceSelector />
 
-          <ProjectSelector onCreateProject={handleOpenCreateProject} />
+          {/* Hide ProjectSelector for tenant-web (cross-project view) */}
+          {currentApp !== 'tenant-web' && (
+            <ProjectSelector onCreateProject={handleOpenCreateProject} />
+          )}
         </Header.LeftItem>
 
         <Header.RightItem className="flex items-center gap-2">
