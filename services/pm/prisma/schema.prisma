@@ -49,9 +49,10 @@ model Sprint {
   initialStoryPoints  Decimal?     @map("initial_story_points") @db.Decimal(10, 2)
   startedAt           DateTime?    @map("started_at") @db.Timestamptz
   // Completion metrics
-  completedAt         DateTime?    @map("completed_at") @db.Timestamptz
-  completedIssueCount Int?         @map("completed_issue_count")
-  velocity            Decimal?     @db.Decimal(10, 2)
+  completedAt           DateTime?    @map("completed_at") @db.Timestamptz
+  completedIssueCount   Int?         @map("completed_issue_count")
+  incompletedIssueCount Int?         @map("incompleted_issue_count")
+  velocity              Decimal?     @db.Decimal(10, 2)
   createdAt           DateTime     @default(now()) @map("created_at") @db.Timestamptz
   updatedAt           DateTime     @updatedAt @map("updated_at") @db.Timestamptz
 

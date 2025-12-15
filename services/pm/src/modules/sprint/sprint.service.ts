@@ -125,6 +125,52 @@ export class SprintService {
       }
     }
 
+    // If changing status to CLOSED and not already CLOSED, calculate velocity
+    if (updateDto.status === SprintStatus.CLOSED && sprint.status !== SprintStatus.CLOSED) {
+      try {
+        // Find all issues in this sprint with their status
+        const allIssues = await this.prisma.issue.findMany({
+          where: { sprintId: id },
+          select: {
+            id: true,
+            point: true,
+            status: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        });
+
+        // Keywords to identify completed status
+        const doneKeywords = ['DONE', 'HOÀN THÀNH', 'COMPLETED'];
+
+        // Separate completed and incompleted issues
+        const completedIssues = allIssues.filter((issue) => {
+          const statusName = issue.status.name?.toUpperCase() || '';
+          return doneKeywords.some((keyword) => statusName.includes(keyword));
+        });
+        const incompletedIssues = allIssues.filter((issue) => {
+          const statusName = issue.status.name?.toUpperCase() || '';
+          return !doneKeywords.some((keyword) => statusName.includes(keyword));
+        });
+
+        // Calculate velocity (sum of story points for completed issues)
+        const velocity = completedIssues.reduce((sum, issue) => {
+          return sum + (Number(issue.point) || 0);
+        }, 0);
+
+        // Add completion metrics
+        updateData.completedAt = new Date();
+        updateData.completedIssueCount = completedIssues.length;
+        updateData.incompletedIssueCount = incompletedIssues.length;
+        updateData.velocity = velocity;
+      } catch (error) {
+        // If columns don't exist yet (migration not run), just update status without metrics
+        console.warn('Sprint completion metrics columns not found. Please run migration: npx prisma migrate deploy');
+      }
+    }
+
     return this.prisma.sprint.update({
       where: { id },
       data: updateData,
