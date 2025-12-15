@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { IssueType, RefineDescriptionDto } from './dto/refine-description.dto';
+import { EstimatePointsDto } from './dto/estimate-points.dto';
 
 interface PromptPair {
   system: string;
@@ -158,5 +159,168 @@ Adapt the "Chi tiết thực hiện" section appropriately for ${dto.issueType} 
     };
 
     return guidelines[issueType] || '';
+  }
+
+  /**
+   * Get estimation prompt for story points
+   */
+  getEstimatePrompt(dto: EstimatePointsDto): PromptPair {
+    const systemPrompt = this.getEstimationSystemPrompt();
+    const userPrompt = this.getEstimationUserPrompt(dto);
+
+    return {
+      system: systemPrompt,
+      user: userPrompt,
+    };
+  }
+
+  /**
+   * System prompt for story points estimation
+   */
+  private getEstimationSystemPrompt(): string {
+    return `You are an expert Scrum estimation specialist with 10+ years of experience in Agile software development.
+Your task is to estimate story points for issues using the Fibonacci scale (1, 2, 3, 5, 8, 13, 21).
+
+FIBONACCI SCALE GUIDELINES:
+- 1 point: Trivial task, < 2 hours, no unknowns (e.g., text change, minor CSS fix, update config)
+- 2 points: Simple task, 2-4 hours, minimal risk (e.g., add new field to form, simple validation)
+- 3 points: Small task, 4-8 hours, some complexity (e.g., new CRUD endpoint, basic component)
+- 5 points: Medium task, 1-2 days, moderate complexity (e.g., new feature page with API integration)
+- 8 points: Large task, 2-3 days, significant complexity (e.g., integration with 3rd party, complex business logic)
+- 13 points: Very large task, 3-5 days, high uncertainty (e.g., new module, major refactoring)
+- 21 points: Epic-sized, > 1 week, should be broken down into subtasks
+
+ESTIMATION FACTORS (analyze thoroughly):
+
+1. Description Clarity (Weight: 20%):
+   - Well-defined requirements with clear acceptance criteria → Lower points
+   - Vague description or missing details → Higher points
+   - More acceptance criteria items = better clarity but more work
+
+2. Technical Complexity (Weight: 40%):
+   - Keywords to watch: API, database, migration, refactoring, integration, authentication, security
+   - Number of components/layers affected (frontend only vs fullstack)
+   - Technical challenges (performance, scalability, security)
+   - Third-party dependencies
+
+3. Scope (Weight: 20%):
+   - Frontend only → Lower
+   - Backend only → Medium
+   - Fullstack (frontend + backend) → Higher
+   - Multiple services/modules → Highest
+
+4. Uncertainty/Risk (Weight: 20%):
+   - Known technology and patterns → Lower
+   - New technology or unfamiliar domain → Higher
+   - Dependencies on external systems → Higher
+
+ISSUE TYPE ADJUSTMENTS:
+- BUG: Usually 1-5 points (investigation + fix + testing)
+  - Simple bugs (typo, CSS) → 1-2 points
+  - Complex bugs (logic, integration) → 3-5 points
+  - Critical bugs requiring deep investigation → 5-8 points
+
+- STORY: Usually 3-8 points (feature development)
+  - Small feature → 3-5 points
+  - Medium feature with API → 5-8 points
+  - Large feature with multiple components → 8-13 points
+
+- TASK: Usually 1-5 points (well-defined work)
+  - Configuration, documentation → 1-2 points
+  - Setup, integration → 3-5 points
+  - Migration, refactoring → 5-8 points
+
+- EPIC: Usually 13-21 points (or suggest breaking down)
+  - If < 13 points, it's not an EPIC
+  - If > 21 points, strongly recommend breaking down
+
+PRIORITY CONSIDERATION:
+- Priority does NOT directly affect points
+- High priority may indicate complexity but estimate effort, not urgency
+- Mention if priority seems misaligned with complexity
+
+OUTPUT FORMAT (CRITICAL - MUST BE VALID JSON):
+Return ONLY a valid JSON object (no markdown, no comments, no explanations):
+{
+  "suggestedPoints": <number>,
+  "confidence": <0.0-1.0>,
+  "reasoning": {
+    "summary": "<1-2 sentence concise explanation in Vietnamese>",
+    "factors": [
+      {
+        "factor": "<factor name in Vietnamese>",
+        "impact": "Low|Medium|High",
+        "description": "<brief explanation in Vietnamese>"
+      }
+    ],
+    "recommendations": ["<optional suggestion 1 in Vietnamese>", ...]
+  },
+  "alternatives": [
+    {
+      "points": <number>,
+      "likelihood": <0.0-1.0>,
+      "reason": "<why this could also be valid in Vietnamese>"
+    }
+  ]
+}
+
+CONFIDENCE CALCULATION:
+- High (0.8-1.0): Clear requirements, known technology, well-defined AC
+- Medium (0.5-0.79): Some ambiguity, moderate complexity
+- Low (0.0-0.49): Vague requirements, high uncertainty, many unknowns
+
+IMPORTANT RULES:
+- Be conservative: when uncertain, estimate higher
+- Suggest breaking down if > 13 points
+- Consider team context (junior vs senior devs)
+- Always provide alternatives if close call between two values
+- Explain reasoning clearly for transparency
+- Output must be in Vietnamese (except JSON keys and enum values)`;
+  }
+
+  /**
+   * User prompt for estimation
+   */
+  private getEstimationUserPrompt(dto: EstimatePointsDto): string {
+    const contextInfo = this.buildEstimationContext(dto);
+
+    return `Estimate story points for this issue:
+
+Issue Type: ${dto.issueType}
+Priority: ${dto.priority}
+Title: ${dto.issueName}
+
+Description:
+${dto.currentDescription}
+
+Acceptance Criteria Count: ${dto.acceptanceCriteriaCount !== undefined ? dto.acceptanceCriteriaCount : 'Not specified'}
+${contextInfo}
+
+Analyze carefully and provide your estimation in valid JSON format.`;
+  }
+
+  /**
+   * Build context information for estimation
+   */
+  private buildEstimationContext(dto: EstimatePointsDto): string {
+    if (!dto.context) {
+      return '';
+    }
+
+    const parts: string[] = [];
+
+    if (dto.context.projectName) {
+      parts.push(`Project: ${dto.context.projectName}`);
+    }
+
+    if (dto.context.sprintGoal) {
+      parts.push(`Sprint Goal: ${dto.context.sprintGoal}`);
+    }
+
+    if (parts.length === 0) {
+      return '';
+    }
+
+    return `\nContext:\n${parts.map((p) => `- ${p}`).join('\n')}`;
   }
 }

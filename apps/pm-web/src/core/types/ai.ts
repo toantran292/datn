@@ -42,3 +42,62 @@ export interface RefineDescriptionResponse {
     details?: any;
   };
 }
+
+// AI Types for Story Points Estimation
+
+export interface EstimatePointsContext {
+  projectName?: string;
+  sprintGoal?: string;
+}
+
+export interface EstimatePointsRequest {
+  issueId: string;
+  issueName: string;
+  issueType: IssueType;
+  priority: IssuePriority;
+  currentDescription: string;
+  acceptanceCriteriaCount?: number;
+  context?: EstimatePointsContext;
+}
+
+export interface EstimationFactor {
+  factor: string;
+  impact: 'Low' | 'Medium' | 'High';
+  description: string;
+}
+
+export interface EstimationReasoning {
+  summary: string;
+  factors: EstimationFactor[];
+  recommendations?: string[];
+}
+
+export interface AlternativeEstimate {
+  points: number;
+  likelihood: number;
+  reason: string;
+}
+
+export interface EstimatePointsData {
+  suggestedPoints: number;
+  confidence: number;
+  reasoning: EstimationReasoning;
+  alternatives?: AlternativeEstimate[];
+}
+
+export interface EstimatePointsMetadata {
+  model: string;
+  tokensUsed: number;
+  processingTime: number;
+}
+
+export interface EstimatePointsResponse {
+  success: boolean;
+  data?: EstimatePointsData;
+  metadata?: EstimatePointsMetadata;
+  error?: {
+    code: string;
+    message: string;
+    details?: any;
+  };
+}

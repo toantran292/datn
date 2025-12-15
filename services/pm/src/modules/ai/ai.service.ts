@@ -3,6 +3,9 @@ import {
   RefineDescriptionDto,
   RefineDescriptionResponseDto,
   RefineDescriptionDataDto,
+  EstimatePointsDto,
+  EstimatePointsResponseDto,
+  EstimatePointsDataDto,
 } from './dto';
 import { OpenAIService } from './openai.service';
 import { PromptService } from './prompt.service';
@@ -192,5 +195,142 @@ export class AIService {
 
     // Ensure score is between 0 and 1
     return Math.min(Math.max(score, 0), 1);
+  }
+
+  /**
+   * Estimate story points using AI
+   */
+  async estimateStoryPoints(dto: EstimatePointsDto): Promise<EstimatePointsResponseDto> {
+    const startTime = Date.now();
+
+    try {
+      this.logger.log(
+        `Estimating story points for issue: ${dto.issueId} (${dto.issueType})`,
+      );
+
+      // 1. Get prompts
+      const { system, user } = this.promptService.getEstimatePrompt(dto);
+
+      // 2. Check token limit
+      const estimatedTokens = this.openaiService.estimateTokens(system + user);
+      if (this.openaiService.wouldExceedTokenLimit(estimatedTokens)) {
+        throw new InternalServerErrorException(
+          'Description is too long. Please reduce the content.',
+        );
+      }
+
+      // 3. Call OpenAI
+      const completion = await this.openaiService.createChatCompletion({
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: user },
+        ],
+      });
+
+      // 4. Parse JSON response
+      const estimationData = this.parseEstimationResponse(completion.content);
+
+      // 5. Validate Fibonacci scale
+      this.validateFibonacciPoints(estimationData.suggestedPoints);
+
+      // 6. Build response
+      const processingTime = Date.now() - startTime;
+
+      return {
+        success: true,
+        data: estimationData,
+        metadata: {
+          model: completion.model,
+          tokensUsed: completion.tokensUsed,
+          processingTime,
+        },
+      };
+    } catch (error) {
+      this.logger.error('AI estimation failed', error.stack);
+
+      return {
+        success: false,
+        error: {
+          code: error.status === 429 ? 'RATE_LIMIT_EXCEEDED' : 'AI_SERVICE_ERROR',
+          message:
+            error.message || 'Failed to estimate story points. Please try again.',
+          details: error.response?.data,
+        },
+      };
+    }
+  }
+
+  /**
+   * Parse AI estimation response (JSON format)
+   */
+  private parseEstimationResponse(text: string): EstimatePointsDataDto {
+    try {
+      // Remove markdown code blocks if present
+      let jsonText = text.trim();
+      if (jsonText.startsWith('```json')) {
+        jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+      } else if (jsonText.startsWith('```')) {
+        jsonText = jsonText.replace(/```\n?/g, '');
+      }
+
+      // Parse JSON
+      const parsed = JSON.parse(jsonText);
+
+      // Validate required fields
+      if (typeof parsed.suggestedPoints !== 'number') {
+        throw new Error('Invalid suggestedPoints in AI response');
+      }
+
+      if (typeof parsed.confidence !== 'number' || parsed.confidence < 0 || parsed.confidence > 1) {
+        throw new Error('Invalid confidence score in AI response');
+      }
+
+      if (!parsed.reasoning || !parsed.reasoning.summary || !Array.isArray(parsed.reasoning.factors)) {
+        throw new Error('Invalid reasoning structure in AI response');
+      }
+
+      return {
+        suggestedPoints: parsed.suggestedPoints,
+        confidence: parsed.confidence,
+        reasoning: {
+          summary: parsed.reasoning.summary,
+          factors: parsed.reasoning.factors.map((f: any) => ({
+            factor: f.factor || 'Unknown',
+            impact: f.impact || 'Medium',
+            description: f.description || '',
+          })),
+          recommendations: parsed.reasoning.recommendations || [],
+        },
+        alternatives: Array.isArray(parsed.alternatives)
+          ? parsed.alternatives.map((alt: any) => ({
+              points: alt.points,
+              likelihood: alt.likelihood,
+              reason: alt.reason,
+            }))
+          : [],
+      };
+    } catch (error) {
+      this.logger.error('Failed to parse AI estimation response', error.stack);
+      this.logger.error('Raw response:', text);
+
+      throw new InternalServerErrorException(
+        'Failed to parse AI estimation response. Invalid JSON format.',
+      );
+    }
+  }
+
+  /**
+   * Validate that points are in Fibonacci scale
+   */
+  private validateFibonacciPoints(points: number): void {
+    const validPoints = [1, 2, 3, 5, 8, 13, 21];
+    if (!validPoints.includes(points)) {
+      this.logger.warn(
+        `AI suggested non-Fibonacci points: ${points}. Defaulting to closest valid value.`,
+      );
+      throw new InternalServerErrorException(
+        `Invalid story points: ${points}. Must be Fibonacci number (1,2,3,5,8,13,21).`,
+      );
+    }
   }
 }

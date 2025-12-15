@@ -23,6 +23,8 @@ import { AIService } from './ai.service';
 import {
   RefineDescriptionDto,
   RefineDescriptionResponseDto,
+  EstimatePointsDto,
+  EstimatePointsResponseDto,
 } from './dto';
 import { SkipOrgCheck } from '../../common/decorators/skip-org-check.decorator';
 
@@ -112,5 +114,79 @@ export class AIController {
       .substring(0, 16);
 
     return `ai-refine:${dto.issueId}:${hash}`;
+  }
+
+  @Post('estimate-points')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Estimate story points for an issue using AI',
+    description:
+      'Analyzes issue description and provides story point estimation with detailed reasoning',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Story points estimated successfully',
+    type: EstimatePointsResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid input parameters',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @ApiResponse({
+    status: 429,
+    description: 'Rate limit exceeded',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'AI service error',
+  })
+  async estimatePoints(
+    @Body() dto: EstimatePointsDto,
+    // TODO: Add user parameter when auth is implemented
+    // @CurrentUser() user: User,
+  ): Promise<EstimatePointsResponseDto> {
+    this.logger.log(
+      `Estimate points request for issue ${dto.issueId} (${dto.issueType})`,
+    );
+
+    // Generate cache key
+    const cacheKey = this.generateEstimateCacheKey(dto);
+
+    // Check cache
+    const cached = await this.cacheManager.get<EstimatePointsResponseDto>(
+      cacheKey,
+    );
+
+    if (cached) {
+      this.logger.log(`Cache hit for estimate key: ${cacheKey}`);
+      return cached;
+    }
+
+    // Call AI service
+    const result = await this.aiService.estimateStoryPoints(dto);
+
+    // Cache successful results for 24 hours (86400 seconds)
+    if (result.success) {
+      await this.cacheManager.set(cacheKey, result, 86400 * 1000);
+      this.logger.log(`Cached estimate result for key: ${cacheKey}`);
+    }
+
+    return result;
+  }
+
+  /**
+   * Generate cache key for estimation based on issue ID and description hash
+   */
+  private generateEstimateCacheKey(dto: EstimatePointsDto): string {
+    const hash = createHash('sha256')
+      .update(dto.currentDescription + dto.issueType + dto.priority)
+      .digest('hex')
+      .substring(0, 16);
+
+    return `ai-estimate:${dto.issueId}:${hash}`;
   }
 }

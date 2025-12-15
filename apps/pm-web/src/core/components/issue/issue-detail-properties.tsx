@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Circle, Users, Signal, User, Calendar, CalendarClock, Network, Hash } from "lucide-react";
-import { Badge } from "@uts/design-system/ui";
+import { Circle, Users, Signal, User, Calendar, CalendarClock, Network, Hash, Sparkles, TrendingUp } from "lucide-react";
+import { Badge, Button, setToast, TOAST_TYPE } from "@uts/design-system/ui";
 import { IIssue } from "@/core/types/issue";
 import { useIssueStatus } from "@/core/hooks/store/use-issue-status";
 import { IdentityService } from "@/core/services/identity/identity.service";
@@ -18,6 +18,9 @@ import {
   ISSUE_TYPE_LABELS,
   formatDate,
 } from "@/core/components/backlog/utils";
+import { AIEstimateSection } from "@/core/components/ai";
+import { useAIEstimate } from "@/core/hooks/use-ai-estimate";
+import type { EstimatePointsData } from "@/core/types/ai";
 
 interface IssueDetailPropertiesProps {
   issue: IIssue;
@@ -190,11 +193,17 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
   const [dueDateValue, setDueDateValue] = useState<string | null>(issue.targetDate);
   const [parentValue, setParentValue] = useState<string | null>(issue.parentId);
 
+  // AI Estimate state
+  const { estimate, isEstimating, error: estimateError } = useAIEstimate();
+  const [estimationData, setEstimationData] = useState<EstimatePointsData | null>(null);
+  const [storyPointsValue, setStoryPointsValue] = useState<number | null>(issue.point);
+
   useEffect(() => {
     setStartDateValue(issue.startDate);
     setDueDateValue(issue.targetDate);
     setParentValue(issue.parentId);
-  }, [issue.startDate, issue.targetDate, issue.parentId]);
+    setStoryPointsValue(issue.point);
+  }, [issue.startDate, issue.targetDate, issue.parentId, issue.point]);
 
   const handleStartDateChange = async (value: string) => {
     const next = value || null;
@@ -232,6 +241,83 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
         setParentValue(issue.parentId);
       }
     }
+  };
+
+  const handleStoryPointsChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const points = value === "" ? null : parseInt(value, 10);
+
+    if (points !== null && (isNaN(points) || points < 0)) {
+      return; // Invalid input, ignore
+    }
+
+    setStoryPointsValue(points);
+
+    if (onUpdateIssue) {
+      try {
+        await onUpdateIssue(issue.id, { point: points });
+      } catch (error) {
+        console.error("Failed to update story points:", error);
+        setStoryPointsValue(issue.point);
+      }
+    }
+  };
+
+  const handleEstimate = async () => {
+    const currentDescription = issue.description || issue.descriptionHtml || "";
+
+    // Validate description
+    if (!currentDescription || currentDescription.trim().length < 10) {
+      setToast({
+        type: TOAST_TYPE.WARNING,
+        title: "Mô tả quá ngắn",
+        message: "Vui lòng nhập ít nhất 10 ký tự để sử dụng AI estimate.",
+      });
+      return;
+    }
+
+    const result = await estimate({
+      issueId: issue.id,
+      issueName: issue.name,
+      issueType: issue.type,
+      priority: issue.priority,
+      currentDescription,
+      context: {
+        projectName: projectIdentifier || undefined,
+      },
+    });
+
+    if (result) {
+      setEstimationData(result);
+    } else {
+      // Error toast
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: "Lỗi AI Estimate",
+        message: estimateError || "Không thể estimate story points. Vui lòng thử lại.",
+      });
+    }
+  };
+
+  const handleApplyEstimate = async (points: number) => {
+    // Update local state immediately for instant UI update
+    setStoryPointsValue(points);
+    setEstimationData(null);
+
+    // Then update backend
+    if (onUpdateIssue) {
+      await onUpdateIssue(issue.id, { point: points });
+    }
+
+    setToast({
+      type: TOAST_TYPE.SUCCESS,
+      title: "Đã cập nhật",
+      message: `Story points đã được cập nhật thành ${points} điểm.`,
+    });
+  };
+
+  const handleCancelEstimate = () => {
+    setEstimationData(null);
   };
 
   const childIssues = issueStore.getIssuesForProject(issue.projectId).filter((i) => i.parentId === issue.id);
@@ -457,6 +543,49 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
                   </div>
                 )}
               </div>
+            )}
+          </div>
+        </div>
+
+        {/* story points */}
+        <div className="flex w-full items-start gap-3">
+          <div className="flex items-center gap-1 w-1/4 flex-shrink-0 text-sm text-custom-text-300 pt-2">
+            <TrendingUp className="h-4 w-4 flex-shrink-0" />
+            <span>Story Points</span>
+          </div>
+          <div className="w-3/4 flex-grow space-y-2">
+            <div className="flex items-center gap-2">
+              {disabled ? (
+                storyPointsValue !== null ? (
+                  <span className="text-sm">{storyPointsValue}</span>
+                ) : (
+                  <span className="text-sm text-custom-text-400">Add story points</span>
+                )
+              ) : (
+                <input
+                  type="number"
+                  min="0"
+                  value={storyPointsValue ?? ""}
+                  onChange={handleStoryPointsChange}
+                  className="w-24 rounded border border-custom-border-200 bg-custom-background-100 px-2 py-1 text-sm text-custom-text-200 focus:outline-none focus:ring-1 focus:ring-custom-primary-100"
+                  placeholder="0"
+                />
+              )}
+              {!disabled && (issue.description || issue.descriptionHtml) && !estimationData && (
+                <Button variant="neutral-primary" size="sm" onClick={handleEstimate} disabled={disabled || isEstimating}>
+                  <Sparkles className="size-3.5" />
+                  {isEstimating ? "Đang xử lý..." : "AI Estimate"}
+                </Button>
+              )}
+            </div>
+
+            {estimationData && (
+              <AIEstimateSection
+                estimation={estimationData}
+                onAccept={handleApplyEstimate}
+                onCancel={handleCancelEstimate}
+                isExpanded={true}
+              />
             )}
           </div>
         </div>
