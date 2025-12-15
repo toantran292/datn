@@ -106,37 +106,6 @@ services:
       retries: 30
     networks: [uts_net]
 
-  redpanda:
-    image: redpandadata/redpanda:latest
-    container_name: uts_redpanda
-    command:
-      - redpanda
-      - start
-      - --overprovisioned
-      - --check=false
-      - --smp=1
-      - --memory=1G
-      - --reserve-memory=0M
-      - --node-id=0
-      - --kafka-addr=PLAINTEXT://0.0.0.0:9092,OUTSIDE://0.0.0.0:19092
-      - --advertise-kafka-addr=PLAINTEXT://redpanda:9092,OUTSIDE://localhost:${KAFKA_PORT}
-      - --pandaproxy-addr=0.0.0.0:8082
-      - --advertise-pandaproxy-addr=localhost:${PANDAPROXY_PORT}
-    restart: unless-stopped
-    ports:
-      - "${KAFKA_PORT}:19092"
-      - "${PANDAPROXY_PORT}:8082"
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "curl -sf http://localhost:9644/v1/status/ready >/dev/null || exit 1",
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 30
-    networks: [uts_net]
-
   mongodb:
     image: mongo:7-jammy
     container_name: uts_mongodb
@@ -393,7 +362,6 @@ services:
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
-      redpanda: { condition: service_healthy }
     healthcheck:
       test:
         [

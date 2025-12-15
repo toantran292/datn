@@ -515,9 +515,8 @@ export class ChatsService {
    * UC09: Get single attachment download URL
    */
   async getAttachmentDownloadUrl(attachmentId: string, userId: string) {
-    // Find attachment first to get fileId
-    const attachments = await this.attachmentsRepo.findByMessageId(attachmentId);
-    const attachment = attachments.find(a => a.id === attachmentId);
+    // Find attachment by ID
+    const attachment = await this.attachmentsRepo.findById(attachmentId);
 
     if (!attachment) {
       throw new NotFoundException('Attachment not found');
@@ -544,12 +543,15 @@ export class ChatsService {
    * Delete attachment
    */
   async deleteAttachment(attachmentId: string, userId: string) {
-    // Find all attachments and filter - not ideal but works for now
-    // In production, would add findById method to repository
-    const message = await this.messagesRepo.findById(attachmentId);
-    if (!message) throw new NotFoundException('Attachment not found');
+    // Find attachment by ID
+    const attachment = await this.attachmentsRepo.findById(attachmentId);
+    if (!attachment) throw new NotFoundException('Attachment not found');
 
-    // For now, only message author can delete attachments
+    // Get the message to verify ownership
+    const message = await this.messagesRepo.findById(attachment.messageId);
+    if (!message) throw new NotFoundException('Message not found');
+
+    // Only message author can delete attachments
     if (message.userId !== userId) {
       throw new ForbiddenException('You can only delete attachments from your own messages');
     }

@@ -54,6 +54,25 @@ export class AttachmentsRepository {
     };
   }
 
+  async findById(id: string): Promise<AttachmentEntity | null> {
+    const attachment = await this.attachmentRepo.findOne({
+      where: { id },
+    });
+
+    if (!attachment) return null;
+
+    return {
+      id: attachment.id,
+      messageId: attachment.messageId,
+      fileId: attachment.fileId,
+      fileName: attachment.fileName,
+      fileSize: Number(attachment.fileSize),
+      mimeType: attachment.mimeType,
+      thumbnailUrl: attachment.thumbnailUrl,
+      createdAt: attachment.createdAt,
+    };
+  }
+
   async findByMessageId(messageId: string): Promise<AttachmentEntity[]> {
     const attachments = await this.attachmentRepo.find({
       where: { messageId },
