@@ -8,9 +8,10 @@ interface CalendarGridProps {
   currentDate: Date;
   issuesByDate: Record<string, IIssue[]>;
   projectId: string;
+  onIssueDrop?: (issueId: string, sourceDate: string | null, targetDate: string) => void;
 }
 
-export const CalendarGrid = ({ currentDate, issuesByDate, projectId }: CalendarGridProps) => {
+export const CalendarGrid = ({ currentDate, issuesByDate, projectId, onIssueDrop }: CalendarGridProps) => {
   const dayNames = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 
   // Calculate calendar days
@@ -71,6 +72,7 @@ export const CalendarGrid = ({ currentDate, issuesByDate, projectId }: CalendarG
               isCurrentMonth={isCurrentMonth}
               isToday={isToday}
               projectId={projectId}
+              onIssueDrop={onIssueDrop}
             />
           );
         })}

@@ -1,9 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { observer } from "mobx-react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@uts/design-system/ui";
 import { useIssue } from "@/core/hooks/store/use-issue";
 import { CalendarGrid } from "./calendar-grid";
 import { CalendarHeader } from "./calendar-header";
@@ -16,10 +14,17 @@ export const CalendarLayout = observer(({ projectId }: CalendarLayoutProps) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const issueStore = useIssue();
 
-  // Get all issues for the project
-  const issues = useMemo(() => {
-    return issueStore.getIssuesForProject(projectId) || [];
-  }, [issueStore, projectId]);
+  // Fetch issues when component mounts or projectId changes
+  useEffect(() => {
+    const loader = issueStore.getLoaderForProject(projectId);
+    // Only fetch if not already loading or loaded
+    if (!loader) {
+      issueStore.fetchIssuesByProject(projectId);
+    }
+  }, [projectId, issueStore]);
+
+  // Get all issues for the project - let MobX handle reactivity, don't use useMemo
+  const issues = issueStore.getIssuesForProject(projectId) || [];
 
   // Group issues by target date
   const issuesByDate = useMemo(() => {
@@ -50,6 +55,19 @@ export const CalendarLayout = observer(({ projectId }: CalendarLayoutProps) => {
     setCurrentDate(new Date());
   };
 
+  const handleIssueDrop = async (issueId: string, sourceDate: string | null, targetDate: string) => {
+    // Don't update if dropping on the same date
+    if (sourceDate === targetDate) return;
+
+    try {
+      await issueStore.updateIssue(issueId, {
+        targetDate: targetDate,
+      });
+    } catch (error) {
+      console.error("Failed to update issue target date:", error);
+    }
+  };
+
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <CalendarHeader
@@ -64,6 +82,7 @@ export const CalendarLayout = observer(({ projectId }: CalendarLayoutProps) => {
           currentDate={currentDate}
           issuesByDate={issuesByDate}
           projectId={projectId}
+          onIssueDrop={handleIssueDrop}
         />
       </div>
     </div>
