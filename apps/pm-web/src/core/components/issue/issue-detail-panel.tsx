@@ -10,9 +10,11 @@ import { IssueDetailProperties } from "./issue-detail-properties";
 import { IssueDetailActivity } from "./issue-detail-activity";
 import { IssueTitleInput } from "./issue-title-input";
 import { IssueDescription } from "./issue-description";
-import { AIRefineSection } from "@/core/components/ai";
+import { AIRefineSection, AIBreakdownSection } from "@/core/components/ai";
 import { useAIRefine } from "@/core/hooks/use-ai-refine";
-import type { RefineDescriptionData } from "@/core/types/ai";
+import { useAIBreakdown } from "@/core/hooks/use-ai-breakdown";
+import { useIssue } from "@/core/hooks/store/use-issue";
+import type { RefineDescriptionData, BreakdownData, SubTask } from "@/core/types/ai";
 
 export interface IssueDetailPanelProps {
   issue: IIssue;
@@ -29,9 +31,17 @@ export const IssueDetailPanel: React.FC<IssueDetailPanelProps> = (props) => {
   const issueKey = formatIssueKey(projectIdentifier, issue.sequenceId);
   const disabled = !onUpdateIssue;
 
+  // Stores
+  const issueStore = useIssue();
+
   // AI Refine state
   const { refine, isRefining, error } = useAIRefine();
   const [refinedData, setRefinedData] = useState<RefineDescriptionData | null>(null);
+
+  // AI Breakdown state
+  const { breakdown, isBreakingDown, error: breakdownError } = useAIBreakdown();
+  const [breakdownData, setBreakdownData] = useState<BreakdownData | null>(null);
+  const [isCreatingSubTasks, setIsCreatingSubTasks] = useState(false);
 
   // Local description state for immediate UI update
   const [localDescription, setLocalDescription] = useState<string>(issue.descriptionHtml || issue.description || "");
@@ -124,6 +134,124 @@ export const IssueDetailPanel: React.FC<IssueDetailPanelProps> = (props) => {
     setRefinedData(null);
   };
 
+  const handleBreakdown = async () => {
+    const currentDescription = issue.description || issue.descriptionHtml || "";
+
+    // Validate description
+    if (!currentDescription || currentDescription.trim().length < 20) {
+      setToast({
+        type: TOAST_TYPE.WARNING,
+        title: "Mô tả quá ngắn",
+        message: "Vui lòng nhập ít nhất 20 ký tự để sử dụng AI breakdown.",
+      });
+      return;
+    }
+
+    // Check if this is an Epic or large Story
+    if (issue.type !== "EPIC" && (issue.point === null || issue.point < 13)) {
+      setToast({
+        type: TOAST_TYPE.WARNING,
+        title: "Issue quá nhỏ",
+        message: "AI Breakdown chỉ dành cho Epic hoặc Story lớn (≥13 points).",
+      });
+      return;
+    }
+
+    const result = await breakdown({
+      issueId: issue.id,
+      issueName: issue.name,
+      issueType: issue.type,
+      priority: issue.priority,
+      currentDescription,
+      context: {
+        projectName: projectIdentifier || undefined,
+      },
+    });
+
+    if (result) {
+      setBreakdownData(result);
+    } else {
+      // Error toast
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: "Lỗi AI Breakdown",
+        message: breakdownError || "Không thể breakdown issue. Vui lòng thử lại.",
+      });
+    }
+  };
+
+  const handleApplyBreakdown = async (subTasks: SubTask[]) => {
+    setIsCreatingSubTasks(true);
+    setBreakdownData(null);
+
+    try {
+      // Create sub-tasks sequentially to maintain order
+      const createdIssues: IIssue[] = [];
+      let successCount = 0;
+      let failCount = 0;
+
+      for (const subTask of subTasks) {
+        try {
+          const newIssue = await issueStore.createIssue({
+            projectId: issue.projectId,
+            sprintId: issue.sprintId || undefined,
+            parentId: issue.id, // Set parent to current issue
+            name: subTask.name,
+            description: subTask.description,
+            descriptionHtml: subTask.descriptionHtml,
+            priority: subTask.priority,
+            type: "TASK", // Sub-tasks are always TASK type
+            point: subTask.estimatedPoints,
+            assignees: [], // No assignees by default
+          });
+
+          createdIssues.push(newIssue);
+          successCount++;
+        } catch (error) {
+          console.error(`Failed to create sub-task: ${subTask.name}`, error);
+          failCount++;
+        }
+      }
+
+      // Show result toast
+      if (failCount === 0) {
+        setToast({
+          type: TOAST_TYPE.SUCCESS,
+          title: "Tạo sub-tasks thành công",
+          message: `Đã tạo ${successCount} sub-tasks từ AI breakdown.`,
+        });
+      } else if (successCount > 0) {
+        setToast({
+          type: TOAST_TYPE.WARNING,
+          title: "Tạo sub-tasks một phần",
+          message: `Đã tạo ${successCount}/${subTasks.length} sub-tasks. ${failCount} sub-tasks thất bại.`,
+        });
+      } else {
+        setToast({
+          type: TOAST_TYPE.ERROR,
+          title: "Lỗi tạo sub-tasks",
+          message: "Không thể tạo sub-tasks. Vui lòng thử lại.",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to create sub-tasks:", error);
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: "Lỗi tạo sub-tasks",
+        message: "Đã xảy ra lỗi khi tạo sub-tasks. Vui lòng thử lại.",
+      });
+    } finally {
+      setIsCreatingSubTasks(false);
+    }
+  };
+
+  const handleCancelBreakdown = () => {
+    setBreakdownData(null);
+  };
+
+  // Check if issue is eligible for breakdown
+  const canBreakdown = issue.type === "EPIC" || (issue.point !== null && issue.point >= 13);
+
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-custom-background-100">
       <IssueDetailHeader issueKey={issueKey} onClose={onClose} onCopyLink={handleCopyLink} />
@@ -169,6 +297,43 @@ export const IssueDetailPanel: React.FC<IssueDetailPanelProps> = (props) => {
                 containerClassName="-pl-3 border-none"
               />
             </div>
+
+            {/* AI Breakdown Section */}
+            {canBreakdown && (
+              <div className="space-y-2">
+                {!disabled && (issue.description || issue.descriptionHtml) && !breakdownData && (
+                  <div className="flex items-center gap-2 p-3 rounded-lg border border-custom-border-200 bg-custom-primary-100/5">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-custom-text-100">
+                        Issue này có thể được chia nhỏ
+                      </p>
+                      <p className="text-xs text-custom-text-300 mt-0.5">
+                        Sử dụng AI để tự động breakdown thành các sub-tasks có cấu trúc
+                      </p>
+                    </div>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={handleBreakdown}
+                      disabled={disabled || isBreakingDown}
+                    >
+                      <Sparkles className="size-3.5" />
+                      {isBreakingDown ? "Đang phân tích..." : "AI Breakdown"}
+                    </Button>
+                  </div>
+                )}
+
+                {breakdownData && (
+                  <AIBreakdownSection
+                    breakdown={breakdownData}
+                    onAccept={handleApplyBreakdown}
+                    onCancel={handleCancelBreakdown}
+                    isExpanded={true}
+                    isCreating={isCreatingSubTasks}
+                  />
+                )}
+              </div>
+            )}
 
             <IssueDetailProperties
               issue={issue}

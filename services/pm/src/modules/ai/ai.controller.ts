@@ -25,6 +25,8 @@ import {
   RefineDescriptionResponseDto,
   EstimatePointsDto,
   EstimatePointsResponseDto,
+  BreakdownIssueDto,
+  BreakdownResponseDto,
 } from './dto';
 import { SkipOrgCheck } from '../../common/decorators/skip-org-check.decorator';
 
@@ -188,5 +190,88 @@ export class AIController {
       .substring(0, 16);
 
     return `ai-estimate:${dto.issueId}:${hash}`;
+  }
+
+  @Post('breakdown-issue')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Break down Epic/Story into sub-tasks using AI',
+    description:
+      'Analyzes issue description and generates a structured breakdown with dependencies, estimates, and coverage analysis',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Issue broken down successfully',
+    type: BreakdownResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid input parameters',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized',
+  })
+  @ApiResponse({
+    status: 429,
+    description: 'Rate limit exceeded',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'AI service error',
+  })
+  async breakdownIssue(
+    @Body() dto: BreakdownIssueDto,
+    // TODO: Add user parameter when auth is implemented
+    // @CurrentUser() user: User,
+  ): Promise<BreakdownResponseDto> {
+    this.logger.log(
+      `Breakdown request for issue ${dto.issueId} (${dto.issueType})`,
+    );
+
+    // Generate cache key
+    const cacheKey = this.generateBreakdownCacheKey(dto);
+
+    // Check cache
+    const cached = await this.cacheManager.get<BreakdownResponseDto>(
+      cacheKey,
+    );
+
+    if (cached) {
+      this.logger.log(`Cache hit for breakdown key: ${cacheKey}`);
+      // Update metadata to indicate cache hit
+      if (cached.metadata) {
+        cached.metadata.cacheHit = true;
+      }
+      return cached;
+    }
+
+    // Call AI service
+    const result = await this.aiService.breakdownEpic(dto);
+
+    // Cache successful results for 24 hours (86400 seconds)
+    if (result.success) {
+      await this.cacheManager.set(cacheKey, result, 86400 * 1000);
+      this.logger.log(`Cached breakdown result for key: ${cacheKey}`);
+    }
+
+    return result;
+  }
+
+  /**
+   * Generate cache key for breakdown based on issue ID and description hash
+   */
+  private generateBreakdownCacheKey(dto: BreakdownIssueDto): string {
+    const hash = createHash('sha256')
+      .update(
+        dto.currentDescription +
+          dto.issueType +
+          dto.priority +
+          JSON.stringify(dto.constraints || {}),
+      )
+      .digest('hex')
+      .substring(0, 16);
+
+    return `ai-breakdown:${dto.issueId}:${hash}`;
   }
 }

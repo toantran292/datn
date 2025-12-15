@@ -3,6 +3,8 @@ import type {
   RefineDescriptionResponse,
   EstimatePointsRequest,
   EstimatePointsResponse,
+  BreakdownIssueRequest,
+  BreakdownIssueResponse,
 } from "@/core/types/ai";
 import { APIService } from "./api.service";
 
@@ -78,6 +80,62 @@ export class AIService extends APIService {
       return response?.data as EstimatePointsResponse;
     } catch (error: any) {
       console.error("AI estimate points error:", error);
+
+      // Handle specific HTTP status codes
+      const status = error?.response?.status;
+
+      if (status === 429) {
+        return {
+          success: false,
+          error: {
+            code: "RATE_LIMIT",
+            message: "Đã vượt quá giới hạn yêu cầu. Vui lòng thử lại sau 1 giờ.",
+          },
+        };
+      }
+
+      if (status === 400) {
+        return {
+          success: false,
+          error: {
+            code: "VALIDATION_ERROR",
+            message: error?.response?.data?.message || "Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.",
+          },
+        };
+      }
+
+      if (status >= 500) {
+        return {
+          success: false,
+          error: {
+            code: "SERVER_ERROR",
+            message: "Lỗi server. Vui lòng thử lại sau.",
+          },
+        };
+      }
+
+      // Handle network errors or other issues
+      return {
+        success: false,
+        error: {
+          code: "NETWORK_ERROR",
+          message: "Không thể kết nối đến AI service. Vui lòng thử lại.",
+        },
+      };
+    }
+  }
+
+  /**
+   * Break down Epic/Story into sub-tasks using AI
+   */
+  async breakdownIssue(
+    request: BreakdownIssueRequest
+  ): Promise<BreakdownIssueResponse> {
+    try {
+      const response = await this.post(`/api/ai/breakdown-issue`, request);
+      return response?.data as BreakdownIssueResponse;
+    } catch (error: any) {
+      console.error("AI breakdown issue error:", error);
 
       // Handle specific HTTP status codes
       const status = error?.response?.status;

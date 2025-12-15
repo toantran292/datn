@@ -6,6 +6,9 @@ import {
   EstimatePointsDto,
   EstimatePointsResponseDto,
   EstimatePointsDataDto,
+  BreakdownIssueDto,
+  BreakdownResponseDto,
+  BreakdownDataDto,
 } from './dto';
 import { OpenAIService } from './openai.service';
 import { PromptService } from './prompt.service';
@@ -332,5 +335,254 @@ export class AIService {
         `Invalid story points: ${points}. Must be Fibonacci number (1,2,3,5,8,13,21).`,
       );
     }
+  }
+
+  /**
+   * Break down Epic/Story into sub-tasks using AI
+   */
+  async breakdownEpic(dto: BreakdownIssueDto): Promise<BreakdownResponseDto> {
+    const startTime = Date.now();
+
+    try {
+      this.logger.log(
+        `Breaking down issue: ${dto.issueId} (${dto.issueType})`,
+      );
+
+      // 1. Get prompts
+      const { system, user } = this.promptService.getBreakdownPrompt(dto);
+
+      // 2. Check token limit (with higher max_tokens for breakdown)
+      const breakdownMaxTokens = 6000;
+      const estimatedTokens = this.openaiService.estimateTokens(system + user);
+      if (this.openaiService.wouldExceedTokenLimit(estimatedTokens, breakdownMaxTokens)) {
+        throw new InternalServerErrorException(
+          'Description is too long. Please reduce the content.',
+        );
+      }
+
+      // 3. Call OpenAI (with higher max_tokens for breakdown)
+      const completion = await this.openaiService.createChatCompletion({
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: user },
+        ],
+        max_tokens: breakdownMaxTokens, // Higher limit for complex breakdown responses
+      });
+
+      // 4. Parse JSON response
+      const breakdownData = this.parseBreakdownResponse(completion.content);
+
+      // 5. Validate breakdown
+      this.validateBreakdown(breakdownData);
+
+      // 6. Build response
+      const processingTime = Date.now() - startTime;
+
+      return {
+        success: true,
+        data: breakdownData,
+        metadata: {
+          model: completion.model,
+          tokensUsed: completion.tokensUsed,
+          processingTime,
+          cacheHit: false,
+          timestamp: new Date().toISOString(),
+        },
+      };
+    } catch (error) {
+      this.logger.error('AI breakdown failed', error.stack);
+
+      return {
+        success: false,
+        error: {
+          code: error.status === 429 ? 'RATE_LIMIT_EXCEEDED' : 'AI_SERVICE_ERROR',
+          message:
+            error.message || 'Failed to breakdown issue. Please try again.',
+          details: error.response?.data,
+        },
+      };
+    }
+  }
+
+  /**
+   * Parse AI breakdown response (JSON format)
+   */
+  private parseBreakdownResponse(text: string): BreakdownDataDto {
+    try {
+      // Remove markdown code blocks if present
+      let jsonText = text.trim();
+      if (jsonText.startsWith('```json')) {
+        jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+      } else if (jsonText.startsWith('```')) {
+        jsonText = jsonText.replace(/```\n?/g, '');
+      }
+
+      // Parse JSON
+      const parsed = JSON.parse(jsonText);
+
+      // Validate required fields
+      if (!Array.isArray(parsed.subTasks) || parsed.subTasks.length === 0) {
+        throw new Error('Invalid or empty subTasks array in AI response');
+      }
+
+      if (!parsed.reasoning || !parsed.validation) {
+        throw new Error('Missing reasoning or validation in AI response');
+      }
+
+      // Transform and validate sub-tasks
+      const subTasks = parsed.subTasks.map((task: any, index: number) => {
+        if (!task.tempId || !task.name || !task.description) {
+          throw new Error(`Sub-task ${index + 1} missing required fields`);
+        }
+
+        // Validate Fibonacci points for each sub-task
+        const validPoints = [1, 2, 3, 5, 8, 13];
+        if (!validPoints.includes(task.estimatedPoints)) {
+          this.logger.warn(
+            `Task ${task.tempId} has invalid points: ${task.estimatedPoints}. Adjusting to nearest valid value.`,
+          );
+          // Find closest Fibonacci number
+          task.estimatedPoints = validPoints.reduce((prev, curr) =>
+            Math.abs(curr - task.estimatedPoints) < Math.abs(prev - task.estimatedPoints) ? curr : prev
+          );
+        }
+
+        return {
+          tempId: task.tempId,
+          name: task.name,
+          description: task.description,
+          descriptionHtml: task.descriptionHtml || `<p>${task.description}</p>`,
+          estimatedPoints: task.estimatedPoints,
+          estimationReasoning: task.estimationReasoning || '',
+          taskType: task.taskType || 'FEATURE',
+          technicalLayer: task.technicalLayer || 'CROSS',
+          order: task.order || index + 1,
+          dependencies: Array.isArray(task.dependencies) ? task.dependencies : [],
+          canParallelize: task.canParallelize !== undefined ? task.canParallelize : true,
+          priority: task.priority || 'MEDIUM',
+          acceptanceCriteria: Array.isArray(task.acceptanceCriteria) ? task.acceptanceCriteria : [],
+          tags: Array.isArray(task.tags) ? task.tags : [],
+        };
+      });
+
+      // Build response
+      return {
+        subTasks,
+        reasoning: {
+          summary: parsed.reasoning.summary || '',
+          coverageAreas: Array.isArray(parsed.reasoning.coverageAreas)
+            ? parsed.reasoning.coverageAreas
+            : [],
+          assumptions: Array.isArray(parsed.reasoning.assumptions)
+            ? parsed.reasoning.assumptions
+            : [],
+          risks: Array.isArray(parsed.reasoning.risks)
+            ? parsed.reasoning.risks
+            : [],
+        },
+        validation: {
+          totalPoints: parsed.validation.totalPoints || 0,
+          completeness: parsed.validation.completeness || 0,
+          balanceScore: parsed.validation.balanceScore || 0,
+          coveragePercentage: parsed.validation.coveragePercentage || 0,
+        },
+        dependencyGraph: parsed.dependencyGraph || undefined,
+      };
+    } catch (error) {
+      this.logger.error('Failed to parse AI breakdown response', error.stack);
+      this.logger.error('Raw response:', text);
+
+      throw new InternalServerErrorException(
+        'Failed to parse AI breakdown response. Invalid JSON format.',
+      );
+    }
+  }
+
+  /**
+   * Validate breakdown data
+   */
+  private validateBreakdown(data: BreakdownDataDto): void {
+    // Check for circular dependencies
+    const hasCircularDeps = this.detectCircularDependencies(data.subTasks);
+    if (hasCircularDeps) {
+      this.logger.warn('Circular dependencies detected in breakdown');
+      throw new InternalServerErrorException(
+        'Invalid breakdown: Circular dependencies detected',
+      );
+    }
+
+    // Validate all dependencies reference valid task IDs
+    const taskIds = new Set(data.subTasks.map((t) => t.tempId));
+    for (const task of data.subTasks) {
+      for (const depId of task.dependencies) {
+        if (!taskIds.has(depId)) {
+          throw new InternalServerErrorException(
+            `Invalid dependency: Task ${task.tempId} depends on non-existent task ${depId}`,
+          );
+        }
+      }
+    }
+
+    // Warn if total points seem unreasonable
+    if (data.validation.totalPoints > 100) {
+      this.logger.warn(
+        `Breakdown has very high total points: ${data.validation.totalPoints}`,
+      );
+    }
+
+    // Warn if too many sub-tasks
+    if (data.subTasks.length > 20) {
+      this.logger.warn(
+        `Breakdown has many sub-tasks: ${data.subTasks.length}. Consider consolidating.`,
+      );
+    }
+  }
+
+  /**
+   * Detect circular dependencies in task graph
+   */
+  private detectCircularDependencies(
+    tasks: Array<{ tempId: string; dependencies: string[] }>,
+  ): boolean {
+    const visited = new Set<string>();
+    const recursionStack = new Set<string>();
+
+    // Build adjacency map
+    const graph = new Map<string, string[]>();
+    for (const task of tasks) {
+      graph.set(task.tempId, task.dependencies);
+    }
+
+    // DFS to detect cycle
+    const hasCycle = (taskId: string): boolean => {
+      if (!visited.has(taskId)) {
+        visited.add(taskId);
+        recursionStack.add(taskId);
+
+        const deps = graph.get(taskId) || [];
+        for (const depId of deps) {
+          if (!visited.has(depId)) {
+            if (hasCycle(depId)) {
+              return true;
+            }
+          } else if (recursionStack.has(depId)) {
+            // Found a cycle
+            return true;
+          }
+        }
+      }
+
+      recursionStack.delete(taskId);
+      return false;
+    };
+
+    // Check each task
+    for (const task of tasks) {
+      if (hasCycle(task.tempId)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }
