@@ -8,7 +8,7 @@ Các thành phần chính trong kiến trúc bao gồm: Client Layer với web b
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.95\textwidth]{images/system_architecture.png}
+\includegraphics[width=0.75\textwidth]{images/system_architecture.png}
 \caption{Sơ đồ kiến trúc hệ thống - Phân hệ Truyền thông}
 \label{fig:system_architecture}
 \end{figure}
@@ -31,7 +31,7 @@ Hệ thống được phân rã theo hai chiều: phân rã theo nhóm người 
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.8\textwidth]{images/user_groups.png}
+\includegraphics[width=0.45\textwidth]{images/user_groups.png}
 \caption{Sơ đồ nhóm đối tượng người dùng - Phân hệ Truyền thông}
 \label{fig:user_groups}
 \end{figure}
@@ -108,7 +108,7 @@ Mô hình kiến trúc phân lớp (Layered Architecture) kết hợp với Micr
 \begin{itemize}
     \item \textbf{PostgreSQL + pgvector:} ACID-compliant, reliable cho persistent data như channels, messages, embeddings. pgvector cho phép lưu trữ và query vector embeddings trực tiếp trong PostgreSQL, giảm complexity so với việc sử dụng external vector database.
     \item \textbf{Redis:} In-memory, cực nhanh cho Socket.io adapter (horizontal scaling), caching frequently accessed data, rate limiting, và làm backend cho BullMQ job queues.
-    \item \textbf{Complementary:} PostgreSQL làm "source of truth", Redis làm performance optimization và real-time coordination.
+    \item \textbf{Complementary:} PostgreSQL làm "source of truth", Redis làm performance op\-ti\-mi\-za\-tion và real-time coordination.
 \end{itemize}
 
 \textbf{Tại sao sử dụng BullMQ cho background jobs?}

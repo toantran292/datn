@@ -14,7 +14,7 @@ Phân hệ truyền thông quản lý các loại dữ liệu chính được t�
     \item type: Loại kênh (PUBLIC, PRIVATE, PROJECT).
     \item is\_private: Kênh có phải riêng tư hay không.
     \item ai\_enabled: Trạng thái bật/tắt AI Assistant cho kênh.
-    \item ai\_features: Cấu hình các tính năng AI được phép (JSONB): summarization, action\_items, qa, document\_summary.
+    \item ai\_features: Cấu hình các tính năng AI được phép (JSONB): summarization, ac\-tion\_i\-tems, qa, document\_summary.
     \item created\_by: User ID người tạo kênh.
     \item archived\_at: Thời điểm lưu trữ kênh (nullable).
     \item created\_at: Ngày tạo kênh.
@@ -125,7 +125,7 @@ Phân hệ truyền thông quản lý các loại dữ liệu chính được t�
     \item query: Câu hỏi/yêu cầu của người dùng.
     \item response: Câu trả lời của AI.
     \item context\_message\_ids: Danh sách message IDs được sử dụng làm context (Array).
-    \item source\_references: Tham chiếu nguồn (JSONB): message\_id, chunk\_id, relevance\_score.
+    \item source\_references: Tham chiếu nguồn (JSONB): message\_id, chunk\_id, re\-le\-van\-ce\_\-sco\-re.
     \item model\_used: Tên model LLM đã sử dụng (gpt-4o-mini, gpt-4o).
     \item tokens\_used: Số tokens tiêu thụ (prompt + completion).
     \item response\_time\_ms: Thời gian phản hồi (milliseconds).
@@ -148,7 +148,7 @@ Mô hình dữ liệu của phân hệ truyền thông được thiết kế d�
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{images/class_diagram.png}
+\includegraphics[width=0.7\textwidth]{images/class_diagram.png}
 \caption{Sơ đồ lớp (Class Diagram) của phân hệ truyền thông}
 \label{fig:class_diagram}
 \end{figure}
