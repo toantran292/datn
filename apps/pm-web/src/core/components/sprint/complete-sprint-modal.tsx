@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
+import { observer } from "mobx-react";
 import {
   Avatar,
   Badge,
@@ -30,7 +31,7 @@ type CompleteSprintModalProps = {
   issueStatuses?: { id: string; name: string }[];
 };
 
-export const CompleteSprintModal: React.FC<CompleteSprintModalProps> = ({
+const CompleteSprintModalComponent: React.FC<CompleteSprintModalProps> = ({
   projectId,
   isOpen,
   onClose,
@@ -47,10 +48,8 @@ export const CompleteSprintModal: React.FC<CompleteSprintModalProps> = ({
   const [moveToSprintId, setMoveToSprintId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const futureSprints = useMemo(
-    () => sprintStore.getSprintsForProject(projectId).filter((s) => s.status === "FUTURE"),
-    [projectId, sprintStore]
-  );
+  const allProjectSprints = sprintStore.getSprintsForProject(projectId);
+  const futureSprints = useMemo(() => allProjectSprints.filter((s) => s.status === "FUTURE"), [allProjectSprints]);
 
   const memberMap = useMemo(() => {
     const map = new Map<string, { id: string; name: string; email?: string }>();
@@ -75,9 +74,7 @@ export const CompleteSprintModal: React.FC<CompleteSprintModalProps> = ({
   const doneStatusIds = useMemo(() => {
     const keywords = ["DONE", "HOÀN THÀNH", "COMPLETED"];
     return new Set(
-      issueStatuses
-        .filter((s) => keywords.some((k) => s.name?.toUpperCase()?.includes(k)))
-        .map((s) => s.id)
+      issueStatuses.filter((s) => keywords.some((k) => s.name?.toUpperCase()?.includes(k))).map((s) => s.id)
     );
   }, [issueStatuses]);
   const isDone = (issue: IIssue) => issue.state === "DONE" || doneStatusIds.has(issue.statusId);
@@ -143,12 +140,13 @@ export const CompleteSprintModal: React.FC<CompleteSprintModalProps> = ({
               value={selectedSprintId ?? ""}
               onChange={(val: string) => setSelectedSprintId(val || null)}
               input
+              optionsClassName="w-[412px]"
               label={
                 activeSprints.find((s) => s.id === selectedSprintId)?.name ?? activeSprints[0]?.name ?? "Chọn sprint"
               }
             >
               {activeSprints.map((s) => (
-                <CustomSelect.Option key={s.id} value={s.id}>
+                <CustomSelect.Option key={s.id} value={s.id} className="w-full">
                   {s.name}
                 </CustomSelect.Option>
               ))}
@@ -184,6 +182,8 @@ export const CompleteSprintModal: React.FC<CompleteSprintModalProps> = ({
                 value={moveToSprintId ?? futureSprints[0]?.id ?? "backlog"}
                 onChange={(val: string) => setMoveToSprintId(val)}
                 input
+                className="w-full"
+                optionsClassName="w-[412px]"
                 label={
                   moveToSprintId === "backlog"
                     ? "Backlog"
@@ -215,3 +215,5 @@ export const CompleteSprintModal: React.FC<CompleteSprintModalProps> = ({
     </ModalCore>
   );
 };
+
+export const CompleteSprintModal = observer(CompleteSprintModalComponent);

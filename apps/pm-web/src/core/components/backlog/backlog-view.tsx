@@ -127,11 +127,9 @@ const BacklogViewComponent: React.FC<BacklogViewProps> = (props) => {
     return sections.filter((section) => section.type !== "sprint" || allowedSprintIds.has(section.id));
   }, [allowedSprintIds, sections]);
 
-  const sprintCount = useMemo(
-    () => filteredSections.filter((section) => section.type === "sprint").length,
-    [filteredSections]
-  );
-  const defaultSprintName = useMemo(() => `Sprint ${sprintCount + 1}`, [sprintCount]);
+  // Count ALL sprints (including CLOSED) to ensure unique sequential names
+  const totalSprintCount = useMemo(() => (sprints ?? []).length, [sprints]);
+  const defaultSprintName = useMemo(() => `Sprint ${totalSprintCount + 1}`, [totalSprintCount]);
 
   const issueLookup = useMemo(() => {
     const map = new Map<string, { issue: IIssue; section: IBacklogSectionData }>();
