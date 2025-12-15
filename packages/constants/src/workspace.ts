@@ -299,6 +299,12 @@ export const WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS: Record<string, IWorkspac
     href: `/calendar/`,
     access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER, EUserWorkspaceRoles.GUEST],
   },
+  timeline: {
+    key: "timeline",
+    labelTranslationKey: "Timeline",
+    href: `/timeline/`,
+    access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER, EUserWorkspaceRoles.GUEST],
+  },
   summary: {
     key: "summary",
     labelTranslationKey: "Summary",
@@ -311,6 +317,7 @@ export const WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS_LINKS: IWorkspaceSidebarN
   WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["backlog"]!,
   WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["board"]!,
   WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["calendar"]!,
+  WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["timeline"]!,
   WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["summary"]!,
 ];
 

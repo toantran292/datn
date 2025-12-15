@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from "react";
 import { observer } from "mobx-react";
 import { useIssue } from "@/core/hooks/store/use-issue";
 import { CalendarGrid } from "./calendar-grid";
-import { CalendarHeader } from "./calendar-header";
+import { CalendarHeader, type CalendarLayout as CalendarLayoutType } from "./calendar-header";
 
 interface CalendarLayoutProps {
   projectId: string;
@@ -12,6 +12,8 @@ interface CalendarLayoutProps {
 
 export const CalendarLayout = observer(({ projectId }: CalendarLayoutProps) => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [layout, setLayout] = useState<CalendarLayoutType>("month");
+  const [showWeekends, setShowWeekends] = useState(true);
   const issueStore = useIssue();
 
   // Fetch issues when component mounts or projectId changes
@@ -43,12 +45,26 @@ export const CalendarLayout = observer(({ projectId }: CalendarLayoutProps) => {
     return grouped;
   }, [issues]);
 
-  const goToPreviousMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+  const goToPrevious = () => {
+    if (layout === "month") {
+      setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+    } else {
+      // Go to previous week
+      const newDate = new Date(currentDate);
+      newDate.setDate(currentDate.getDate() - 7);
+      setCurrentDate(newDate);
+    }
   };
 
-  const goToNextMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+  const goToNext = () => {
+    if (layout === "month") {
+      setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+    } else {
+      // Go to next week
+      const newDate = new Date(currentDate);
+      newDate.setDate(currentDate.getDate() + 7);
+      setCurrentDate(newDate);
+    }
   };
 
   const goToToday = () => {
@@ -72,9 +88,13 @@ export const CalendarLayout = observer(({ projectId }: CalendarLayoutProps) => {
     <div className="flex h-full flex-col overflow-hidden">
       <CalendarHeader
         currentDate={currentDate}
-        onPrevious={goToPreviousMonth}
-        onNext={goToNextMonth}
+        onPrevious={goToPrevious}
+        onNext={goToNext}
         onToday={goToToday}
+        layout={layout}
+        onLayoutChange={setLayout}
+        showWeekends={showWeekends}
+        onShowWeekendsChange={setShowWeekends}
       />
 
       <div className="flex-1 overflow-auto">
@@ -83,6 +103,8 @@ export const CalendarLayout = observer(({ projectId }: CalendarLayoutProps) => {
           issuesByDate={issuesByDate}
           projectId={projectId}
           onIssueDrop={handleIssueDrop}
+          layout={layout}
+          showWeekends={showWeekends}
         />
       </div>
     </div>

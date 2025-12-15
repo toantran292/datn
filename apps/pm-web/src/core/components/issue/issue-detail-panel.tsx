@@ -50,7 +50,7 @@ export const IssueDetailPanel: React.FC<IssueDetailPanelProps> = (props) => {
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded border border-custom-border-200 bg-custom-background-100">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-custom-background-100">
       <IssueDetailHeader issueKey={issueKey} onClose={onClose} onCopyLink={handleCopyLink} />
 
       <div className="vertical-scrollbar flex h-full w-full overflow-auto">

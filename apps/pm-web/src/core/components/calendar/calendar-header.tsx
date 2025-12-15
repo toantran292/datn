@@ -2,15 +2,31 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@uts/design-system/ui";
+import { cn } from "@uts/fe-utils";
+
+export type CalendarLayout = "month" | "week";
 
 interface CalendarHeaderProps {
   currentDate: Date;
   onPrevious: () => void;
   onNext: () => void;
   onToday: () => void;
+  layout: CalendarLayout;
+  onLayoutChange: (layout: CalendarLayout) => void;
+  showWeekends: boolean;
+  onShowWeekendsChange: (show: boolean) => void;
 }
 
-export const CalendarHeader = ({ currentDate, onPrevious, onNext, onToday }: CalendarHeaderProps) => {
+export const CalendarHeader = ({
+  currentDate,
+  onPrevious,
+  onNext,
+  onToday,
+  layout,
+  onLayoutChange,
+  showWeekends,
+  onShowWeekendsChange,
+}: CalendarHeaderProps) => {
   const monthNames = [
     "Tháng 1",
     "Tháng 2",
@@ -52,12 +68,44 @@ export const CalendarHeader = ({ currentDate, onPrevious, onNext, onToday }: Cal
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
+          <Button variant="neutral-primary" size="sm" onClick={onToday}>
+            Hôm nay
+          </Button>
         </div>
       </div>
 
-      <Button variant="neutral-primary" size="sm" onClick={onToday}>
-        Hôm nay
-      </Button>
+      <div className="flex items-center gap-3">
+        {/* Layout toggle */}
+        <div className="flex items-center gap-1 rounded-md border border-custom-border-200 p-1">
+          <Button
+            variant={layout === "month" ? "primary" : "neutral-primary"}
+            size="sm"
+            onClick={() => onLayoutChange("month")}
+            className={cn("h-6 px-3 text-xs", layout === "month" && "bg-custom-primary-100 text-white")}
+          >
+            Tháng
+          </Button>
+          <Button
+            variant={layout === "week" ? "primary" : "neutral-primary"}
+            size="sm"
+            onClick={() => onLayoutChange("week")}
+            className={cn("h-6 px-3 text-xs", layout === "week" && "bg-custom-primary-100 text-white")}
+          >
+            Tuần
+          </Button>
+        </div>
+
+        {/* Show weekends toggle */}
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={showWeekends}
+            onChange={(e) => onShowWeekendsChange(e.target.checked)}
+            className="h-4 w-4 rounded border-custom-border-300 text-custom-primary-100 focus:ring-custom-primary-100"
+          />
+          <span className="text-xs text-custom-text-300">Hiện cuối tuần</span>
+        </label>
+      </div>
     </div>
   );
 };
