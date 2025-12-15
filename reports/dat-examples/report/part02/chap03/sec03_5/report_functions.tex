@@ -1,0 +1,131 @@
+% ==================== NHÓM SPRINT MANAGEMENT ====================
+
+\subsubsection{Chức năng tạo Sprint}
+
+\textbf{Mục đích:} Cho phép Project Lead tạo sprint mới với status FUTURE để plan và assign issues trước khi start sprint.
+
+\textbf{Dữ liệu được dùng:}
+
+\begin{longtblr}[
+  caption = {Bảng dữ liệu được dùng cho chức năng tạo Sprint},
+  label = {tab:func_create_sprint}
+]{
+  width=\linewidth, rowhead=2, hlines, vlines,
+  colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
+  rows={m},
+  row{1-2}={font=\bfseries, c, bg=gray9}
+}
+\SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
+& & Thêm & Sửa & Xóa & Truy vấn \\
+1 & Sprint & X & & & X \\
+2 & Project & & & & X \\
+3 & ProjectMember & & & & X \\
+4 & Activity & X & & & \\
+5 & AuditLog & X & & & \\
+\end{longtblr}
+
+\textbf{Xử lý:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{images/act_create_sprint.png}
+\caption{Sơ đồ hoạt động của chức năng tạo Sprint}
+\label{fig:act_create_sprint}
+\end{figure}
+
+\subsubsection{Chức năng Start Sprint}
+
+\textbf{Mục đích:} Cho phép Project Lead start một FUTURE sprint, chuyển status thành ACTIVE với validation chỉ có một ACTIVE sprint trong project.
+
+\textbf{Dữ liệu được dùng:}
+
+\begin{longtblr}[
+  caption = {Bảng dữ liệu được dùng cho chức năng Start Sprint},
+  label = {tab:func_start_sprint}
+]{
+  width=\linewidth, rowhead=2, hlines, vlines,
+  colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
+  rows={m},
+  row{1-2}={font=\bfseries, c, bg=gray9}
+}
+\SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
+& & Thêm & Sửa & Xóa & Truy vấn \\
+1 & Sprint & & X & & X \\
+2 & Project & & & & X \\
+3 & Activity & X & & & \\
+4 & AuditLog & X & & & \\
+\end{longtblr}
+
+\textbf{Xử lý:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{images/act_start_sprint.png}
+\caption{Sơ đồ hoạt động của chức năng Start Sprint}
+\label{fig:act_start_sprint}
+\end{figure}
+
+\subsubsection{Chức năng Complete Sprint với AI Summary}
+
+\textbf{Mục đích:} Cho phép Project Lead complete ACTIVE sprint, move incomplete issues về Backlog hoặc next sprint, và trigger AI-generated Sprint Summary với LLM Provider.
+
+\textbf{Dữ liệu được dùng:}
+
+\begin{longtblr}[
+  caption = {Bảng dữ liệu được dùng cho chức năng Complete Sprint với AI Summary},
+  label = {tab:func_complete_sprint}
+]{
+  width=\linewidth, rowhead=2, hlines, vlines,
+  colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
+  rows={m},
+  row{1-2}={font=\bfseries, c, bg=gray9}
+}
+\SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
+& & Thêm & Sửa & Xóa & Truy vấn \\
+1 & Sprint & & X & & X \\
+2 & Issue & & X & & X \\
+3 & Activity & & & & X \\
+4 & Project & & & & X \\
+5 & AuditLog & X & & & \\
+\end{longtblr}
+
+\textbf{Xử lý:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{images/act_complete_sprint.png}
+\caption{Sơ đồ hoạt động của chức năng Complete Sprint với AI Summary}
+\label{fig:act_complete_sprint}
+\end{figure}
+
+\subsubsection{Chức năng Generate AI Sprint Summary}
+
+\textbf{Mục đích:} Hệ thống kết nối với LLM Provider (OpenAI, Anthropic, Google) để generate sprint retrospective summary với structured format: overview, achievements, issues found, recommendations, và metrics.
+
+\textbf{Dữ liệu được dùng:}
+
+\begin{longtblr}[
+  caption = {Bảng dữ liệu được dùng cho chức năng Generate AI Sprint Summary},
+  label = {tab:func_generate_sprint_summary}
+]{
+  width=\linewidth, rowhead=2, hlines, vlines,
+  colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
+  rows={m},
+  row{1-2}={font=\bfseries, c, bg=gray9}
+}
+\SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
+& & Thêm & Sửa & Xóa & Truy vấn \\
+1 & Sprint & & X & & X \\
+2 & Issue & & & & X \\
+3 & Activity & & & & X \\
+4 & Project & & & & X \\
+\end{longtblr}
+
+\textbf{Xử lý:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{images/act_generate_sprint_summary.png}
+\caption{Sơ đồ hoạt động của chức năng Generate AI Sprint Summary}
+\label{fig:act_generate_sprint_summary}
+\end{figure}

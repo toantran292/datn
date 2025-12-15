@@ -1,0 +1,45 @@
+@startuml act_create_issue
+|Người dùng|
+start
+:Nhấn "Create Issue";
+|Giao diện người dùng|
+:Hiển thị form tạo Issue;
+|Người dùng|
+:Nhập thông tin Issue:
+- Title (required)
+- Type (Story/Task/Bug/Epic)
+- Priority
+- Assignees
+- Sprint
+- Description;
+:Nhấn "Create";
+|Giao diện người dùng|
+:Gửi dữ liệu đến server;
+|Hệ thống xử lý|
+:Validate dữ liệu;
+if (Dữ liệu hợp lệ?) then (không)
+  |Giao diện người dùng|
+  :Hiển thị lỗi validation;
+  |Người dùng|
+  :Sửa thông tin;
+  stop
+else (có)
+  :Generate issue key
+  (PROJECT-123);
+  :Tính sort_order
+  (fractional indexing);
+  :Tạo issue record;
+  if (Có description?) then (có)
+    :Render markdown to HTML;
+    :Lưu cả markdown và HTML;
+  endif
+  :Tạo activity log;
+  :Gửi WebSocket notification;
+  |Giao diện người dùng|
+  :Thông báo tạo thành công;
+  :Cập nhật Board/Backlog;
+  :Mở Issue Detail modal;
+  |Người dùng|
+  stop
+endif
+@enduml

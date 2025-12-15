@@ -1,0 +1,92 @@
+@startuml usecase_tongquan
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam usecase {
+    BackgroundColor #FEFEFE
+    BorderColor #333333
+}
+skinparam rectangle {
+    BackgroundColor #F8F8F8
+    BorderColor #666666
+}
+skinparam package {
+    BackgroundColor #E8F4FD
+    BorderColor #4A90D9
+}
+
+title <b>Sơ đồ Use Case tổng quan - Phân hệ Truyền thông</b>
+
+actor "Workspace Owner/\nChannel Admin" as Owner
+actor "Member" as Member
+actor "File Service" as FileService
+actor "AI Provider" as AIProvider
+
+rectangle "Phân hệ Truyền thông" {
+    package "Quản lý kênh" as PKG1 {
+        usecase "UC01: Quản lý kênh\ntrò chuyện" as UC01
+        usecase "UC02: Quản lý\nthành viên kênh" as UC02
+        usecase "UC03: Cấu hình\nAI cho kênh" as UC03
+    }
+    
+    package "Nhắn tin thời gian thực" as PKG2 {
+        usecase "UC04: Tham gia kênh" as UC04
+        usecase "UC05: Gửi/nhận tin nhắn" as UC05
+        usecase "UC06: Tạo thread" as UC06
+        usecase "UC07: Tương tác tin nhắn" as UC07
+    }
+    
+    package "Tệp đính kèm" as PKG3 {
+        usecase "UC08: Gửi tệp đính kèm" as UC08
+        usecase "UC09: Xem/tải tệp" as UC09
+    }
+    
+    package "Tìm kiếm" as PKG4 {
+        usecase "UC10: Tìm kiếm tin nhắn" as UC10
+    }
+    
+    package "AI Assistant (RAG)" as PKG5 {
+        usecase "UC11: Tóm tắt hội thoại" as UC11
+        usecase "UC12: Trích xuất\naction items" as UC12
+        usecase "UC13: Hỏi đáp\ntheo ngữ cảnh" as UC13
+        usecase "UC14: Tóm tắt tài liệu" as UC14
+    }
+    
+    package "Thông báo" as PKG6 {
+        usecase "UC15: Quản lý\nthông báo kênh" as UC15
+    }
+}
+
+' Owner relationships
+Owner --> UC01
+Owner --> UC02
+Owner --> UC03
+
+' Member relationships
+Member --> UC04
+Member --> UC05
+Member --> UC06
+Member --> UC07
+Member --> UC08
+Member --> UC09
+Member --> UC10
+Member --> UC11
+Member --> UC12
+Member --> UC13
+Member --> UC14
+Member --> UC15
+
+' External systems
+UC08 ..> FileService : <<uses>>
+UC09 ..> FileService : <<uses>>
+UC11 ..> AIProvider : <<uses>>
+UC12 ..> AIProvider : <<uses>>
+UC13 ..> AIProvider : <<uses>>
+UC14 ..> AIProvider : <<uses>>
+
+' Inheritance
+Owner --|> Member
+
+@enduml

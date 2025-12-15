@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Tinh chỉnh mô tả công việc - Mockup</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-primary-100: 0, 99, 153;
+      --color-primary-90: 51, 129, 173;
+      --color-primary-80: 102, 159, 193;
+      --color-primary-10: 230, 242, 249;
+      --color-background-100: 255, 255, 255;
+      --color-background-90: 247, 247, 247;
+      --color-background-80: 232, 232, 232;
+      --color-text-100: 23, 23, 23;
+      --color-text-200: 58, 58, 58;
+      --color-text-300: 82, 82, 82;
+      --color-text-400: 163, 163, 163;
+      --color-border-100: 245, 245, 245;
+      --color-border-200: 229, 229, 229;
+      --color-border-300: 212, 212, 212;
+      --color-pi-100: 124, 58, 237;
+      --color-pi-90: 139, 92, 246;
+      --color-pi-10: 245, 243, 255;
+    }
+
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .text-custom-text-100 { color: rgba(var(--color-text-100)); }
+    .text-custom-text-200 { color: rgba(var(--color-text-200)); }
+    .text-custom-text-300 { color: rgba(var(--color-text-300)); }
+    .text-custom-text-400 { color: rgba(var(--color-text-400)); }
+
+    .bg-custom-background-100 { background-color: rgba(var(--color-background-100)); }
+    .bg-custom-background-90 { background-color: rgba(var(--color-background-90)); }
+    .bg-custom-background-80 { background-color: rgba(var(--color-background-80)); }
+
+    .bg-custom-primary-100 { background-color: rgba(var(--color-primary-100)); }
+    .bg-custom-primary-10 { background-color: rgba(var(--color-primary-10)); }
+
+    .bg-custom-pi-100 { background-color: rgba(var(--color-pi-100)); }
+    .bg-custom-pi-10 { background-color: rgba(var(--color-pi-10)); }
+
+    .text-custom-primary-100 { color: rgba(var(--color-primary-100)); }
+    .text-custom-pi-100 { color: rgba(var(--color-pi-100)); }
+
+    .border-custom-border-200 { border-color: rgba(var(--color-border-200)); }
+    .border-custom-border-300 { border-color: rgba(var(--color-border-300)); }
+    .border-custom-primary-100 { border-color: rgba(var(--color-primary-100)); }
+    .border-custom-pi-100 { border-color: rgba(var(--color-pi-100)); }
+
+    .highlight-with-line {
+      border-left: 3px solid rgba(var(--color-pi-100));
+      background-color: rgba(var(--color-pi-10));
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.4); }
+      50% { box-shadow: 0 0 20px 5px rgba(124, 58, 237, 0.2); }
+    }
+
+    .ai-processing {
+      animation: pulse-glow 2s ease-in-out infinite;
+    }
+
+    @keyframes typing {
+      from { width: 0; }
+      to { width: 100%; }
+    }
+
+    .typing-animation {
+      overflow: hidden;
+      white-space: nowrap;
+      animation: typing 2s steps(40, end);
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% 0; }
+      100% { background-position: 200% 0; }
+    }
+
+    .shimmer {
+      background: linear-gradient(90deg,
+        rgba(var(--color-background-90)) 25%,
+        rgba(var(--color-background-100)) 50%,
+        rgba(var(--color-background-90)) 75%
+      );
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+  </style>
+</head>
+<body class="bg-custom-background-90 min-h-screen p-6">
+
+  <!-- Container chính -->
+  <div class="max-w-4xl mx-auto space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center gap-3 mb-8">
+      <div class="w-10 h-10 rounded-lg bg-custom-pi-100 flex items-center justify-center">
+        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-xl font-semibold text-custom-text-100">AI Tinh chỉnh mô tả</h1>
+        <p class="text-sm text-custom-text-300">Tự động cải thiện mô tả công việc của bạn</p>
+      </div>
+    </div>
+
+    <!-- Card chính -->
+    <div class="bg-custom-background-100 rounded-lg border border-custom-border-200 shadow-sm overflow-hidden">
+
+      <!-- Issue Header -->
+      <div class="p-4 border-b border-custom-border-200 flex items-center gap-3">
+        <span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded">PM-142</span>
+        <span class="text-sm font-medium text-custom-text-100">Tích hợp thanh toán VNPay</span>
+      </div>
+
+      <!-- Nội dung -->
+      <div class="p-5 space-y-5">
+
+        <!-- Mô tả gốc -->
+        <div>
+          <label class="block text-sm font-medium text-custom-text-200 mb-2">Mô tả hiện tại</label>
+          <div class="p-4 bg-custom-background-90 rounded-lg border border-custom-border-200">
+            <p class="text-sm text-custom-text-200 leading-relaxed">
+              Cần tích hợp thanh toán vnpay vào hệ thống. User có thể thanh toán online. Cần làm cả sandbox và production.
+            </p>
+          </div>
+        </div>
+
+        <!-- Divider với nút AI -->
+        <div class="flex items-center gap-4">
+          <div class="flex-1 h-px bg-custom-border-200"></div>
+          <button id="refineBtn" class="flex items-center gap-2 px-4 py-2 bg-custom-pi-100 text-white text-sm font-medium rounded-lg hover:opacity-90 transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            Tinh chỉnh với AI
+          </button>
+          <div class="flex-1 h-px bg-custom-border-200"></div>
+        </div>
+
+        <!-- Kết quả AI (Hidden ban đầu) -->
+        <div id="aiResult" class="hidden">
+          <label class="flex items-center gap-2 text-sm font-medium text-custom-pi-100 mb-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+            </svg>
+            Mô tả được AI tinh chỉnh
+          </label>
+          <div class="highlight-with-line rounded-lg p-4 border border-custom-pi-100 border-opacity-30">
+            <div class="prose prose-sm text-custom-text-200">
+              <p class="font-medium mb-3">Mục tiêu:</p>
+              <p class="mb-3">Tích hợp cổng thanh toán VNPay để cho phép người dùng thực hiện thanh toán trực tuyến an toàn và tiện lợi.</p>
+
+              <p class="font-medium mb-2">Yêu cầu chức năng:</p>
+              <ul class="list-disc list-inside space-y-1 mb-3">
+                <li>Tích hợp VNPay SDK/API vào hệ thống thanh toán hiện tại</li>
+                <li>Hỗ trợ các phương thức: thẻ ATM nội địa, thẻ quốc tế (Visa/Mastercard), QR Code</li>
+                <li>Xử lý callback và xác nhận giao dịch từ VNPay</li>
+                <li>Lưu trữ lịch sử giao dịch và trạng thái thanh toán</li>
+              </ul>
+
+              <p class="font-medium mb-2">Yêu cầu kỹ thuật:</p>
+              <ul class="list-disc list-inside space-y-1 mb-3">
+                <li>Cấu hình môi trường Sandbox để test</li>
+                <li>Cấu hình môi trường Production cho triển khai thực tế</li>
+                <li>Mã hóa và bảo mật thông tin giao dịch</li>
+                <li>Xử lý các edge cases: timeout, giao dịch thất bại, hoàn tiền</li>
+              </ul>
+
+              <p class="font-medium mb-2">Tiêu chí hoàn thành:</p>
+              <ul class="list-disc list-inside space-y-1">
+                <li>Test thành công trên môi trường Sandbox</li>
+                <li>Đã được review và phê duyệt để triển khai Production</li>
+                <li>Documentation đầy đủ cho việc bảo trì</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="hidden">
+          <label class="flex items-center gap-2 text-sm font-medium text-custom-pi-100 mb-2">
+            <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            AI đang phân tích và tinh chỉnh...
+          </label>
+          <div class="ai-processing rounded-lg p-4 border border-custom-pi-100 border-opacity-30 bg-custom-pi-10">
+            <div class="space-y-3">
+              <div class="h-4 shimmer rounded w-3/4"></div>
+              <div class="h-4 shimmer rounded w-full"></div>
+              <div class="h-4 shimmer rounded w-5/6"></div>
+              <div class="h-4 shimmer rounded w-2/3"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer Actions -->
+      <div id="footerActions" class="hidden px-5 py-4 bg-custom-background-90 border-t border-custom-border-200 flex items-center justify-between">
+        <div class="flex items-center gap-2 text-sm text-custom-text-300">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          Bạn có thể chỉnh sửa thêm sau khi áp dụng
+        </div>
+        <div class="flex items-center gap-3">
+          <button id="regenBtn" class="flex items-center gap-2 px-4 py-2 border border-custom-border-300 text-custom-text-200 text-sm font-medium rounded-lg hover:bg-custom-background-80 transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            Tạo lại
+          </button>
+          <button id="applyBtn" class="flex items-center gap-2 px-4 py-2 bg-custom-primary-100 text-white text-sm font-medium rounded-lg hover:opacity-90 transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Áp dụng
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Variant 2: Inline trong Issue Detail -->
+    <div class="mt-8">
+      <h2 class="text-lg font-medium text-custom-text-100 mb-4">Variant 2: Inline trong Issue Detail</h2>
+
+      <div class="bg-custom-background-100 rounded-lg border border-custom-border-200 shadow-sm p-5">
+        <div class="flex items-center justify-between mb-3">
+          <label class="text-sm font-medium text-custom-text-200">Mô tả</label>
+          <button class="flex items-center gap-1.5 text-xs font-medium text-custom-pi-100 hover:opacity-80 transition-all">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+            </svg>
+            Tinh chỉnh với AI
+          </button>
+        </div>
+        <textarea
+          class="w-full p-3 text-sm text-custom-text-200 bg-custom-background-90 border border-custom-border-200 rounded-lg resize-none focus:outline-none focus:border-custom-primary-100 transition-all"
+          rows="4"
+          placeholder="Nhập mô tả công việc..."
+        >Cần tích hợp thanh toán vnpay vào hệ thống. User có thể thanh toán online. Cần làm cả sandbox và production.</textarea>
+      </div>
+    </div>
+
+    <!-- Variant 3: Popover/Dropdown -->
+    <div class="mt-8">
+      <h2 class="text-lg font-medium text-custom-text-100 mb-4">Variant 3: AI Suggestions Popover</h2>
+
+      <div class="bg-custom-background-100 rounded-lg border border-custom-border-200 shadow-sm p-5 relative">
+        <label class="text-sm font-medium text-custom-text-200 mb-3 block">Mô tả</label>
+        <div class="relative">
+          <textarea
+            class="w-full p-3 text-sm text-custom-text-200 bg-custom-background-90 border border-custom-border-200 rounded-lg resize-none focus:outline-none focus:border-custom-primary-100 transition-all"
+            rows="4"
+          >Cần tích hợp thanh toán vnpay vào hệ thống.</textarea>
+
+          <!-- AI Suggestion Popover -->
+          <div class="absolute left-0 right-0 top-full mt-2 bg-custom-background-100 rounded-lg border border-custom-pi-100 border-opacity-50 shadow-lg p-4 z-10">
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-6 h-6 rounded bg-custom-pi-100 flex items-center justify-center">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+              </div>
+              <span class="text-sm font-medium text-custom-text-100">Gợi ý từ AI</span>
+            </div>
+
+            <div class="space-y-2">
+              <button class="w-full text-left p-3 text-sm text-custom-text-200 bg-custom-background-90 rounded-lg hover:bg-custom-pi-10 hover:border-custom-pi-100 border border-transparent transition-all">
+                <span class="font-medium text-custom-pi-100">Mở rộng chi tiết</span>
+                <p class="text-xs text-custom-text-300 mt-1">Thêm các yêu cầu chức năng và kỹ thuật cụ thể</p>
+              </button>
+              <button class="w-full text-left p-3 text-sm text-custom-text-200 bg-custom-background-90 rounded-lg hover:bg-custom-pi-10 hover:border-custom-pi-100 border border-transparent transition-all">
+                <span class="font-medium text-custom-pi-100">Thêm tiêu chí hoàn thành</span>
+                <p class="text-xs text-custom-text-300 mt-1">Định nghĩa Definition of Done rõ ràng</p>
+              </button>
+              <button class="w-full text-left p-3 text-sm text-custom-text-200 bg-custom-background-90 rounded-lg hover:bg-custom-pi-10 hover:border-custom-pi-100 border border-transparent transition-all">
+                <span class="font-medium text-custom-pi-100">Cải thiện văn phong</span>
+                <p class="text-xs text-custom-text-300 mt-1">Viết lại mô tả rõ ràng và chuyên nghiệp hơn</p>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Variant 4: Diff View -->
+    <div class="mt-8">
+      <h2 class="text-lg font-medium text-custom-text-100 mb-4">Variant 4: Diff View (So sánh thay đổi)</h2>
+
+      <div class="bg-custom-background-100 rounded-lg border border-custom-border-200 shadow-sm overflow-hidden">
+        <div class="flex border-b border-custom-border-200">
+          <button class="flex-1 px-4 py-3 text-sm font-medium text-custom-text-300 bg-custom-background-90 border-r border-custom-border-200">
+            Mô tả gốc
+          </button>
+          <button class="flex-1 px-4 py-3 text-sm font-medium text-custom-pi-100 bg-custom-background-100">
+            Đã tinh chỉnh
+          </button>
+        </div>
+
+        <div class="p-4 space-y-2">
+          <!-- Removed line -->
+          <div class="flex items-start gap-2 p-2 bg-red-50 rounded text-sm">
+            <span class="text-red-500 font-mono">-</span>
+            <span class="text-red-700 line-through">Cần tích hợp thanh toán vnpay vào hệ thống.</span>
+          </div>
+          <!-- Added line -->
+          <div class="flex items-start gap-2 p-2 bg-green-50 rounded text-sm">
+            <span class="text-green-500 font-mono">+</span>
+            <span class="text-green-700"><strong>Mục tiêu:</strong> Tích hợp cổng thanh toán VNPay để cho phép người dùng thực hiện thanh toán trực tuyến an toàn.</span>
+          </div>
+          <!-- Unchanged -->
+          <div class="flex items-start gap-2 p-2 text-sm text-custom-text-300">
+            <span class="font-mono opacity-50">&nbsp;</span>
+            <span>User có thể thanh toán online.</span>
+          </div>
+          <!-- Added lines -->
+          <div class="flex items-start gap-2 p-2 bg-green-50 rounded text-sm">
+            <span class="text-green-500 font-mono">+</span>
+            <span class="text-green-700"><strong>Yêu cầu:</strong></span>
+          </div>
+          <div class="flex items-start gap-2 p-2 bg-green-50 rounded text-sm">
+            <span class="text-green-500 font-mono">+</span>
+            <span class="text-green-700">• Hỗ trợ thẻ ATM nội địa, Visa/Mastercard, QR Code</span>
+          </div>
+          <div class="flex items-start gap-2 p-2 bg-green-50 rounded text-sm">
+            <span class="text-green-500 font-mono">+</span>
+            <span class="text-green-700">• Xử lý callback và xác nhận giao dịch</span>
+          </div>
+        </div>
+
+        <div class="px-4 py-3 bg-custom-background-90 border-t border-custom-border-200 flex justify-end gap-3">
+          <button class="px-4 py-2 text-sm font-medium text-custom-text-200 hover:text-custom-text-100 transition-all">
+            Hủy
+          </button>
+          <button class="px-4 py-2 bg-custom-pi-100 text-white text-sm font-medium rounded-lg hover:opacity-90 transition-all">
+            Chấp nhận thay đổi
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Simple interaction demo
+    const refineBtn = document.getElementById('refineBtn');
+    const aiResult = document.getElementById('aiResult');
+    const loadingState = document.getElementById('loadingState');
+    const footerActions = document.getElementById('footerActions');
+    const regenBtn = document.getElementById('regenBtn');
+
+    refineBtn.addEventListener('click', () => {
+      refineBtn.disabled = true;
+      refineBtn.innerHTML = `
+        <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        Đang xử lý...
+      `;
+      loadingState.classList.remove('hidden');
+
+      setTimeout(() => {
+        loadingState.classList.add('hidden');
+        aiResult.classList.remove('hidden');
+        footerActions.classList.remove('hidden');
+        refineBtn.disabled = false;
+        refineBtn.innerHTML = `
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+          Tinh chỉnh với AI
+        `;
+      }, 2500);
+    });
+
+    regenBtn.addEventListener('click', () => {
+      aiResult.classList.add('hidden');
+      footerActions.classList.add('hidden');
+      loadingState.classList.remove('hidden');
+
+      setTimeout(() => {
+        loadingState.classList.add('hidden');
+        aiResult.classList.remove('hidden');
+        footerActions.classList.remove('hidden');
+      }, 2000);
+    });
+  </script>
+
+</body>
+</html>

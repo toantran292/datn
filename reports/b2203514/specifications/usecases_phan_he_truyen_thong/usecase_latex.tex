@@ -1,0 +1,88 @@
+\subsection{Yêu cầu chức năng}
+
+\subsubsection{Sơ đồ trường hợp sử dụng}
+
+Dựa trên mô tả bài toán ở mục 1.1, phân hệ truyền thông có 2 tác nhân chính (Workspace Owner/Channel Admin, Member) và các hệ thống bên ngoài tương tác với hệ thống. Các yêu cầu chức năng được phân loại theo từng tác nhân và được biểu diễn thông qua các sơ đồ trường hợp sử dụng (use case) dưới đây.
+
+\begin{itemize}
+    \item \textbf{Sơ đồ trường hợp sử dụng tổng quan:} Sơ đồ này mô tả toàn bộ các chức năng chính của hệ thống và mối quan hệ giữa các tác nhân với hệ thống. Phân hệ truyền thông cung cấp 15 use case chính được phân thành 6 nhóm chức năng: quản lý kênh trò chuyện (3 UC), nhắn tin thời gian thực (4 UC), quản lý tệp đính kèm (2 UC), tìm kiếm tin nhắn (1 UC), AI Assistant với kiến trúc RAG (4 UC), và quản lý thông báo (1 UC). Workspace Owner/Channel Admin có quyền quản lý kênh và kế thừa toàn bộ chức năng của Member. Member có thể sử dụng các tính năng nhắn tin, tệp đính kèm, tìm kiếm và AI Assistant. Các hệ thống bên ngoài bao gồm File Service từ phân hệ nền tảng và AI Provider (OpenAI/Gemini).
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{images/usecase_tongquan.png}
+        \caption{Sơ đồ trường hợp sử dụng tổng quan của phân hệ truyền thông}
+        \label{fig:usecase_tongquan}
+    \end{figure}
+
+    \item \textbf{Sơ đồ trường hợp sử dụng của Workspace Owner / Channel Admin:} Workspace Owner hoặc Channel Admin là tác nhân có quyền quản lý các kênh trò chuyện trong workspace. Các chức năng chính được chia thành 4 nhóm: (1) Quản lý kênh bao gồm tạo kênh mới (có thể tạo kênh theo dự án hoặc kênh riêng tư), cập nhật thông tin kênh, xóa hoặc lưu trữ kênh, và cấu hình quyền truy cập; (2) Quản lý thành viên kênh bao gồm mời thành viên, xóa thành viên và phân quyền Admin/Member trong kênh; (3) Cấu hình AI bao gồm bật/tắt AI Assistant và chọn các tính năng AI được phép sử dụng trong kênh; (4) Giám sát hoạt động bao gồm xem thống kê số tin nhắn, file và thành viên hoạt động. Ngoài ra, Channel Admin cũng có thể thực hiện tất cả các chức năng của Member.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{images/usecase_channel_admin.png}
+        \caption{Sơ đồ trường hợp sử dụng của Workspace Owner / Channel Admin}
+        \label{fig:usecase_channel_admin}
+    \end{figure}
+
+    \item \textbf{Sơ đồ trường hợp sử dụng của Member:} Member là người tham gia vào một hoặc nhiều kênh trò chuyện trong workspace. Các chức năng được chia thành 6 nhóm: (1) Tham gia kênh bao gồm xem danh sách kênh, tham gia kênh công khai và rời khỏi kênh; (2) Nhắn tin bao gồm gửi tin nhắn, chỉnh sửa/xóa tin nhắn, tạo thread thảo luận, phản hồi bằng emoji và ghim tin nhắn quan trọng; (3) Tệp đính kèm bao gồm gửi file trong chat và xem trước/tải file (tích hợp với File Service); (4) Tìm kiếm bao gồm tìm kiếm tin nhắn theo từ khóa với khả năng mở rộng tìm kiếm nâng cao theo bộ lọc và tìm kiếm ngữ nghĩa; (5) Thông báo bao gồm xem tin chưa đọc và cấu hình mức độ thông báo cho từng kênh; (6) AI Assistant bao gồm tóm tắt hội thoại, trích xuất action items, hỏi đáp theo ngữ cảnh kênh và tóm tắt tài liệu (tích hợp với AI Provider).
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{images/usecase_member.png}
+        \caption{Sơ đồ trường hợp sử dụng của Member}
+        \label{fig:usecase_member}
+    \end{figure}
+
+    \item \textbf{Tích hợp với các hệ thống bên ngoài:} Ngoài hai tác nhân chính, phân hệ truyền thông còn tương tác với các hệ thống bên ngoài để cung cấp các chức năng mở rộng. Các hệ thống bên ngoài bao gồm: (1) File Service từ phân hệ nền tảng thực hiện lưu trữ, truy xuất và xóa tệp đính kèm; (2) AI Provider như OpenAI API hoặc Gemini API thực hiện tạo embedding cho tin nhắn và tài liệu phục vụ semantic search, đồng thời sinh văn bản (Chat Completion) để tóm tắt và trả lời câu hỏi theo kiến trúc RAG; (3) Các phân hệ chức năng khác như quản lý dự án và họp trực tuyến có thể gửi sự kiện để hiển thị thông báo hoặc tự động tạo tin nhắn trong kênh liên quan, đồng thời phân hệ truyền thông cũng cung cấp dữ liệu hội thoại khi được yêu cầu.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.9\textwidth]{images/usecase_external.png}
+        \caption{Sơ đồ tích hợp với các hệ thống bên ngoài}
+        \label{fig:usecase_external}
+    \end{figure}
+\end{itemize}
+
+\subsubsection{Danh sách các trường hợp sử dụng}
+
+Bảng~\ref{tab:usecase_list} tổng hợp danh sách 15 trường hợp sử dụng chính của phân hệ truyền thông:
+
+\begin{table}[H]
+\centering
+\caption{Danh sách các trường hợp sử dụng của phân hệ truyền thông}
+\label{tab:usecase_list}
+\begin{tabular}{|c|l|l|l|}
+\hline
+\textbf{Mã UC} & \textbf{Tên Use Case} & \textbf{Actor} & \textbf{Nhóm chức năng} \\
+\hline
+UC01 & Quản lý kênh trò chuyện & Channel Admin & Quản lý kênh \\
+\hline
+UC02 & Quản lý thành viên kênh & Channel Admin & Quản lý kênh \\
+\hline
+UC03 & Cấu hình AI cho kênh & Channel Admin & Quản lý kênh \\
+\hline
+UC04 & Tham gia kênh & Member & Nhắn tin \\
+\hline
+UC05 & Gửi/nhận tin nhắn & Member & Nhắn tin \\
+\hline
+UC06 & Tạo thread thảo luận & Member & Nhắn tin \\
+\hline
+UC07 & Tương tác tin nhắn & Member & Nhắn tin \\
+\hline
+UC08 & Gửi tệp đính kèm & Member & Tệp đính kèm \\
+\hline
+UC09 & Xem/tải tệp & Member & Tệp đính kèm \\
+\hline
+UC10 & Tìm kiếm tin nhắn & Member & Tìm kiếm \\
+\hline
+UC11 & Tóm tắt hội thoại & Member & AI Assistant \\
+\hline
+UC12 & Trích xuất action items & Member & AI Assistant \\
+\hline
+UC13 & Hỏi đáp theo ngữ cảnh & Member & AI Assistant \\
+\hline
+UC14 & Tóm tắt tài liệu & Member & AI Assistant \\
+\hline
+UC15 & Quản lý thông báo kênh & Member & Thông báo \\
+\hline
+\end{tabular}
+\end{table}

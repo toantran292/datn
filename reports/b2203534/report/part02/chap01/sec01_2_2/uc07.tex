@@ -1,0 +1,64 @@
+% UC07: Cấu hình Workspace
+\paragraph{Chức năng cấu hình Work\-space}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/uc07_config_workspace.png}
+    \caption{Sơ đồ use case chức năng cấu hình Work\-space}
+    \label{fig:uc07_config_workspace}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Bảng đặc tả chức năng cấu hình Work\-space},
+    label = {tab:uc07}
+]{
+    colspec = {|l|X|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+Tên chức năng & Cấu hình Work\-space \\
+ID & UC07 \\
+Mức độ cần thiết & Bắt buộc \\
+Người sử dụng & Owner hoặc Admin của Work\-space \\
+Phân loại & Trung bình \\
+Các thành phần tham gia và mối quan tâm & \textbf{Owner/Admin:} Muốn xem danh sách và chỉnh sửa thông tin, cấu hình của Work\-space. \\
+Mô tả tóm tắt & Chức năng cho phép xem danh sách work\-space và chỉnh sửa thông tin như tên, mô tả, logo, LLM Pro\-vider. \\
+Trigger & Owner/Admin truy cập trang cài đặt Work\-space. \\
+Kiểu sự kiện & External \\
+Luồng xử lý bình thường &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{enumerate}[nosep, leftmargin=*]
+    \item Owner/Admin truy cập trang danh sách Work\-space.
+    \item Hệ thống hiển thị danh sách work\-space mà người dùng là thành viên.
+    \item Owner/Admin chọn work\-space cần cấu hình.
+    \item Hệ thống hiển thị form cấu hình với thông tin hiện tại.
+    \item Owner/Admin chỉnh sửa các thông tin cần thay đổi.
+    \item Owner/Admin nhấn "Lưu thay đổi".
+    \item Hệ thống cập nhật và ghi audit log.
+\end{enumerate}
+\vspace{2pt}
+\end{minipage} \\
+Các luồng sự kiện con &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item Xem danh sách Work\-space: Hiển thị tất cả work\-space của người dùng.
+    \item Chỉnh sửa thông tin: Cập nhật tên, mô tả, logo.
+    \item Cấu hình LLM: Chọn LLM Pro\-vider mặc định.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Luồng luân phiên/đặc biệt &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item 3a. Work\-space bị khóa: Không cho phép chỉnh sửa cấu hình.
+    \item 5a. Không có quyền: Hệ thống từ chối truy cập.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Kết quả & Cấu hình Work\-space được cập nhật thành công. \\
+\end{longtblr}

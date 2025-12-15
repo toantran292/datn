@@ -1,0 +1,64 @@
+@startuml
+!theme plain
+skinparam defaultFontSize 11
+skinparam packageStyle rectangle
+
+title Phân rã chức năng của Project Lead
+
+rectangle "Project Lead" {
+
+  rectangle "Quản lý\nProject" {
+    rectangle "Tạo project"
+    rectangle "Cập nhật\nproject"
+    rectangle "Cấu hình\ncustom status"
+    rectangle "Cấu hình\nthông báo"
+  }
+
+  rectangle "Quản lý\nSprint" {
+    rectangle "Tạo sprint"
+    rectangle "Cập nhật\nsprint"
+    rectangle "Bắt đầu\nsprint"
+    rectangle "Hoàn thành\nsprint"
+  }
+
+  rectangle "Quản lý\nThành viên" {
+    rectangle "Mời thành viên"
+    rectangle "Xóa thành viên"
+    rectangle "Phân quyền"
+  }
+
+  rectangle "Quản lý\nCông việc" {
+    rectangle "Tạo công việc"
+    rectangle "Cập nhật\ncông việc"
+    rectangle "Xóa công việc"
+    rectangle "Assign công việc"
+    rectangle "Reorder công việc"
+  }
+
+  rectangle "Collaboration\nvà Tracking" {
+    rectangle "Thêm comment"
+    rectangle "Xem activities"
+    rectangle "Upload file\nđính kèm"
+  }
+
+  rectangle "Views và\nVisualization" {
+    rectangle "Xem Board view"
+    rectangle "Xem Backlog view"
+    rectangle "Xem Calendar view"
+    rectangle "Xem Timeline view"
+  }
+
+  rectangle "Báo cáo &\nPhân tích" {
+    rectangle "Xem báo cáo\ntuần"
+    rectangle "Thu thập\ndữ liệu analytics"
+  }
+
+  rectangle "Tính năng AI" {
+    rectangle "AI Sprint\nSummary"
+    rectangle "AI tinh chỉnh\nmô tả công việc"
+    rectangle "Tự động tạo\ncông việc từ\nmô tả (AI)"
+  }
+
+}
+
+@enduml

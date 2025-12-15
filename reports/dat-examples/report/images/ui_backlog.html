@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backlog View</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #1976d2;
+            color: white;
+            padding: 16px 24px;
+        }
+        .header h1 {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        .nav {
+            background: #fafafa;
+            padding: 12px 24px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            gap: 24px;
+        }
+        .nav-item {
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .nav-item.active {
+            color: #1976d2;
+            border-bottom: 2px solid #1976d2;
+            padding-bottom: 2px;
+        }
+        .toolbar {
+            padding: 16px 24px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            gap: 12px;
+        }
+        .btn {
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .sprint-section {
+            margin: 24px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+        }
+        .sprint-header {
+            background: #f5f5f5;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .sprint-title {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .sprint-meta {
+            font-size: 13px;
+            color: #666;
+        }
+        .sprint-actions button {
+            background: transparent;
+            border: 1px solid #1976d2;
+            color: #1976d2;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background: #fafafa;
+            padding: 8px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+        }
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 13px;
+        }
+        tr:hover {
+            background: #fafafa;
+        }
+        .issue-key {
+            font-weight: 600;
+            color: #1976d2;
+            font-family: monospace;
+        }
+        .badge {
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        .badge-story { background: #e3f2fd; color: #1976d2; }
+        .badge-task { background: #e8f5e9; color: #2e7d32; }
+        .badge-bug { background: #ffebee; color: #c62828; }
+        .badge-high { background: #ffebee; color: #c62828; }
+        .badge-medium { background: #fff3e0; color: #ef6c00; }
+        .badge-low { background: #f5f5f5; color: #666; }
+        .badge-critical { background: #d32f2f; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Project: PROJ - Project Management System</h1>
+        </div>
+        <div class="nav">
+            <a href="#" class="nav-item">Board</a>
+            <a href="#" class="nav-item active">Backlog</a>
+            <a href="#" class="nav-item">Sprints</a>
+            <a href="#" class="nav-item">Settings</a>
+        </div>
+        <div class="toolbar">
+            <button class="btn">+ Create Issue</button>
+        </div>
+
+        <div class="sprint-section">
+            <div class="sprint-header">
+                <div>
+                    <div class="sprint-title">Sprint 4 (Future)</div>
+                    <div class="sprint-meta">Start: 2025-12-15 | End: 2025-12-29 | 5 issues, 21 points</div>
+                </div>
+                <div class="sprint-actions">
+                    <button>Start Sprint</button>
+                    <button>Edit</button>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 100px;">KEY</th>
+                        <th>SUMMARY</th>
+                        <th style="width: 100px;">TYPE</th>
+                        <th style="width: 100px;">PRIORITY</th>
+                        <th style="width: 150px;">ASSIGNEE</th>
+                        <th style="width: 80px;">POINTS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="issue-key">PROJ-50</td>
+                        <td>User authentication module</td>
+                        <td><span class="badge badge-story">Story</span></td>
+                        <td><span class="badge badge-high">High</span></td>
+                        <td>John Doe</td>
+                        <td>5</td>
+                    </tr>
+                    <tr>
+                        <td class="issue-key">PROJ-51</td>
+                        <td>Database migration scripts</td>
+                        <td><span class="badge badge-task">Task</span></td>
+                        <td><span class="badge badge-medium">Medium</span></td>
+                        <td>Jane Smith</td>
+                        <td>3</td>
+                    </tr>
+                    <tr>
+                        <td class="issue-key">PROJ-52</td>
+                        <td>Fix pagination bug in issue list</td>
+                        <td><span class="badge badge-bug">Bug</span></td>
+                        <td><span class="badge badge-critical">Critical</span></td>
+                        <td>Mike Johnson</td>
+                        <td>8</td>
+                    </tr>
+                    <tr>
+                        <td class="issue-key">PROJ-53</td>
+                        <td>Add logging for API calls</td>
+                        <td><span class="badge badge-task">Task</span></td>
+                        <td><span class="badge badge-low">Low</span></td>
+                        <td>Sarah Lee</td>
+                        <td>2</td>
+                    </tr>
+                    <tr>
+                        <td class="issue-key">PROJ-54</td>
+                        <td>Performance optimization for queries</td>
+                        <td><span class="badge badge-story">Story</span></td>
+                        <td><span class="badge badge-high">High</span></td>
+                        <td>John Doe</td>
+                        <td>3</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="sprint-section">
+            <div class="sprint-header">
+                <div>
+                    <div class="sprint-title">Backlog</div>
+                    <div class="sprint-meta">8 issues, 28 points</div>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 100px;">KEY</th>
+                        <th>SUMMARY</th>
+                        <th style="width: 100px;">TYPE</th>
+                        <th style="width: 100px;">PRIORITY</th>
+                        <th style="width: 150px;">ASSIGNEE</th>
+                        <th style="width: 80px;">POINTS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="issue-key">PROJ-55</td>
+                        <td>Email notification system</td>
+                        <td><span class="badge badge-story">Story</span></td>
+                        <td><span class="badge badge-medium">Medium</span></td>
+                        <td>-</td>
+                        <td>5</td>
+                    </tr>
+                    <tr>
+                        <td class="issue-key">PROJ-56</td>
+                        <td>Export project data to CSV</td>
+                        <td><span class="badge badge-task">Task</span></td>
+                        <td><span class="badge badge-low">Low</span></td>
+                        <td>-</td>
+                        <td>3</td>
+                    </tr>
+                    <tr>
+                        <td class="issue-key">PROJ-57</td>
+                        <td>Dark mode support</td>
+                        <td><span class="badge badge-story">Story</span></td>
+                        <td><span class="badge badge-medium">Medium</span></td>
+                        <td>-</td>
+                        <td>8</td>
+                    </tr>
+                    <tr>
+                        <td class="issue-key">PROJ-58</td>
+                        <td>API documentation with Swagger</td>
+                        <td><span class="badge badge-task">Task</span></td>
+                        <td><span class="badge badge-low">Low</span></td>
+                        <td>-</td>
+                        <td>2</td>
+                    </tr>
+                    <tr>
+                        <td class="issue-key">PROJ-59</td>
+                        <td>Security audit and penetration testing</td>
+                        <td><span class="badge badge-task">Task</span></td>
+                        <td><span class="badge badge-high">High</span></td>
+                        <td>-</td>
+                        <td>5</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

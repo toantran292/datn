@@ -1,0 +1,61 @@
+% UC05: Cập nhật thông tin cá nhân
+\paragraph{Chức năng cập nhật thông tin cá nhân}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/uc05_profile.png}
+    \caption{Sơ đồ use case chức năng cập nhật thông tin cá nhân}
+    \label{fig:uc05_profile}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Bảng đặc tả chức năng cập nhật thông tin cá nhân},
+    label = {tab:uc05}
+]{
+    colspec = {|l|X|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+Tên chức năng & Cập nhật thông tin cá nhân \\
+ID & UC05 \\
+Mức độ cần thiết & Bắt buộc \\
+Người sử dụng & Người dùng đã đăng nhập \\
+Phân loại & Đơn giản \\
+Các thành phần tham gia và mối quan tâm & \textbf{Người dùng:} Muốn cập nhật thông tin cá nhân như họ tên, số điện thoại, ảnh đại diện. \\
+Mô tả tóm tắt & Chức năng cho phép người dùng chỉnh sửa và cập nhật thông tin hồ sơ cá nhân. \\
+Trigger & Người dùng truy cập trang "Thông tin cá nhân" trong cài đặt. \\
+Kiểu sự kiện & External \\
+Luồng xử lý bình thường &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{enumerate}[nosep, leftmargin=*]
+    \item Người dùng truy cập trang thông tin cá nhân.
+    \item Hệ thống hiển thị thông tin hiện tại.
+    \item Người dùng chỉnh sửa các trường thông tin cần thay đổi.
+    \item Người dùng nhấn nút "Lưu thay đổi".
+    \item Hệ thống kiểm tra và lưu thông tin mới.
+    \item Hệ thống ghi audit log và thông báo thành công.
+\end{enumerate}
+\vspace{2pt}
+\end{minipage} \\
+Các luồng sự kiện con &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item Upload avatar: Người dùng có thể tải lên ảnh đại diện mới.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Luồng luân phiên/đặc biệt &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item 3a. Ảnh upload không đúng định dạng: Hệ thống thông báo lỗi.
+    \item 5a. Dữ liệu không hợp lệ: Hệ thống hiển thị lỗi vali\-dation.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Kết quả & Thông tin cá nhân được cập nhật thành công. \\
+\end{longtblr}

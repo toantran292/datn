@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>UC01 - Quản lý kênh trò chuyện</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; font-size: 13pt; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; vertical-align: top; }
+        .header-row td:first-child { width: 70%; }
+        .header-row td:last-child { width: 30%; }
+        h4 { margin: 10px 0 5px 0; }
+        ul, ol { margin: 5px 0; padding-left: 20px; }
+        .section-title { font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<table>
+    <tr class="header-row">
+        <td><strong>Tên chức năng:</strong> Quản lý kênh trò chuyện</td>
+        <td><strong>ID:</strong> UC01</td>
+    </tr>
+    <tr>
+        <td><strong>Người sử dụng:</strong> Workspace Owner, Channel Admin</td>
+        <td><strong>Mức độ cần thiết:</strong> Bắt buộc</td>
+    </tr>
+    <tr>
+        <td colspan="2" style="text-align: right;"><strong>Phân loại:</strong> Phức tạp</td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Các thành phần tham gia và mối quan tâm:</p>
+            <ul>
+                <li><strong>Workspace Owner/Channel Admin:</strong> Muốn tạo, cập nhật, xóa hoặc lưu trữ các kênh trò chuyện để tổ chức giao tiếp trong workspace theo dự án hoặc chủ đề.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Mô tả tóm tắt:</p>
+            <p>Cho phép Channel Admin tạo mới các kênh trò chuyện (kênh công khai, kênh riêng tư, kênh theo dự án), cập nhật thông tin kênh (tên, mô tả, ảnh đại diện), xóa hoặc lưu trữ kênh không còn hoạt động.</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p><strong>Trigger:</strong> Channel Admin chọn chức năng "Tạo kênh mới" hoặc chọn một kênh để quản lý.</p>
+            <p><strong>Kiểu sự kiện:</strong> External</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Luồng xử lý bình thường của sự kiện:</p>
+            <ol>
+                <li>Channel Admin truy cập vào trang quản lý kênh trong workspace.</li>
+                <li>Channel Admin chọn "Tạo kênh mới".</li>
+                <li>Hệ thống hiển thị form tạo kênh với các trường: tên kênh, mô tả, loại kênh (công khai/riêng tư), dự án liên kết (nếu có).</li>
+                <li>Channel Admin nhập thông tin và nhấn "Tạo".</li>
+                <li>Hệ thống kiểm tra tính hợp lệ của dữ liệu.</li>
+                <li>Hệ thống tạo kênh mới và thông báo thành công.</li>
+                <li>Kênh mới xuất hiện trong danh sách kênh của workspace.</li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Các luồng sự kiện con (Subflows):</p>
+            <ul>
+                <li><strong>S1 - Cập nhật thông tin kênh:</strong> Channel Admin chọn kênh → Chọn "Chỉnh sửa" → Cập nhật thông tin → Lưu thay đổi.</li>
+                <li><strong>S2 - Xóa kênh:</strong> Channel Admin chọn kênh → Chọn "Xóa" → Xác nhận xóa → Hệ thống xóa kênh và toàn bộ tin nhắn.</li>
+                <li><strong>S3 - Lưu trữ kênh:</strong> Channel Admin chọn kênh → Chọn "Lưu trữ" → Kênh được chuyển sang trạng thái archived, chỉ đọc.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Luồng luân phiên/đặc biệt (Alternative/Exceptional flows):</p>
+            <p><strong>4a. Tên kênh đã tồn tại:</strong></p>
+            <ol start="5">
+                <li>Hệ thống thông báo "Tên kênh đã tồn tại trong workspace".</li>
+                <li>Quay trở lại bước 4 của luồng xử lý bình thường.</li>
+            </ol>
+            <p><strong>4b. Dữ liệu không hợp lệ:</strong></p>
+            <ol start="5">
+                <li>Hệ thống hiển thị thông báo lỗi chi tiết cho từng trường.</li>
+                <li>Quay trở lại bước 4 của luồng xử lý bình thường.</li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p><strong>Kết quả:</strong> Kênh trò chuyện được tạo mới/cập nhật/xóa/lưu trữ thành công trong workspace.</p>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>UC14 - Quản lý tệp</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; font-size: 13pt; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h3 { font-size: 14pt; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { border: 1px solid #000; padding: 8px; text-align: left; vertical-align: top; }
+        .caption { font-style: italic; font-weight: bold; text-align: center; margin: 10px 0; }
+        .figure { text-align: center; margin: 15px 0; }
+        .figure img { max-width: 100%; }
+        ol, ul { margin: 5px 0; padding-left: 20px; }
+    </style>
+</head>
+<body>
+
+<h3>- Chức năng quản lý tệp</h3>
+
+<div class="figure">
+    <img src="uc14_files.png" alt="Sơ đồ Use Case quản lý tệp">
+    <p class="caption">Hình 3.14. Sơ đồ use case chức năng quản lý tệp</p>
+</div>
+
+<p class="caption">Bảng 3.14. Bảng đặc tả chức năng quản lý tệp</p>
+
+<table>
+    <tr>
+        <td><b>Tên chức năng:</b> Quản lý tệp</td>
+        <td><b>ID:</b> UC14</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Mức độ cần thiết:</b> Bắt buộc</td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <td><b>Người sử dụng:</b> Thành viên của Workspace (quyền xem/tải), Owner/Admin (quyền xóa).</td>
+        <td><b>Phân loại:</b> Trung bình</td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <td colspan="2"><b>Các thành phần tham gia và mối quan tâm:</b>
+            <ul>
+                <li><b>Thành viên:</b> Muốn xem, tải và tìm kiếm tệp trong workspace.</li>
+                <li><b>Owner/Admin:</b> Muốn xóa tệp không cần thiết.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Mô tả tóm tắt:</b> Chức năng cho phép xem danh sách, tải xuống, xóa và tìm kiếm tệp trong workspace.</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Trigger:</b> Người dùng truy cập trang quản lý tệp của workspace.</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Kiểu sự kiện:</b> External</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Luồng xử lý bình thường của sự kiện:</b>
+            <ol>
+                <li>Người dùng truy cập trang quản lý tệp.</li>
+                <li>Hệ thống hiển thị danh sách tệp theo cấu trúc thư mục.</li>
+                <li>Người dùng chọn thao tác: xem, tải, xóa hoặc tìm kiếm.</li>
+                <li>Hệ thống kiểm tra quyền truy cập.</li>
+                <li>Hệ thống thực hiện thao tác được yêu cầu.</li>
+                <li>Hệ thống ghi audit log (nếu là tải hoặc xóa).</li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Các luồng sự kiện con (Subflows):</b>
+            <ul>
+                <li>Xem danh sách: Hiển thị tất cả tệp với thông tin chi tiết.</li>
+                <li>Tải tệp: Download tệp về máy tính.</li>
+                <li>Xóa tệp: Xác nhận và xóa tệp khỏi workspace.</li>
+                <li>Tìm kiếm: Lọc tệp theo tên hoặc loại.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Luồng luân phiên/đặc biệt (Alternative/Exceptional flows):</b>
+            <ul>
+                <li>4a. Không có quyền xóa: Ẩn nút xóa với Member thường.</li>
+                <li>5a. Tệp đang được sử dụng: Cảnh báo trước khi xóa.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Kết quả:</b> Thao tác quản lý tệp được thực hiện thành công.</td>
+    </tr>
+</table>
+
+</body>
+</html>

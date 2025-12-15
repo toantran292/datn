@@ -1,0 +1,148 @@
+@startuml PM_UseCase_Diagram
+
+title SƠ ĐỒ USE-CASE TỔNG QUÁT CỦA HỆ THỐNG QUẢN LÝ DỰ ÁN
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+' Định nghĩa các Actor
+actor "Project Lead" as PL
+actor "Thành viên\ntổ chức" as Member
+actor "Admin" as Admin
+actor "Khách" as Guest
+
+' Quan hệ kế thừa giữa các Actor
+Admin --|> Member
+PL --|> Member
+
+' Định nghĩa System boundary
+rectangle "Hệ thống Quản lý Dự án" {
+
+    ' ===== NHÓM QUẢN LÝ DỰ ÁN =====
+    package "Quản lý Dự án" {
+        usecase "Tạo dự án" as UC_CreateProject
+        usecase "Quản lý dự án" as UC_ManageProject
+        usecase "Xóa dự án" as UC_DeleteProject
+    }
+
+    ' ===== NHÓM QUẢN LÝ SPRINT =====
+    package "Quản lý Sprint" {
+        usecase "Tạo Sprint" as UC_CreateSprint
+        usecase "Quản lý Sprint" as UC_ManageSprint
+        usecase "Bắt đầu Sprint" as UC_StartSprint
+        usecase "Hoàn thành Sprint" as UC_CompleteSprint
+    }
+
+    ' ===== NHÓM QUẢN LÝ ISSUE =====
+    package "Quản lý Issue" {
+        usecase "Tạo Issue" as UC_CreateIssue
+        usecase "Quản lý Issue" as UC_ManageIssue
+        usecase "Gán Issue cho\nthành viên" as UC_AssignIssue
+        usecase "Cập nhật trạng\nthái Issue" as UC_UpdateStatus
+        usecase "Xóa Issue" as UC_DeleteIssue
+    }
+
+    ' ===== NHÓM BÌNH LUẬN & HOẠT ĐỘNG =====
+    package "Bình luận & Hoạt động" {
+        usecase "Thêm bình luận" as UC_AddComment
+        usecase "Sửa/Xóa bình luận" as UC_EditComment
+        usecase "Xem lịch sử\nhoạt động" as UC_ViewActivity
+    }
+
+    ' ===== NHÓM XEM DỮ LIỆU =====
+    package "Giao diện làm việc" {
+        usecase "Xem Kanban Board" as UC_ViewBoard
+        usecase "Xem Backlog" as UC_ViewBacklog
+        usecase "Kéo thả Issue" as UC_DragDrop
+    }
+
+    ' ===== NHÓM THỐNG KÊ & BÁO CÁO =====
+    package "Thống kê & Báo cáo" {
+        usecase "Xem báo cáo\nphân tích" as UC_ViewAnalytics
+        usecase "Xem thống kê Issue" as UC_ViewStats
+    }
+
+    ' ===== NHÓM XÁC THỰC & THÀNH VIÊN =====
+    package "Xác thực & Thành viên" {
+        usecase "Đăng nhập" as UC_Login
+        usecase "Quản lý thông tin\ncá nhân" as UC_ManagePersonal
+        usecase "Xem danh sách\nthành viên" as UC_ViewMembers
+    }
+
+    ' ===== NHÓM QUẢN TRỊ =====
+    package "Quản trị hệ thống" {
+        usecase "Quản lý trạng\nthái Issue" as UC_ManageStatus
+        usecase "Quản lý cấu hình" as UC_ManageConfig
+        usecase "Phân quyền\nProject Lead" as UC_AssignLead
+        usecase "Quản lý Workspace" as UC_ManageWorkspace
+    }
+
+    ' ===== CHỨC NĂNG KHÁCH =====
+    package "Chức năng công khai" {
+        usecase "Xem thông tin\ndự án công khai" as UC_ViewPublicInfo
+        usecase "Đăng ký tài khoản" as UC_Register
+    }
+}
+
+' ===== QUAN HỆ ACTOR - USE CASE =====
+
+' Project Lead
+PL --> UC_CreateProject
+PL --> UC_ManageProject
+PL --> UC_DeleteProject
+
+' Member - Sprint
+Member --> UC_CreateSprint
+Member --> UC_ManageSprint
+Member --> UC_StartSprint
+Member --> UC_CompleteSprint
+
+' Member - Issue
+Member --> UC_CreateIssue
+Member --> UC_ManageIssue
+Member --> UC_AssignIssue
+Member --> UC_UpdateStatus
+Member --> UC_DeleteIssue
+
+' Member - Comment & Activity
+Member --> UC_AddComment
+Member --> UC_EditComment
+Member --> UC_ViewActivity
+
+' Member - Views
+Member --> UC_ViewBoard
+Member --> UC_ViewBacklog
+Member --> UC_DragDrop
+
+' Member - Analytics
+Member --> UC_ViewAnalytics
+Member --> UC_ViewStats
+
+' Member - Auth & Members
+Member --> UC_ViewMembers
+
+' Admin
+Admin --> UC_ManageStatus
+Admin --> UC_ManageConfig
+Admin --> UC_AssignLead
+Admin --> UC_ManageWorkspace
+
+' Guest
+Guest --> UC_ViewPublicInfo
+Guest --> UC_Register
+
+' ===== QUAN HỆ INCLUDE =====
+UC_CreateSprint ..> UC_Login : <<include>>
+UC_CreateIssue ..> UC_Login : <<include>>
+UC_AddComment ..> UC_Login : <<include>>
+UC_ManageStatus ..> UC_Login : <<include>>
+UC_Login ..> UC_ManagePersonal : <<include>>
+UC_ViewBoard ..> UC_Login : <<include>>
+UC_ViewBacklog ..> UC_Login : <<include>>
+
+' ===== QUAN HỆ EXTEND =====
+UC_DragDrop ..> UC_ViewBoard : <<extend>>
+UC_DragDrop ..> UC_ViewBacklog : <<extend>>
+
+@enduml

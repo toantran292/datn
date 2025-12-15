@@ -1,0 +1,41 @@
+\subsection{Giới thiệu về cơ sở dữ liệu}
+
+\subsubsection{Khái quát}
+
+Post\-gre\-SQL là hệ quản trị cơ sở dữ liệu quan hệ mã nguồn mở mạnh mẽ với hơn 35 năm phát triển. Post\-gre\-SQL đảm bảo ACID compliance cho transactions, hỗ trợ JSON/JSONB, và cung cấp built-in full-text search với GIN index.
+
+Đặc biệt, Post\-gre\-SQL hỗ trợ extension pgvector cho phép lưu trữ và truy vấn vector embeddings trực tiếp trong database. Đây là tính năng quan trọng cho ứng dụng AI/ML, cho phép thực hiện si\-mi\-la\-ri\-ty search mà không cần ex\-ter\-nal vector database.
+
+Redis là in-memory data store được sử dụng như database, cache, và message broker. Redis lưu trữ dữ liệu trong RAM cho phép đọc/ghi cực nhanh. Sự kết hợp Post\-gre\-SQL và Redis tạo nên kiến trúc hybrid database mạnh mẽ.
+
+\subsubsection{pgvector và Vector Database}
+
+pgvector là Post\-gre\-SQL extension cho phép lưu trữ và truy vấn vector embeddings. Extension cung cấp kiểu dữ liệu vector với các operators để tính khoảng cách: \texttt{<->} cho L2 distance, \texttt{<=>} cho cosine distance.
+
+pgvector hỗ trợ hai loại index cho ap\-prox\-i\-mate nearest neighbor search: IVFFlat chia vectors thành clusters, phù hợp cho datasets vừa; HNSW sử dụng graph-based approach, cho accuracy và per\-for\-mance tốt hơn.
+
+Trong kiến trúc RAG, pgvector đóng vai trò vector store. Khi có tin nhắn hoặc tài liệu mới, hệ thống tạo embeddings và lưu vào Post\-gre\-SQL. Khi user đặt câu hỏi, hệ thống thực hiện si\-mi\-la\-ri\-ty search để tìm các chunks liên quan.
+
+\subsubsection{Redis trong ứng dụng Chat Real-time}
+
+Redis được sử dụng rộng rãi trong ứng dụng chat với nhiều mục đích. Socket.io Adapter cho phép nhiều Web\-Socket Gateway instances giao tiếp qua Redis pub/sub, đây là yếu tố quan trọng để ho\-ri\-zon\-tal scaling.
+
+Redis lưu trữ session và connection state bao gồm trạng thái kết nối Web\-Socket, mapping giữa user ID và socket ID. Redis cũng được sử dụng cho caching thông tin kênh và rate limiting.
+
+BullMQ sử dụng Redis làm backend cho job queue, quản lý các background jobs như tạo embeddings và xử lý tài liệu. Redis lưu trữ tạm thời trạng thái typing indicators với TTL ngắn.
+
+\subsubsection{Prisma ORM}
+
+Prisma là modern ORM cho Node.js và Type\-Script với type-safe database client. Prisma Schema định nghĩa data models, Prisma Client là auto-ge\-ne\-ra\-ted type-safe data\-base client, và Prisma Migrate quản lý database migrations.
+
+Ưu điểm của Prisma: Type Safety với compile-time checking, Auto-com\-ple\-tion trong IDE, Query Builder trực quan, và Relations được xử lý tự động. Prisma hỗ trợ pgvector thông qua raw queries.
+
+\subsubsection{Vận dụng vào đề tài}
+
+Hệ thống database được thiết kế theo kiến trúc hybrid kết hợp Post\-gre\-SQL (với pgvector) và Redis để tối ưu per\-for\-mance, data integrity, và AI capabilities.
+
+Post\-gre\-SQL lưu trữ toàn bộ dữ liệu quan trọng: Channel, ChannelMember, Message, Thread, Reaction, Attachment. Để hỗ trợ AI, MessageEmbedding và DocumentChunk lưu vector embeddings với HNSW index.
+
+Redis đóng vai trò caching, real-time, và job queue. Socket.io Redis Adapter hỗ trợ ho\-ri\-zon\-tal scaling. BullMQ sử dụng Redis cho các queues xử lý background jobs như embedding-queue và document-queue.
+
+Tất cả NestJS services sử dụng Prisma ORM với Prisma Migrate để quản lý database schema. Đối với vector operations với pgvector, sử dụng Prisma raw queries để thực hiện si\-mi\-la\-ri\-ty search.

@@ -1,0 +1,46 @@
+\subsection{Các yêu cầu giao tiếp bên ngoài}
+
+\subsubsection{Giao tiếp phần cứng}
+
+\begin{itemize}
+    \item Thiết bị phải có kết nối Internet và cài đặt trình duyệt để truy cập ứng dụng.
+    \item Ứng dụng tương tác với người dùng qua chuột, bàn phím và màn hình.
+    \item Đối với máy vi tính:
+    \begin{itemize}
+        \item Ổ cứng: SSD hoặc HDD đủ dung lượng để lưu cache và ứng dụng.
+        \item RAM: Tối thiểu 4GB (32-bit) hoặc 8GB+ (64-bit).
+        \item Hệ điều hành: Windows 10/11, macOS, hoặc Linux.
+        \item Màn hình: Độ phân giải tối thiểu 1366x768.
+    \end{itemize}
+    \item Đối với thiết bị di động và máy tính bảng:
+    \begin{itemize}
+        \item Hệ điều hành: Android 8.0+ hoặc iOS 13+.
+        \item RAM: Tối thiểu 3GB.
+        \item Màn hình: Đủ độ phân giải để hiển thị nội dung rõ ràng.
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Giao tiếp phần mềm}
+
+\begin{itemize}
+    \item Tương thích với Windows, macOS, Linux, iOS, Android.
+    \item Hoạt động ổn định trên Chrome (v90+), Firefox (v88+), Safari (v14+), Edge (v90+).
+    \item Tích hợp LLM Provider: OpenAI API, Anthropic Claude API, Google Gemini API.
+    \item Tích hợp Google OAuth 2.0 để đăng nhập bằng tài khoản Google.
+    \item Tích hợp Email Service (SendGrid, AWS SES) để gửi email thông báo và xác thực.
+    \item Tích hợp Object Storage:
+    \begin{itemize}
+        \item MinIO (Development): S3-compatible storage chạy local trong Docker.
+        \item AWS S3 (Production): Object storage với high durability.
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Giao tiếp truyền thông}
+
+\begin{itemize}
+    \item Sử dụng giao thức HTTPS để đảm bảo bảo mật. Giao tiếp giữa client và server qua HTTP methods (GET, POST, PUT, DELETE) để xử lý dữ liệu người dùng, quản lý workspace, thành viên và tệp tin.
+    \item WebSocket cho tính năng real-time như noti\-fications, cập nhật dashboard và colla\-borative editing.
+    \item API Gateway quản lý, định tuyến và bảo mật API calls.
+    \item Rate limiting bảo vệ hệ thống khỏi tấn công DDoS và đảm bảo công bằng sử dụng tài nguyên.
+    \item CORS (Cross-Origin Resource Sharing) được cấu hình phù hợp để đảm bảo bảo mật khi giao tiếp giữa các domain khác nhau.
+\end{itemize}

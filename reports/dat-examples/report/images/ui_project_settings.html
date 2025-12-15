@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Settings</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #1976d2;
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        .header-actions button {
+            background: #fff;
+            color: #1976d2;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+        .tabs {
+            display: flex;
+            gap: 0;
+            padding: 0 24px;
+            background: #fafafa;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .tab {
+            padding: 12px 20px;
+            background: transparent;
+            border: none;
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+        .tab.active {
+            color: #1976d2;
+            border-bottom-color: #1976d2;
+        }
+        .content {
+            padding: 24px;
+        }
+        .section {
+            margin-bottom: 32px;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 6px;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            max-width: 500px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        .form-group input[readonly] {
+            background: #f5f5f5;
+            color: #999;
+        }
+        .form-group textarea {
+            resize: vertical;
+        }
+        .form-group small {
+            display: block;
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+        .checkbox-list {
+            margin-top: 8px;
+        }
+        .checkbox-list label {
+            display: flex;
+            align-items: center;
+            font-weight: 400;
+            margin-bottom: 10px;
+        }
+        .checkbox-list input {
+            width: auto;
+            margin-right: 8px;
+        }
+        .subsection {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #f0f0f0;
+        }
+        .subsection-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #333;
+        }
+        .danger-zone {
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 2px solid #f0f0f0;
+        }
+        .danger-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #d32f2f;
+        }
+        .danger-item {
+            margin-bottom: 20px;
+            padding: 16px;
+            border: 1px solid #ffcdd2;
+            border-radius: 4px;
+            background: #fff5f5;
+        }
+        .danger-item h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+        .danger-item.warning h4 {
+            color: #d32f2f;
+        }
+        .danger-item.critical h4 {
+            color: #b71c1c;
+        }
+        .danger-item p {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+        .danger-item button {
+            padding: 6px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            border: none;
+        }
+        .danger-item.warning button {
+            background: #f57c00;
+            color: white;
+        }
+        .danger-item.critical button {
+            background: #d32f2f;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Project Settings: PROJ - Project Management System</h1>
+            <div class="header-actions">
+                <button>Save Changes</button>
+                <button>Cancel</button>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active">General</button>
+            <button class="tab">Workflow</button>
+            <button class="tab">Members</button>
+            <button class="tab">Integrations</button>
+            <button class="tab">Advanced</button>
+        </div>
+
+        <div class="content">
+            <div class="section">
+                <div class="section-title">General Settings</div>
+
+                <div class="form-group">
+                    <label>Project Key</label>
+                    <input type="text" value="PROJ" readonly>
+                    <small>(Cannot be changed)</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Project Name</label>
+                    <input type="text" value="Project Management System">
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea rows="3">A comprehensive project management system for teams to plan, track, and collaborate on software development projects.</textarea>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="subsection-title">Project Lead</div>
+
+                <div class="form-group">
+                    <label>Current Lead</label>
+                    <select>
+                        <option>John Doe</option>
+                        <option>Jane Smith</option>
+                        <option>Mike Johnson</option>
+                        <option>Sarah Lee</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Default Assignee</label>
+                    <select>
+                        <option>John Doe</option>
+                        <option>Jane Smith</option>
+                        <option>None</option>
+                    </select>
+                    <small>(New issues will be assigned to this user by default)</small>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="subsection-title">Sprint Settings</div>
+
+                <div class="form-group">
+                    <label>Default Sprint Duration (days)</label>
+                    <input type="number" value="14" style="max-width: 150px;">
+                </div>
+
+                <div class="form-group">
+                    <div class="checkbox-list">
+                        <label>
+                            <input type="checkbox" checked>
+                            Auto-close sprints when end date is reached
+                        </label>
+                        <label>
+                            <input type="checkbox" checked>
+                            Allow issues without story points
+                        </label>
+                        <label>
+                            <input type="checkbox">
+                            Require all issues to have assignees
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="subsection-title">Issue Settings</div>
+
+                <div class="form-group">
+                    <label>Issue Types</label>
+                    <div class="checkbox-list">
+                        <label>
+                            <input type="checkbox" checked>
+                            Story
+                        </label>
+                        <label>
+                            <input type="checkbox" checked>
+                            Task
+                        </label>
+                        <label>
+                            <input type="checkbox" checked>
+                            Bug
+                        </label>
+                        <label>
+                            <input type="checkbox" checked>
+                            Epic
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Priority Levels</label>
+                    <div class="checkbox-list">
+                        <label>
+                            <input type="checkbox" checked>
+                            Low
+                        </label>
+                        <label>
+                            <input type="checkbox" checked>
+                            Medium
+                        </label>
+                        <label>
+                            <input type="checkbox" checked>
+                            High
+                        </label>
+                        <label>
+                            <input type="checkbox" checked>
+                            Critical
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="subsection-title">Notifications</div>
+
+                <div class="form-group">
+                    <div class="checkbox-list">
+                        <label>
+                            <input type="checkbox" checked>
+                            Notify on issue assigned to me
+                        </label>
+                        <label>
+                            <input type="checkbox" checked>
+                            Notify on issue status changes
+                        </label>
+                        <label>
+                            <input type="checkbox" checked>
+                            Notify on new comments
+                        </label>
+                        <label>
+                            <input type="checkbox">
+                            Daily digest emails
+                        </label>
+                        <label>
+                            <input type="checkbox" checked>
+                            Sprint start/end notifications
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="danger-zone">
+                <div class="danger-title">Danger Zone</div>
+
+                <div class="danger-item warning">
+                    <h4>Archive Project</h4>
+                    <p>Archived projects are read-only and hidden from the main view. You can restore them later.</p>
+                    <button>Archive This Project</button>
+                </div>
+
+                <div class="danger-item critical">
+                    <h4>Delete Project</h4>
+                    <p>Permanently delete this project and all its data including issues, sprints, and comments. This action cannot be undone.</p>
+                    <button>Delete This Project</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

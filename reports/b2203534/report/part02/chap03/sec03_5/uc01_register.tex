@@ -1,0 +1,68 @@
+% UC01: Đăng ký tài khoản
+\subsubsection{Chức năng đăng ký tài khoản (UC01)}
+
+\begin{itemize}
+    \item \textbf{Mục đích:} Cho phép khách truy cập tạo tài khoản mới để sử dụng các chức năng của hệ thống.
+\end{itemize}
+
+\begin{itemize}
+    \item \textbf{Giao diện:}
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.45\textwidth]{part02/chap03/sec03_5/uc01_register_ui.png}
+    \caption{Giao diện chức năng đăng ký tài khoản}
+    \label{fig:ui_uc01_register}
+\end{figure}
+
+\begin{itemize}
+    \item \textbf{Các thành phần trong giao diện:}
+\end{itemize}
+
+\begin{longtblr}[
+    caption = {Các thành phần trong giao diện đăng ký tài khoản},
+    label = {tab:ui_uc01}
+]{
+    colspec = {|c|l|l|X|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+STT & Loại & Tên thành phần & Nội dung thực hiện \\
+1 & Textbox & Full name & Nhập họ và tên đầy đủ của người dùng \\
+2 & Textbox & Email address & Nhập địa chỉ email dùng để đăng ký và đăng nhập \\
+3 & Textbox & Password & Nhập mật khẩu (tối thiểu 8 ký tự, bao gồm chữ và số) \\
+4 & Textbox & Confirm password & Xác nhận lại mật khẩu đã nhập \\
+5 & Button & Create Account & Gửi thông tin đăng ký đến hệ thống \\
+6 & Button & Google & Đăng ký nhanh bằng tài khoản Google OAuth 2.0 \\
+\end{longtblr}
+
+\begin{itemize}
+    \item \textbf{Dữ liệu được dùng:}
+\end{itemize}
+
+\begin{longtblr}[
+    caption = {Dữ liệu cho chức năng đăng ký tài khoản},
+    label = {tab:data_uc01}
+]{
+    colspec = {|c|X|c|c|c|c|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+STT & Tên bảng & Thêm & Sửa & Xóa & Truy vấn \\
+1 & User & X & & & X \\
+2 & Verification\-Token & X & & & \\
+\end{longtblr}
+
+\begin{itemize}
+    \item \textbf{Xử lý:}
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{part02/chap03/sec03_5/uc01_register_activity.png}
+    \caption{Sơ đồ hoạt động chức năng đăng ký tài khoản}
+    \label{fig:act_uc01_register}
+\end{figure}

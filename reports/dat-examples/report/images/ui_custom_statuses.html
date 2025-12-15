@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Statuses</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #1976d2;
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        .header-actions button {
+            background: #fff;
+            color: #1976d2;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+        .description {
+            padding: 16px 24px;
+            background: #f5f5f5;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 13px;
+            color: #666;
+        }
+        .toolbar {
+            padding: 16px 24px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .btn {
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background: #fafafa;
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 13px;
+        }
+        tr:hover {
+            background: #fafafa;
+        }
+        .drag-handle {
+            cursor: move;
+            color: #999;
+            font-size: 16px;
+        }
+        .color-box {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        .action-btn {
+            background: transparent;
+            border: 1px solid #1976d2;
+            color: #1976d2;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 4px;
+        }
+        .edit-section {
+            padding: 24px;
+            border-top: 2px solid #1976d2;
+            background: #f9f9f9;
+        }
+        .edit-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 6px;
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            max-width: 500px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        .form-group textarea {
+            resize: vertical;
+        }
+        .color-picker {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .color-picker input[type="text"] {
+            width: 100px;
+        }
+        .color-picker button {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .checkbox-group {
+            margin-top: 8px;
+        }
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+        .checkbox-group input {
+            width: auto;
+            margin-right: 8px;
+        }
+        .form-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 12px;
+        }
+        .form-actions button {
+            padding: 8px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            border: none;
+        }
+        .btn-update {
+            background: #1976d2;
+            color: white;
+        }
+        .btn-cancel {
+            background: transparent;
+            border: 1px solid #999;
+            color: #666;
+        }
+        .tips {
+            padding: 16px 24px;
+            background: #fff3cd;
+            border-top: 1px solid #e0e0e0;
+        }
+        .tips h3 {
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #856404;
+        }
+        .tips ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .tips li {
+            font-size: 13px;
+            color: #856404;
+            margin-bottom: 6px;
+            padding-left: 16px;
+            position: relative;
+        }
+        .tips li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Project Settings: Custom Statuses</h1>
+            <div class="header-actions">
+                <button>Save Changes</button>
+                <button>Cancel</button>
+            </div>
+        </div>
+
+        <div class="description">
+            Customize workflow statuses for your project. Drag to reorder.
+        </div>
+
+        <div class="toolbar">
+            <button class="btn">+ Add Status</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 60px;">ORDER</th>
+                    <th>STATUS NAME</th>
+                    <th style="width: 150px;">COLOR</th>
+                    <th>DESCRIPTION</th>
+                    <th style="width: 80px;">ISSUES</th>
+                    <th style="width: 150px;">ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="drag-handle">≡</span> 1</td>
+                    <td>To Do</td>
+                    <td>
+                        <span class="color-box" style="background: #3B82F6;"></span>
+                        #3B82F6
+                    </td>
+                    <td>New issues ready to be worked on</td>
+                    <td>15</td>
+                    <td>
+                        <button class="action-btn">Edit</button>
+                        <button class="action-btn">Delete</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="drag-handle">≡</span> 2</td>
+                    <td>In Progress</td>
+                    <td>
+                        <span class="color-box" style="background: #F59E0B;"></span>
+                        #F59E0B
+                    </td>
+                    <td>Issues currently being worked on</td>
+                    <td>8</td>
+                    <td>
+                        <button class="action-btn">Edit</button>
+                        <button class="action-btn">Delete</button>
+                    </td>
+                </tr>
+                <tr style="background: #f0f7ff;">
+                    <td><span class="drag-handle">≡</span> 3</td>
+                    <td><strong>Code Review</strong></td>
+                    <td>
+                        <span class="color-box" style="background: #10B981;"></span>
+                        #10B981
+                    </td>
+                    <td>Code completed, awaiting review</td>
+                    <td>3</td>
+                    <td>
+                        <button class="action-btn">Edit</button>
+                        <button class="action-btn">Delete</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="drag-handle">≡</span> 4</td>
+                    <td>Testing</td>
+                    <td>
+                        <span class="color-box" style="background: #8B5CF6;"></span>
+                        #8B5CF6
+                    </td>
+                    <td>In QA testing phase</td>
+                    <td>2</td>
+                    <td>
+                        <button class="action-btn">Edit</button>
+                        <button class="action-btn">Delete</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="drag-handle">≡</span> 5</td>
+                    <td>Done</td>
+                    <td>
+                        <span class="color-box" style="background: #22C55E;"></span>
+                        #22C55E
+                    </td>
+                    <td>Completed and deployed</td>
+                    <td>42</td>
+                    <td>
+                        <button class="action-btn">Edit</button>
+                        <button class="action-btn">Delete</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td><span class="drag-handle">≡</span> 6</td>
+                    <td>Blocked</td>
+                    <td>
+                        <span class="color-box" style="background: #EF4444;"></span>
+                        #EF4444
+                    </td>
+                    <td>Waiting on external dependency</td>
+                    <td>1</td>
+                    <td>
+                        <button class="action-btn">Edit</button>
+                        <button class="action-btn">Delete</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="edit-section">
+            <div class="edit-title">Edit Status: Code Review</div>
+
+            <div class="form-group">
+                <label>Status Name</label>
+                <input type="text" value="Code Review">
+            </div>
+
+            <div class="form-group">
+                <label>Description</label>
+                <textarea rows="2">Code completed, awaiting peer review and approval</textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Color</label>
+                <div class="color-picker">
+                    <span class="color-box" style="background: #10B981;"></span>
+                    <input type="text" value="#10B981">
+                    <button>Pick Color</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Status Transitions (optional)</label>
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" checked>
+                        Can transition from: In Progress, Testing
+                    </label>
+                    <label>
+                        <input type="checkbox" checked>
+                        Can transition to: Testing, Done, In Progress
+                    </label>
+                    <label>
+                        <input type="checkbox">
+                        Mark as final status (issues cannot move from this status)
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button class="btn-update">Update Status</button>
+                <button class="btn-cancel">Cancel</button>
+            </div>
+        </div>
+
+        <div class="tips">
+            <h3>Tips:</h3>
+            <ul>
+                <li>Drag statuses to reorder columns on your Board</li>
+                <li>Each project can have up to 15 custom statuses</li>
+                <li>Default statuses (To Do, Done) cannot be deleted</li>
+                <li>Deleting a status will move all issues to "To Do"</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

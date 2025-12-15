@@ -1,0 +1,58 @@
+\paragraph{UC15: Quản lý thông báo kênh}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.3\textwidth]{images/UC15.png}
+    \caption{Sơ đồ use case UC15 - Quản lý thông báo kênh}
+    \label{fig:uc15}
+\end{figure}
+
+\begin{adjustwidth}{-1.5cm}{-0.5cm}
+\begin{longtblr}[
+    caption = {Đặc tả use case UC15 - Quản lý thông báo kênh},
+    label = {tab:uc15}
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Quản lý thông báo kênh} \\\hline
+ID & UC15 \\\hline
+Người sử dụng & Member \\\hline
+Mức độ cần thiết & Quan trọng \\\hline
+Phân loại & Đơn giản \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{Member:} Muốn kiểm soát thông báo nhận được từ các kênh để tránh bị quá tải thông tin.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Cho phép Member cấu hình mức độ thông báo cho từng kênh: nhận tất cả, chỉ mention, hoặc tắt thông báo. Member cũng có thể xem danh sách tin nhắn chưa đọc. \\\hline
+Trigger & Member truy cập cài đặt thông báo của kênh hoặc xem danh sách tin chưa đọc. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item Member click vào icon cài đặt của kênh.
+        \item Member chọn "Cài đặt thông báo".
+        \item Hệ thống hiển thị các tùy chọn: Tất cả tin nhắn, Chỉ mention, Tắt thông báo.
+        \item Member chọn mức độ thông báo mong muốn.
+        \item Member nhấn "Lưu".
+        \item Hệ thống cập nhật cấu hình thông báo cho kênh.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{S1 - Xem tin chưa đọc:} Member click vào badge số tin chưa đọc → Hệ thống hiển thị danh sách tin nhắn mới → Member đánh dấu đã đọc.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Luồng thay thế/ngoại lệ & N/A \\\hline
+Kết quả & Cấu hình thông báo được cập nhật, Member chỉ nhận thông báo theo mức độ đã chọn. \\\hline
+\end{longtblr}
+\end{adjustwidth}

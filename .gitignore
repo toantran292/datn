@@ -40,3 +40,23 @@ __pycache__/
 
 # Dependencies
 node_modules/
+
+# LaTeX build files
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.log
+*.lot
+*.out
+*.synctex.gz
+*.toc
+*.pdf
+*.dvi
+*.ps
+*.synctex(busy)
+reports/examples/report/*.pdf
+reports/examples/report/*.aux
+reports/examples/report/*.log

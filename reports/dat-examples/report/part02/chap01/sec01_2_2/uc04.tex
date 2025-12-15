@@ -1,0 +1,232 @@
+\paragraph{UC04: Quản lý trạng thái công việc}
+\mbox{}
+
+\textbf{UC04.1 - Tạo trạng thái công việc mới}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc04_1_create_status.png}
+    \caption{Sơ đồ use case chức năng tạo trạng thái công việc}
+    \label{fig:uc04_1_create_status}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC04.1 - Tạo trạng thái công việc mới},
+    label = {tab:uc04_1},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Tạo trạng thái công việc mới} \\\hline
+ID & UC04.1 \\\hline
+Người sử dụng & Project Lead \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Cao \\\hline
+Các thành phần tham gia & + \textbf{Project Lead:} Muốn tạo trạng thái công việc để phù hợp với workflow của dự án (ví dụ: TO DO, IN REVIEW, TESTING, DONE). \\\hline
+Mô tả tóm tắt & Cho phép Project Lead tạo trạng thái công việc với name, description, color (hex). Status được tự động gán order tiếp theo (hiển thị ở cuối board). \\\hline
+Trigger & Project Lead nhấn "Add Status" trong project settings. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item Project Lead vào Settings > Issue Statuses
+        \item Nhấn "Add Status"
+        \item Form hiển thị: Status Name (required), Description (optional), Color (color picker)
+        \item Project Lead nhập thông tin
+        \item Backend validate: name không trống
+        \item Backend tự động tính order = max(order) + 1 (đặt ở cuối)
+        \item Backend tạo IssueStatus record
+        \item Board view tự động thêm column mới ở cuối
+        \item Hiển thị thông báo "Status created successfully"
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- Name trống: Hiển thị lỗi "Status name is required".
+
+    \textbf{\textcolor{red}{A1}} -- Chọn color: Hỗ trợ color picker hoặc nhập hex code (ví dụ: \#3B82F6).
+
+    \textbf{\textcolor{red}{A2}} -- Tạo nhiều status: Project Lead có thể tạo nhiều status liên tiếp.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Trạng thái công việc mới được tạo, hiển thị ở cuối board view, có thể reorder sau. \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+\textbf{UC04.2 - Cập nhật trạng thái công việc}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc04_2_update_status.png}
+    \caption{Sơ đồ use case chức năng cập nhật trạng thái công việc}
+    \label{fig:uc04_2_update_status}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC04.2 - Cập nhật trạng thái công việc},
+    label = {tab:uc04_2},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Cập nhật trạng thái công việc} \\\hline
+ID & UC04.2 \\\hline
+Người sử dụng & Project Lead \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia & + \textbf{Project Lead:} Muốn thay đổi tên, mô tả hoặc màu sắc của status. \\\hline
+Mô tả tóm tắt & Cho phép Project Lead cập nhật thông tin của status: name, description, color. \\\hline
+Trigger & Project Lead click vào status trong settings và chọn "Edit". \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item Project Lead vào Settings > Issue Statuses
+        \item Click vào status cần edit
+        \item Form hiển thị với giá trị hiện tại
+        \item Project Lead thay đổi name, description hoặc color
+        \item Backend validate: name không trống
+        \item Backend cập nhật IssueStatus record
+        \item Board view cập nhật tên và màu column real-time
+        \item Tất cả issue với status này hiển thị màu badge mới
+        \item Hiển thị thông báo "Status updated"
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- Name trống: Hiển thị lỗi "Status name is required".
+
+    \textbf{\textcolor{red}{A1}} -- Inline edit: Project Lead có thể edit trực tiếp từ board view (click vào column header).
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Status được cập nhật, tất cả issue với status này hiển thị thông tin mới (màu, tên). \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+\textbf{UC04.3 - Reorder status columns}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc04_3_reorder_status.png}
+    \caption{Sơ đồ use case chức năng reorder status columns}
+    \label{fig:uc04_3_reorder_status}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC04.3 - Reorder status columns},
+    label = {tab:uc04_3},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Reorder status columns} \\\hline
+ID & UC04.3 \\\hline
+Người sử dụng & Project Lead \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia & + \textbf{Project Lead:} Muốn thay đổi thứ tự hiển thị của status columns trong board view (ví dụ: TO DO → IN PROGRESS → IN REVIEW → DONE). \\\hline
+Mô tả tóm tắt & Cho phép Project Lead kéo thả status columns để reorder trong settings hoặc board view. \\\hline
+Trigger & Project Lead kéo thả status column trong settings hoặc board view. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item Project Lead vào Settings > Issue Statuses hoặc board view
+        \item Kéo status column từ vị trí cũ sang vị trí mới
+        \item Frontend hiển thị preview drop zone
+        \item Project Lead thả column
+        \item Backend tính lại order cho tất cả status affected
+        \item Backend update order trong database (batch update)
+        \item Board view reorder columns real-time
+        \item Hiển thị thông báo "Status order updated"
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{A1}} -- Reorder từ settings: Project Lead có thể dùng up/down arrows để reorder thay vì kéo thả.
+
+    \textbf{\textcolor{red}{A2}} -- Batch reorder: Nếu nhiều status bị affect, backend tính lại order cho tất cả (0, 1, 2, ...).
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Status columns hiển thị theo thứ tự mới trong board view, order được lưu vào database. \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+\textbf{UC04.4 - Xóa trạng thái công việc}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc04_4_delete_status.png}
+    \caption{Sơ đồ use case chức năng xóa trạng thái công việc}
+    \label{fig:uc04_4_delete_status}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC04.4 - Xóa trạng thái công việc},
+    label = {tab:uc04_4},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Xóa trạng thái công việc} \\\hline
+ID & UC04.4 \\\hline
+Người sử dụng & Project Lead \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia & + \textbf{Project Lead:} Muốn xóa status không còn sử dụng hoặc thừa. \\\hline
+Mô tả tóm tắt & Cho phép Project Lead xóa trạng thái công việc. Nếu status đang có issue, phải di chuyển issue sang status khác trước. \\\hline
+Trigger & Project Lead click "Delete" trên status trong settings. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item Project Lead vào Settings > Issue Statuses
+        \item Click "Delete" trên status
+        \item Backend kiểm tra số lượng issue với status này
+        \item Nếu có issue: Hiển thị dialog "Move N issues to:" với dropdown chọn status khác
+        \item Project Lead chọn target status
+        \item Project Lead xác nhận xóa
+        \item Backend move tất cả issue sang status mới (batch update)
+        \item Backend xóa IssueStatus record
+        \item Board view remove column
+        \item Hiển thị thông báo "Status deleted, N issues moved"
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- Xóa status cuối cùng: Không cho phép xóa nếu chỉ còn 1 status, hiển thị lỗi.
+
+    \textbf{\textcolor{red}{A1}} -- Không có issue: Nếu status không có issue nào, xóa trực tiếp không cần chọn target status.
+
+    \textbf{\textcolor{red}{A2}} -- Cancel: Project Lead có thể cancel nếu không muốn move issue.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Status bị xóa, tất cả issue được move sang status mới, board view cập nhật columns. \\\hline
+\end{longtblr}

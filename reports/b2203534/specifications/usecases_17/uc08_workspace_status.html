@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>UC08 - Quản lý trạng thái Workspace</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; font-size: 13pt; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h3 { font-size: 14pt; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { border: 1px solid #000; padding: 8px; text-align: left; vertical-align: top; }
+        .caption { font-style: italic; font-weight: bold; text-align: center; margin: 10px 0; }
+        .figure { text-align: center; margin: 15px 0; }
+        .figure img { max-width: 100%; }
+        ol, ul { margin: 5px 0; padding-left: 20px; }
+    </style>
+</head>
+<body>
+
+<h3>- Chức năng quản lý trạng thái Workspace</h3>
+
+<div class="figure">
+    <img src="uc08_workspace_status.png" alt="Sơ đồ Use Case quản lý trạng thái">
+    <p class="caption">Hình 3.8. Sơ đồ use case chức năng quản lý trạng thái Workspace</p>
+</div>
+
+<p class="caption">Bảng 3.8. Bảng đặc tả chức năng quản lý trạng thái Workspace</p>
+
+<table>
+    <tr>
+        <td><b>Tên chức năng:</b> Quản lý trạng thái Workspace</td>
+        <td><b>ID:</b> UC08</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Mức độ cần thiết:</b> Bắt buộc</td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <td><b>Người sử dụng:</b> Super Admin của hệ thống.</td>
+        <td><b>Phân loại:</b> Trung bình</td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <td colspan="2"><b>Các thành phần tham gia và mối quan tâm:</b>
+            <ul>
+                <li><b>Super Admin:</b> Muốn khóa/mở khóa workspace khi vi phạm chính sách hoặc theo yêu cầu.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Mô tả tóm tắt:</b> Chức năng cho phép Super Admin khóa hoặc mở khóa workspace và gửi thông báo đến các thành viên.</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Trigger:</b> Super Admin chọn thao tác khóa/mở khóa workspace trong trang quản trị.</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Kiểu sự kiện:</b> External</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Luồng xử lý bình thường của sự kiện:</b>
+            <ol>
+                <li>Super Admin truy cập trang quản trị workspace.</li>
+                <li>Super Admin chọn workspace cần thay đổi trạng thái.</li>
+                <li>Super Admin chọn "Khóa" hoặc "Mở khóa".</li>
+                <li>Nếu khóa: Nhập lý do khóa workspace.</li>
+                <li>Hệ thống cập nhật trạng thái workspace.</li>
+                <li>Hệ thống gửi thông báo đến tất cả thành viên.</li>
+                <li>Hệ thống ghi audit log.</li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Các luồng sự kiện con (Subflows):</b>
+            <ul>
+                <li>Khóa Workspace: Ngăn không cho thành viên truy cập và thao tác.</li>
+                <li>Mở khóa Workspace: Khôi phục quyền truy cập bình thường.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Luồng luân phiên/đặc biệt (Alternative/Exceptional flows):</b>
+            <ul>
+                <li>4a. Không nhập lý do: Hệ thống yêu cầu nhập lý do khóa.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Kết quả:</b> Trạng thái workspace được cập nhật và thông báo được gửi đến thành viên.</td>
+    </tr>
+</table>
+
+</body>
+</html>

@@ -1,0 +1,281 @@
+\paragraph{UC01: Quản lý Dự án}
+\mbox{}
+
+\textbf{UC01.1 - Tạo dự án mới}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc01_1_create_project.png}
+    \caption{Sơ đồ use case chức năng tạo dự án}
+    \label{fig:uc01_1_create_project}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC01.1 - Tạo dự án mới},
+    label = {tab:uc01_1},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Tạo dự án mới} \\\hline
+ID & UC01.1 \\\hline
+Người sử dụng & Project Lead, Team Member (có quyền) \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Cao \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{Project Lead:} Người tạo và quản lý dự án. \\
+    + \textbf{PM Service (Backend):} Xử lý logic tạo dự án, kiểm tra identifier, lưu database. \\
+    + \textbf{PostgreSQL Database:} Lưu trữ thông tin dự án.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Cho phép Project Lead tạo dự án mới với identifier duy nhất, tên dự án, project lead và default assignee. \\\hline
+Trigger & User nhấn nút "Create Project" trong giao diện workspace. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User nhấn nút "Create Project" hoặc "New Project".
+        \item Hệ thống hiển thị modal/form tạo dự án với các trường: Project Name (tên dự án), Identifier (mã dự án viết tắt), Project Lead (người chịu trách nhiệm), Default Assignee (người được gán mặc định cho issue mới).
+        \item User nhập thông tin dự án, trong đó Identifier được tự động suggest dựa trên Project Name (ví dụ: "Project Management" → "PM").
+        \item User có thể chỉnh sửa Identifier nếu muốn.
+        \item Hệ thống tự động kiểm tra tính khả dụng của Identifier (gọi API check-identifier).
+        \item Nếu Identifier đã tồn tại trong organization, hiển thị cảnh báo real-time.
+        \item User chọn Project Lead từ danh sách thành viên workspace.
+        \item User tùy chọn chọn Default Assignee (có thể để trống).
+        \item User nhấn "Create" để tạo dự án.
+        \item Hệ thống validate dữ liệu (Project Name không trống, Identifier hợp lệ và duy nhất).
+        \item Backend tạo bản ghi Project mới trong database với orgId từ JWT token.
+        \item Backend tự động tạo các Issue Status mặc định cho dự án (TODO, IN\_PROGRESS, DONE).
+        \item Hệ thống hiển thị thông báo "Project created successfully".
+        \item Hệ thống chuyển hướng user đến trang chi tiết dự án hoặc backlog view.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- Identifier đã tồn tại: Hiển thị lỗi "Project identifier 'PM' is already used in this workspace. Please choose another identifier."
+
+    \textbf{\textcolor{red}{E2}} -- Project Name trống: Hiển thị lỗi "Project name is required."
+
+    \textbf{\textcolor{red}{E3}} -- Identifier không hợp lệ: Hiển thị lỗi "Identifier must be 2-10 uppercase letters (A-Z) only."
+
+    \textbf{\textcolor{red}{E4}} -- Không có quyền tạo dự án: Hiển thị lỗi "You don't have permission to create projects in this workspace."
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Dự án mới được tạo thành công với identifier duy nhất, các issue status mặc định được khởi tạo, user có thể bắt đầu tạo sprint và issue. \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+\textbf{UC01.2 - Cấu hình dự án}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc01_2_configure_project.png}
+    \caption{Sơ đồ use case chức năng cấu hình dự án}
+    \label{fig:uc01_2_configure_project}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC01.2 - Cấu hình dự án},
+    label = {tab:uc01_2},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Cấu hình dự án} \\\hline
+ID & UC01.2 \\\hline
+Người sử dụng & Project Lead \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Cao \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{Project Lead:} Người có quyền chỉnh sửa cấu hình dự án. \\
+    + \textbf{PM Service:} Xử lý cập nhật thông tin dự án. \\
+    + \textbf{Database:} Lưu trữ thay đổi.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Cho phép Project Lead cập nhật thông tin dự án như tên, project lead, default assignee. \\\hline
+Trigger & User truy cập trang Project Settings hoặc nhấn "Edit Project". \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User truy cập trang Project Settings hoặc nhấn icon "Edit" ở header dự án.
+        \item Hệ thống hiển thị form cấu hình với thông tin hiện tại của dự án.
+        \item Form hiển thị các trường: Project Name (có thể chỉnh sửa), Identifier (read-only, không được phép thay đổi sau khi tạo), Project Lead (dropdown chọn member), Default Assignee (dropdown chọn member).
+        \item User chỉnh sửa các thông tin cần thiết.
+        \item User nhấn "Save Changes".
+        \item Hệ thống validate dữ liệu (Project Name không trống).
+        \item Backend gọi ProjectService.update() để cập nhật thông tin.
+        \item Backend ghi log activity về việc thay đổi cấu hình dự án.
+        \item Hệ thống cập nhật thông tin vào database.
+        \item Hệ thống hiển thị thông báo "Project settings updated successfully".
+        \item Giao diện tự động cập nhật với thông tin mới.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- Project Name trống: Hiển thị lỗi "Project name cannot be empty."
+
+    \textbf{\textcolor{red}{E2}} -- Không có quyền chỉnh sửa: Hiển thị lỗi "Only Project Lead can modify project settings."
+
+    \textbf{\textcolor{red}{E3}} -- Project Lead được chọn không tồn tại trong workspace: Hiển thị lỗi "Selected user is not a member of this workspace."
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Thông tin dự án được cập nhật thành công, các thay đổi được phản ánh ngay lập tức trong giao diện. \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+\textbf{UC01.3 - Xem danh sách và chi tiết dự án}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc01_3_view_projects.png}
+    \caption{Sơ đồ use case chức năng xem dự án}
+    \label{fig:uc01_3_view_projects}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC01.3 - Xem danh sách và chi tiết dự án},
+    label = {tab:uc01_3},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Xem danh sách và chi tiết dự án} \\\hline
+ID & UC01.3 \\\hline
+Người sử dụng & Project Lead, Team Member, Viewer \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Cao \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{User:} Muốn xem danh sách dự án hoặc chi tiết một dự án. \\
+    + \textbf{PM Service:} Cung cấp API để lấy danh sách và chi tiết dự án. \\
+    + \textbf{Database:} Truy vấn dữ liệu dự án.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Cho phép user xem danh sách tất cả dự án trong workspace và xem chi tiết từng dự án. \\\hline
+Trigger & User truy cập workspace hoặc nhấn vào một dự án cụ thể. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User đăng nhập và chọn workspace.
+        \item Hệ thống gọi API GET /api/projects để lấy danh sách dự án trong workspace (filtered by orgId).
+        \item Hệ thống hiển thị danh sách dự án ở sidebar với: Project Identifier, Project Name, số lượng issue đang active.
+        \item User nhấn vào một dự án trong danh sách.
+        \item Hệ thống gọi API GET /api/projects/:id để lấy chi tiết dự án.
+        \item Hệ thống hiển thị trang chi tiết dự án với các tab: Backlog, Board, Summary, Settings.
+        \item User có thể xem các thông tin: tên dự án, identifier, project lead, default assignee, ngày tạo, danh sách sprint, tổng số issue.
+        \item User có thể chuyển giữa các tab để xem board, backlog, hoặc thống kê dự án.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & Include UC05 (Board View), Include UC05 (Backlog View). \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{A1}} -- Không có dự án nào: Hiển thị empty state với nút "Create your first project".
+
+    \textbf{\textcolor{red}{E1}} -- Project không tồn tại: Hiển thị lỗi 404 "Project not found".
+
+    \textbf{\textcolor{red}{E2}} -- Không có quyền truy cập dự án: Hiển thị lỗi 403 "You don't have permission to access this project".
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & User xem được danh sách dự án và chi tiết từng dự án, có thể điều hướng đến các view khác nhau (board, backlog, summary). \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+\textbf{UC01.4 - Xóa dự án}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc01_4_delete_project.png}
+    \caption{Sơ đồ use case chức năng xóa dự án}
+    \label{fig:uc01_4_delete_project}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC01.4 - Xóa dự án},
+    label = {tab:uc01_4},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Xóa dự án} \\\hline
+ID & UC01.4 \\\hline
+Người sử dụng & Project Lead (chỉ có Project Lead) \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Cao \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{Project Lead:} Người có quyền xóa dự án. \\
+    + \textbf{PM Service:} Xử lý xóa dự án và cascade delete các dữ liệu liên quan. \\
+    + \textbf{Database:} Xóa dữ liệu dự án và các entity con.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Cho phép Project Lead xóa vĩnh viễn dự án và tất cả dữ liệu liên quan (sprints, issues, comments, activities). \\\hline
+Trigger & User nhấn nút "Delete Project" trong Project Settings. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User truy cập trang Project Settings.
+        \item User cuộn xuống phần "Danger Zone".
+        \item User nhấn nút "Delete Project" (màu đỏ).
+        \item Hệ thống hiển thị modal xác nhận với cảnh báo: "This action cannot be undone. This will permanently delete the project, all sprints, issues, comments and activities."
+        \item User phải nhập tên dự án hoặc identifier để xác nhận (ví dụ: "Type 'PM' to confirm").
+        \item User nhập chính xác identifier và nhấn "Delete Project".
+        \item Hệ thống kiểm tra user có quyền Project Lead không.
+        \item Backend gọi ProjectService.remove() để xóa dự án.
+        \item Database thực hiện cascade delete: xóa sprints, issues, issue statuses, comments, activities theo foreign key constraints.
+        \item Hệ thống ghi log về việc xóa dự án.
+        \item Hệ thống hiển thị thông báo "Project deleted successfully".
+        \item Hệ thống chuyển hướng user về trang danh sách dự án hoặc workspace dashboard.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{A1}} -- User hủy xác nhận: Đóng modal, không xóa gì cả.
+
+    \textbf{\textcolor{red}{E1}} -- Identifier nhập không khớp: Hiển thị lỗi "Identifier does not match. Please type exactly 'PM' to confirm."
+
+    \textbf{\textcolor{red}{E2}} -- Không có quyền xóa: Hiển thị lỗi "Only Project Lead can delete this project."
+
+    \textbf{\textcolor{red}{E3}} -- Lỗi database khi xóa: Hiển thị lỗi "Failed to delete project. Please try again later."
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Dự án và tất cả dữ liệu liên quan (sprints, issues, comments, activities) được xóa vĩnh viễn khỏi database. User được chuyển về trang danh sách dự án. \\\hline
+\end{longtblr}

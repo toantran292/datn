@@ -1,0 +1,62 @@
+@startuml system_architecture
+!theme plain
+skinparam backgroundColor white
+skinparam componentStyle rectangle
+skinparam rectangleBorderThickness 2
+skinparam defaultFontSize 10
+
+' Client Layer
+package "Client Layer" {
+    [Web Browser\n(pm-web/Next.js)] as WebClient
+}
+
+' Application Layer
+package "Application Layer" {
+    component "PM Service" as PMService {
+        [Controllers] as Controllers
+        [Services] as Services
+        [Repositories] as Repositories
+    }
+}
+
+' Data Layer
+package "Data Layer" {
+    database "PostgreSQL" as PostgreSQL {
+        [projects]
+        [sprints]
+        [issues]
+        [issue_statuses]
+        [issue_assignees]
+        [issue_comments]
+        [issue_activities]
+        [project_analytics]
+    }
+
+    database "Redis" as Redis {
+        [Cache]
+        [Pub/Sub]
+    }
+}
+
+' Storage Layer
+package "Storage Layer" {
+    storage "MinIO/S3" as Storage {
+        [Issue\nAttachments]
+    }
+}
+
+' External Services
+cloud "External Services" {
+    [LLM Providers\n(OpenAI, Anthropic)] as LLM
+}
+
+' Connections
+WebClient -down-> Controllers : HTTPS/REST API\nWebSocket
+Controllers -down-> Services : Business Logic
+Services -down-> Repositories : Data Access
+Repositories -down-> PostgreSQL : Prisma ORM
+Repositories -down-> Redis : Caching
+Services -right-> Storage : Upload/Download\nAttachments
+Services -up-> LLM : Sprint Summary\nTask Breakdown
+
+@enduml

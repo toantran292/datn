@@ -1,0 +1,40 @@
+@startuml act_drag_drop_issue
+|Người dùng|
+start
+:Drag issue card;
+:Drop vào column khác;
+|Giao diện người dùng|
+:Tính toán:
+- New status
+- New sort_order
+(fractional indexing);
+:Update UI optimistically;
+:Gửi request update;
+|Hệ thống xử lý|
+:Kiểm tra permission;
+if (User có quyền?) then (không)
+  |Giao diện người dùng|
+  :Revert UI;
+  :Thông báo không có quyền;
+  |Người dùng|
+  stop
+else (có)
+  :Update issue:
+  - status (new status)
+  - sort_order (new position)
+  - statusChangedAt (now);
+  :Tạo activity log:
+  "Status changed from
+  [old] to [new]";
+  :Gửi WebSocket broadcast;
+  |Giao diện người dùng|
+  :Confirm UI update;
+  note right
+    Các user khác
+    thấy update
+    real-time
+  end note
+  |Người dùng|
+  stop
+endif
+@enduml

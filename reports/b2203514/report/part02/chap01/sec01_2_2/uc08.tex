@@ -1,0 +1,62 @@
+\paragraph{UC08: Gửi tệp đính kèm}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\textwidth]{images/UC08.png}
+    \caption{Sơ đồ use case UC08 - Gửi tệp đính kèm}
+    \label{fig:uc08}
+\end{figure}
+
+\begin{adjustwidth}{-1.5cm}{-0.5cm}
+\begin{longtblr}[
+    caption = {Đặc tả use case UC08 - Gửi tệp đính kèm},
+    label = {tab:uc08}
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Gửi tệp đính kèm} \\\hline
+ID & UC08 \\\hline
+Người sử dụng & Member \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{Member:} Muốn chia sẻ tài liệu, hình ảnh hoặc các tệp khác trong cuộc trò chuyện. \\
+    + \textbf{File Service:} Nhận và lưu trữ tệp đính kèm.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Cho phép Member gửi tệp đính kèm (tài liệu, hình ảnh, PDF, v.v.) trong tin nhắn. Tệp được upload lên File Service của phân hệ nền tảng và liên kết với tin nhắn. \\\hline
+Trigger & Member chọn chức năng đính kèm file hoặc kéo thả file vào khung chat. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item Member nhấn icon "Đính kèm" hoặc kéo thả file vào khung chat.
+        \item Hệ thống hiển thị dialog chọn file (nếu nhấn icon).
+        \item Member chọn file cần gửi.
+        \item Hệ thống kiểm tra định dạng và kích thước file.
+        \item Hệ thống upload file lên File Service.
+        \item Hệ thống tạo tin nhắn với tệp đính kèm.
+        \item Tin nhắn với preview file hiển thị trong kênh.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- File quá lớn: Hệ thống thông báo "File vượt quá kích thước cho phép (tối đa XX MB)".
+
+    \textbf{\textcolor{red}{E2}} -- Định dạng không được hỗ trợ: Hệ thống thông báo "Định dạng file không được hỗ trợ".
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Tệp được upload và hiển thị trong tin nhắn cho tất cả thành viên kênh. \\\hline
+\end{longtblr}
+\end{adjustwidth}

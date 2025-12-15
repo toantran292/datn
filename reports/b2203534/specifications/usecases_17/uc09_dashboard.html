@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>UC09 - Xem Dashboard</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; font-size: 13pt; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h3 { font-size: 14pt; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { border: 1px solid #000; padding: 8px; text-align: left; vertical-align: top; }
+        .caption { font-style: italic; font-weight: bold; text-align: center; margin: 10px 0; }
+        .figure { text-align: center; margin: 15px 0; }
+        .figure img { max-width: 100%; }
+        ol, ul { margin: 5px 0; padding-left: 20px; }
+    </style>
+</head>
+<body>
+
+<h3>- Chức năng xem Dashboard</h3>
+
+<div class="figure">
+    <img src="uc09_dashboard.png" alt="Sơ đồ Use Case xem Dashboard">
+    <p class="caption">Hình 3.9. Sơ đồ use case chức năng xem Dashboard</p>
+</div>
+
+<p class="caption">Bảng 3.9. Bảng đặc tả chức năng xem Dashboard</p>
+
+<table>
+    <tr>
+        <td><b>Tên chức năng:</b> Xem Dashboard</td>
+        <td><b>ID:</b> UC09</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Mức độ cần thiết:</b> Bắt buộc</td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <td><b>Người sử dụng:</b> Thành viên của Workspace.</td>
+        <td><b>Phân loại:</b> Đơn giản</td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <td colspan="2"><b>Các thành phần tham gia và mối quan tâm:</b>
+            <ul>
+                <li><b>Người dùng:</b> Muốn xem tổng quan hoạt động và thống kê của workspace.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Mô tả tóm tắt:</b> Chức năng hiển thị tổng quan workspace gồm thống kê số liệu và hoạt động gần đây.</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Trigger:</b> Người dùng truy cập workspace hoặc nhấn vào tab Dashboard.</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Kiểu sự kiện:</b> External</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Luồng xử lý bình thường của sự kiện:</b>
+            <ol>
+                <li>Người dùng truy cập Dashboard của workspace.</li>
+                <li>Hệ thống tải và tính toán các thống kê.</li>
+                <li>Hệ thống hiển thị số lượng thành viên, tệp, báo cáo.</li>
+                <li>Hệ thống hiển thị danh sách hoạt động gần đây.</li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Các luồng sự kiện con (Subflows):</b>
+            <ul>
+                <li>Xem thống kê: Hiển thị các số liệu tổng hợp.</li>
+                <li>Xem hoạt động gần đây: Danh sách các thao tác mới nhất trong workspace.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Luồng luân phiên/đặc biệt (Alternative/Exceptional flows):</b>
+            <ul>
+                <li>2a. Workspace trống: Hiển thị hướng dẫn bắt đầu.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Kết quả:</b> Dashboard được hiển thị với thông tin tổng quan của workspace.</td>
+    </tr>
+</table>
+
+</body>
+</html>

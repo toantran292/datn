@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>UC04 - Tham gia kênh</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; font-size: 13pt; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; vertical-align: top; }
+        .header-row td:first-child { width: 70%; }
+        .header-row td:last-child { width: 30%; }
+        ul, ol { margin: 5px 0; padding-left: 20px; }
+        .section-title { font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<table>
+    <tr class="header-row">
+        <td><strong>Tên chức năng:</strong> Tham gia kênh</td>
+        <td><strong>ID:</strong> UC04</td>
+    </tr>
+    <tr>
+        <td><strong>Người sử dụng:</strong> Member</td>
+        <td><strong>Mức độ cần thiết:</strong> Bắt buộc</td>
+    </tr>
+    <tr>
+        <td colspan="2" style="text-align: right;"><strong>Phân loại:</strong> Đơn giản</td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Các thành phần tham gia và mối quan tâm:</p>
+            <ul>
+                <li><strong>Member:</strong> Muốn xem danh sách các kênh có thể truy cập và tham gia vào các kênh công khai hoặc rời khỏi kênh.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Mô tả tóm tắt:</p>
+            <p>Cho phép Member xem danh sách kênh trong workspace, tham gia các kênh công khai và rời khỏi kênh đang tham gia.</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p><strong>Trigger:</strong> Member truy cập vào danh sách kênh hoặc chọn một kênh để tham gia/rời.</p>
+            <p><strong>Kiểu sự kiện:</strong> External</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Luồng xử lý bình thường của sự kiện:</p>
+            <ol>
+                <li>Member truy cập vào trang danh sách kênh của workspace.</li>
+                <li>Hệ thống hiển thị danh sách kênh: kênh đang tham gia và kênh công khai có thể tham gia.</li>
+                <li>Member chọn một kênh công khai chưa tham gia.</li>
+                <li>Member nhấn "Tham gia kênh".</li>
+                <li>Hệ thống thêm Member vào kênh.</li>
+                <li>Member có thể xem và gửi tin nhắn trong kênh.</li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Các luồng sự kiện con (Subflows):</p>
+            <ul>
+                <li><strong>S1 - Rời khỏi kênh:</strong> Member vào kênh đang tham gia → Chọn "Rời kênh" → Xác nhận → Member bị xóa khỏi kênh.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Luồng luân phiên/đặc biệt (Alternative/Exceptional flows):</p>
+            <p><strong>4a. Kênh riêng tư:</strong></p>
+            <p>5. Hệ thống thông báo "Bạn cần được mời để tham gia kênh này".</p>
+            <p><strong>4b. Kênh đã đầy (nếu có giới hạn):</strong></p>
+            <p>5. Hệ thống thông báo "Kênh đã đạt giới hạn thành viên".</p>
+
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p><strong>Kết quả:</strong> Member tham gia/rời khỏi kênh thành công.</p>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>

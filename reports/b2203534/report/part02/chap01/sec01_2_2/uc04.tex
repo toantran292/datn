@@ -1,0 +1,63 @@
+% UC04: Quản lý mật khẩu
+\paragraph{Chức năng quản lý mật khẩu}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/uc04_password.png}
+    \caption{Sơ đồ use case chức năng quản lý mật khẩu}
+    \label{fig:uc04_password}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Bảng đặc tả chức năng quản lý mật khẩu},
+    label = {tab:uc04}
+]{
+    colspec = {|l|X|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+Tên chức năng & Quản lý mật khẩu \\
+ID & UC04 \\
+Mức độ cần thiết & Bắt buộc \\
+Người sử dụng & Người dùng đã có tài khoản \\
+Phân loại & Trung bình \\
+Các thành phần tham gia và mối quan tâm & \textbf{Người dùng:} Muốn thay đổi mật khẩu hoặc khôi phục mật khẩu khi quên. \\
+Mô tả tóm tắt & Chức năng cho phép người dùng đổi mật khẩu hiện tại hoặc đặt lại mật khẩu thông qua email khi quên. \\
+Trigger & Người dùng nhấn "Đổi mật khẩu" trong cài đặt hoặc "Quên mật khẩu" ở trang đăng nhập. \\
+Kiểu sự kiện & External \\
+Luồng xử lý bình thường &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{enumerate}[nosep, leftmargin=*]
+    \item Người dùng chọn chức năng quản lý mật khẩu.
+    \item Nếu đổi mật khẩu: Nhập mật khẩu hiện tại và mật khẩu mới.
+    \item Nếu quên mật khẩu: Nhập email đã đăng ký.
+    \item Hệ thống xác thực thông tin.
+    \item Hệ thống cập nhật mật khẩu mới hoặc gửi email đặt lại.
+    \item Hệ thống ghi audit log và thông báo thành công.
+\end{enumerate}
+\vspace{2pt}
+\end{minipage} \\
+Các luồng sự kiện con &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item Đổi mật khẩu: Yêu cầu xác thực mật khẩu hiện tại.
+    \item Quên mật khẩu: Gửi email chứa link đặt lại mật khẩu.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Luồng luân phiên/đặc biệt &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item 4a. Mật khẩu hiện tại không đúng: Hệ thống thông báo lỗi.
+    \item 4b. Email không tồn tại: Hệ thống thông báo không tìm thấy tài khoản.
+    \item 5a. Mật khẩu mới không đủ mạnh: Yêu cầu nhập lại.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Kết quả & Mật khẩu được thay đổi hoặc đặt lại thành công. \\
+\end{longtblr}

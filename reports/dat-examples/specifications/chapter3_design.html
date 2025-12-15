@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chương 3: Thiết kế và cài đặt giải pháp - SaaS Platform</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 13pt;
+            line-height: 1.5;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+            text-align: justify;
+        }
+        h1 {
+            font-size: 16pt;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 30pt;
+            margin-bottom: 20pt;
+            color: #1a5276;
+        }
+        h2 {
+            font-size: 14pt;
+            font-weight: bold;
+            margin-top: 24pt;
+            margin-bottom: 12pt;
+        }
+        h3 {
+            font-size: 13pt;
+            font-weight: bold;
+            font-style: italic;
+            margin-top: 18pt;
+            margin-bottom: 10pt;
+        }
+        p {
+            margin-bottom: 12pt;
+            text-indent: 1.27cm;
+        }
+        p.no-indent {
+            text-indent: 0;
+        }
+        ul, ol {
+            margin-left: 20px;
+            padding-left: 0;
+            margin-bottom: 12pt;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        ul ul {
+            margin-top: 8px;
+            list-style-type: circle;
+        }
+        .section-number {
+            font-weight: bold;
+        }
+        .figure {
+            text-align: center;
+            margin: 20pt 0;
+        }
+        .figure-caption {
+            font-style: italic;
+            font-size: 12pt;
+            margin-top: 8pt;
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15pt 0;
+            font-size: 12pt;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 8px 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+        .entity-table {
+            margin: 15pt 0;
+        }
+        .entity-table th {
+            background-color: #3498db;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Chương 3: THIẾT KẾ VÀ CÀI ĐẶT GIẢI PHÁP</h1>
+
+<h2><span class="section-number">3.1.</span> Tổng quan hệ thống</h2>
+
+<p>Trong bối cảnh chuyển đổi số hiện nay, nhu cầu về các nền tảng quản lý công việc và cộng tác trực tuyến ngày càng tăng cao, đặc biệt đối với các doanh nghiệp và tổ chức muốn tối ưu hóa quy trình làm việc. Người dùng không chỉ cần các công cụ quản lý cơ bản mà còn mong muốn có khả năng tích hợp AI để tự động hóa và tạo báo cáo thông minh.</p>
+
+<p>Đáp ứng xu hướng đó, hệ thống "SaaS Platform tích hợp AI cho quản lý Workspace" được phát triển nhằm cung cấp một nền tảng toàn diện cho việc quản lý workspace, thành viên, tệp tin và tạo báo cáo tổng hợp bằng AI. Hệ thống sử dụng nền tảng SaaS (Software as a Service), hỗ trợ đa workspace, phân quyền linh hoạt và tích hợp với các LLM Provider như OpenAI, Anthropic Claude để tạo insights từ dữ liệu.</p>
+
+<p>Điểm nổi bật của hệ thống so với các ứng dụng quản lý workspace khác là khả năng tích hợp AI để tự động tổng hợp thông tin, tạo báo cáo thông minh và cung cấp insights hữu ích cho người dùng. Ngoài ra, hệ thống còn hỗ trợ đầy đủ các chức năng như đăng nhập bằng Google OAuth, quản lý workspace với nhiều cấp độ phân quyền, upload và quản lý tệp tin, thông báo real-time.</p>
+
+<p>Về mặt kỹ thuật, hệ thống được xây dựng theo kiến trúc Microservices với Next.js cho frontend, Spring Boot cho Account Service (xác thực), NestJS cho các services còn lại, PostgreSQL để lưu trữ dữ liệu, Redis cho caching và session management, MinIO/S3 cho object storage.</p>
+
+<p>Việc xây dựng một nền tảng SaaS quản lý workspace yêu cầu một hệ thống được thiết kế chuyên biệt, từ giao diện người dùng, kiến trúc microservices, cách tích hợp AI, cho đến khả năng mở rộng. Sự chuyên biệt hóa này là yếu tố then chốt tạo nên giá trị cho ứng dụng, đồng thời đáp ứng đúng nhu cầu của nhóm khách hàng doanh nghiệp muốn số hóa và tự động hóa quy trình quản lý công việc.</p>
+
+<h2><span class="section-number">3.2.</span> Kiến trúc hệ thống</h2>
+
+<h3><span class="section-number">3.2.1.</span> Thiết kế kiến trúc tổng quan</h3>
+
+<p>Mô hình tổng quan về kiến trúc hệ thống SaaS Platform tuân theo kiến trúc Microservices với các services độc lập giao tiếp qua REST APIs.</p>
+
+<div class="figure">
+    <p><em>[Hình 3.1. Sơ đồ kiến trúc hệ thống tổng quát của SaaS Platform]</em></p>
+</div>
+
+<p>Client là thiết bị đầu cuối của người dùng (máy tính, điện thoại) truy cập vào ứng dụng web để thực hiện các thao tác như đăng nhập, quản lý workspace, upload tệp tin, xem báo cáo AI, v.v. UI được xây dựng bằng Next.js – một React framework phổ biến cho việc xây dựng SPA (Single Page Application) với hỗ trợ SSR. Lý do lựa chọn Next.js là do khả năng tái sử dụng component, hiệu suất cao nhờ SSR/SSG, và cộng đồng hỗ trợ lớn giúp tăng tốc quá trình phát triển.</p>
+
+<p>Hệ thống Backend được xây dựng theo kiến trúc Microservices, bao gồm các services chính:</p>
+<ul>
+    <li><strong>Account Service (Spring Boot):</strong> Chịu trách nhiệm xử lý toàn bộ logic xác thực và quản lý người dùng:
+        <ul>
+            <li>Đăng nhập, đăng ký người dùng (sử dụng JWT).</li>
+            <li>Tích hợp Google OAuth 2.0.</li>
+            <li>Quản lý profile, đổi mật khẩu, quên mật khẩu.</li>
+            <li>Session management với Redis.</li>
+        </ul>
+    </li>
+    <li><strong>Workspace Service (NestJS):</strong> Quản lý workspaces, cấu hình, dashboard và audit logs.</li>
+    <li><strong>Member Service (NestJS):</strong> Quản lý thành viên, invitations, phân quyền trong workspace.</li>
+    <li><strong>File Service (NestJS):</strong> Upload, download, quản lý tệp tin với MinIO/S3.</li>
+    <li><strong>Notification Service (NestJS):</strong> Real-time notifications qua WebSocket, email notifications.</li>
+    <li><strong>Report Service (NestJS):</strong> Tích hợp LLM để tạo báo cáo AI tổng hợp.</li>
+</ul>
+
+<p>Cơ sở dữ liệu dùng trong hệ thống là PostgreSQL, một hệ quản trị cơ sở dữ liệu quan hệ mạnh mẽ, hỗ trợ JSONB cho dữ liệu bán cấu trúc. PostgreSQL phù hợp với hệ thống có cấu trúc dữ liệu quan hệ phức tạp như users, workspaces, members, files, permissions. Dễ mở rộng và tích hợp tốt với cả Spring Boot (JPA) và NestJS (Prisma).</p>
+
+<p>Ngoài ra hệ thống còn tích hợp các dịch vụ ngoài để hỗ trợ, mở rộng chức năng:</p>
+<ul>
+    <li><strong>MinIO (Dev) / AWS S3 (Prod):</strong> Lưu trữ tệp tin, hình ảnh với S3-compatible API.</li>
+    <li><strong>Redis:</strong> Lưu cache, session tokens, hỗ trợ xác thực hiệu quả và rate limiting.</li>
+    <li><strong>JWT (JSON Web Token):</strong> Phân quyền và xác thực người dùng an toàn giữa các services.</li>
+    <li><strong>OpenAI/Anthropic Claude API:</strong> Xử lý ngôn ngữ tự nhiên, tạo báo cáo AI tổng hợp.</li>
+    <li><strong>Google OAuth 2.0:</strong> Hỗ trợ đăng nhập bằng tài khoản Google.</li>
+    <li><strong>SendGrid/AWS SES:</strong> Gửi email xác thực, thông báo và invitations.</li>
+    <li><strong>Nginx:</strong> Reverse proxy, load balancing, SSL termination và API routing.</li>
+</ul>
+
+<h3><span class="section-number">3.2.2.</span> Mô hình kiến trúc phân lớp</h3>
+
+<p>Hệ thống được thiết kế theo mô hình kiến trúc phân lớp (Layered Architecture), kết hợp với Microservices pattern. Mỗi service tuân theo mô hình 3 lớp: Controller - Service - Repository.</p>
+
+<p><strong>Controller Layer:</strong> Là điểm tiếp nhận các HTTP requests từ client. Controller chịu trách nhiệm validate input, routing và trả về responses. Controller không chứa business logic mà chỉ điều phối giữa client và Service layer.</p>
+
+<p><strong>Service Layer:</strong> Chứa toàn bộ business logic của ứng dụng. Service layer xử lý các nghiệp vụ, validation phức tạp, và orchestrate các operations. Đây là nơi thực hiện transaction management và gọi đến các external services.</p>
+
+<p><strong>Repository Layer:</strong> Là lớp data access, chịu trách nhiệm tương tác trực tiếp với database. Repository pattern giúp abstract hóa việc truy xuất dữ liệu, dễ dàng thay đổi database engine khi cần.</p>
+
+<div class="figure">
+    <p><em>[Hình 3.2. Sơ đồ mô hình kiến trúc phân lớp]</em></p>
+</div>
+
+<p>Ví dụ luồng xử lý khi người dùng tạo một workspace mới:</p>
+<ol>
+    <li>Client gửi POST request đến /api/workspaces với thông tin workspace.</li>
+    <li>Nginx route request đến Workspace Service.</li>
+    <li>Controller nhận request, validate input với DTO.</li>
+    <li>Controller gọi WorkspaceService.create().</li>
+    <li>Service thực hiện business logic: kiểm tra permissions, tạo default channels.</li>
+    <li>Service gọi Repository để persist data vào PostgreSQL.</li>
+    <li>Response được trả về qua các layers ngược lại.</li>
+</ol>
+
+<h3><span class="section-number">3.2.3.</span> Mô tả sự phân rã</h3>
+
+<p><strong>Sơ đồ nhóm đối tượng người dùng sử dụng đối với hệ thống "SaaS Platform tích hợp AI":</strong></p>
+
+<div class="figure">
+    <p><em>[Hình 3.3. Sơ đồ nhóm đối tượng người dùng]</em></p>
+</div>
+
+<table>
+    <tr>
+        <th>Nhóm người dùng</th>
+        <th>Mô tả</th>
+    </tr>
+    <tr>
+        <td>Guest (Khách)</td>
+        <td>Người dùng chưa đăng nhập, chỉ có thể xem trang landing, đăng ký hoặc đăng nhập.</td>
+    </tr>
+    <tr>
+        <td>Member</td>
+        <td>Thành viên của workspace, có quyền truy cập các chức năng theo permissions được gán.</td>
+    </tr>
+    <tr>
+        <td>Workspace Owner</td>
+        <td>Chủ sở hữu workspace, có toàn quyền quản lý workspace, thành viên và cấu hình.</td>
+    </tr>
+    <tr>
+        <td>Super Admin</td>
+        <td>Quản trị viên hệ thống, có quyền quản lý tất cả workspaces, khóa/mở khóa, xem audit logs.</td>
+    </tr>
+</table>
+
+<p><strong>Sơ đồ phân rã chức năng của Guest:</strong></p>
+<div class="figure">
+    <p><em>[Hình 3.4. Sơ đồ phân rã chức năng của Guest]</em></p>
+</div>
+
+<table>
+    <tr>
+        <th>Chức năng</th>
+        <th>Mô tả</th>
+    </tr>
+    <tr>
+        <td>Đăng ký</td>
+        <td>Tạo tài khoản mới bằng email/password hoặc Google OAuth.</td>
+    </tr>
+    <tr>
+        <td>Đăng nhập</td>
+        <td>Xác thực để truy cập hệ thống.</td>
+    </tr>
+    <tr>
+        <td>Quên mật khẩu</td>
+        <td>Yêu cầu reset mật khẩu qua email.</td>
+    </tr>
+    <tr>
+        <td>Xem trang giới thiệu</td>
+        <td>Xem thông tin về sản phẩm, tính năng.</td>
+    </tr>
+</table>
+
+<p><strong>Sơ đồ phân rã chức năng của Member:</strong></p>
+<div class="figure">
+    <p><em>[Hình 3.5. Sơ đồ phân rã chức năng của Member]</em></p>
+</div>
+
+<table>
+    <tr>
+        <th>Chức năng</th>
+        <th>Mô tả</th>
+    </tr>
+    <tr>
+        <td>Đăng nhập/Đăng xuất</td>
+        <td>Xác thực và kết thúc phiên làm việc.</td>
+    </tr>
+    <tr>
+        <td>Xem danh sách workspace</td>
+        <td>Xem các workspaces mà mình là thành viên.</td>
+    </tr>
+    <tr>
+        <td>Xem danh sách thành viên</td>
+        <td>Xem các thành viên khác trong workspace.</td>
+    </tr>
+    <tr>
+        <td>Upload/Download tệp tin</td>
+        <td>Quản lý tệp tin trong workspace (theo permissions).</td>
+    </tr>
+    <tr>
+        <td>Xem báo cáo AI</td>
+        <td>Xem các báo cáo tổng hợp được tạo bởi AI.</td>
+    </tr>
+    <tr>
+        <td>Xem thông báo</td>
+        <td>Xem và quản lý thông báo cá nhân.</td>
+    </tr>
+    <tr>
+        <td>Cập nhật thông tin cá nhân</td>
+        <td>Thay đổi profile, avatar, mật khẩu.</td>
+    </tr>
+</table>
+
+<p><strong>Sơ đồ phân rã chức năng của Workspace Owner:</strong></p>
+<div class="figure">
+    <p><em>[Hình 3.6. Sơ đồ phân rã chức năng của Workspace Owner]</em></p>
+</div>
+
+<table>
+    <tr>
+        <th>Chức năng</th>
+        <th>Mô tả</th>
+    </tr>
+    <tr>
+        <td>Tạo workspace</td>
+        <td>Tạo workspace mới với thông tin cơ bản.</td>
+    </tr>
+    <tr>
+        <td>Cấu hình workspace</td>
+        <td>Thiết lập cấu hình, tích hợp, AI settings.</td>
+    </tr>
+    <tr>
+        <td>Mời thành viên</td>
+        <td>Gửi lời mời tham gia workspace.</td>
+    </tr>
+    <tr>
+        <td>Xóa thành viên</td>
+        <td>Loại bỏ thành viên khỏi workspace.</td>
+    </tr>
+    <tr>
+        <td>Phân quyền</td>
+        <td>Gán roles và permissions cho thành viên.</td>
+    </tr>
+    <tr>
+        <td>Cấp/Thu hồi quyền Owner</td>
+        <td>Quản lý các Owners khác trong workspace.</td>
+    </tr>
+    <tr>
+        <td>Xem dashboard</td>
+        <td>Xem thống kê và metrics của workspace.</td>
+    </tr>
+    <tr>
+        <td>Tạo báo cáo AI tùy chỉnh</td>
+        <td>Tạo báo cáo AI với prompts tùy chỉnh.</td>
+    </tr>
+    <tr>
+        <td>Xem audit logs</td>
+        <td>Xem lịch sử hoạt động trong workspace.</td>
+    </tr>
+</table>
+
+<p><strong>Sơ đồ phân rã chức năng của Super Admin:</strong></p>
+<div class="figure">
+    <p><em>[Hình 3.7. Sơ đồ phân rã chức năng của Super Admin]</em></p>
+</div>
+
+<table>
+    <tr>
+        <th>Chức năng</th>
+        <th>Mô tả</th>
+    </tr>
+    <tr>
+        <td>Quản lý người dùng</td>
+        <td>Xem, khóa/mở khóa tài khoản người dùng.</td>
+    </tr>
+    <tr>
+        <td>Xem tất cả workspaces</td>
+        <td>Xem danh sách tất cả workspaces trong hệ thống.</td>
+    </tr>
+    <tr>
+        <td>Khóa/Mở khóa workspace</td>
+        <td>Tạm ngưng hoặc kích hoạt lại workspace.</td>
+    </tr>
+    <tr>
+        <td>Xem audit logs hệ thống</td>
+        <td>Xem lịch sử hoạt động toàn hệ thống.</td>
+    </tr>
+    <tr>
+        <td>Quản lý cấu hình hệ thống</td>
+        <td>Thiết lập các cấu hình global.</td>
+    </tr>
+</table>
+
+<h3><span class="section-number">3.2.4.</span> Cơ sở thiết kế</h3>
+
+<p>Mô hình kiến trúc phân lớp (Layered Architecture) là một kiến trúc phần mềm phổ biến, được sử dụng rộng rãi trong phát triển ứng dụng web và các hệ thống hiện đại. Mô hình này chia ứng dụng thành các lớp riêng biệt: Presentation (Controller), Business Logic (Service), và Data Access (Repository), giúp hệ thống dễ bảo trì, mở rộng, và phân chia công việc hiệu quả giữa các nhóm phát triển.</p>
+
+<p class="no-indent"><strong>Ưu điểm của mô hình kiến trúc phân lớp:</strong></p>
+<ul>
+    <li>Các thành phần Presentation, Business Logic và Data Access có thể được xây dựng, kiểm thử và bảo trì độc lập với nhau. Việc thay đổi logic nghiệp vụ (Service) không ảnh hưởng đến giao diện (Controller), và ngược lại, giúp giảm rủi ro khi cập nhật hệ thống.</li>
+    <li>Nhóm phát triển có thể chia ra phụ trách riêng từng phần — ví dụ: frontend developer tập trung vào View, backend developer xử lý Controller và Service — giúp đẩy nhanh tiến độ và giảm xung đột công việc.</li>
+    <li>Việc chia nhỏ logic theo từng lớp giúp việc viết kiểm thử đơn vị (unit test) trở nên dễ dàng hơn và chính xác hơn.</li>
+    <li>Các phần tử trong mô hình như thành phần xử lý workspace, users, files, v.v. có thể tái sử dụng lại trong các tính năng khác.</li>
+    <li>Cải thiện bảo mật: Do các phần được tách biệt, dữ liệu có thể được xử lý và kiểm tra chặt chẽ trước khi hiển thị ra View, giúp hạn chế lộ thông tin hoặc lỗi bảo mật.</li>
+</ul>
+
+<p class="no-indent"><strong>Nhược điểm:</strong></p>
+<ul>
+    <li>Với các dự án nhỏ, áp dụng mô hình phân lớp có thể gây phức tạp không cần thiết, làm tăng thời gian phát triển ban đầu.</li>
+    <li>Để sử dụng hiệu quả mô hình này, đội ngũ phát triển cần có sự hiểu biết rõ ràng về nguyên lý hoạt động của từng thành phần và cách phối hợp chúng.</li>
+    <li>Việc cấu hình một dự án sử dụng mô hình phân lớp (đặc biệt kết hợp các công nghệ như React, Spring Boot, NestJS, Prisma) có thể tốn thời gian hơn so với các framework nhỏ gọn.</li>
+</ul>
+
+<p>Với các đặc điểm như cần tích hợp AI tạo báo cáo, quản lý workspace đa cấp, phân quyền người dùng, và khả năng mở rộng, thì việc áp dụng mô hình kiến trúc phân lớp kết hợp Microservices trong xây dựng hệ thống SaaS Platform là hoàn toàn hợp lý. Kiến trúc này không chỉ giúp hệ thống dễ mở rộng, dễ bảo trì mà còn phù hợp để làm việc theo nhóm và phát triển chuyên nghiệp trong dài hạn.</p>
+
+<h2><span class="section-number">3.3.</span> Thiết kế cơ sở dữ liệu</h2>
+
+<h3><span class="section-number">3.3.1.</span> Mô tả dữ liệu</h3>
+
+<p>Dựa trên nhu cầu quản lý workspace, thành viên, tệp tin, thông báo và tích hợp AI tạo báo cáo, dữ liệu trong "SaaS Platform tích hợp AI" được xây dựng bao gồm các thông tin liên quan đến người dùng, workspace, thành viên, tệp tin, báo cáo AI, audit logs và các thông tin khác. Dưới đây là mô tả chi tiết:</p>
+
+<p class="no-indent"><strong>1. Dữ liệu về người dùng (User):</strong> Đại diện cho thực thể User trong hệ thống, bao gồm các thông tin sau:</p>
+<ul>
+    <li>id: mã người dùng (UUID).</li>
+    <li>email: email đăng ký (unique).</li>
+    <li>password_hash: mật khẩu đã mã hóa (nullable nếu dùng Google OAuth).</li>
+    <li>full_name: họ và tên người dùng.</li>
+    <li>phone: số điện thoại liên hệ.</li>
+    <li>avatar_url: đường dẫn ảnh đại diện.</li>
+    <li>auth_provider: phương thức xác thực (local, google, both).</li>
+    <li>google_id: ID từ Google OAuth (nullable).</li>
+    <li>role: vai trò hệ thống (super_admin, user).</li>
+    <li>is_active: trạng thái tài khoản.</li>
+    <li>is_verified: đã xác thực email chưa.</li>
+    <li>created_at: ngày tạo tài khoản.</li>
+    <li>updated_at: ngày cập nhật gần nhất.</li>
+</ul>
+
+<p class="no-indent"><strong>2. Dữ liệu về Workspace:</strong> Đại diện cho thực thể Workspace trong hệ thống, bao gồm các thông tin sau:</p>
+<ul>
+    <li>id: mã workspace (UUID).</li>
+    <li>name: tên workspace.</li>
+    <li>slug: URL-friendly identifier (unique).</li>
+    <li>description: mô tả workspace.</li>
+    <li>logo_url: đường dẫn logo.</li>
+    <li>settings: cấu hình workspace (JSONB).</li>
+    <li>status: trạng thái (active, locked).</li>
+    <li>locked_reason: lý do bị khóa (nullable).</li>
+    <li>created_by: ID người tạo.</li>
+    <li>created_at: ngày tạo.</li>
+    <li>updated_at: ngày cập nhật.</li>
+</ul>
+
+<p class="no-indent"><strong>3. Dữ liệu về thành viên (Member):</strong> Đại diện cho mối quan hệ giữa User và Workspace, bao gồm các thông tin sau:</p>
+<ul>
+    <li>id: mã thành viên (UUID).</li>
+    <li>user_id: mã người dùng.</li>
+    <li>workspace_id: mã workspace.</li>
+    <li>role: vai trò trong workspace (owner, admin, member, viewer).</li>
+    <li>permissions: quyền hạn cụ thể (JSONB).</li>
+    <li>joined_at: ngày tham gia.</li>
+    <li>invited_by: ID người mời.</li>
+    <li>status: trạng thái (active, pending, removed).</li>
+</ul>
+
+<p class="no-indent"><strong>4. Dữ liệu về lời mời (Invitation):</strong> Đại diện cho thực thể Invitation trong hệ thống, bao gồm các thông tin sau:</p>
+<ul>
+    <li>id: mã lời mời (UUID).</li>
+    <li>workspace_id: mã workspace.</li>
+    <li>email: email người được mời.</li>
+    <li>role: vai trò dự kiến.</li>
+    <li>token: token xác thực (unique).</li>
+    <li>status: trạng thái (pending, accepted, expired, revoked).</li>
+    <li>invited_by: ID người mời.</li>
+    <li>expires_at: thời gian hết hạn.</li>
+    <li>created_at: ngày tạo.</li>
+</ul>
+
+<p class="no-indent"><strong>5. Dữ liệu về tệp tin (File):</strong> Đại diện cho thực thể File trong hệ thống, bao gồm các thông tin sau:</p>
+<ul>
+    <li>id: mã tệp tin (UUID).</li>
+    <li>workspace_id: mã workspace.</li>
+    <li>name: tên tệp tin.</li>
+    <li>original_name: tên gốc khi upload.</li>
+    <li>mime_type: loại MIME.</li>
+    <li>size: kích thước (bytes).</li>
+    <li>storage_path: đường dẫn lưu trữ trên S3/MinIO.</li>
+    <li>thumbnail_url: đường dẫn thumbnail (nếu có).</li>
+    <li>uploaded_by: ID người upload.</li>
+    <li>is_deleted: đã xóa mềm chưa.</li>
+    <li>deleted_at: thời gian xóa.</li>
+    <li>created_at: ngày upload.</li>
+</ul>
+
+<p class="no-indent"><strong>6. Dữ liệu về thông báo (Notification):</strong> Đại diện cho thực thể Notification trong hệ thống, bao gồm các thông tin sau:</p>
+<ul>
+    <li>id: mã thông báo (UUID).</li>
+    <li>user_id: mã người nhận.</li>
+    <li>workspace_id: mã workspace liên quan (nullable).</li>
+    <li>type: loại thông báo (invitation, mention, file_upload, report_ready, ...).</li>
+    <li>title: tiêu đề thông báo.</li>
+    <li>content: nội dung chi tiết.</li>
+    <li>data: dữ liệu bổ sung (JSONB).</li>
+    <li>is_read: đã đọc chưa.</li>
+    <li>read_at: thời gian đọc.</li>
+    <li>created_at: ngày tạo.</li>
+</ul>
+
+<p class="no-indent"><strong>7. Dữ liệu về báo cáo AI (AIReport):</strong> Đại diện cho thực thể AIReport trong hệ thống, bao gồm các thông tin sau:</p>
+<ul>
+    <li>id: mã báo cáo (UUID).</li>
+    <li>workspace_id: mã workspace.</li>
+    <li>type: loại báo cáo (daily_summary, weekly_digest, custom, ...).</li>
+    <li>title: tiêu đề báo cáo.</li>
+    <li>content: nội dung báo cáo (JSONB hoặc TEXT).</li>
+    <li>prompt: prompt đã sử dụng.</li>
+    <li>llm_provider: provider đã dùng (openai, anthropic, google).</li>
+    <li>llm_model: model cụ thể.</li>
+    <li>tokens_used: số tokens đã sử dụng.</li>
+    <li>generated_by: ID người tạo.</li>
+    <li>status: trạng thái (generating, completed, failed).</li>
+    <li>created_at: ngày tạo.</li>
+</ul>
+
+<p class="no-indent"><strong>8. Dữ liệu về audit log (AuditLog):</strong> Đại diện cho thực thể AuditLog trong hệ thống, bao gồm các thông tin sau:</p>
+<ul>
+    <li>id: mã log (UUID).</li>
+    <li>workspace_id: mã workspace (nullable cho system-level logs).</li>
+    <li>user_id: mã người thực hiện.</li>
+    <li>action: hành động (create, update, delete, login, logout, ...).</li>
+    <li>entity_type: loại entity (workspace, member, file, ...).</li>
+    <li>entity_id: ID của entity.</li>
+    <li>old_values: giá trị cũ (JSONB).</li>
+    <li>new_values: giá trị mới (JSONB).</li>
+    <li>ip_address: địa chỉ IP.</li>
+    <li>user_agent: thông tin trình duyệt.</li>
+    <li>created_at: thời gian thực hiện.</li>
+</ul>
+
+<p class="no-indent"><strong>9. Dữ liệu về Session (UserSession):</strong> Đại diện cho thực thể UserSession trong hệ thống, bao gồm các thông tin sau:</p>
+<ul>
+    <li>id: mã session (UUID).</li>
+    <li>user_id: mã người dùng.</li>
+    <li>refresh_token: refresh token (hashed).</li>
+    <li>device_info: thông tin thiết bị.</li>
+    <li>ip_address: địa chỉ IP.</li>
+    <li>expires_at: thời gian hết hạn.</li>
+    <li>created_at: thời gian tạo.</li>
+    <li>last_used_at: lần sử dụng gần nhất.</li>
+</ul>
+
+<p class="no-indent"><strong>10. Dữ liệu về cài đặt thông báo (NotificationSetting):</strong> Đại diện cho thực thể NotificationSetting trong hệ thống, bao gồm các thông tin sau:</p>
+<ul>
+    <li>id: mã cài đặt (UUID).</li>
+    <li>user_id: mã người dùng.</li>
+    <li>email_enabled: bật email notifications.</li>
+    <li>push_enabled: bật push notifications.</li>
+    <li>in_app_enabled: bật in-app notifications.</li>
+    <li>preferences: cài đặt chi tiết theo loại (JSONB).</li>
+    <li>updated_at: ngày cập nhật.</li>
+</ul>
+
+<h3><span class="section-number">3.3.2.</span> Mô hình dữ liệu</h3>
+
+<p>Dữ liệu được mô tả ở trên được thể hiện thông qua các class (lớp) tương ứng với các thông tin chi tiết được trình bày ở sơ đồ lớp dưới đây:</p>
+
+<div class="figure">
+    <p><em>[Hình 3.8. Sơ đồ lớp (Class Diagram) của hệ thống SaaS Platform]</em></p>
+</div>
+
+<p>Mối quan hệ giữa các entities:</p>
+<ul>
+    <li><strong>User - Workspace:</strong> Many-to-Many thông qua Member entity.</li>
+    <li><strong>User - Member:</strong> One-to-Many (một user có thể là member của nhiều workspaces).</li>
+    <li><strong>Workspace - Member:</strong> One-to-Many (một workspace có nhiều members).</li>
+    <li><strong>Workspace - File:</strong> One-to-Many (một workspace có nhiều files).</li>
+    <li><strong>Workspace - AIReport:</strong> One-to-Many (một workspace có nhiều reports).</li>
+    <li><strong>Workspace - Invitation:</strong> One-to-Many (một workspace có nhiều invitations).</li>
+    <li><strong>Workspace - AuditLog:</strong> One-to-Many (một workspace có nhiều audit logs).</li>
+    <li><strong>User - Notification:</strong> One-to-Many (một user có nhiều notifications).</li>
+    <li><strong>User - UserSession:</strong> One-to-Many (một user có nhiều sessions).</li>
+    <li><strong>User - NotificationSetting:</strong> One-to-One (mỗi user có một notification setting).</li>
+</ul>
+
+<h3><span class="section-number">3.3.3.</span> Từ điển dữ liệu</h3>
+
+<p>Chi tiết từ điển dữ liệu xem ở Phụ lục B "Từ điển dữ liệu".</p>
+
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>UC02 - Đăng nhập</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; font-size: 13pt; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h3 { font-size: 14pt; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { border: 1px solid #000; padding: 8px; text-align: left; vertical-align: top; }
+        .caption { font-style: italic; font-weight: bold; text-align: center; margin: 10px 0; }
+        .figure { text-align: center; margin: 15px 0; }
+        .figure img { max-width: 100%; }
+        ol, ul { margin: 5px 0; padding-left: 20px; }
+    </style>
+</head>
+<body>
+
+<h3>- Chức năng đăng nhập</h3>
+
+<div class="figure">
+    <img src="uc02_login.png" alt="Sơ đồ Use Case đăng nhập">
+    <p class="caption">Hình 3.2. Sơ đồ use case chức năng đăng nhập</p>
+</div>
+
+<p class="caption">Bảng 3.2. Bảng đặc tả chức năng đăng nhập</p>
+
+<table>
+    <tr>
+        <td><b>Tên chức năng:</b> Đăng nhập</td>
+        <td><b>ID:</b> UC02</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Mức độ cần thiết:</b> Bắt buộc</td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <td><b>Người sử dụng:</b> Khách đã có tài khoản trong hệ thống.</td>
+        <td><b>Phân loại:</b> Đơn giản</td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <td colspan="2"><b>Các thành phần tham gia và mối quan tâm:</b>
+            <ul>
+                <li><b>Khách:</b> Muốn đăng nhập vào hệ thống để sử dụng các chức năng.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Mô tả tóm tắt:</b> Chức năng cho phép người dùng xác thực danh tính bằng email và mật khẩu để truy cập hệ thống.</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Trigger:</b> Khách truy cập trang đăng nhập hoặc nhấn nút "Đăng nhập".</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Kiểu sự kiện:</b> External</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Luồng xử lý bình thường của sự kiện:</b>
+            <ol>
+                <li>Khách truy cập trang đăng nhập.</li>
+                <li>Khách nhập email và mật khẩu.</li>
+                <li>Khách nhấn nút "Đăng nhập".</li>
+                <li>Hệ thống xác thực thông tin đăng nhập.</li>
+                <li>Hệ thống tạo phiên làm việc mới.</li>
+                <li>Hệ thống chuyển hướng đến trang Dashboard.</li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Các luồng sự kiện con (Subflows):</b> N/A</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Luồng luân phiên/đặc biệt (Alternative/Exceptional flows):</b>
+            <ul>
+                <li>4a. Thông tin không chính xác: Hệ thống thông báo lỗi đăng nhập.</li>
+                <li>4b. Tài khoản chưa xác thực: Hệ thống yêu cầu xác thực email trước.</li>
+                <li>4c. Tài khoản bị khóa: Hệ thống thông báo và không cho phép đăng nhập.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Kết quả:</b> Người dùng đăng nhập thành công và được chuyển đến Dashboard.</td>
+    </tr>
+</table>
+
+</body>
+</html>

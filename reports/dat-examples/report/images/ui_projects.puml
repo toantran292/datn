@@ -1,0 +1,21 @@
+@startuml ui_projects
+!theme plain
+skinparam backgroundColor white
+
+salt
+{+
+  {* Danh sách Projects | [Create Project +] }
+  {SI
+    .
+    {
+      {#
+        | **PROJ** | **Project Management System** | Lead: John Doe | Sprint 3 Active | [Open]
+        | **DEMO** | **Demo Application** | Lead: Jane Smith | No Active Sprint | [Open]
+        | **WEB** | **Website Redesign** | Lead: Mike Johnson | Sprint 1 Active | [Open]
+        | **API** | **API Gateway Service** | Lead: Sarah Lee | Sprint 2 Active | [Open]
+      }
+    }
+    .
+  }
+}
+@enduml

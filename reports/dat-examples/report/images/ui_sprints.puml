@@ -1,0 +1,72 @@
+@startuml ui_sprints
+!theme plain
+skinparam backgroundColor white
+
+salt
+{+
+  {* Project: PROJ - Project Management System | Board | Backlog | Sprints | Settings }
+  {
+    [Create Sprint +]
+  }
+  {SI
+    .
+    {
+      <color:#22C55E>**Sprint 3 (Active)** | Started: 2025-12-01 | Ends: 2025-12-14 (3 days remaining) | [Complete Sprint]
+      --
+      Goal: Implement core database layer and API endpoints for issue management
+      --
+      Progress: [====.........] 40% | Issues: 6/15 completed | Points: 12/30 completed
+      --
+      {#
+        | **Status** | **Issues** | **Points**
+        | To Do | 3 | 9
+        | In Progress | 2 | 5
+        | Code Review | 1 | 4
+        | Done | 6 | 12
+      }
+      [View Board] [Sprint Report]
+    }
+    ==
+    {
+      <color:#3B82F6>**Sprint 4 (Future)** | Starts: 2025-12-15 | Ends: 2025-12-29
+      --
+      Goal: Frontend development - implement board view and issue detail pages
+      --
+      Issues: 5 | Points: 21
+      --
+      [Start Sprint] [Edit] [Delete]
+    }
+    ==
+    {
+      <color:#3B82F6>**Sprint 5 (Future)** | Starts: TBD | Ends: TBD
+      --
+      Goal: Not set
+      --
+      Issues: 0 | Points: 0
+      --
+      [Start Sprint] [Edit] [Delete]
+    }
+    ==
+    {
+      <color:#6B7280>**Sprint 2 (Closed)** | 2025-11-17 - 2025-11-30
+      --
+      Goal: Project setup and initial authentication implementation
+      --
+      Completed: 12/12 issues | 28/28 points | Duration: 14 days
+      --
+      [View Report]
+    }
+    ==
+    {
+      <color:#6B7280>**Sprint 1 (Closed)** | 2025-11-03 - 2025-11-16
+      --
+      Goal: Initial project scaffolding and environment setup
+      --
+      Completed: 10/10 issues | 20/20 points | Duration: 14 days
+      --
+      [View Report]
+    }
+    .
+  }
+}
+@enduml

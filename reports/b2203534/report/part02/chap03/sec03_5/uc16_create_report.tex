@@ -1,0 +1,77 @@
+% UC16: Tạo báo cáo AI
+\subsubsection{Chức năng tạo báo cáo AI (UC16)}
+
+\begin{itemize}
+    \item \textbf{Mục đích:} Cho phép Owner/Admin tạo báo cáo tự động sử dụng các mô hình ngôn ngữ lớn (LLM).
+\end{itemize}
+
+\begin{itemize}
+    \item \textbf{Giao diện:}
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.55\textwidth]{part02/chap03/sec03_5/uc16_17_reports_ui.png}
+    \caption{Giao diện danh sách báo cáo AI}
+    \label{fig:ui_uc16_reports}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.55\textwidth]{part02/chap03/sec03_5/uc16_generate_ui.png}
+    \caption{Giao diện tạo báo cáo AI}
+    \label{fig:ui_uc16_generate}
+\end{figure}
+
+\begin{itemize}
+    \item \textbf{Các thành phần trong giao diện:}
+\end{itemize}
+
+\begin{longtblr}[
+    caption = {Các thành phần trong giao diện tạo báo cáo AI},
+    label = {tab:ui_uc16}
+]{
+    colspec = {|c|l|l|X|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+STT & Loại & Tên thành phần & Nội dung thực hiện \\
+1 & Dropdown & Report Type & Chọn loại báo cáo: Daily Summary, Weekly Digest, Custom \\
+2 & Checkbox & Data Sources & Chọn nguồn dữ liệu: Files, Activities, Member Statistics \\
+3 & DatePicker & Date Range & Chọn khoảng thời gian cho báo cáo \\
+4 & Dropdown & LLM Pro\-vider & Chọn LLM: OpenAI GPT-4, Anthropic Claude, Google Gemini \\
+5 & Textarea & Prompt & Nhập hướng dẫn/yêu cầu cho báo cáo \\
+6 & Button & Generate & Bắt đầu tạo báo cáo \\
+\end{longtblr}
+
+\begin{itemize}
+    \item \textbf{Dữ liệu được dùng:}
+\end{itemize}
+
+\begin{longtblr}[
+    caption = {Dữ liệu cho chức năng tạo báo cáo AI},
+    label = {tab:data_uc16}
+]{
+    colspec = {|c|X|c|c|c|c|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+STT & Tên bảng & Thêm & Sửa & Xóa & Truy vấn \\
+1 & AIReport & X & & & \\
+2 & File & & & & X \\
+3 & AuditLog & & & & X \\
+4 & Work\-space\-Member & & & & X \\
+\end{longtblr}
+
+\begin{itemize}
+    \item \textbf{Xử lý:}
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{part02/chap03/sec03_5/uc16_create_report_activity.png}
+    \caption{Sơ đồ hoạt động chức năng tạo báo cáo AI}
+    \label{fig:act_uc16_create_report}
+\end{figure}

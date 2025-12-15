@@ -1,0 +1,64 @@
+\phantomsection
+\subsection*{4. Đối tượng và Phạm vi nghiên cứu}
+\addcontentsline{toc}{subsection}{4. Đối tượng và Phạm vi nghiên cứu}
+\setcounter{subsection}{4}
+\setcounter{subsubsection}{0}
+\setcounter{figure}{0}
+
+\subsubsection{Đối tượng nghiên cứu}
+
+\begin{itemize}
+    \item Đặc điểm giao tiếp và trao đổi thông tin trong môi trường phát triển phần mềm Agile, nhấn mạnh sự cần thiết của việc tập trung hóa các cuộc hội thoại, tài liệu đính kèm và lịch sử trao đổi vào một hệ thống thống nhất thay vì phân tán trên nhiều nền tảng.
+
+    \item Yêu cầu kỹ thuật và chức năng của một hệ thống nhắn tin doanh nghiệp: truyền thông thời gian thực (real-time messaging), quản lý kênh theo dự án và workspace, tích hợp với dịch vụ lưu trữ tệp, tìm kiếm lịch sử hội thoại và khả năng mở rộng khi số lượng người dùng tăng.
+
+    \item Cơ chế quản lý kênh trò chuyện và tin nhắn: nghiên cứu cách thiết kế hệ thống kênh (channel) theo dự án, kênh công khai và kênh riêng tư; cách tổ chức tin nhắn theo thread để dễ theo dõi các cuộc thảo luận; cách quản lý quyền truy cập kênh dựa trên vai trò trong workspace.
+
+    \item Kiến trúc microservice cho hệ thống truyền thông: nghiên cứu cách thiết kế phân hệ truyền thông như một dịch vụ độc lập sử dụng NodeJS/NestJS, cách tích hợp WebSocket cho truyền thông thời gian thực, cách quản lý kết nối đồng thời của nhiều người dùng, cách đồng bộ trạng thái tin nhắn giữa các thiết bị và cách giao tiếp với các phân hệ khác trong nền tảng (đặc biệt là File Service từ phân hệ nền tảng và thông tin).
+
+    \item Giao diện chat và trải nghiệm người dùng: nghiên cứu cách thiết kế giao diện nhắn tin hiện đại sử dụng React/Next.js, bao gồm danh sách kênh, khung trò chuyện thời gian thực, khu vực xem tệp đính kèm, panel hiển thị tóm tắt và trả lời từ AI; đồng thời tìm hiểu cách tối ưu UX cho các tương tác phổ biến như gửi tin nhắn, đính kèm file, tìm kiếm và cuộn lịch sử.
+
+    \item Tích hợp AI với kiến trúc RAG (Retrieval-Augmented Generation): nghiên cứu cách sử dụng vector database để lưu trữ embedding của tin nhắn và nội dung tệp đính kèm; cách thiết kế pipeline xử lý tài liệu (document processing) để trích xuất văn bản, chia nhỏ (chunking) và tạo embedding; cách kết hợp kết quả truy xuất từ vector database với mô hình ngôn ngữ lớn (LLM) để tóm tắt hội thoại, trả lời câu hỏi dựa trên ngữ cảnh và phân tích nội dung tài liệu.
+\end{itemize}
+
+\subsubsection{Phạm vi nghiên cứu}
+
+\textbf{Về mặt lý thuyết:}
+
+\begin{itemize}
+    \item Tìm hiểu các mô hình quản lý dự án Agile (Scrum, Kanban), vai trò của giao tiếp hiệu quả trong các quy trình Agile (sprint planning, daily standup, retrospective) và cách các công cụ nhắn tin tập trung hỗ trợ sự minh bạch thông tin và cộng tác liên chức năng.
+
+    \item Nghiên cứu kiến trúc hệ thống nhắn tin thời gian thực: nguyên tắc thiết kế hệ thống chat có khả năng mở rộng, cách sử dụng WebSocket để truyền tin nhắn tức thì, cách quản lý kết nối đồng thời và cách xử lý các vấn đề như mất kết nối, đồng bộ trạng thái và thứ tự tin nhắn.
+
+    \item Nghiên cứu mô hình dữ liệu cho hệ thống nhắn tin: cách thiết kế schema cho kênh (channel), tin nhắn (message), thread, phản hồi (reaction), liên kết tệp đính kèm (attachment reference); cách tối ưu truy vấn cho việc tải tin nhắn theo trang (pagination) và tìm kiếm full-text.
+
+    \item Tìm hiểu công nghệ NodeJS/NestJS cho backend truyền thông: nghiên cứu cách NestJS tổ chức module, controller, service, dependency injection; cách tích hợp WebSocket Gateway với NestJS; cách giao tiếp với File Service của phân hệ nền tảng để gửi và truy xuất tệp đính kèm.
+
+    \item Nghiên cứu công nghệ React/Next.js cho giao diện chat: tìm hiểu cách xây dựng giao diện nhắn tin responsive và real-time, cách quản lý state phức tạp với nhiều kênh và tin nhắn, cách tối ưu hiệu năng khi render danh sách tin nhắn dài và cách tích hợp các thư viện UI hiện đại.
+
+    \item Nghiên cứu kiến trúc RAG (Retrieval-Augmented Generation) cho hệ thống hỏi đáp thông minh: tìm hiểu cách hoạt động của text embedding và các mô hình embedding phổ biến (OpenAI Embedding, Sentence Transformers); cách lựa chọn và sử dụng vector database (Pinecone, Qdrant, Weaviate, pgvector); các chiến lược chunking văn bản (fixed-size, semantic, recursive); cách thiết kế prompt và kết hợp context từ vector search với LLM.
+
+    \item Nghiên cứu pipeline xử lý tài liệu cho AI: cách trích xuất văn bản từ các định dạng file khác nhau (PDF, DOCX, hình ảnh với OCR); cách tiền xử lý và làm sạch văn bản; cách quản lý và cập nhật embedding khi nội dung thay đổi; cách tối ưu chi phí và hiệu năng khi gọi API embedding và LLM.
+\end{itemize}
+
+\textbf{Về mặt lập trình:}
+
+\begin{itemize}
+    \item Xây dựng Messaging Service bằng NestJS: thiết kế cơ sở dữ liệu cho Channel, Message, Thread, Reaction, AttachmentReference (liên kết đến File Service); triển khai API CRUD cho kênh và tin nhắn; xây dựng logic phân quyền truy cập kênh theo workspace và dự án; tích hợp với File Service của phân hệ nền tảng để gửi và lấy tệp đính kèm.
+
+    \item Phát triển hệ thống WebSocket Gateway bằng NestJS: triển khai kết nối WebSocket cho truyền thông thời gian thực, xử lý các sự kiện gửi tin nhắn, nhận tin nhắn mới, typing indicator, cập nhật trạng thái đã đọc; quản lý room theo kênh để broadcast tin nhắn đến đúng người nhận; xử lý reconnection và đồng bộ trạng thái khi người dùng online trở lại.
+
+    \item Xây dựng Document Processing Pipeline: triển khai các module trích xuất văn bản từ file (PDF parser, DOCX parser, OCR cho hình ảnh); xây dựng logic chunking văn bản với các chiến lược phù hợp cho từng loại nội dung (tin nhắn ngắn, tài liệu dài); tích hợp với File Service để lấy nội dung file cần xử lý.
+
+    \item Triển khai Vector Database và Embedding Service: cấu hình và tích hợp vector database (pgvector với PostgreSQL hoặc Qdrant); xây dựng service tạo embedding cho tin nhắn và nội dung tệp đính kèm; thiết kế cơ chế đồng bộ và cập nhật embedding khi có tin nhắn mới hoặc file mới được upload; tối ưu việc batch processing để giảm chi phí API.
+
+    \item Phát triển AI Service với kiến trúc RAG bằng NestJS: thiết kế các endpoint cho tóm tắt đoạn hội thoại, trích xuất ý chính và danh sách công việc, trả lời câu hỏi dựa trên ngữ cảnh kênh và tài liệu đính kèm; triển khai logic truy xuất context từ vector database và kết hợp với LLM (OpenAI, Gemini); xử lý và chuẩn hóa kết quả trả về cho client.
+
+    \item Xây dựng Search Service cho tìm kiếm lịch sử hội thoại: triển khai tìm kiếm hybrid kết hợp full-text search (PostgreSQL) và semantic search (vector database); hỗ trợ lọc theo kênh, khoảng thời gian, người gửi; cung cấp API tìm kiếm với phân trang và ranking kết quả.
+
+    \item Xây dựng giao diện Chat bằng React/Next.js: thiết kế và triển khai các component cho danh sách kênh, khung trò chuyện, ô nhập tin nhắn, khu vực hiển thị tệp đính kèm (tích hợp với File Service), panel AI assistant cho tóm tắt và hỏi đáp; tích hợp WebSocket client để nhận và gửi tin nhắn real-time; xử lý lazy loading cho lịch sử tin nhắn.
+
+    \item Thiết kế và triển khai cơ sở dữ liệu PostgreSQL cho phân hệ truyền thông: định nghĩa schema cho messaging (Channel, Message, Thread), schema cho vector storage (sử dụng pgvector extension nếu chọn PostgreSQL làm vector database); tạo index phù hợp (B-tree, GIN cho full-text, HNSW/IVFFlat cho vector); viết migration script và đảm bảo hiệu năng truy vấn.
+
+    \item Tích hợp và kiểm thử toàn bộ phân hệ: viết integration test cho luồng gửi/nhận tin nhắn, upload file qua File Service, pipeline xử lý tài liệu và RAG; kiểm thử hiệu năng WebSocket với nhiều kết nối đồng thời; đánh giá chất lượng câu trả lời của AI; triển khai hệ thống lên môi trường staging hoặc production (sử dụng Docker, Docker Compose); viết tài liệu triển khai và hướng dẫn sử dụng.
+\end{itemize}

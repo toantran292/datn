@@ -1,0 +1,83 @@
+\subsection{Kiến trúc hệ thống}
+
+
+\subsubsection{Thiết kế kiến trúc tổng thể}
+
+Phân hệ quản lý dự án được thiết kế theo kiến trúc phân tầng với sự phân tách rõ ràng giữa frontend, backend service, và infrastructure components. Kiến trúc tổng thể tuân theo các nguyên tắc: Separation of Concerns với PM Service tập trung vào domain logic quản lý dự án Agile, API-First Design sử dụng RESTful APIs và WebSocket cho real-time Board updates, Stateless Services với state được lưu trong PostgreSQL và Redis, và Data Isolation hoàn toàn cho mỗi organization thông qua organization\_id với project-level access control.
+
+Các thành phần chính trong kiến trúc phân hệ quản lý dự án bao gồm: Client Layer với pm-web (Next.js) truy cập qua HTTPS, Application Layer với PM Service (NestJS) expose RESTful APIs và WebSocket endpoints, Data Layer với PostgreSQL (persistent storage) và Redis (caching và session), Storage Layer với MinIO/S3 cho issue attachments, và External Services như LLM Providers (OpenAI, Anthropic) cho Sprint Summary và Task Breakdown features.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{images/system_architecture.png}
+\caption{Sơ đồ kiến trúc hệ thống tổng quát}
+\label{fig:system_architecture}
+\end{figure}
+
+\subsubsection{Mô hình phân lớp (Layered Architecture)}
+
+PM Service được tổ chức theo mô hình 3-layer architecture với các layer sau:
+
+\begin{itemize}
+    \item \textbf{Presentation Layer (Controllers/Handlers):} Nhận HTTP requests từ clients qua REST endpoints, validate request data với DTOs (Data Transfer Objects), route requests đến Service Layer để xử lý business logic, format responses trả về clients (JSON format), và handle exceptions với appropriate HTTP status codes.
+
+    \item \textbf{Business Logic Layer (Services):} Implement business rules và workflows của ứng dụng, orchestrate operations giữa nhiều entities, call external services (LLM APIs, Storage APIs) khi cần thiết, validate business rules phức tạp (check permissions trước khi allow actions), và transaction management để đảm bảo data consistency.
+
+    \item \textbf{Data Access Layer (Repositories):} Tương tác với database qua Prisma ORM, execute CRUD operations trên các database tables (projects, sprints, issues, issue\_statuses, issue\_assignees, issue\_comments, issue\_activities, project\_analytics), thực hiện complex queries với joins để load issues với assignees và custom statuses, filtering và pagination cho Backlog/Board views, cache management với Redis cho frequently accessed data như project info và custom status definitions, và database transaction handling cho các operations như complete sprint (move unfinished issues to backlog).
+\end{itemize}
+
+\subsubsection{Mô tả sự phân rã}
+
+Hệ thống được phân rã theo hai chiều: phân rã theo nhóm người dùng và phân rã theo chức năng của từng nhóm, được thể hiện qua các sơ đồ sau:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{images/user_groups.png}
+\caption{Sơ đồ nhóm đối tượng người dùng}
+\label{fig:user_groups}
+\end{figure}
+
+Mỗi nhóm người dùng có các chức năng riêng biệt tương ứng với vai trò và quyền hạn được thể hiện qua các sơ đồ phân rã chức năng:
+
+\textbf{Phân rã chức năng của Team Member:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{images/func_team_member.png}
+\caption{Sơ đồ phân rã chức năng của Team Member}
+\label{fig:func_team_member}
+\end{figure}
+
+\textbf{Phân rã chức năng của Project Lead:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{images/func_project_lead.png}
+\caption{Sơ đồ phân rã chức năng của Project Lead}
+\label{fig:func_project_lead}
+\end{figure}
+
+\textbf{Phân rã chức năng của Viewer/Stakeholder:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{images/func_viewer.png}
+\caption{Sơ đồ phân rã chức năng của Viewer/Stakeholder}
+\label{fig:func_viewer}
+\end{figure}
+
+\subsubsection{Cơ sở thiết kế}
+
+Mô hình kiến trúc phân lớp (Layered Architecture) là một kiến trúc phần mềm phổ biến, được sử dụng rộng rãi trong phát triển ứng dụng web và các hệ thống hiện đại. Mô hình này chia ứng dụng thành các lớp riêng biệt: Presentation (Controller), Business Logic (Service), và Data Access (Repository), giúp hệ thống dễ bảo trì, mở rộng, và phân chia công việc hiệu quả giữa các nhóm phát triển.
+
+Ưu điểm của mô hình kiến trúc phân lớp cho PM Service: Các thành phần Presentation, Business Logic và Data Access có thể được xây dựng, kiểm thử và bảo trì độc lập với nhau. Việc thay đổi logic nghiệp vụ (ví dụ: sprint completion workflow) không ảnh hưởng đến API endpoints (Controller), và ngược lại, giúp giảm rủi ro khi cập nhật hệ thống. Nhóm phát triển có thể chia ra phụ trách riêng từng phần, ví dụ: frontend developer tập trung vào pm-web (Board view, Backlog view), backend developer xử lý PM Service Controllers và Services (ProjectService, SprintService, IssueService), giúp đẩy nhanh tiến độ và giảm xung đột công việc. Việc chia nhỏ logic theo từng lớp giúp việc viết unit tests cho từng module (ProjectModule, SprintModule, IssueModule) trở nên dễ dàng hơn. Các components như IssueService, SprintService có thể tái sử dụng trong các features khác (analytics, reports). Cải thiện bảo mật: Do các phần được tách biệt, project-level permissions có thể được validate tại Service layer trước khi access data, giúp hạn chế unauthorized access.
+
+Nhược điểm: Với các dự án nhỏ, áp dụng mô hình phân lớp có thể gây phức tạp không cần thiết, làm tăng thời gian phát triển ban đầu. Để sử dụng hiệu quả mô hình này, đội ngũ phát triển cần có sự hiểu biết rõ ràng về nguyên lý hoạt động của từng thành phần và cách phối hợp chúng. Việc cấu hình một dự án sử dụng mô hình phân lớp (đặc biệt kết hợp các công nghệ như NestJS, Prisma, Next.js) có thể tốn thời gian hơn so với các framework nhỏ gọn.
+
+Với các đặc điểm như cần tích hợp AI cho Sprint Summary và Task Breakdown, quản lý projects với custom status workflow, phân quyền theo vai trò project-level, real-time Board view updates với WebSocket, và khả năng mở rộng, thì việc áp dụng mô hình kiến trúc phân lớp trong xây dựng phân hệ quản lý dự án là hoàn toàn hợp lý. Kiến trúc này không chỉ giúp hệ thống dễ mở rộng, dễ bảo trì mà còn phù hợp để làm việc theo nhóm và phát triển chuyên nghiệp trong dài hạn.
+
+Tại sao chọn NestJS cho PM Service? NestJS phù hợp cho phân hệ quản lý dự án với Node.js performance cho real-time operations, TypeScript type safety giúp giảm bugs và dễ refactor khi requirements thay đổi, WebSocket support tốt cho Board view real-time updates khi có issue changes, Prisma ORM với type-safe client cho complex queries với projects, sprints, issues, modular architecture giúp tổ chức code thành ProjectModule, SprintModule, IssueModule rõ ràng, và Dependency Injection container giúp testing dễ dàng với mock services.
+
+Tại sao kết hợp PostgreSQL và Redis? PostgreSQL là ACID-compliant, reliable cho persistent data về projects, sprints, issues, custom statuses, comments, activities, hỗ trợ complex queries với joins để load issues với assignees và custom statuses, transactions cho complete sprint operations (move unfinished issues to backlog), foreign keys với cascade delete khi xóa project. Redis là in-memory, cực nhanh cho caching frequently accessed data (project info, sprint data, custom status definitions), hỗ trợ Pub/Sub cho WebSocket real-time updates khi có issue changes trên Board view. Complementary khi PostgreSQL làm "source of truth", Redis làm performance optimization cho Board/Backlog view loading nhanh hơn.
+
+Tại sao MinIO cho development và S3 cho production? S3-Compatible API với MinIO 100\% compatible với AWS S3 API, cho phép dùng cùng codebase cho dev và prod để lưu trữ issue attachments (screenshots, documents, logs). Development với MinIO chạy local trong Docker, không cần AWS account, costs zero, fast iteration khi test upload/download attachments. Production với AWS S3 cung cấp 99.999999999\% durability cho issue attachments, global availability, managed service không cần maintain infrastructure. Seamless Transition khi switch giữa MinIO và S3 chỉ cần change endpoint configuration trong PM Service.

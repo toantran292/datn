@@ -1,0 +1,121 @@
+\subsection{Kiến trúc hệ thống}
+
+\subsubsection{Thiết kế kiến trúc tổng thể}
+
+Phân hệ truyền thông được thiết kế theo mô hình microservices architecture với sự phân tách rõ ràng giữa frontend, backend services, và infrastructure components. Kiến trúc tổng thể tuân theo các nguyên tắc: Separation of Concerns với mỗi service có trách nhiệm cụ thể độc lập (Messaging, WebSocket, Document Processing, AI), API-First Design sử dụng RESTful APIs cho CRUD operations và WebSocket cho real-time communication, Stateless Services với state được lưu trong PostgreSQL và Redis, Event-Driven Architecture cho việc đồng bộ giữa các services và xử lý background jobs, và Data Isolation hoàn toàn cho mỗi workspace và channel thông qua workspace\_id và channel\_id.
+
+Các thành phần chính trong kiến trúc bao gồm: Client Layer với web browsers (desktop và tablet) truy cập qua HTTPS và WSS (WebSocket Secure), Edge Layer với Nginx reverse proxy từ phân hệ nền tảng xử lý SSL termination và routing, Application Layer gồm Frontend (Next.js + Socket.io Client) và Backend Services (NestJS), Data Layer với PostgreSQL + pgvector và Redis, và External Services bao gồm OpenAI API và các services từ phân hệ nền tảng (Account Service, File Service).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{images/system_architecture.png}
+\caption{Sơ đồ kiến trúc hệ thống - Phân hệ Truyền thông}
+\label{fig:system_architecture}
+\end{figure}
+
+\subsubsection{Mô hình phân lớp (Layered Architecture)}
+
+Mỗi backend service trong phân hệ truyền thông được tổ chức theo mô hình 3-layer architecture với các layer sau:
+
+\begin{itemize}
+    \item \textbf{Presentation Layer (Controllers/Gateways):} Nhận HTTP requests từ clients qua REST endpoints và WebSocket events qua Socket.io Gateway. Layer này validate request data với DTOs (Data Transfer Objects) sử dụng class-validator, route requests đến Service Layer để xử lý business logic, format responses trả về clients (JSON format cho REST, events cho WebSocket), và handle exceptions với appropriate HTTP status codes hoặc WebSocket error events.
+
+    \item \textbf{Business Logic Layer (Services):} Implement business rules và workflows của ứng dụng như quản lý kênh, xử lý tin nhắn, tạo embeddings, và orchestrate RAG pipeline. Layer này gọi external services (OpenAI API, File Service, Account Service) khi cần thiết, validate business rules phức tạp (check channel permissions trước khi allow actions), emit events đến WebSocket Gateway để broadcast real-time updates, và quản lý transactions để đảm bảo data consistency.
+
+    \item \textbf{Data Access Layer (Repositories/Clients):} Tương tác với PostgreSQL qua Prisma ORM để thực hiện CRUD operations và vector queries với pgvector. Layer này cũng tương tác với Redis cho caching, Socket.io adapter, và BullMQ job management. Cache management được implement cho frequently accessed data như channel info và member lists.
+\end{itemize}
+
+\subsubsection{Mô tả sự phân rã}
+
+Hệ thống được phân rã theo hai chiều: phân rã theo nhóm người dùng và phân rã theo chức năng của từng nhóm, được thể hiện qua các sơ đồ sau:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{images/user_groups.png}
+\caption{Sơ đồ nhóm đối tượng người dùng - Phân hệ Truyền thông}
+\label{fig:user_groups}
+\end{figure}
+
+Phân hệ truyền thông có hai nhóm người dùng chính với vai trò và quyền hạn khác nhau:
+
+\textbf{Phân rã chức năng của Channel Admin:}
+
+Channel Admin (bao gồm cả Workspace Owner) có quyền quản lý kênh trò chuyện, thành viên trong kênh, và cấu hình các tính năng AI cho kênh.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.45\textwidth]{images/func_channel_admin.png}
+\caption{Sơ đồ phân rã chức năng của Channel Admin}
+\label{fig:func_channel_admin}
+\end{figure}
+
+\textbf{Phân rã chức năng của Member:}
+
+Member là người dùng thông thường trong kênh, có quyền tham gia, nhắn tin, tương tác, và sử dụng các tính năng AI Assistant.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{images/func_member.png}
+\caption{Sơ đồ phân rã chức năng của Member}
+\label{fig:func_member}
+\end{figure}
+
+% \subsubsection{Giao tiếp giữa các Services}
+
+% Các services trong phân hệ truyền thông giao tiếp với nhau và với các services từ phân hệ nền tảng thông qua nhiều phương thức khác nhau:
+
+% \begin{figure}[H]
+% \centering
+% \includegraphics[width=0.9\textwidth]{images/services_communication.png}
+% \caption{Sơ đồ giao tiếp giữa các Services}
+% \label{fig:services_communication}
+% \end{figure}
+
+% \begin{itemize}
+%     \item \textbf{Messaging Service $\leftrightarrow$ WebSocket Gateway:} Internal API calls và events. Khi tin nhắn mới được tạo, Messaging Service emit event đến WebSocket Gateway để broadcast đến các clients trong channel.
+    
+%     \item \textbf{Messaging Service $\rightarrow$ Document Processing Service:} BullMQ jobs. Khi có attachment mới hoặc tin nhắn cần tạo embedding, Messaging Service thêm job vào queue để Document Processing xử lý bất đồng bộ.
+    
+%     \item \textbf{AI Service $\leftrightarrow$ Messaging Service:} API calls. AI Service gọi Messaging Service để lấy messages và context cho RAG pipeline.
+    
+%     \item \textbf{Tất cả Services $\rightarrow$ Account Service:} JWT validation. Mọi request đều được xác thực thông qua Account Service của phân hệ nền tảng.
+    
+%     \item \textbf{Messaging Service $\rightarrow$ File Service:} API calls. Khi có attachment, Messaging Service gọi File Service để lưu trữ file và lấy metadata.
+% \end{itemize}
+
+\subsubsection{Cơ sở thiết kế}
+
+Mô hình kiến trúc phân lớp (Layered Architecture) kết hợp với Microservices là một kiến trúc phần mềm phổ biến, được sử dụng rộng rãi trong phát triển ứng dụng web hiện đại. Mô hình này chia ứng dụng thành các lớp riêng biệt: Presentation (Controllers/Gateways), Business Logic (Services), và Data Access (Repositories/Clients), giúp hệ thống dễ bảo trì, mở rộng, và phân chia công việc hiệu quả giữa các nhóm phát triển.
+
+\textbf{Ưu điểm của mô hình kiến trúc phân lớp:}
+\begin{itemize}
+    \item Các thành phần Presentation, Business Logic và Data Access có thể được xây dựng, kiểm thử và bảo trì độc lập với nhau.
+    \item Việc thay đổi logic nghiệp vụ (Service) không ảnh hưởng đến Controllers/Gateways, và ngược lại, giúp giảm rủi ro khi cập nhật hệ thống.
+    \item Nhóm phát triển có thể chia ra phụ trách riêng từng phần, giúp đẩy nhanh tiến độ và giảm xung đột công việc.
+    \item Việc chia nhỏ logic theo từng lớp giúp việc viết kiểm thử đơn vị (unit test) trở nên dễ dàng hơn và chính xác hơn.
+    \item Các thành phần như message handling, channel management có thể tái sử dụng lại trong các tính năng khác.
+\end{itemize}
+
+\textbf{Tại sao chọn microservices thay vì monolithic?}
+\begin{itemize}
+    \item \textbf{Scalability:} WebSocket Gateway cần scale nhiều hơn các services khác khi số lượng concurrent connections tăng. Microservices cho phép scale từng service độc lập dựa trên nhu cầu thực tế.
+    \item \textbf{Fault Isolation:} Nếu AI Service gặp lỗi hoặc quá tải, các chức năng chat cơ bản vẫn hoạt động bình thường.
+    \item \textbf{Technology Fit:} NestJS với Socket.io là lựa chọn tối ưu cho WebSocket Gateway, trong khi Document Processing có thể sử dụng các thư viện xử lý tài liệu nặng mà không ảnh hưởng đến performance của messaging.
+    \item \textbf{Independent Deployment:} Có thể deploy và update từng service mà không ảnh hưởng đến toàn hệ thống.
+\end{itemize}
+
+\textbf{Tại sao kết hợp PostgreSQL với pgvector và Redis?}
+\begin{itemize}
+    \item \textbf{PostgreSQL + pgvector:} ACID-compliant, reliable cho persistent data như channels, messages, embeddings. pgvector cho phép lưu trữ và query vector embeddings trực tiếp trong PostgreSQL, giảm complexity so với việc sử dụng external vector database.
+    \item \textbf{Redis:} In-memory, cực nhanh cho Socket.io adapter (horizontal scaling), caching frequently accessed data, rate limiting, và làm backend cho BullMQ job queues.
+    \item \textbf{Complementary:} PostgreSQL làm "source of truth", Redis làm performance optimization và real-time coordination.
+\end{itemize}
+
+\textbf{Tại sao sử dụng BullMQ cho background jobs?}
+\begin{itemize}
+    \item Tạo embeddings cho tin nhắn mới không nên block việc gửi tin nhắn. BullMQ cho phép xử lý bất đồng bộ mà không ảnh hưởng đến user experience.
+    \item Xử lý tài liệu đính kèm (PDF, DOCX) có thể mất thời gian, phù hợp để đưa vào queue.
+    \item BullMQ cung cấp automatic retries, dead letter queue, và job scheduling cho các tác vụ phức tạp.
+\end{itemize}
+
+Với các đặc điểm như cần real-time messaging với horizontal scaling, tích hợp AI với RAG pipeline, xử lý tài liệu bất đồng bộ, và khả năng mở rộng, thì việc áp dụng mô hình kiến trúc phân lớp kết hợp Microservices trong xây dựng phân hệ truyền thông là hoàn toàn hợp lý. Kiến trúc này không chỉ giúp hệ thống dễ mở rộng, dễ bảo trì mà còn phù hợp để làm việc theo nhóm và phát triển chuyên nghiệp trong dài hạn.

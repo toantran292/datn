@@ -1,0 +1,40 @@
+\subsection{Các yêu cầu phi chức năng}
+
+\subsubsection{Yêu cầu thực thi}
+\begin{itemize}
+    \item Thiết bị sử dụng cần kết nối Internet ổn định.
+    \item Thời gian phản hồi yêu cầu không vượt quá 3 giây.
+    \item Kết quả từ chức năng tìm kiếm, xem workspace, xem báo cáo AI đảm bảo chính xác.
+    \item Ứng dụng hoạt động ổn định, không lỗi nghiêm trọng.
+    \item Hỗ trợ tối thiểu 1000 người dùng đồng thời.
+    \item Thời gian xử lý báo cáo AI không quá 30 giây.
+\end{itemize}
+
+\subsubsection{Yêu cầu an toàn}
+\begin{itemize}
+    \item Đảm bảo sao lưu và khôi phục dữ liệu an toàn khi nâng cấp hoặc bảo trì.
+    \item Khả năng mở rộng để xử lý lượng lớn dữ liệu workspace, tệp tin, thành viên.
+    \item Hệ thống ổn định, không chứa mã độc hoặc phần mềm độc hại.
+    \item Backup tự động hàng ngày, lưu trữ tối thiểu 30 ngày.
+    \item Mã hóa dữ liệu khi truyền tải (TLS 1.3) và lưu trữ (AES-256).
+\end{itemize}
+
+\subsubsection{Yêu cầu về giao diện}
+\begin{itemize}
+    \item Giao diện hiện đại, màu sắc hài hòa, phong cách chuyên nghiệp phù hợp doanh nghiệp.
+    \item Bố cục điều hướng, workspace, tệp tin, dashboard, báo cáo AI rõ ràng, dễ thao tác.
+    \item Hiển thị báo cáo AI trực quan với insights, action items và export mượt mà.
+    \item Đảm bảo nhất quán kiểu chữ, biểu tượng và màu sắc.
+    \item Hỗ trợ Dark Mode và Light Mode.
+\end{itemize}
+
+\subsubsection{Yêu cầu về tính bảo mật}
+\begin{itemize}
+    \item Phân quyền theo vai trò (Super Admin, Workspace Owner, Member).
+    \item Mã hóa mật khẩu an toàn (bcrypt với salt) trước khi lưu CSDL.
+    \item Tuân thủ quy định bảo vệ dữ liệu cá nhân như GDPR.
+    \item Hỗ trợ xác thực hai yếu tố (2FA) tùy chọn.
+    \item Tích hợp Google OAuth tuân thủ OAuth 2.0 và OpenID Connect.
+    \item Session token có thời hạn, làm mới định kỳ, hỗ trợ đăng xuất tất cả thiết bị.
+    \item API bảo vệ bằng JWT với thời hạn ngắn và refresh token.
+\end{itemize}

@@ -1,0 +1,21 @@
+\subsection{Môi trường vận hành}
+
+\begin{itemize}
+    \item Triển khai trên Linux (Ubuntu Server 22.04 LTS) hoặc containerized với Docker/Docker Compose.
+    \item Backend services (Messaging, WebSocket Gateway, AI Service) chạy trên Node.js runtime (v18 LTS hoặc cao hơn) với NestJS framework.
+    \item WebSocket server sử dụng Socket.io tích hợp với NestJS Gateway.
+    \item Cơ sở dữ liệu: PostgreSQL 15+ với pgvector extension để lưu trữ và truy vấn vector embedding.
+    \item Cache và Message Broker: Redis 7+ cho caching, session WebSocket và làm adapter cho Socket.io horizontal scaling.
+    \item Queue System: BullMQ (dựa trên Redis) để xử lý các tác vụ bất đồng bộ (tạo embedding, xử lý tài liệu).
+    \item Tích hợp với File Service từ phân hệ nền tảng để lưu trữ và truy xuất tệp đính kèm.
+    \item Trình duyệt hỗ trợ JavaScript và WebSocket: Chrome 90+, Firefox 88+, Edge 90+, Safari 14+.
+    \item Phát triển: Visual Studio Code hoặc Cursor cho cả Frontend (Next.js) và Backend (NestJS).
+    \item Build tools: npm hoặc yarn cho quản lý dependencies, Turbopack/Webpack cho bundling frontend.
+    \item Kiểm thử API trên Postman, kiểm thử WebSocket với wscat, testing tự động với Jest.
+    \item Kết nối Internet ổn định để gọi API AI Provider:
+    \begin{itemize}
+        \item OpenAI Embedding API (text-embedding-3-small/large) cho tạo vector embedding.
+        \item OpenAI Chat Completion API (GPT-4o-mini/GPT-4o) hoặc Google Gemini API cho tóm tắt và hỏi đáp.
+    \end{itemize}
+    \item Thư viện xử lý tài liệu: pdf-parse (PDF), mammoth (DOCX), tesseract.js (OCR cho hình ảnh).
+\end{itemize}

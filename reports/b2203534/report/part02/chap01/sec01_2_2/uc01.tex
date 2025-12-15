@@ -1,0 +1,57 @@
+% UC01: Đăng ký tài khoản
+\paragraph{Chức năng đăng ký tài khoản}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/uc01_register.png}
+    \caption{Sơ đồ use case chức năng đăng ký tài khoản}
+    \label{fig:uc01_register}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Bảng đặc tả chức năng đăng ký tài khoản},
+    label = {tab:uc01}
+]{
+    colspec = {|l|X|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+Tên chức năng & Đăng ký tài khoản \\
+ID & UC01 \\
+Mức độ cần thiết & Bắt buộc \\
+Người sử dụng & Khách truy cập hệ thống \\
+Phân loại & Đơn giản \\
+Các thành phần tham gia và mối quan tâm & \textbf{Khách:} Muốn tạo tài khoản mới để truy cập và sử dụng các tính năng của hệ thống. \\
+Mô tả tóm tắt & Chức năng cho phép khách đăng ký tài khoản mới bằng cách cung cấp thông tin cá nhân và xác thực email. \\
+Trigger & Khách nhấn nút "Đăng ký" hoặc link "Tạo tài khoản" trên trang đăng nhập. \\
+Kiểu sự kiện & External \\
+Luồng xử lý bình thường &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{enumerate}[nosep, leftmargin=*]
+    \item Khách truy cập trang đăng ký.
+    \item Khách nhập họ tên, email, mật khẩu và xác nhận mật khẩu.
+    \item Khách nhấn nút "Đăng ký".
+    \item Hệ thống kiểm tra tính hợp lệ của thông tin.
+    \item Hệ thống tạo tài khoản mới với trạng thái chưa xác thực.
+    \item Hệ thống gửi email chứa link xác thực đến địa chỉ email.
+    \item Khách mở email và nhấn link xác thực.
+    \item Hệ thống xác thực tài khoản và chuyển sang trang đăng nhập.
+\end{enumerate}
+\vspace{2pt}
+\end{minipage} \\
+Các luồng sự kiện con & N/A \\
+Luồng luân phiên/đặc biệt &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item 4a. Email đã tồn tại: Hệ thống thông báo lỗi và yêu cầu nhập email khác.
+    \item 4b. Mật khẩu không đủ mạnh: Hệ thống yêu cầu nhập mật khẩu đáp ứng yêu cầu.
+    \item 7a. Link xác thực hết hạn: Hệ thống cho phép gửi lại email xác thực.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Kết quả & Tài khoản mới được tạo thành công và người dùng có thể đăng nhập vào hệ thống. \\
+\end{longtblr}

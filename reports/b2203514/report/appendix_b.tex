@@ -1,0 +1,384 @@
+% Biến kiểm soát
+\newif\iflandscapepage
+\landscapepagefalse
+
+\setlength{\TPHorizModule}{1cm}
+\setlength{\TPVertModule}{1cm}
+
+\fancypagestyle{lscape}{%
+    \fancyhf{}
+    \renewcommand{\headrulewidth}{0pt}
+    \renewcommand{\footrulewidth}{0pt}
+    \fancyhead[C]{%
+        % Header bên trái trang (trên của landscape) - xoay 90 độ
+        \begin{textblock}{1}(1,1)
+            \rotatebox{90}{%
+                \parbox{27.5cm}{%
+                    \fontsize{10pt}{12pt}\selectfont\itshape
+                    Xây dựng Nền tảng SaaS tích hợp AI nhằm Thống nhất Quản lý Dự án Agile - Phân hệ truyền thông
+                    \vspace{2pt}
+                    \hrule
+                }%
+            }
+        \end{textblock}
+        % Footer bên phải trang (dưới của landscape) - xoay 90 độ
+        \begin{textblock}{1}(20,1)
+            \rotatebox{90}{%
+                \parbox{27.5cm}{%
+                    \hrule
+                    \vspace{2pt}
+                    Khưu Thị Bích Ngọc - B2203514 \hfill Trang \thepage
+                }%
+            }
+        \end{textblock}
+    }
+}
+
+\begin{landscape}
+\pagestyle{lscape}
+
+\phantomsection
+\setsection{Phụ lục B. Từ điển dữ liệu}
+\setcounter{section}{6}
+\setcounter{table}{0}
+\renewcommand{\thetable}{6.\arabic{table}}
+
+Phần này trình bày chi tiết mô tả dữ liệu cho các bảng của sơ đồ lớp của phân hệ truyền thông được trình bày ở Phần II - Chương III - Thiết kế cơ sở dữ liệu - Từ điển dữ liệu.
+
+\phantomsection
+\begin{longtblr}[
+  caption = {Bảng channels - Lưu trữ thông tin kênh trò chuyện},
+  label = {tab:dict_channels}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[1,l]X[0.7,c]X[0.7,c]X[0.7,c]X[0.7,c]X[1.2,l]X[2,l]},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Tên trường & Kiểu dữ liệu & Khóa chính & Khóa ngoại & Duy nhất & Bắt buộc & Bảng tham chiếu & Mô tả \\
+id & UUID & X & & X & X & & Mã định danh kênh \\
+work\-space\_id & UUID & & X & & X & work\-spaces & Work\-space chứa kênh \\
+name & VAR\-CHAR(100) & & & & X & & Tên kênh trò chuyện \\
+description & TEXT & & & & & & Mô tả về kênh \\
+type & VAR\-CHAR(20) & & & & X & & Loại kênh (PUBLIC, PRIVATE, PROJECT) \\
+is\_private & BOOLEAN & & & & X & & Kênh có phải riêng tư không \\
+ai\_enabled & BOOLEAN & & & & X & & Trạng thái bật/tắt AI As\-sis\-tant \\
+ai\_features & JSONB & & & & & & Cấu hình tính năng AI được phép \\
+created\_by & UUID & & X & & X & users & User tạo kênh \\
+archived\_at & TIME\-STAMP & & & & & & Thời điểm lưu trữ kênh \\
+created\_at & TIME\-STAMP & & & & X & & Ngày tạo kênh \\
+updated\_at & TIME\-STAMP & & & & X & & Ngày cập nhật gần nhất \\
+\end{longtblr}
+
+\phantomsection
+\begin{longtblr}[
+  caption = {Bảng channel\_members - Lưu trữ quan hệ thành viên và kênh},
+  label = {tab:dict_channel_members}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[1,l]X[0.7,c]X[0.7,c]X[0.7,c]X[0.7,c]X[1.2,l]X[2,l]},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Tên trường & Kiểu dữ liệu & Khóa chính & Khóa ngoại & Duy nhất & Bắt buộc & Bảng tham chiếu & Mô tả \\
+id & UUID & X & & X & X & & Mã quan hệ thành viên \\
+channel\_id & UUID & & X & & X & channels & Kênh được tham gia \\
+user\_id & UUID & & X & & X & users & User tham gia kênh \\
+role & VAR\-CHAR(20) & & & & X & & Vai trò (ADMIN, MEMBER) \\
+no\-ti\-fi\-ca\-tion\_level & VAR\-CHAR(20) & & & & X & & Mức thông báo (ALL, MENTIONS, NONE) \\
+joined\_at & TIME\-STAMP & & & & X & & Thời điểm tham gia kênh \\
+last\_read\_at & TIME\-STAMP & & & & & & Thời điểm đọc tin cuối \\
+last\_read\_mes\-sage\_id & UUID & & X & & & mes\-sages & Tin nhắn đã đọc cuối cùng \\
+\end{longtblr}
+
+\phantomsection
+\begin{longtblr}[
+  caption = {Bảng messages - Lưu trữ tin nhắn trong kênh},
+  label = {tab:dict_messages}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[1,l]X[0.7,c]X[0.7,c]X[0.7,c]X[0.7,c]X[1.2,l]X[2,l]},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Tên trường & Kiểu dữ liệu & Khóa chính & Khóa ngoại & Duy nhất & Bắt buộc & Bảng tham chiếu & Mô tả \\
+id & UUID & X & & X & X & & Mã định danh tin nhắn \\
+channel\_id & UUID & & X & & X & channels & Kênh chứa tin nhắn \\
+sender\_id & UUID & & X & & X & users & User gửi tin nhắn \\
+thread\_id & UUID & & X & & & threads & Thread chứa tin nhắn \\
+parent\_id & UUID & & X & & & mes\-sages & Tin nhắn cha (nếu reply) \\
+content & TEXT & & & & X & & Nội dung plain text \\
+content\_html & TEXT & & & & & & Nội dung có định dạng HTML \\
+mes\-sage\_type & VAR\-CHAR(20) & & & & X & & Loại (TEXT, SYSTEM, AI\_RESPONSE) \\
+meta\-data & JSONB & & & & & & Dữ liệu bổ sung (mentions, links) \\
+is\_pinned & BOOLEAN & & & & X & & Tin nhắn có được ghim không \\
+edited\_at & TIME\-STAMP & & & & & & Thời điểm chỉnh sửa \\
+deleted\_at & TIME\-STAMP & & & & & & Time\-stamp soft delete \\
+created\_at & TIME\-STAMP & & & & X & & Thời điểm gửi tin nhắn \\
+updated\_at & TIME\-STAMP & & & & X & & Ngày cập nhật gần nhất \\
+\end{longtblr}
+
+\phantomsection
+\begin{longtblr}[
+  caption = {Bảng threads - Lưu trữ luồng thảo luận},
+  label = {tab:dict_threads}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[1,l]X[0.7,c]X[0.7,c]X[0.7,c]X[0.7,c]X[1.2,l]X[2,l]},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Tên trường & Kiểu dữ liệu & Khóa chính & Khóa ngoại & Duy nhất & Bắt buộc & Bảng tham chiếu & Mô tả \\
+id & UUID & X & & X & X & & Mã định danh thread \\
+channel\_id & UUID & & X & & X & channels & Kênh chứa thread \\
+root\_mes\-sage\_id & UUID & & X & X & X & mes\-sages & Tin nhắn gốc tạo thread \\
+reply\_count & INTEGER & & & & X & & Số lượng tin trả lời \\
+par\-ti\-ci\-pant\_ids & UUID[] & & & & & & Danh sách user tham gia thread \\
+last\_reply\_at & TIME\-STAMP & & & & & & Thời điểm reply cuối cùng \\
+created\_at & TIME\-STAMP & & & & X & & Ngày tạo thread \\
+\end{longtblr}
+
+\phantomsection
+\begin{longtblr}[
+  caption = {Bảng reactions - Lưu trữ emoji reactions trên tin nhắn},
+  label = {tab:dict_reactions}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[1,l]X[0.7,c]X[0.7,c]X[0.7,c]X[0.7,c]X[1.2,l]X[2,l]},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Tên trường & Kiểu dữ liệu & Khóa chính & Khóa ngoại & Duy nhất & Bắt buộc & Bảng tham chiếu & Mô tả \\
+id & UUID & X & & X & X & & Mã định danh re\-ac\-tion \\
+mes\-sage\_id & UUID & & X & & X & mes\-sages & Tin nhắn được react \\
+user\_id & UUID & & X & & X & users & User thực hiện react \\
+emoji & VAR\-CHAR(50) & & & & X & & Mã emoji (thumbsup, heart...) \\
+created\_at & TIME\-STAMP & & & & X & & Thời điểm react \\
+\end{longtblr}
+
+\phantomsection
+\begin{longtblr}[
+  caption = {Bảng attachments - Lưu trữ metadata tệp đính kèm},
+  label = {tab:dict_attachments}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[1,l]X[0.7,c]X[0.7,c]X[0.7,c]X[0.7,c]X[1.2,l]X[2,l]},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Tên trường & Kiểu dữ liệu & Khóa chính & Khóa ngoại & Duy nhất & Bắt buộc & Bảng tham chiếu & Mô tả \\
+id & UUID & X & & X & X & & Mã định danh at\-tach\-ment \\
+mes\-sage\_id & UUID & & X & & X & mes\-sages & Tin nhắn chứa at\-tach\-ment \\
+file\_id & UUID & & X & & X & files & File trong File Service \\
+file\-name & VAR\-CHAR(255) & & & & X & & Tên file gốc \\
+mime\_type & VAR\-CHAR(100) & & & & X & & Loại MIME của file \\
+size & BIGINT & & & & X & & Kích thước file (bytes) \\
+thumb\-nail\_url & VAR\-CHAR(500) & & & & & & URL thumb\-nail (cho hình ảnh) \\
+pro\-ces\-sing\_status & VAR\-CHAR(20) & & & & X & & Trạng thái xử lý em\-bed\-ding \\
+created\_at & TIME\-STAMP & & & & X & & Thời điểm đính kèm \\
+\end{longtblr}
+
+\phantomsection
+\begin{longtblr}[
+  caption = {Bảng message\_embeddings - Lưu trữ vector embedding tin nhắn},
+  label = {tab:dict_message_embeddings}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[1,l]X[0.7,c]X[0.7,c]X[0.7,c]X[0.7,c]X[1.2,l]X[2,l]},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Tên trường & Kiểu dữ liệu & Khóa chính & Khóa ngoại & Duy nhất & Bắt buộc & Bảng tham chiếu & Mô tả \\
+id & UUID & X & & X & X & & Mã định danh em\-bed\-ding \\
+mes\-sage\_id & UUID & & X & & X & mes\-sages & Tin nhắn nguồn \\
+channel\_id & UUID & & X & & X & channels & Kênh (để filter khi search) \\
+chunk\_index & INTEGER & & & & X & & Thứ tự chunk trong tin nhắn \\
+chunk\_text & TEXT & & & & X & & Nội dung text của chunk \\
+em\-bed\-ding & VECTOR(1536) & & & & X & & Vector em\-bed\-ding (pgvector) \\
+token\_count & INTEGER & & & & X & & Số tokens trong chunk \\
+created\_at & TIME\-STAMP & & & & X & & Thời điểm tạo em\-bed\-ding \\
+\end{longtblr}
+
+\phantomsection
+\begin{longtblr}[
+  caption = {Bảng document\_chunks - Lưu trữ chunks từ tài liệu đính kèm},
+  label = {tab:dict_document_chunks}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[1,l]X[0.7,c]X[0.7,c]X[0.7,c]X[0.7,c]X[1.2,l]X[2,l]},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Tên trường & Kiểu dữ liệu & Khóa chính & Khóa ngoại & Duy nhất & Bắt buộc & Bảng tham chiếu & Mô tả \\
+id & UUID & X & & X & X & & Mã định danh chunk \\
+at\-tach\-ment\_id & UUID & & X & & X & at\-tach\-ments & At\-tach\-ment nguồn \\
+channel\_id & UUID & & X & & X & channels & Kênh (để filter khi search) \\
+chunk\_index & INTEGER & & & & X & & Thứ tự chunk trong tài liệu \\
+chunk\_text & TEXT & & & & X & & Nội dung text của chunk \\
+em\-bed\-ding & VECTOR(1536) & & & & X & & Vector em\-bed\-ding (pgvector) \\
+token\_count & INTEGER & & & & X & & Số tokens trong chunk \\
+meta\-data & JSONB & & & & & & Dữ liệu bổ sung (page, section) \\
+created\_at & TIME\-STAMP & & & & X & & Thời điểm tạo chunk \\
+\end{longtblr}
+
+\phantomsection
+\begin{longtblr}[
+  caption = {Bảng ai\_conversations - Lưu trữ log tương tác với AI Assistant},
+  label = {tab:dict_ai_conversations}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[1,l]X[0.7,c]X[0.7,c]X[0.7,c]X[0.7,c]X[1.2,l]X[2,l]},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Tên trường & Kiểu dữ liệu & Khóa chính & Khóa ngoại & Duy nhất & Bắt buộc & Bảng tham chiếu & Mô tả \\
+id & UUID & X & & X & X & & Mã định danh con\-ver\-sa\-tion \\
+channel\_id & UUID & & X & & X & channels & Kênh diễn ra tương tác \\
+user\_id & UUID & & X & & X & users & User đặt câu hỏi \\
+query & TEXT & & & & X & & Câu hỏi/yêu cầu của user \\
+response & TEXT & & & & X & & Câu trả lời của AI \\
+con\-text\_mes\-sage\_ids & UUID[] & & & & & & Danh sách mes\-sage IDs làm context \\
+source\_re\-fer\-ences & JSONB & & & & & & Tham chiếu nguồn (mes\-sage, chunk) \\
+model\_used & VAR\-CHAR(50) & & & & X & & Tên model LLM đã sử dụng \\
+tokens\_used & INTEGER & & & & X & & Số tokens tiêu thụ \\
+re\-sponse\_time\_ms & INTEGER & & & & & & Thời gian phản hồi (ms) \\
+created\_at & TIME\-STAMP & & & & X & & Thời điểm tương tác \\
+\end{longtblr}
+
+\phantomsection
+\begin{longtblr}[
+  caption = {Bảng mentions - Lưu trữ các mentions trong tin nhắn},
+  label = {tab:dict_mentions}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[1,l]X[0.7,c]X[0.7,c]X[0.7,c]X[0.7,c]X[1.2,l]X[2,l]},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Tên trường & Kiểu dữ liệu & Khóa chính & Khóa ngoại & Duy nhất & Bắt buộc & Bảng tham chiếu & Mô tả \\
+id & UUID & X & & X & X & & Mã định danh mention \\
+mes\-sage\_id & UUID & & X & & X & mes\-sages & Tin nhắn chứa mention \\
+user\_id & UUID & & X & & X & users & User được mention \\
+mention\_type & VAR\-CHAR(20) & & & & X & & Loại (USER, CHANNEL, EVERYONE) \\
+created\_at & TIME\-STAMP & & & & X & & Thời điểm mention \\
+\end{longtblr}
+
+\end{landscape}
+\pagestyle{fancy}
+
+\phantomsection
+\subsection*{Các yêu cầu ràng buộc cần thiết khi xử lý dữ liệu}
+
+Phần này mô tả các ràng buộc dữ liệu cần được đảm bảo khi xử lý và lưu trữ thông tin trong phân hệ truyền thông.
+
+\subsubsection*{Ràng buộc dữ liệu kênh trò chuyện (Channels)}
+
+\begin{itemize}
+    \item Thuộc tính \texttt{name} phải khác rỗng, có độ dài từ 2 đến 100 ký tự, không chứa ký tự đặc biệt ngoài dấu gạch ngang và gạch dưới.
+    \item Thuộc tính \texttt{work\-space\_id} phải là UUID hợp lệ và tham chiếu đến một work\-space tồn tại trong phân hệ nền tảng.
+    \item Thuộc tính \texttt{type} phải có một trong các giá trị: PUBLIC, PRIVATE, PROJECT.
+    \item Thuộc tính \texttt{is\_private} phải là giá trị boolean, mặc định là false.
+    \item Thuộc tính \texttt{ai\_enabled} phải là giá trị boolean, mặc định là true.
+    \item Thuộc tính \texttt{ai\_features} phải là dữ liệu JSONB hợp lệ chứa các boolean flags: sum\-ma\-ri\-za\-tion, action\_items, qa, document\_summary.
+    \item Thuộc tính \texttt{created\_by} phải là UUID hợp lệ tham chiếu đến user tồn tại trong hệ thống.
+    \item Thuộc tính \texttt{archived\_at} cho phép null, khi có giá trị thì kênh ở trạng thái lưu trữ (không hiển thị mặc định).
+\end{itemize}
+
+\subsubsection*{Ràng buộc dữ liệu thành viên kênh (Channel Members)}
+
+\begin{itemize}
+    \item Thuộc tính \texttt{channel\_id} và \texttt{user\_id} phải là UUID hợp lệ, tham chiếu đến các bản ghi tồn tại.
+    \item Cặp (\texttt{channel\_id}, \texttt{user\_id}) phải duy nhất để tránh duplicate mem\-ber\-ship.
+    \item Thuộc tính \texttt{role} phải có một trong các giá trị: ADMIN, MEMBER.
+    \item Thuộc tính \texttt{no\-ti\-fi\-ca\-tion\_level} phải có một trong các giá trị: ALL, MENTIONS, NONE. Mặc định là ALL.
+    \item Thuộc tính \texttt{joined\_at} phải là time\-stamp hợp lệ, không được null.
+    \item Thuộc tính \texttt{last\_read\_at} cho phép null, được cập nhật khi user đọc tin nhắn trong kênh.
+    \item Thuộc tính \texttt{last\_read\_mes\-sage\_id} cho phép null, phải là UUID tham chiếu đến mes\-sage tồn tại trong cùng channel.
+\end{itemize}
+
+\subsubsection*{Ràng buộc dữ liệu tin nhắn (Mes\-sages)}
+
+\begin{itemize}
+    \item Thuộc tính \texttt{channel\_id} phải là UUID hợp lệ tham chiếu đến channel tồn tại và chưa bị archived.
+    \item Thuộc tính \texttt{sender\_id} phải là UUID hợp lệ tham chiếu đến user là member của channel.
+    \item Thuộc tính \texttt{content} phải khác rỗng, có độ dài tối đa 10000 ký tự.
+    \item Thuộc tính \texttt{content\_html} cho phép null, nếu có phải là HTML hợp lệ đã được sanitize.
+    \item Thuộc tính \texttt{mes\-sage\_type} phải có một trong các giá trị: TEXT, SYSTEM, AI\_RE\-SPONSE.
+    \item Thuộc tính \texttt{meta\-data} phải là dữ liệu JSONB hợp lệ chứa mentions array, links array, và for\-mat\-ting info.
+    \item Thuộc tính \texttt{thread\_id} nếu có phải tham chiếu đến thread tồn tại trong cùng channel.
+    \item Thuộc tính \texttt{parent\_id} nếu có phải tham chiếu đến mes\-sage tồn tại trong cùng channel.
+    \item Thuộc tính \texttt{is\_pinned} phải là boolean, mặc định là false. Mỗi channel giới hạn tối đa 50 pinned mes\-sages.
+    \item Thuộc tính \texttt{deleted\_at} cho phép null, khi có giá trị tin nhắn hiển thị là ``This mes\-sage was deleted''.
+\end{itemize}
+
+\subsubsection*{Ràng buộc dữ liệu thread (Threads)}
+
+\begin{itemize}
+    \item Thuộc tính \texttt{channel\_id} phải là UUID hợp lệ tham chiếu đến channel tồn tại.
+    \item Thuộc tính \texttt{root\_mes\-sage\_id} phải là UUID duy nhất, tham chiếu đến mes\-sage tồn tại và chưa bị deleted.
+    \item Thuộc tính \texttt{reply\_count} phải là số nguyên không âm, khởi tạo bằng 0 và tự động tăng khi có reply mới.
+    \item Thuộc tính \texttt{par\-ti\-ci\-pant\_ids} phải là mảng các UUID hợp lệ, được cập nhật tự động khi có user mới reply.
+    \item Thuộc tính \texttt{last\_reply\_at} cho phép null, được cập nhật khi có reply mới trong thread.
+\end{itemize}
+
+\subsubsection*{Ràng buộc dữ liệu re\-ac\-tion (Re\-ac\-tions)}
+
+\begin{itemize}
+    \item Thuộc tính \texttt{mes\-sage\_id} phải là UUID hợp lệ tham chiếu đến mes\-sage tồn tại và chưa bị deleted.
+    \item Thuộc tính \texttt{user\_id} phải là UUID hợp lệ tham chiếu đến user là member của channel chứa mes\-sage.
+    \item Bộ ba (\texttt{mes\-sage\_id}, \texttt{user\_id}, \texttt{emoji}) phải duy nhất để tránh duplicate re\-ac\-tions.
+    \item Thuộc tính \texttt{emoji} phải khác rỗng, có độ dài từ 1 đến 50 ký tự, chỉ chứa emoji codes hợp lệ.
+\end{itemize}
+
+\subsubsection*{Ràng buộc dữ liệu tệp đính kèm (At\-tach\-ments)}
+
+\begin{itemize}
+    \item Thuộc tính \texttt{mes\-sage\_id} phải là UUID hợp lệ tham chiếu đến mes\-sage tồn tại.
+    \item Thuộc tính \texttt{file\_id} phải là UUID hợp lệ tham chiếu đến file trong File Service của phân hệ nền tảng.
+    \item Thuộc tính \texttt{file\-name} phải khác rỗng, có độ dài tối đa 255 ký tự.
+    \item Thuộc tính \texttt{mime\_type} phải khác rỗng và tuân theo chuẩn MIME type (ví dụ: ap\-pli\-ca\-tion/pdf, image/png).
+    \item Thuộc tính \texttt{size} phải là số nguyên dương, được tính bằng bytes, giới hạn tối đa 50MB per file.
+    \item Thuộc tính \texttt{thumb\-nail\_url} cho phép null, nếu có phải là URL hợp lệ pointing to image.
+    \item Thuộc tính \texttt{pro\-ces\-sing\_status} phải có một trong các giá trị: PENDING, PR\-OCES\-SING, COM\-PLETED, FAILED.
+\end{itemize}
+
+\subsubsection*{Ràng buộc dữ liệu vector em\-bed\-ding (Mes\-sage Em\-bed\-dings \& Document Chunks)}
+
+\begin{itemize}
+    \item Thuộc tính \texttt{mes\-sage\_id} hoặc \texttt{at\-tach\-ment\_id} phải là UUID hợp lệ tham chiếu đến entity nguồn tồn tại.
+    \item Thuộc tính \texttt{channel\_id} phải là UUID hợp lệ, được de\-nor\-ma\-lize từ mes\-sage/at\-tach\-ment để tối ưu query.
+    \item Thuộc tính \texttt{chunk\_index} phải là số nguyên không âm, bắt đầu từ 0.
+    \item Cặp (\texttt{mes\-sage\_id}/\texttt{at\-tach\-ment\_id}, \texttt{chunk\_index}) phải duy nhất.
+    \item Thuộc tính \texttt{chunk\_text} phải khác rỗng, có độ dài từ 10 đến 2000 ký tự.
+    \item Thuộc tính \texttt{em\-bed\-ding} phải là vector 1536 chiều (tương thích OpenAI text-em\-bed\-ding-3-small).
+    \item Thuộc tính \texttt{token\_count} phải là số nguyên dương, thường từ 50 đến 500 tokens.
+    \item Thuộc tính \texttt{meta\-data} (cho document\_chunks) phải là JSONB hợp lệ chứa page\_number, section\_title nếu có.
+\end{itemize}
+
+\subsubsection*{Ràng buộc dữ liệu AI con\-ver\-sa\-tion (AI Con\-ver\-sa\-tions)}
+
+\begin{itemize}
+    \item Thuộc tính \texttt{channel\_id} phải là UUID hợp lệ tham chiếu đến channel có ai\_enabled = true.
+    \item Thuộc tính \texttt{user\_id} phải là UUID hợp lệ tham chiếu đến user là member của channel.
+    \item Thuộc tính \texttt{query} phải khác rỗng, có độ dài từ 3 đến 2000 ký tự.
+    \item Thuộc tính \texttt{response} phải khác rỗng, có độ dài tối đa 10000 ký tự.
+    \item Thuộc tính \texttt{con\-text\_mes\-sage\_ids} phải là mảng các UUID hợp lệ tham chiếu đến mes\-sages trong cùng channel.
+    \item Thuộc tính \texttt{source\_re\-fer\-ences} phải là JSONB hợp lệ với structure: \{mes\-sage\_id, chunk\_id, re\-le\-vance\_score\}[].
+    \item Thuộc tính \texttt{model\_used} phải có một trong các giá trị: gpt-4o-mini, gpt-4o, gpt-4-turbo.
+    \item Thuộc tính \texttt{tokens\_used} phải là số nguyên dương (prompt\_tokens + com\-ple\-ti\-on\_\-to\-kens).
+    \item Thuộc tính \texttt{re\-sponse\_time\_ms} cho phép null, nếu có phải là số nguyên dương.
+\end{itemize}
+
+\subsubsection*{Ràng buộc dữ liệu mention (Mentions)}
+
+\begin{itemize}
+    \item Thuộc tính \texttt{mes\-sage\_id} phải là UUID hợp lệ tham chiếu đến mes\-sage tồn tại.
+    \item Thuộc tính \texttt{user\_id} phải là UUID hợp lệ tham chiếu đến user tồn tại trong hệ thống.
+    \item Thuộc tính \texttt{mention\_type} phải có một trong các giá trị: USER, CHANNEL, EVERYONE.
+    \item Cặp (\texttt{mes\-sage\_id}, \texttt{user\_id}) phải duy nhất để tránh duplicate mentions trong cùng mes\-sage.
+    \item Nếu \texttt{mention\_type} là EVERYONE, chỉ user có role ADMIN trong channel mới được phép tạo.
+\end{itemize}
+
+\subsubsection*{Ràng buộc chung cho phân hệ truyền thông}
+
+\begin{itemize}
+    \item Mọi bảng phải có primary key là UUID để tránh enu\-me\-ra\-tion attacks và đảm bảo tính duy nhất.
+    \item Mọi bảng phải có \texttt{created\_at} time\-stamp để tracking thời gian tạo.
+    \item Các bảng Mes\-sage và Channel có \texttt{updated\_at} và \texttt{deleted\_at} để support soft delete.
+    \item Foreign key tham chiếu đến phân hệ nền tảng (users, work\-spaces, files) không có FK constraint để loose coupling.
+    \item Các trường em\-bed\-ding (VECTOR) phải được index với HNSW algorithm để tối ưu si\-mi\-la\-ri\-ty search.
+    \item Trường content trong mes\-sages phải có GIN index để support full-text search.
+    \item Com\-po\-site index (channel\_id, created\_at DESC) trên mes\-sages để tối ưu pa\-gi\-na\-tion.
+    \item Rate limiting: mỗi user tối đa 60 mes\-sages/phút, 10 AI requests/giờ.
+    \item Dữ liệu JSONB phải được validate schema trước khi lưu để đảm bảo tính toàn vẹn.
+\end{itemize}

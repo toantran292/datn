@@ -1,0 +1,55 @@
+% UC02: Đăng nhập
+\paragraph{Chức năng đăng nhập}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/uc02_login.png}
+    \caption{Sơ đồ use case chức năng đăng nhập}
+    \label{fig:uc02_login}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Bảng đặc tả chức năng đăng nhập},
+    label = {tab:uc02}
+]{
+    colspec = {|l|X|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+Tên chức năng & Đăng nhập \\
+ID & UC02 \\
+Mức độ cần thiết & Bắt buộc \\
+Người sử dụng & Khách đã có tài khoản trong hệ thống \\
+Phân loại & Đơn giản \\
+Các thành phần tham gia và mối quan tâm & \textbf{Khách:} Muốn đăng nhập vào hệ thống để sử dụng các chức năng. \\
+Mô tả tóm tắt & Chức năng cho phép người dùng xác thực danh tính bằng email và mật khẩu để truy cập hệ thống. \\
+Trigger & Khách truy cập trang đăng nhập hoặc nhấn nút "Đăng nhập". \\
+Kiểu sự kiện & External \\
+Luồng xử lý bình thường &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{enumerate}[nosep, leftmargin=*]
+    \item Khách truy cập trang đăng nhập.
+    \item Khách nhập email và mật khẩu.
+    \item Khách nhấn nút "Đăng nhập".
+    \item Hệ thống xác thực thông tin đăng nhập.
+    \item Hệ thống tạo phiên làm việc mới.
+    \item Hệ thống chuyển hướng đến trang Dash\-board.
+\end{enumerate}
+\vspace{2pt}
+\end{minipage} \\
+Các luồng sự kiện con & N/A \\
+Luồng luân phiên/đặc biệt &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item 4a. Thông tin không chính xác: Hệ thống thông báo lỗi đăng nhập.
+    \item 4b. Tài khoản chưa xác thực: Hệ thống yêu cầu xác thực email trước.
+    \item 4c. Tài khoản bị khóa: Hệ thống thông báo và không cho phép đăng nhập.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Kết quả & Người dùng đăng nhập thành công và được chuyển đến Dash\-board. \\
+\end{longtblr}

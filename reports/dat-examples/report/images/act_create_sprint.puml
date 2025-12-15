@@ -1,0 +1,41 @@
+@startuml act_create_sprint
+|Người dùng|
+start
+:Chọn chức năng tạo Sprint;
+|Giao diện người dùng|
+:Hiển thị form tạo Sprint;
+|Người dùng|
+:Nhập thông tin Sprint
+(tên, goal, start date, end date);
+:Nhấn nút "Create Sprint";
+|Giao diện người dùng|
+:Gửi dữ liệu đến server;
+|Hệ thống xử lý|
+:Kiểm tra dữ liệu hợp lệ;
+if (Dữ liệu hợp lệ?) then (không)
+  |Giao diện người dùng|
+  :Hiển thị thông báo lỗi;
+  |Người dùng|
+  :Sửa thông tin;
+  stop
+else (có)
+  :Kiểm tra ngày hợp lệ
+  (start < end);
+  if (Ngày hợp lệ?) then (không)
+    |Giao diện người dùng|
+    :Thông báo lỗi ngày;
+    |Người dùng|
+    :Sửa thông tin;
+    stop
+  else (có)
+    :Tạo sprint với
+    status = FUTURE;
+    :Tạo audit log;
+    |Giao diện người dùng|
+    :Thông báo tạo thành công;
+    :Cập nhật danh sách sprints;
+    |Người dùng|
+    stop
+  endif
+endif
+@enduml
