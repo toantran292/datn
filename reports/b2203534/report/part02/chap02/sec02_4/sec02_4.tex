@@ -1,0 +1,25 @@
+\subsection{Giới thiệu về cơ sở dữ liệu}
+
+\subsubsection{Khái quát}
+
+PostgreSQL là một hệ quản trị cơ sở dữ liệu quan hệ (RDBMS) mã nguồn mở mạnh mẽ với hơn 35 năm phát triển, nổi tiếng với độ tin cậy, tính toàn vẹn dữ liệu, và bộ tính năng phong phú. PostgreSQL đảm bảo ACID compliance (Atomicity, Consistency, Isolation, Durability) cho transactions, có tính extensibility cao với khả năng tạo custom functions, data types, operators và extensions, hỗ trợ JSON/JSONB để lưu trữ và query dữ liệu JSON hiệu quả kết hợp ưu điểm của cả SQL và NoSQL, cung cấp built-in full-text search capabilities, hỗ trợ advanced indexing với nhiều loại indexes (B-tree, Hash, GiST, SP-GiST, GIN, BRIN), và sử dụng MVCC (Multi-Version Concurrency Control) cho phép đọc và ghi đồng thời mà không lock dữ liệu.
+
+Redis (Remote Dictionary Server) là một in-memory data structure store được sử dụng như database, cache, và message broker. Redis lưu trữ dữ liệu trong RAM cho phép đọc/ghi cực nhanh với latency dưới millisecond, hỗ trợ nhiều data structures như Strings, Lists, Sets, Sorted Sets, Hashes, và Streams. Sự kết hợp giữa PostgreSQL và Redis trong một hệ thống tạo nên kiến trúc hybrid database mạnh mẽ: PostgreSQL làm persistent storage với ACID guarantees, Redis làm caching layer và real-time data processing.
+
+\subsubsection{Ứng dụng và use cases}
+
+Redis được sử dụng rộng rãi trong các ứng dụng web hiện đại cho nhiều mục đích khác nhau: session storage để lưu trữ user sessions với fast access, caching cho database query results và API responses giúp giảm load lên database chính, rate limiting để kiểm soát số lượng requests từ clients, real-time leaderboards với Sorted Sets, Pub/Sub messaging cho real-time communication giữa các services, và job queues để xử lý background tasks. Trong kiến trúc SaaS, Redis đóng vai trò quan trọng trong việc cải thiện performance và scalability của hệ thống.
+
+\subsubsection{ORM và data access layer}
+
+ORM (Object-Relational Mapping) là kỹ thuật ánh xạ giữa object-oriented program\-ming models và relational database tables, giúp developers làm việc với database thông qua objects thay vì raw SQL queries. Hệ thống sử dụng hai ORM solutions khác nhau phù hợp với từng tech stack.
+
+Spring Data JPA kết hợp với Hibernate được sử dụng trong Account Service (Spring Boot). JPA (Java Persistence API) là specification cho ORM trong Java, trong khi Hibernate là implementation phổ biến nhất của JPA. Entity là Java class được annotate với @Entity để map với database table, Repository Interface extends JpaRepository và Spring tự động implement các CRUD operations, Query Methods tự động generate queries từ method names giúp giảm boilerplate code, và @Query annotation cho phép viết custom JPQL hoặc native SQL queries khi cần.
+
+Prisma ORM được sử dụng trong các NestJS services, là một modern ORM cho Node.js và TypeScript với type-safe database client. Prisma Schema file định nghĩa data models và database connection bằng declarative syntax, Prisma Client là auto-generated type-safe database client, Prisma Migrate là database migration tool tự động tạo và apply migrations, Prisma Studio cung cấp GUI để browse và edit data, và tính năng Type Safety với full TypeScript support đảm bảo compile-time checking cho database operations.
+
+\subsubsection{Vận dụng vào đề tài}
+
+Hệ thống database được thiết kế theo kiến trúc hybrid kết hợp PostgreSQL và Redis để tối ưu cả về performance và data integrity. PostgreSQL đóng vai trò persistent storage chính lưu trữ toàn bộ dữ liệu quan trọng như users, workspaces, members, files metadata, permissions, notifications, reports, và audit logs. Dữ liệu được tổ chức theo schema relational với foreign keys để đảm bảo referential integrity, sử dụng JSONB columns cho flexible data như workspace settings và report content.
+
+Redis được sử dụng làm caching và session layer với nhiều mục đích: session storage cho user authentication với JWT refresh tokens, caching cho frequently accessed data như workspace info và user permissions để giảm database queries, rate limiting cho API requests sử dụng Redis counters với TTL, và Pub/Sub messaging cho real-time notifications giữa Notification Service và clients. ORM layer được implement khác nhau cho từng service: Account Service sử dụng Spring Data JPA và Hibernate với Flyway migrations để quản lý database schema changes, trong khi các NestJS services sử dụng Prisma ORM với Prisma Migrate. Cả hai ORM đều cung cấp type-safe database access và automatic migration management, đảm bảo data integrity và giảm thiểu lỗi runtime.

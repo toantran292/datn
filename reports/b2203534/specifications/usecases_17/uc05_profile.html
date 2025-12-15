@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>UC05 - Cập nhật thông tin cá nhân</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; font-size: 13pt; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h3 { font-size: 14pt; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { border: 1px solid #000; padding: 8px; text-align: left; vertical-align: top; }
+        .caption { font-style: italic; font-weight: bold; text-align: center; margin: 10px 0; }
+        .figure { text-align: center; margin: 15px 0; }
+        .figure img { max-width: 100%; }
+        ol, ul { margin: 5px 0; padding-left: 20px; }
+    </style>
+</head>
+<body>
+
+<h3>- Chức năng cập nhật thông tin cá nhân</h3>
+
+<div class="figure">
+    <img src="uc05_profile.png" alt="Sơ đồ Use Case cập nhật thông tin">
+    <p class="caption">Hình 3.5. Sơ đồ use case chức năng cập nhật thông tin cá nhân</p>
+</div>
+
+<p class="caption">Bảng 3.5. Bảng đặc tả chức năng cập nhật thông tin cá nhân</p>
+
+<table>
+    <tr>
+        <td><b>Tên chức năng:</b> Cập nhật thông tin cá nhân</td>
+        <td><b>ID:</b> UC05</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Mức độ cần thiết:</b> Bắt buộc</td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <td><b>Người sử dụng:</b> Người dùng đã đăng nhập.</td>
+        <td><b>Phân loại:</b> Đơn giản</td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <td colspan="2"><b>Các thành phần tham gia và mối quan tâm:</b>
+            <ul>
+                <li><b>Người dùng:</b> Muốn cập nhật thông tin cá nhân như họ tên, số điện thoại, ảnh đại diện.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Mô tả tóm tắt:</b> Chức năng cho phép người dùng chỉnh sửa và cập nhật thông tin hồ sơ cá nhân.</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Trigger:</b> Người dùng truy cập trang "Thông tin cá nhân" trong cài đặt.</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Kiểu sự kiện:</b> External</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Luồng xử lý bình thường của sự kiện:</b>
+            <ol>
+                <li>Người dùng truy cập trang thông tin cá nhân.</li>
+                <li>Hệ thống hiển thị thông tin hiện tại.</li>
+                <li>Người dùng chỉnh sửa các trường thông tin cần thay đổi.</li>
+                <li>Người dùng nhấn nút "Lưu thay đổi".</li>
+                <li>Hệ thống kiểm tra và lưu thông tin mới.</li>
+                <li>Hệ thống ghi audit log và thông báo thành công.</li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Các luồng sự kiện con (Subflows):</b>
+            <ul>
+                <li>Upload avatar: Người dùng có thể tải lên ảnh đại diện mới.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Luồng luân phiên/đặc biệt (Alternative/Exceptional flows):</b>
+            <ul>
+                <li>3a. Ảnh upload không đúng định dạng: Hệ thống thông báo lỗi.</li>
+                <li>5a. Dữ liệu không hợp lệ: Hệ thống hiển thị lỗi validation.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Kết quả:</b> Thông tin cá nhân được cập nhật thành công.</td>
+    </tr>
+</table>
+
+</body>
+</html>

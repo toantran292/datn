@@ -1,0 +1,36 @@
+\subsection{Yêu cầu chức năng}
+
+\subsubsection{Sơ đồ trường hợp sử dụng}
+
+Dựa trên mô tả bài toán ở mục 1.1, phân hệ truyền thông có 2 tác nhân chính (Workspace Owner/Channel Admin, Member) và các hệ thống bên ngoài tương tác với hệ thống. Các yêu cầu chức năng được phân loại theo từng tác nhân và được biểu diễn thông qua các sơ đồ trường hợp sử dụng (use case) dưới đây.
+
+\begin{itemize}
+    \item \textbf{Sơ đồ trường hợp sử dụng tổng quan:} Sơ đồ này mô tả toàn bộ các chức năng chính của hệ thống và mối quan hệ giữa các tác nhân với hệ thống.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{images/usecase_tongquan.png}
+        \caption{Sơ đồ trường hợp sử dụng tổng quan của phân hệ truyền thông}
+        \label{fig:usecase_tongquan}
+    \end{figure}
+
+    \item \textbf{Sơ đồ trường hợp sử dụng của Workspace Owner / Channel Admin:}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.7\textwidth]{images/usecase_channel_admin.png}
+        \caption{Sơ đồ trường hợp sử dụng của Workspace Owner / Channel Admin}
+        \label{fig:usecase_channel_admin}
+    \end{figure}
+
+    \item \textbf{Sơ đồ trường hợp sử dụng của Member:}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{images/usecase_member.png}
+        \caption{Sơ đồ trường hợp sử dụng của Member}
+        \label{fig:usecase_member}
+    \end{figure}
+
+    \item \textbf{Tích hợp với các hệ thống bên ngoài:} Ngoài hai tác nhân chính, phân hệ truyền thông còn tương tác với các hệ thống bên ngoài để cung cấp các chức năng mở rộng. Các hệ thống bên ngoài bao gồm: (1) File Service từ phân hệ nền tảng thực hiện lưu trữ, truy xuất và xóa tệp đính kèm; (2) AI Provider như OpenAI API hoặc Gemini API thực hiện tạo embedding cho tin nhắn và tài liệu phục vụ semantic search, đồng thời sinh văn bản (Chat Completion) để tóm tắt và trả lời câu hỏi theo kiến trúc RAG; (3) Các phân hệ chức năng khác như quản lý dự án và họp trực tuyến có thể gửi sự kiện để hiển thị thông báo hoặc tự động tạo tin nhắn trong kênh liên quan, đồng thời phân hệ truyền thông cũng cung cấp dữ liệu hội thoại khi được yêu cầu.
+\end{itemize}

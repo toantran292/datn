@@ -1,0 +1,63 @@
+@startuml usecase_external
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam usecase {
+    BackgroundColor #FEFEFE
+    BorderColor #333333
+}
+skinparam rectangle {
+    BackgroundColor #F8F8F8
+    BorderColor #666666
+}
+skinparam package {
+    BackgroundColor #FDF4E8
+    BorderColor #D9A04A
+}
+
+title <b>Sơ đồ Use Case - Tích hợp hệ thống bên ngoài</b>
+
+actor "File Service\n(Phân hệ nền tảng)" as FileService
+actor "AI Provider\n(OpenAI/Gemini)" as AIProvider
+actor "Các phân hệ khác\n(Project, Meeting)" as OtherModules
+
+rectangle "Phân hệ Truyền thông" {
+    package "Tích hợp File Service" {
+        usecase "UC01: Lưu trữ\ntệp đính kèm" as UC01
+        usecase "UC02: Truy xuất tệp" as UC02
+        usecase "UC03: Xóa tệp" as UC03
+    }
+    
+    package "Tích hợp AI Provider" {
+        usecase "UC04: Tạo embedding\ncho tin nhắn" as UC04
+        usecase "UC05: Tạo embedding\ncho tài liệu" as UC05
+        usecase "UC06: Sinh văn bản\n(Chat Completion)" as UC06
+    }
+    
+    package "Tích hợp phân hệ khác" {
+        usecase "UC07: Nhận sự kiện\ntừ phân hệ khác" as UC07
+        usecase "UC08: Tạo tin nhắn\ntự động" as UC08
+        usecase "UC09: Cung cấp dữ liệu\nhội thoại" as UC09
+    }
+}
+
+' File Service relationships
+FileService --> UC01
+FileService --> UC02
+FileService --> UC03
+
+' AI Provider relationships
+AIProvider --> UC04
+AIProvider --> UC05
+AIProvider --> UC06
+
+' Other modules relationships
+OtherModules --> UC07
+OtherModules --> UC09
+
+' Extend
+UC08 .up.> UC07 : <<extend>>
+
+@enduml

@@ -1,0 +1,59 @@
+\paragraph{UC09: Xem/tải tệp}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\textwidth]{images/UC09.png}
+    \caption{Sơ đồ use case UC09 - Xem/tải tệp}
+    \label{fig:uc09}
+\end{figure}
+
+\begin{adjustwidth}{-1.5cm}{-0.5cm}
+\begin{longtblr}[
+    caption = {Đặc tả use case UC09 - Xem/tải tệp},
+    label = {tab:uc09}
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Xem/tải tệp} \\\hline
+ID & UC09 \\\hline
+Người sử dụng & Member \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Đơn giản \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{Member:} Muốn xem trước nội dung tệp hoặc tải tệp về máy. \\
+    + \textbf{File Service:} Cung cấp nội dung tệp để xem và tải.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Cho phép Member xem trước (preview) nội dung các tệp đính kèm trực tiếp trong chat và tải tệp về máy tính. \\\hline
+Trigger & Member click vào tệp đính kèm trong tin nhắn. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item Member click vào tệp đính kèm trong tin nhắn.
+        \item Hệ thống xác định loại tệp.
+        \item Hệ thống hiển thị preview tệp (hình ảnh, PDF, văn bản).
+        \item Member xem nội dung tệp trong modal/lightbox.
+        \item Member có thể nhấn "Tải về" để download file.
+        \item Hệ thống gọi File Service để lấy file và tải về máy Member.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{A1}} -- Không hỗ trợ preview: Hệ thống hiển thị icon file và nút "Tải về" thay vì preview.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Member xem được nội dung tệp hoặc tải tệp về máy thành công. \\\hline
+\end{longtblr}
+\end{adjustwidth}

@@ -1,0 +1,46 @@
+\phantomsection
+\subsection*{3. Mục tiêu đề tài}
+\addcontentsline{toc}{subsection}{3. Mục tiêu đề tài}
+\setcounter{subsection}{3}
+\setcounter{subsubsection}{0}
+\setcounter{figure}{0}
+
+\subsubsection{Mục tiêu tổng quát}
+
+Phát triển phân hệ truyền thông cho một nền tảng SaaS tích hợp AI nhằm thống nhất quản lý dự án Agile, đóng vai trò hệ thống nhắn tin tập trung cho phép các thành viên dự án trao đổi thông tin theo kênh, chia sẻ tệp đính kèm và tận dụng AI để tóm tắt hội thoại, phân tích tài liệu và trả lời câu hỏi dựa trên ngữ cảnh. Phân hệ này hướng tới việc giảm phân mảnh kênh liên lạc, tập trung hóa lịch sử trao đổi và hỗ trợ người dùng nắm bắt thông tin nhanh chóng mà không cần đọc lại toàn bộ tin nhắn hay mở từng tệp riêng lẻ.
+
+\subsubsection{Mục tiêu cụ thể}
+
+\textbf{Mục tiêu chuyên môn:}
+
+\begin{itemize}
+    \item Rèn luyện kỹ năng thiết kế và triển khai hệ thống theo kiến trúc microservice, chú trọng khả năng mở rộng, hiệu năng và truyền thông thời gian thực. Xây dựng phân hệ truyền thông với backend sử dụng NodeJS/NestJS, giao tiếp qua API RESTful kết hợp WebSocket cho tính năng chat real-time.
+
+    \item Thiết kế và triển khai dịch vụ messaging đảm nhận quản lý kênh trò chuyện (channel), tin nhắn, thread và các tương tác trong cuộc hội thoại; hỗ trợ tạo kênh theo dự án, kênh riêng tư và kênh công khai trong workspace.
+
+    \item Xây dựng hệ thống truyền thông thời gian thực sử dụng WebSocket, cho phép người dùng gửi và nhận tin nhắn tức thì, hiển thị trạng thái đang nhập (typing indicator), cập nhật danh sách tin nhắn mới và đồng bộ trạng thái đã đọc giữa các thiết bị.
+
+    \item Xây dựng dịch vụ file-attachment cho phép người dùng gửi tệp đính kèm trực tiếp trong cuộc trò chuyện (tài liệu, hình ảnh, file biên bản, v.v.), lưu trữ an toàn và hỗ trợ xem trước nội dung ngay trong khung chat.
+
+    \item Phát triển dịch vụ AI tích hợp với các nhà cung cấp bên ngoài để thực hiện các tác vụ: tóm tắt đoạn hội thoại dài, trích xuất ý chính và danh sách công việc từ cuộc thảo luận, phân tích nội dung tệp đính kèm và trả lời câu hỏi dựa trên ngữ cảnh trao đổi trong kênh.
+
+    \item Xây dựng cơ chế tìm kiếm và tra cứu lịch sử hội thoại, cho phép người dùng tìm kiếm tin nhắn theo từ khóa, theo kênh, theo khoảng thời gian hoặc theo người gửi để nhanh chóng truy xuất thông tin cần thiết.
+
+    \item Phát triển giao diện chat bằng React/NextJS với trải nghiệm người dùng hiện đại, bao gồm: danh sách kênh, khung trò chuyện thời gian thực, khu vực xem tệp đính kèm và panel hiển thị tóm tắt hoặc gợi ý từ AI.
+
+    \item Nâng cao kỹ năng viết tài liệu chuyên môn (tài liệu đặc tả, thiết kế, hướng dẫn triển khai) và kỹ năng quản lý tiến độ, lập kế hoạch thực hiện đồ án tốt nghiệp.
+\end{itemize}
+
+\textbf{Mục tiêu về sản phẩm:}
+
+\begin{itemize}
+    \item Xây dựng một phân hệ truyền thông hoàn chỉnh, có thể triển khai độc lập nhưng sẵn sàng tích hợp với các phân hệ quản lý dự án, nền tảng và họp trực tuyến. Phân hệ cho phép người dùng tạo và quản lý các kênh trao đổi gắn với từng dự án hoặc workspace, gửi tin nhắn và tương tác trong thời gian thực.
+
+    \item Cung cấp khả năng gửi và quản lý tệp đính kèm trực tiếp trong cuộc trò chuyện, hỗ trợ nhiều định dạng tệp (tài liệu văn bản, hình ảnh, PDF, file biên bản họp, v.v.) với tính năng xem trước và tải về.
+
+    \item Tích hợp AI có khả năng tự động tóm tắt các đoạn hội thoại dài, trích xuất ý chính và danh sách công việc, đồng thời đọc và phân tích những tệp được tải lên để trả lời câu hỏi hoặc tạo bản tóm tắt tài liệu ngay trong khung chat.
+
+    \item Cung cấp hệ thống tìm kiếm và tra cứu lịch sử hội thoại hiệu quả, giúp người dùng nhanh chóng tìm lại các cuộc thảo luận, quyết định quan trọng hoặc tài liệu đã chia sẻ trước đó mà không cần cuộn qua hàng trăm tin nhắn.
+
+    \item Đảm bảo hệ thống hoạt động ổn định, có khả năng mở rộng trong tương lai, đáp ứng tốt yêu cầu tích hợp với các phân hệ khác trong nền tảng SaaS quản lý dự án; đồng thời cung cấp bộ tài liệu triển khai và hướng dẫn sử dụng để có thể chuyển giao và phát triển tiếp sau khi hoàn thành đề tài.
+\end{itemize}

@@ -1,0 +1,29 @@
+% !TEX root = ../main.tex
+% Redefine subsection and subsubsection numbering for Part 1 only (remove section number)
+\renewcommand{\thesubsection}{\arabic{subsection}}
+\renewcommand{\thesubsubsection}{\thesubsection.\arabic{subsubsection}}
+
+\phantomsection
+\addcontentsline{toc}{section}{Phần 1: GIỚI THIỆU}
+\section*{Phần 1: GIỚI THIỆU}
+
+% Đặt văn đề
+\input{part01/part01/part01.tex}
+
+% Lịch sử giải quyết vấn đề
+\input{part01/part02/part02.tex}
+
+% Mục tiêu đề tài
+\input{part01/part03/part03.tex}
+
+% Đối tượng và phạm vi nghiên cứu
+\input{part01/part04/part04.tex}
+
+% Quy trình nghiên cứu và công nghệ sử dụng
+\input{part01/part05/part05.tex}
+
+% Những đóng góp chính của đề tài
+\input{part01/part06/part06.tex}
+
+% Bố cục quyển báo cáo
+\input{part01/part07/part07.tex}

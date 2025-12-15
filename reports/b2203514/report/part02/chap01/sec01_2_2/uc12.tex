@@ -1,0 +1,60 @@
+\paragraph{UC12: Trích xuất action items}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.3\textwidth]{images/UC12.png}
+    \caption{Sơ đồ use case UC12 - Trích xuất action items}
+    \label{fig:uc12}
+\end{figure}
+
+\begin{adjustwidth}{-1.5cm}{-0.5cm}
+\begin{longtblr}[
+    caption = {Đặc tả use case UC12 - Trích xuất action items},
+    label = {tab:uc12}
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Trích xuất action items} \\\hline
+ID & UC12 \\\hline
+Người sử dụng & Member \\\hline
+Mức độ cần thiết & Quan trọng \\\hline
+Phân loại & Phức tạp \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{Member:} Muốn trích xuất danh sách công việc, nhiệm vụ từ cuộc thảo luận để theo dõi và thực hiện. \\
+    + \textbf{AI Provider:} Phân tích và trích xuất action items.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Cho phép Member yêu cầu AI phân tích cuộc hội thoại và trích xuất danh sách các công việc, nhiệm vụ (action items) được đề cập, bao gồm người chịu trách nhiệm và deadline nếu có. \\\hline
+Trigger & Member chọn "Trích xuất action items" trong một kênh hoặc thread. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item Member mở panel AI Assistant trong kênh.
+        \item Member chọn "Trích xuất action items".
+        \item Hệ thống thu thập nội dung hội thoại gần đây.
+        \item Hệ thống gửi nội dung đến AI Service.
+        \item AI Service phân tích và trích xuất các công việc.
+        \item Hệ thống hiển thị danh sách action items với format: Task - Người thực hiện - Deadline.
+        \item Member có thể copy hoặc export danh sách.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- Không tìm thấy action items: Hệ thống thông báo "Không tìm thấy công việc cụ thể trong cuộc hội thoại".
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Danh sách action items được trích xuất và hiển thị cho Member. \\\hline
+\end{longtblr}
+\end{adjustwidth}

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>UC07 - Cấu hình Workspace</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; font-size: 13pt; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h3 { font-size: 14pt; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { border: 1px solid #000; padding: 8px; text-align: left; vertical-align: top; }
+        .caption { font-style: italic; font-weight: bold; text-align: center; margin: 10px 0; }
+        .figure { text-align: center; margin: 15px 0; }
+        .figure img { max-width: 100%; }
+        ol, ul { margin: 5px 0; padding-left: 20px; }
+    </style>
+</head>
+<body>
+
+<h3>- Chức năng cấu hình Workspace</h3>
+
+<div class="figure">
+    <img src="uc07_config_workspace.png" alt="Sơ đồ Use Case cấu hình Workspace">
+    <p class="caption">Hình 3.7. Sơ đồ use case chức năng cấu hình Workspace</p>
+</div>
+
+<p class="caption">Bảng 3.7. Bảng đặc tả chức năng cấu hình Workspace</p>
+
+<table>
+    <tr>
+        <td><b>Tên chức năng:</b> Cấu hình Workspace</td>
+        <td><b>ID:</b> UC07</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Mức độ cần thiết:</b> Bắt buộc</td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <td><b>Người sử dụng:</b> Owner hoặc Admin của Workspace.</td>
+        <td><b>Phân loại:</b> Trung bình</td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <td colspan="2"><b>Các thành phần tham gia và mối quan tâm:</b>
+            <ul>
+                <li><b>Owner/Admin:</b> Muốn xem danh sách và chỉnh sửa thông tin, cấu hình của Workspace.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Mô tả tóm tắt:</b> Chức năng cho phép xem danh sách workspace và chỉnh sửa thông tin như tên, mô tả, logo, LLM Provider.</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Trigger:</b> Owner/Admin truy cập trang cài đặt Workspace.</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Kiểu sự kiện:</b> External</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Luồng xử lý bình thường của sự kiện:</b>
+            <ol>
+                <li>Owner/Admin truy cập trang danh sách Workspace.</li>
+                <li>Hệ thống hiển thị danh sách workspace mà người dùng là thành viên.</li>
+                <li>Owner/Admin chọn workspace cần cấu hình.</li>
+                <li>Hệ thống hiển thị form cấu hình với thông tin hiện tại.</li>
+                <li>Owner/Admin chỉnh sửa các thông tin cần thay đổi.</li>
+                <li>Owner/Admin nhấn "Lưu thay đổi".</li>
+                <li>Hệ thống cập nhật và ghi audit log.</li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Các luồng sự kiện con (Subflows):</b>
+            <ul>
+                <li>Xem danh sách Workspace: Hiển thị tất cả workspace của người dùng.</li>
+                <li>Chỉnh sửa thông tin: Cập nhật tên, mô tả, logo.</li>
+                <li>Cấu hình LLM: Chọn LLM Provider mặc định.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Luồng luân phiên/đặc biệt (Alternative/Exceptional flows):</b>
+            <ul>
+                <li>3a. Workspace bị khóa: Không cho phép chỉnh sửa cấu hình.</li>
+                <li>5a. Không có quyền: Hệ thống từ chối truy cập.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Kết quả:</b> Cấu hình Workspace được cập nhật thành công.</td>
+    </tr>
+</table>
+
+</body>
+</html>

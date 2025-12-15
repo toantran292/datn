@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>UC14 - Tóm tắt tài liệu</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; font-size: 13pt; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; vertical-align: top; }
+        .header-row td:first-child { width: 70%; }
+        .header-row td:last-child { width: 30%; }
+        ul, ol { margin: 5px 0; padding-left: 20px; }
+        .section-title { font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<table>
+    <tr class="header-row">
+        <td><strong>Tên chức năng:</strong> Tóm tắt tài liệu</td>
+        <td><strong>ID:</strong> UC14</td>
+    </tr>
+    <tr>
+        <td><strong>Người sử dụng:</strong> Member</td>
+        <td><strong>Mức độ cần thiết:</strong> Quan trọng</td>
+    </tr>
+    <tr>
+        <td colspan="2" style="text-align: right;"><strong>Phân loại:</strong> Phức tạp</td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Các thành phần tham gia và mối quan tâm:</p>
+            <ul>
+                <li><strong>Member:</strong> Muốn hiểu nhanh nội dung của tài liệu đính kèm mà không cần đọc toàn bộ.</li>
+                <li><strong>AI Provider:</strong> Xử lý tài liệu và sinh bản tóm tắt.</li>
+                <li><strong>File Service:</strong> Cung cấp nội dung tài liệu.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Mô tả tóm tắt:</p>
+            <p>Cho phép Member yêu cầu AI tóm tắt nội dung của một tài liệu đính kèm trong chat (PDF, DOCX, v.v.) ngay trong khung chat.</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p><strong>Trigger:</strong> Member chọn một tài liệu đính kèm và yêu cầu tóm tắt.</p>
+            <p><strong>Kiểu sự kiện:</strong> External</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Luồng xử lý bình thường của sự kiện:</p>
+            <ol>
+                <li>Member click vào tài liệu đính kèm trong tin nhắn.</li>
+                <li>Member chọn "Tóm tắt với AI".</li>
+                <li>Hệ thống lấy nội dung tài liệu từ File Service.</li>
+                <li>Hệ thống trích xuất văn bản từ tài liệu (PDF parser, DOCX parser).</li>
+                <li>Hệ thống gửi nội dung đến AI Service.</li>
+                <li>AI Service sinh bản tóm tắt.</li>
+                <li>Hệ thống hiển thị bản tóm tắt trong panel AI Assistant.</li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Các luồng sự kiện con (Subflows):</p>
+            <p>N/A</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Luồng luân phiên/đặc biệt (Alternative/Exceptional flows):</p>
+            <p><strong>4a. Không thể trích xuất văn bản:</strong></p>
+            <p>5. Hệ thống thông báo "Không thể đọc nội dung tài liệu này".</p>
+            <p><strong>4b. Tài liệu quá dài:</strong></p>
+            <p>5. Hệ thống chia nhỏ, tóm tắt từng phần và tổng hợp.</p>
+
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p><strong>Kết quả:</strong> Bản tóm tắt tài liệu được hiển thị, giúp Member nắm bắt nội dung nhanh chóng.</p>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>

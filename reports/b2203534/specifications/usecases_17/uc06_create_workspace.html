@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>UC06 - Tạo Workspace</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; font-size: 13pt; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h3 { font-size: 14pt; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { border: 1px solid #000; padding: 8px; text-align: left; vertical-align: top; }
+        .caption { font-style: italic; font-weight: bold; text-align: center; margin: 10px 0; }
+        .figure { text-align: center; margin: 15px 0; }
+        .figure img { max-width: 100%; }
+        ol, ul { margin: 5px 0; padding-left: 20px; }
+    </style>
+</head>
+<body>
+
+<h3>- Chức năng tạo Workspace</h3>
+
+<div class="figure">
+    <img src="uc06_create_workspace.png" alt="Sơ đồ Use Case tạo Workspace">
+    <p class="caption">Hình 3.6. Sơ đồ use case chức năng tạo Workspace</p>
+</div>
+
+<p class="caption">Bảng 3.6. Bảng đặc tả chức năng tạo Workspace</p>
+
+<table>
+    <tr>
+        <td><b>Tên chức năng:</b> Tạo Workspace</td>
+        <td><b>ID:</b> UC06</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Mức độ cần thiết:</b> Bắt buộc</td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <td><b>Người sử dụng:</b> Người dùng đã đăng nhập.</td>
+        <td><b>Phân loại:</b> Trung bình</td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <td colspan="2"><b>Các thành phần tham gia và mối quan tâm:</b>
+            <ul>
+                <li><b>Người dùng:</b> Muốn tạo không gian làm việc mới để quản lý nhóm và tài liệu.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Mô tả tóm tắt:</b> Chức năng cho phép người dùng tạo Workspace mới với các thông tin cơ bản và được gán quyền Owner.</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Trigger:</b> Người dùng nhấn nút "Tạo Workspace" trong trang danh sách workspace.</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Kiểu sự kiện:</b> External</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Luồng xử lý bình thường của sự kiện:</b>
+            <ol>
+                <li>Người dùng nhấn nút "Tạo Workspace".</li>
+                <li>Hệ thống hiển thị form tạo workspace.</li>
+                <li>Người dùng nhập tên, mô tả và chọn LLM Provider.</li>
+                <li>Người dùng nhấn nút "Tạo".</li>
+                <li>Hệ thống tạo workspace mới.</li>
+                <li>Hệ thống gán người tạo làm Owner.</li>
+                <li>Hệ thống ghi audit log và chuyển đến Dashboard workspace.</li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Các luồng sự kiện con (Subflows):</b> N/A</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Luồng luân phiên/đặc biệt (Alternative/Exceptional flows):</b>
+            <ul>
+                <li>3a. Tên workspace đã tồn tại: Hệ thống yêu cầu đặt tên khác.</li>
+                <li>5a. Vượt quá giới hạn workspace: Thông báo giới hạn và yêu cầu nâng cấp.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Kết quả:</b> Workspace mới được tạo và người dùng trở thành Owner.</td>
+    </tr>
+</table>
+
+</body>
+</html>

@@ -1,0 +1,67 @@
+% UC16: Tạo báo cáo AI
+\paragraph{Chức năng tạo báo cáo AI}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/uc16_create_report.png}
+    \caption{Sơ đồ use case chức năng tạo báo cáo AI}
+    \label{fig:uc16_create_report}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Bảng đặc tả chức năng tạo báo cáo AI},
+    label = {tab:uc16}
+]{
+    colspec = {|l|X|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+Tên chức năng & Tạo báo cáo AI \\
+ID & UC16 \\
+Mức độ cần thiết & Bắt buộc \\
+Người sử dụng & Owner hoặc Admin của Work\-space \\
+Phân loại & Phức tạp \\
+Các thành phần tham gia và mối quan tâm & \textbf{Owner/Admin:} Muốn tạo báo cáo tổng hợp sử dụng AI từ dữ liệu và tệp trong work\-space. \\
+Mô tả tóm tắt & Chức năng cho phép tạo báo cáo AI tùy chỉnh bằng cách cấu hình tham số và prompt, sau đó gọi LLM Pro\-vider để sinh nội dung. \\
+Trigger & Owner/Admin nhấn nút "Tạo báo cáo" trong trang báo cáo. \\
+Kiểu sự kiện & External \\
+Luồng xử lý bình thường &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{enumerate}[nosep, leftmargin=*]
+    \item Owner/Admin mở form tạo báo cáo AI.
+    \item Người dùng nhập tên báo cáo và chọn loại báo cáo.
+    \item Người dùng chọn LLM Pro\-vider (OpenAI, Anthropic, Google).
+    \item Người dùng chọn khoảng thời gian dữ liệu.
+    \item Người dùng nhập prompt tùy chỉnh (tùy chọn).
+    \item Người dùng nhấn "Tạo báo cáo".
+    \item Hệ thống thu thập dữ liệu từ work\-space.
+    \item Hệ thống gọi API LLM Pro\-vider để sinh báo cáo.
+    \item Hệ thống lưu báo cáo và ghi audit log.
+    \item Hệ thống hiển thị kết quả báo cáo.
+\end{enumerate}
+\vspace{2pt}
+\end{minipage} \\
+Các luồng sự kiện con &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item Cấu hình tham số: Chọn loại, LLM, thời gian, prompt.
+    \item Truy vấn LLM: Gọi API và nhận kết quả từ AI.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Luồng luân phiên/đặc biệt &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item 7a. Không có dữ liệu: Thông báo cần upload tệp trước.
+    \item 8a. LLM API lỗi: Thông báo lỗi và cho phép thử lại.
+    \item 8b. Vượt quá giới hạn token: Yêu cầu thu hẹp phạm vi dữ liệu.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Kết quả & Báo cáo AI được tạo và lưu trữ thành công. \\
+\end{longtblr}

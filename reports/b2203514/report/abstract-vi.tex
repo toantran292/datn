@@ -1,0 +1,16 @@
+\thispagestyle{empty}
+\setsection{TÓM TẮT}
+
+\sloppy
+
+\noindent Bối cảnh: Trong môi trường phát triển phần mềm Agile, các nhóm dự án thường xuyên trao đổi thông tin qua tin nhắn, tài liệu và nhiều loại tệp khác nhau. Tuy nhiên, các cuộc trao đổi này thường phân tán trên nhiều nền tảng (Slack, Discord, email...), khiến lịch sử liên lạc và tài liệu khó theo dõi tập trung. Với lượng nội dung lớn sinh ra mỗi ngày, việc đọc lại toàn bộ tin nhắn để nắm bắt thông tin rất tốn thời gian. AI ngày càng được quan tâm như công cụ hỗ trợ tóm tắt hội thoại và trả lời câu hỏi dựa trên ngữ cảnh.
+
+\noindent Mục tiêu: Xây dựng phân hệ truyền thông cho nền tảng SaaS quản lý dự án Agile, tập trung vào nhắn tin và tích hợp AI. Phân hệ cho phép trao đổi tin nhắn theo kênh/dự án, quản lý tệp đính kèm, đồng thời sử dụng AI để tóm tắt hội thoại, phân tích tệp và cung cấp câu trả lời dựa trên ngữ cảnh trao đổi.
+
+\noindent Phương pháp: Hệ thống thiết kế theo kiến trúc microservice, phân hệ truyền thông là dịch vụ độc lập quản lý kênh, tin nhắn, tệp đính kèm và tương tác với AI. Backend sử dụng NodeJS/NestJS xây dựng RESTful API. Frontend dùng React/Next.js với giao diện chat thời gian thực. Dịch vụ AI tích hợp qua API bên ngoài thực hiện tóm tắt hội thoại, trích xuất thông tin và trả lời câu hỏi theo ngữ cảnh.
+
+\noindent Kết quả: Phân hệ hoàn thiện cho phép tạo và quản lý kênh trao đổi gắn với dự án, gửi tin nhắn và tệp đính kèm trực tiếp trong cuộc trò chuyện. AI tự động tóm tắt hội thoại dài, trích xuất ý chính, phân tích tệp tải lên và trả lời câu hỏi ngay trong khung chat. Người dùng không cần đọc lại toàn bộ lịch sử mà vẫn nắm được thông tin quan trọng.
+
+\noindent Kết luận: Phân hệ truyền thông tập trung với tích hợp AI giúp giảm đáng kể gánh nặng đọc và lọc thông tin thủ công, nâng cao khả năng nắm bắt ngữ cảnh và hỗ trợ ra quyết định cho nhóm Agile. Kiến trúc microservice giúp hệ thống dễ mở rộng và kết nối với các phân hệ khác trong tương lai.
+
+\fussy

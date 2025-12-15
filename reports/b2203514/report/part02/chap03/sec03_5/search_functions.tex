@@ -1,0 +1,72 @@
+% ==================== NHÓM TÌM KIẾM ====================
+
+% 3.5.13 Tìm kiếm tin nhắn
+\subsubsection{Chức năng tìm kiếm tin nhắn}
+
+Mục đích: Cho phép người dùng tìm kiếm tin nhắn theo từ khóa (full-text search) hoặc theo ngữ nghĩa (se\-man\-tic search) với các bộ lọc theo kênh, người gửi, ngày tháng và loại file.
+
+Giao diện:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/ui_search_numbered.png}
+\caption{Giao diện chức năng tìm kiếm tin nhắn}
+\label{fig:ui_search_message}
+\end{figure}
+
+Các thành phần trong giao diện:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|l|p{5.5cm}|}
+\hline
+\textbf{STT} & \textbf{Loại điều khiển} & \textbf{Tên điều khiển} & \textbf{Nội dung thực hiện} \\
+\hline
+1 & Textbox & Search Input & Nhập từ khóa hoặc câu hỏi tìm kiếm \\
+\hline
+2 & Chip & Filter Chips & Thêm filter (in:channel, from:user, has:file) \\
+\hline
+3 & Tab & Result Tabs & Chuyển đổi giữa Mes\-sages/Files/AI \\
+\hline
+4 & List & Search Results & Hiển thị kết quả tìm kiếm \\
+\hline
+5 & Label & Match Per\-cent\-age & Hiển thị độ khớp (cho se\-man\-tic search) \\
+\hline
+6 & Highlight & Key\-word High\-light & Highlight từ khóa trong kết quả \\
+\hline
+\end{tabular}
+\caption{Bảng các thành phần trong giao diện tìm kiếm tin nhắn}
+\label{tab:ui_search_message}
+\end{table}
+
+Dữ liệu được dùng:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|c|c|c|c|}
+\hline
+\multirow{2}{*}{\textbf{STT}} & \multirow{2}{*}{\textbf{Tên bảng}} & \multicolumn{4}{c|}{\textbf{Phương thức}} \\
+\cline{3-6}
+& & \textbf{Thêm} & \textbf{Sửa} & \textbf{Xóa} & \textbf{Truy vấn} \\
+\hline
+1 & mes\-sages & & & & X \\
+\hline
+2 & mes\-sage\_em\-bed\-dings & & & & X \\
+\hline
+3 & at\-tach\-ments & & & & X \\
+\hline
+4 & channel\_members & & & & X \\
+\hline
+\end{tabular}
+\caption{Bảng dữ liệu được dùng cho chức năng tìm kiếm tin nhắn}
+\label{tab:func_search_message}
+\end{table}
+
+Xử lý:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/act_search_message.png}
+\caption{Sơ đồ hoạt động của chức năng tìm kiếm tin nhắn}
+\label{fig:act_search_message}
+\end{figure}

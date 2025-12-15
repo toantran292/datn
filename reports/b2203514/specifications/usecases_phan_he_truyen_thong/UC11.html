@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>UC11 - Tóm tắt hội thoại</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; font-size: 13pt; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; vertical-align: top; }
+        .header-row td:first-child { width: 70%; }
+        .header-row td:last-child { width: 30%; }
+        ul, ol { margin: 5px 0; padding-left: 20px; }
+        .section-title { font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<table>
+    <tr class="header-row">
+        <td><strong>Tên chức năng:</strong> Tóm tắt hội thoại</td>
+        <td><strong>ID:</strong> UC11</td>
+    </tr>
+    <tr>
+        <td><strong>Người sử dụng:</strong> Member</td>
+        <td><strong>Mức độ cần thiết:</strong> Quan trọng</td>
+    </tr>
+    <tr>
+        <td colspan="2" style="text-align: right;"><strong>Phân loại:</strong> Phức tạp</td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Các thành phần tham gia và mối quan tâm:</p>
+            <ul>
+                <li><strong>Member:</strong> Muốn nắm bắt nhanh nội dung của một đoạn hội thoại dài mà không cần đọc toàn bộ.</li>
+                <li><strong>AI Provider:</strong> Xử lý và sinh văn bản tóm tắt.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Mô tả tóm tắt:</p>
+            <p>Cho phép Member yêu cầu AI tóm tắt một đoạn hội thoại được chọn hoặc tóm tắt toàn bộ kênh từ một mốc thời gian (ví dụ: từ lần truy cập cuối).</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p><strong>Trigger:</strong> Member chọn các tin nhắn và yêu cầu tóm tắt hoặc chọn "Tóm tắt từ lần truy cập cuối".</p>
+            <p><strong>Kiểu sự kiện:</strong> External</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Luồng xử lý bình thường của sự kiện:</p>
+            <ol>
+                <li>Member chọn một hoặc nhiều tin nhắn cần tóm tắt.</li>
+                <li>Member click "Tóm tắt với AI".</li>
+                <li>Hệ thống thu thập nội dung các tin nhắn được chọn.</li>
+                <li>Hệ thống gửi nội dung đến AI Service.</li>
+                <li>AI Service sử dụng LLM để sinh bản tóm tắt.</li>
+                <li>Hệ thống hiển thị bản tóm tắt trong panel AI Assistant.</li>
+                <li>Member có thể copy hoặc lưu bản tóm tắt.</li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Các luồng sự kiện con (Subflows):</p>
+            <ul>
+                <li><strong>S1 - Tóm tắt từ mốc thời gian:</strong> Member chọn "Tóm tắt từ lần truy cập cuối" → AI tóm tắt tất cả tin nhắn mới.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Luồng luân phiên/đặc biệt (Alternative/Exceptional flows):</p>
+            <p><strong>4a. Nội dung quá dài:</strong></p>
+            <p>5. Hệ thống chia nhỏ và tóm tắt từng phần, sau đó tổng hợp.</p>
+
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p><strong>Kết quả:</strong> Bản tóm tắt hội thoại được hiển thị, giúp Member nắm bắt nội dung nhanh chóng.</p>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>

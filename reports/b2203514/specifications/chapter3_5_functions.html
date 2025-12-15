@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3.5. Thiết kế theo chức năng - Phân hệ Truyền thông</title>
+    <style>
+        body {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 13pt;
+            line-height: 1.5;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: justify;
+        }
+        
+        h2 {
+            font-size: 14pt;
+            font-weight: bold;
+            margin-top: 24pt;
+            margin-bottom: 12pt;
+        }
+        
+        h3 {
+            font-size: 13pt;
+            font-weight: bold;
+            margin-top: 18pt;
+            margin-bottom: 10pt;
+        }
+        
+        h4 {
+            font-size: 13pt;
+            font-weight: bold;
+            margin-top: 12pt;
+            margin-bottom: 8pt;
+        }
+        
+        p {
+            text-indent: 1.27cm;
+            margin-bottom: 6pt;
+        }
+        
+        p.no-indent {
+            text-indent: 0;
+        }
+        
+        ul {
+            margin-left: 1cm;
+            margin-bottom: 12pt;
+        }
+        
+        li {
+            margin-bottom: 4pt;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12pt 0;
+            font-size: 12pt;
+        }
+        
+        th, td {
+            border: 1px solid #000;
+            padding: 6px 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+        
+        th {
+            background-color: #d9e2f3;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        td:first-child {
+            text-align: center;
+            width: 40px;
+        }
+        
+        .table-caption {
+            font-weight: bold;
+            font-style: italic;
+            text-align: center;
+            margin: 8pt 0;
+        }
+        
+        .figure-caption {
+            font-weight: bold;
+            font-style: italic;
+            text-align: center;
+            margin: 8pt 0;
+        }
+        
+        .figure-container {
+            text-align: center;
+            margin: 16pt 0;
+        }
+        
+        .figure-container img {
+            max-width: 100%;
+            border: 1px solid #ccc;
+        }
+        
+        .ui-screenshot {
+            max-width: 90%;
+            border: 1px solid #999;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .function-section {
+            page-break-inside: avoid;
+            margin-bottom: 24pt;
+        }
+        
+        .group-title {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #1a5276;
+            border-bottom: 2px solid #1a5276;
+            padding-bottom: 4pt;
+            margin-top: 30pt;
+            margin-bottom: 16pt;
+        }
+        
+        .purpose {
+            margin-left: 0.5cm;
+        }
+        
+        .component-table td:nth-child(2) {
+            width: 120px;
+        }
+        
+        .component-table td:nth-child(3) {
+            width: 150px;
+        }
+        
+        .data-table td:nth-child(2) {
+            width: auto;
+        }
+        
+        .data-table td:nth-child(3),
+        .data-table td:nth-child(4),
+        .data-table td:nth-child(5),
+        .data-table td:nth-child(6) {
+            width: 60px;
+            text-align: center;
+        }
+        
+        .checkmark {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<h2>3.5. Thiết kế theo chức năng</h2>
+
+<p>Phần này trình bày chi tiết thiết kế của từng chức năng trong phân hệ Truyền thông, bao gồm mục đích, giao diện người dùng, các thành phần điều khiển, bảng dữ liệu sử dụng và sơ đồ hoạt động.</p>
+
+<!-- ==================== NHÓM QUẢN LÝ KÊNH ==================== -->
+<div class="group-title">NHÓM CHỨC NĂNG QUẢN LÝ KÊNH</div>
+
+<!-- 3.5.1 Tạo kênh mới -->
+<div class="function-section">
+    <h3>3.5.1. Chức năng Tạo kênh mới</h3>
+    
+    <h4>Mục đích</h4>
+    <p class="purpose">Cho phép người dùng tạo kênh truyền thông mới trong workspace để tổ chức các cuộc thảo luận theo chủ đề, dự án hoặc nhóm công việc. Hỗ trợ ba loại kênh: public (công khai), private (riêng tư) và project (theo dự án).</p>
+    
+    <h4>Giao diện</h4>
+    <div class="figure-container">
+        <img src="ui_create_channel_numbered.png" alt="Giao diện tạo kênh mới" class="ui-screenshot">
+        <div class="figure-caption">Hình 3.1. Giao diện chức năng tạo kênh mới</div>
+    </div>
+    
+    <h4>Các thành phần trong giao diện</h4>
+    <p class="table-caption">Bảng 3.1. Bảng các thành phần trong giao diện tạo kênh mới</p>
+    <table class="component-table">
+        <tr>
+            <th>STT</th>
+            <th>Loại điều khiển</th>
+            <th>Tên điều khiển</th>
+            <th>Nội dung thực hiện</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>Radio Button</td>
+            <td>Channel Type</td>
+            <td>Chọn loại kênh (Public/Private/Project)</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Textbox</td>
+            <td>Channel Name</td>
+            <td>Nhập tên kênh</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Textarea</td>
+            <td>Description</td>
+            <td>Nhập mô tả cho kênh</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Toggle</td>
+            <td>AI Q&A</td>
+            <td>Bật/tắt tính năng hỏi đáp AI</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>Toggle</td>
+            <td>Auto Summary</td>
+            <td>Bật/tắt tính năng tóm tắt tự động</td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td>Button</td>
+            <td>Cancel</td>
+            <td>Hủy bỏ thao tác tạo kênh</td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td>Button</td>
+            <td>Create Channel</td>
+            <td>Xác nhận tạo kênh mới</td>
+        </tr>
+    </table>
+    
+    <h4>Bảng dữ liệu</h4>
+    <p class="table-caption">Bảng 3.2. Bảng dữ liệu chức năng tạo kênh mới</p>
+    <table class="data-table">
+        <tr>
+            <th>STT</th>
+            <th>Tên bảng</th>
+            <th>Thêm</th>
+            <th>Sửa</th>
+            <th>Xóa</th>
+            <th>Truy vấn</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>channels</td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>channel_members</td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+        </tr>
+    </table>
+    
+    <h4>Xử lý</h4>
+    <div class="figure-container">
+        <img src="act_create_channel.png" alt="Sơ đồ hoạt động tạo kênh mới">
+        <div class="figure-caption">Hình 3.2. Sơ đồ hoạt động của chức năng tạo kênh mới</div>
+    </div>
+</div>
+
+<!-- 3.5.2 Tham gia kênh -->
+<div class="function-section">
+    <h3>3.5.2. Chức năng Tham gia kênh</h3>
+    
+    <h4>Mục đích</h4>
+    <p class="purpose">Cho phép người dùng tham gia vào các kênh public có sẵn hoặc các kênh private/project khi được mời, để có thể xem và tham gia thảo luận trong kênh đó.</p>
+    
+    <h4>Giao diện</h4>
+    <div class="figure-container">
+        <img src="ui_join_channel_numbered.png" alt="Giao diện tham gia kênh" class="ui-screenshot">
+        <div class="figure-caption">Hình 3.3. Giao diện chức năng tham gia kênh</div>
+    </div>
+    
+    <h4>Các thành phần trong giao diện</h4>
+    <p class="table-caption">Bảng 3.3. Bảng các thành phần trong giao diện tham gia kênh</p>
+    <table class="component-table">
+        <tr>
+            <th>STT</th>
+            <th>Loại điều khiển</th>
+            <th>Tên điều khiển</th>
+            <th>Nội dung thực hiện</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>Textbox</td>
+            <td>Search Channels</td>
+            <td>Tìm kiếm kênh theo tên</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>List</td>
+            <td>Channel List</td>
+            <td>Hiển thị danh sách kênh có thể tham gia</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Label</td>
+            <td>Channel Info</td>
+            <td>Hiển thị thông tin kênh (tên, mô tả, số thành viên)</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Button</td>
+            <td>Join</td>
+            <td>Nhấn để tham gia kênh được chọn</td>
+        </tr>
+    </table>
+    
+    <h4>Bảng dữ liệu</h4>
+    <p class="table-caption">Bảng 3.4. Bảng dữ liệu chức năng tham gia kênh</p>
+    <table class="data-table">
+        <tr>
+            <th>STT</th>
+            <th>Tên bảng</th>
+            <th>Thêm</th>
+            <th>Sửa</th>
+            <th>Xóa</th>
+            <th>Truy vấn</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>channels</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>channel_members</td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+    </table>
+    
+    <h4>Xử lý</h4>
+    <div class="figure-container">
+        <img src="act_join_channel.png" alt="Sơ đồ hoạt động tham gia kênh">
+        <div class="figure-caption">Hình 3.4. Sơ đồ hoạt động của chức năng tham gia kênh</div>
+    </div>
+</div>
+
+<!-- 3.5.3 Rời kênh -->
+<div class="function-section">
+    <h3>3.5.3. Chức năng Rời kênh</h3>
+    
+    <h4>Mục đích</h4>
+    <p class="purpose">Cho phép người dùng rời khỏi kênh mà họ không còn muốn tham gia. Lưu ý: Owner duy nhất của kênh cần chuyển quyền trước khi rời.</p>
+    
+    <h4>Giao diện</h4>
+    <div class="figure-container">
+        <img src="ui_leave_channel_numbered.png" alt="Giao diện rời kênh" class="ui-screenshot">
+        <div class="figure-caption">Hình 3.5. Giao diện chức năng rời kênh</div>
+    </div>
+    
+    <h4>Các thành phần trong giao diện</h4>
+    <p class="table-caption">Bảng 3.5. Bảng các thành phần trong giao diện rời kênh</p>
+    <table class="component-table">
+        <tr>
+            <th>STT</th>
+            <th>Loại điều khiển</th>
+            <th>Tên điều khiển</th>
+            <th>Nội dung thực hiện</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>Label</td>
+            <td>Channel Name</td>
+            <td>Hiển thị tên kênh sẽ rời</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Label</td>
+            <td>Warning Message</td>
+            <td>Hiển thị cảnh báo về việc rời kênh</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Button</td>
+            <td>Cancel</td>
+            <td>Hủy bỏ thao tác rời kênh</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Button</td>
+            <td>Leave Channel</td>
+            <td>Xác nhận rời khỏi kênh</td>
+        </tr>
+    </table>
+    
+    <h4>Bảng dữ liệu</h4>
+    <p class="table-caption">Bảng 3.6. Bảng dữ liệu chức năng rời kênh</p>
+    <table class="data-table">
+        <tr>
+            <th>STT</th>
+            <th>Tên bảng</th>
+            <th>Thêm</th>
+            <th>Sửa</th>
+            <th>Xóa</th>
+            <th>Truy vấn</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>channel_members</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark">✓</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>channels</td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+    </table>
+    
+    <h4>Xử lý</h4>
+    <div class="figure-container">
+        <img src="act_leave_channel.png" alt="Sơ đồ hoạt động rời kênh">
+        <div class="figure-caption">Hình 3.6. Sơ đồ hoạt động của chức năng rời kênh</div>
+    </div>
+</div>
+
+<!-- 3.5.4 Mời thành viên -->
+<div class="function-section">
+    <h3>3.5.4. Chức năng Mời thành viên vào kênh</h3>
+    
+    <h4>Mục đích</h4>
+    <p class="purpose">Cho phép Admin hoặc Owner của kênh mời thêm thành viên mới vào kênh private hoặc project, đồng thời có thể chỉ định vai trò cho thành viên được mời.</p>
+    
+    <h4>Giao diện</h4>
+    <div class="figure-container">
+        <img src="ui_channel_members_numbered.png" alt="Giao diện mời thành viên" class="ui-screenshot">
+        <div class="figure-caption">Hình 3.7. Giao diện chức năng mời thành viên vào kênh</div>
+    </div>
+    
+    <h4>Các thành phần trong giao diện</h4>
+    <p class="table-caption">Bảng 3.7. Bảng các thành phần trong giao diện mời thành viên</p>
+    <table class="component-table">
+        <tr>
+            <th>STT</th>
+            <th>Loại điều khiển</th>
+            <th>Tên điều khiển</th>
+            <th>Nội dung thực hiện</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>Textbox</td>
+            <td>Search Members</td>
+            <td>Tìm kiếm thành viên trong workspace</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Dropdown</td>
+            <td>User Select</td>
+            <td>Chọn người dùng để mời</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Dropdown</td>
+            <td>Role Select</td>
+            <td>Chọn vai trò (Admin/Member)</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Button</td>
+            <td>Invite</td>
+            <td>Gửi lời mời tham gia kênh</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>List</td>
+            <td>Pending Invites</td>
+            <td>Hiển thị danh sách lời mời đang chờ</td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td>List</td>
+            <td>Member List</td>
+            <td>Hiển thị danh sách thành viên hiện tại</td>
+        </tr>
+    </table>
+    
+    <h4>Bảng dữ liệu</h4>
+    <p class="table-caption">Bảng 3.8. Bảng dữ liệu chức năng mời thành viên</p>
+    <table class="data-table">
+        <tr>
+            <th>STT</th>
+            <th>Tên bảng</th>
+            <th>Thêm</th>
+            <th>Sửa</th>
+            <th>Xóa</th>
+            <th>Truy vấn</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>channel_members</td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>channels</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>users</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+    </table>
+    
+    <h4>Xử lý</h4>
+    <div class="figure-container">
+        <img src="act_invite_member.png" alt="Sơ đồ hoạt động mời thành viên">
+        <div class="figure-caption">Hình 3.8. Sơ đồ hoạt động của chức năng mời thành viên</div>
+    </div>
+</div>
+
+<!-- 3.5.5 Cài đặt kênh -->
+<div class="function-section">
+    <h3>3.5.5. Chức năng Cài đặt kênh</h3>
+    
+    <h4>Mục đích</h4>
+    <p class="purpose">Cho phép Admin hoặc Owner cập nhật thông tin kênh như tên, mô tả, loại kênh và cấu hình các tính năng AI (Q&A, Auto Summary, Action Items, Document Summary).</p>
+    
+    <h4>Giao diện</h4>
+    <div class="figure-container">
+        <img src="ui_channel_settings_numbered.png" alt="Giao diện cài đặt kênh" class="ui-screenshot">
+        <div class="figure-caption">Hình 3.9. Giao diện chức năng cài đặt kênh</div>
+    </div>
+    
+    <h4>Các thành phần trong giao diện</h4>
+    <p class="table-caption">Bảng 3.9. Bảng các thành phần trong giao diện cài đặt kênh</p>
+    <table class="component-table">
+        <tr>
+            <th>STT</th>
+            <th>Loại điều khiển</th>
+            <th>Tên điều khiển</th>
+            <th>Nội dung thực hiện</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>Tab</td>
+            <td>Settings Tabs</td>
+            <td>Chuyển đổi giữa các tab (Overview/Members/AI/Notifications)</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Textbox</td>
+            <td>Channel Name</td>
+            <td>Chỉnh sửa tên kênh</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Textarea</td>
+            <td>Description</td>
+            <td>Chỉnh sửa mô tả kênh</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Toggle</td>
+            <td>AI Q&A</td>
+            <td>Bật/tắt tính năng hỏi đáp AI</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>Toggle</td>
+            <td>Auto Summary</td>
+            <td>Bật/tắt tính năng tóm tắt tự động</td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td>Toggle</td>
+            <td>Action Items</td>
+            <td>Bật/tắt tính năng trích xuất action items</td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td>Toggle</td>
+            <td>Document Summary</td>
+            <td>Bật/tắt tính năng tóm tắt tài liệu</td>
+        </tr>
+        <tr>
+            <td>8</td>
+            <td>Button</td>
+            <td>Save Changes</td>
+            <td>Lưu các thay đổi cài đặt</td>
+        </tr>
+    </table>
+    
+    <h4>Bảng dữ liệu</h4>
+    <p class="table-caption">Bảng 3.10. Bảng dữ liệu chức năng cài đặt kênh</p>
+    <table class="data-table">
+        <tr>
+            <th>STT</th>
+            <th>Tên bảng</th>
+            <th>Thêm</th>
+            <th>Sửa</th>
+            <th>Xóa</th>
+            <th>Truy vấn</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>channels</td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+    </table>
+    
+    <h4>Xử lý</h4>
+    <div class="figure-container">
+        <img src="act_channel_settings.png" alt="Sơ đồ hoạt động cài đặt kênh">
+        <div class="figure-caption">Hình 3.10. Sơ đồ hoạt động của chức năng cài đặt kênh</div>
+    </div>
+</div>
+
+<!-- ==================== NHÓM TIN NHẮN & THREAD ==================== -->
+<div class="group-title">NHÓM CHỨC NĂNG TIN NHẮN VÀ THREAD</div>
+
+<!-- 3.5.6 Gửi tin nhắn -->
+<div class="function-section">
+    <h3>3.5.6. Chức năng Gửi tin nhắn</h3>
+    
+    <h4>Mục đích</h4>
+    <p class="purpose">Cho phép người dùng gửi tin nhắn văn bản vào kênh, có thể đính kèm file và mention các thành viên khác. Tin nhắn được broadcast real-time đến tất cả thành viên trong kênh.</p>
+    
+    <h4>Giao diện</h4>
+    <div class="figure-container">
+        <img src="ui_chat_main_numbered.png" alt="Giao diện chat chính" class="ui-screenshot">
+        <div class="figure-caption">Hình 3.11. Giao diện chức năng gửi tin nhắn</div>
+    </div>
+    
+    <h4>Các thành phần trong giao diện</h4>
+    <p class="table-caption">Bảng 3.11. Bảng các thành phần trong giao diện gửi tin nhắn</p>
+    <table class="component-table">
+        <tr>
+            <th>STT</th>
+            <th>Loại điều khiển</th>
+            <th>Tên điều khiển</th>
+            <th>Nội dung thực hiện</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>List</td>
+            <td>Channel Sidebar</td>
+            <td>Hiển thị danh sách kênh</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>List</td>
+            <td>Message List</td>
+            <td>Hiển thị các tin nhắn trong kênh</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Textarea</td>
+            <td>Message Input</td>
+            <td>Nhập nội dung tin nhắn</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Button</td>
+            <td>Attach File</td>
+            <td>Đính kèm file vào tin nhắn</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>Button</td>
+            <td>Mention</td>
+            <td>Mention thành viên (@)</td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td>Button</td>
+            <td>Emoji</td>
+            <td>Chèn emoji vào tin nhắn</td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td>Button</td>
+            <td>Send</td>
+            <td>Gửi tin nhắn</td>
+        </tr>
+        <tr>
+            <td>8</td>
+            <td>Panel</td>
+            <td>AI Assistant</td>
+            <td>Hiển thị AI Assistant panel</td>
+        </tr>
+    </table>
+    
+    <h4>Bảng dữ liệu</h4>
+    <p class="table-caption">Bảng 3.12. Bảng dữ liệu chức năng gửi tin nhắn</p>
+    <table class="data-table">
+        <tr>
+            <th>STT</th>
+            <th>Tên bảng</th>
+            <th>Thêm</th>
+            <th>Sửa</th>
+            <th>Xóa</th>
+            <th>Truy vấn</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>messages</td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>attachments</td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>mentions</td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>message_embeddings</td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>channel_members</td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+    </table>
+    
+    <h4>Xử lý</h4>
+    <div class="figure-container">
+        <img src="act_send_message.png" alt="Sơ đồ hoạt động gửi tin nhắn">
+        <div class="figure-caption">Hình 3.12. Sơ đồ hoạt động của chức năng gửi tin nhắn</div>
+    </div>
+</div>
+
+<!-- 3.5.7 Chỉnh sửa tin nhắn -->
+<div class="function-section">
+    <h3>3.5.7. Chức năng Chỉnh sửa tin nhắn</h3>
+    
+    <h4>Mục đích</h4>
+    <p class="purpose">Cho phép người dùng chỉnh sửa nội dung tin nhắn đã gửi. Chỉ chủ sở hữu tin nhắn mới có quyền chỉnh sửa. Tin nhắn đã sửa sẽ hiển thị trạng thái "đã chỉnh sửa".</p>
+    
+    <h4>Giao diện</h4>
+    <div class="figure-container">
+        <img src="ui_edit_message_numbered.png" alt="Giao diện chỉnh sửa tin nhắn" class="ui-screenshot">
+        <div class="figure-caption">Hình 3.13. Giao diện chức năng chỉnh sửa tin nhắn</div>
+    </div>
+    
+    <h4>Các thành phần trong giao diện</h4>
+    <p class="table-caption">Bảng 3.13. Bảng các thành phần trong giao diện chỉnh sửa tin nhắn</p>
+    <table class="component-table">
+        <tr>
+            <th>STT</th>
+            <th>Loại điều khiển</th>
+            <th>Tên điều khiển</th>
+            <th>Nội dung thực hiện</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>Context Menu</td>
+            <td>Message Actions</td>
+            <td>Hiển thị menu thao tác với tin nhắn</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Menu Item</td>
+            <td>Edit</td>
+            <td>Chọn để chỉnh sửa tin nhắn</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Textarea</td>
+            <td>Edit Input</td>
+            <td>Chỉnh sửa nội dung tin nhắn</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Button</td>
+            <td>Cancel</td>
+            <td>Hủy bỏ chỉnh sửa</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>Button</td>
+            <td>Save</td>
+            <td>Lưu nội dung đã chỉnh sửa</td>
+        </tr>
+    </table>
+    
+    <h4>Bảng dữ liệu</h4>
+    <p class="table-caption">Bảng 3.14. Bảng dữ liệu chức năng chỉnh sửa tin nhắn</p>
+    <table class="data-table">
+        <tr>
+            <th>STT</th>
+            <th>Tên bảng</th>
+            <th>Thêm</th>
+            <th>Sửa</th>
+            <th>Xóa</th>
+            <th>Truy vấn</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>messages</td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>message_embeddings</td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+        </tr>
+    </table>
+    
+    <h4>Xử lý</h4>
+    <div class="figure-container">
+        <img src="act_edit_message.png" alt="Sơ đồ hoạt động chỉnh sửa tin nhắn">
+        <div class="figure-caption">Hình 3.14. Sơ đồ hoạt động của chức năng chỉnh sửa tin nhắn</div>
+    </div>
+</div>
+
+<!-- 3.5.8 Xóa tin nhắn -->
+<div class="function-section">
+    <h3>3.5.8. Chức năng Xóa tin nhắn</h3>
+    
+    <h4>Mục đích</h4>
+    <p class="purpose">Cho phép người dùng xóa tin nhắn của mình hoặc Admin/Owner xóa bất kỳ tin nhắn nào trong kênh. Thực hiện soft delete để bảo toàn lịch sử.</p>
+    
+    <h4>Giao diện</h4>
+    <div class="figure-container">
+        <img src="ui_delete_message_numbered.png" alt="Giao diện xóa tin nhắn" class="ui-screenshot">
+        <div class="figure-caption">Hình 3.15. Giao diện chức năng xóa tin nhắn</div>
+    </div>
+    
+    <h4>Các thành phần trong giao diện</h4>
+    <p class="table-caption">Bảng 3.15. Bảng các thành phần trong giao diện xóa tin nhắn</p>
+    <table class="component-table">
+        <tr>
+            <th>STT</th>
+            <th>Loại điều khiển</th>
+            <th>Tên điều khiển</th>
+            <th>Nội dung thực hiện</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>Context Menu</td>
+            <td>Message Actions</td>
+            <td>Hiển thị menu thao tác với tin nhắn</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Menu Item</td>
+            <td>Delete</td>
+            <td>Chọn để xóa tin nhắn</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Dialog</td>
+            <td>Confirm Dialog</td>
+            <td>Hiển thị dialog xác nhận xóa</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Button</td>
+            <td>Cancel</td>
+            <td>Hủy bỏ thao tác xóa</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>Button</td>
+            <td>Delete</td>
+            <td>Xác nhận xóa tin nhắn</td>
+        </tr>
+    </table>
+    
+    <h4>Bảng dữ liệu</h4>
+    <p class="table-caption">Bảng 3.16. Bảng dữ liệu chức năng xóa tin nhắn</p>
+    <table class="data-table">
+        <tr>
+            <th>STT</th>
+            <th>Tên bảng</th>
+            <th>Thêm</th>
+            <th>Sửa</th>
+            <th>Xóa</th>
+            <th>Truy vấn</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>messages</td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>channel_members</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+    </table>
+    
+    <h4>Xử lý</h4>
+    <div class="figure-container">
+        <img src="act_delete_message.png" alt="Sơ đồ hoạt động xóa tin nhắn">
+        <div class="figure-caption">Hình 3.16. Sơ đồ hoạt động của chức năng xóa tin nhắn</div>
+    </div>
+</div>
+
+<!-- 3.5.9 React tin nhắn -->
+<div class="function-section">
+    <h3>3.5.9. Chức năng React tin nhắn</h3>
+    
+    <h4>Mục đích</h4>
+    <p class="purpose">Cho phép người dùng thêm emoji reaction vào tin nhắn để thể hiện cảm xúc hoặc phản hồi nhanh mà không cần gửi tin nhắn mới.</p>
+    
+    <h4>Giao diện</h4>
+    <div class="figure-container">
+        <img src="ui_react_message_numbered.png" alt="Giao diện react tin nhắn" class="ui-screenshot">
+        <div class="figure-caption">Hình 3.17. Giao diện chức năng react tin nhắn</div>
+    </div>
+    
+    <h4>Các thành phần trong giao diện</h4>
+    <p class="table-caption">Bảng 3.17. Bảng các thành phần trong giao diện react tin nhắn</p>
+    <table class="component-table">
+        <tr>
+            <th>STT</th>
+            <th>Loại điều khiển</th>
+            <th>Tên điều khiển</th>
+            <th>Nội dung thực hiện</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>Icon Button</td>
+            <td>Add Reaction</td>
+            <td>Mở emoji picker</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Popup</td>
+            <td>Emoji Picker</td>
+            <td>Hiển thị danh sách emoji</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Emoji Button</td>
+            <td>Emoji</td>
+            <td>Chọn emoji để react</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Badge</td>
+            <td>Reaction Count</td>
+            <td>Hiển thị số lượng reaction</td>
+        </tr>
+    </table>
+    
+    <h4>Bảng dữ liệu</h4>
+    <p class="table-caption">Bảng 3.18. Bảng dữ liệu chức năng react tin nhắn</p>
+    <table class="data-table">
+        <tr>
+            <th>STT</th>
+            <th>Tên bảng</th>
+            <th>Thêm</th>
+            <th>Sửa</th>
+            <th>Xóa</th>
+            <th>Truy vấn</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>reactions</td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark">✓</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>messages</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+    </table>
+    
+    <h4>Xử lý</h4>
+    <div class="figure-container">
+        <img src="act_react_message.png" alt="Sơ đồ hoạt động react tin nhắn">
+        <div class="figure-caption">Hình 3.18. Sơ đồ hoạt động của chức năng react tin nhắn</div>
+    </div>
+</div>
+
+<!-- 3.5.10 Ghim tin nhắn -->
+<div class="function-section">
+    <h3>3.5.10. Chức năng Ghim tin nhắn</h3>
+    
+    <h4>Mục đích</h4>
+    <p class="purpose">Cho phép Admin/Owner ghim các tin nhắn quan trọng để dễ dàng truy cập. Mỗi kênh có giới hạn tối đa 50 tin nhắn được ghim.</p>
+    
+    <h4>Giao diện</h4>
+    <div class="figure-container">
+        <img src="ui_pin_message_numbered.png" alt="Giao diện ghim tin nhắn" class="ui-screenshot">
+        <div class="figure-caption">Hình 3.19. Giao diện chức năng ghim tin nhắn</div>
+    </div>
+    
+    <h4>Các thành phần trong giao diện</h4>
+    <p class="table-caption">Bảng 3.19. Bảng các thành phần trong giao diện ghim tin nhắn</p>
+    <table class="component-table">
+        <tr>
+            <th>STT</th>
+            <th>Loại điều khiển</th>
+            <th>Tên điều khiển</th>
+            <th>Nội dung thực hiện</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>Context Menu</td>
+            <td>Message Actions</td>
+            <td>Hiển thị menu thao tác với tin nhắn</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Menu Item</td>
+            <td>Pin Message</td>
+            <td>Ghim tin nhắn</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Icon</td>
+            <td>Pin Badge</td>
+            <td>Hiển thị icon ghim trên tin nhắn</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Button</td>
+            <td>View Pinned</td>
+            <td>Xem danh sách tin nhắn đã ghim</td>
+        </tr>
+    </table>
+    
+    <h4>Bảng dữ liệu</h4>
+    <p class="table-caption">Bảng 3.20. Bảng dữ liệu chức năng ghim tin nhắn</p>
+    <table class="data-table">
+        <tr>
+            <th>STT</th>
+            <th>Tên bảng</th>
+            <th>Thêm</th>
+            <th>Sửa</th>
+            <th>Xóa</th>
+            <th>Truy vấn</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>messages</td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>channel_members</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+    </table>
+    
+    <h4>Xử lý</h4>
+    <div class="figure-container">
+        <img src="act_pin_message.png" alt="Sơ đồ hoạt động ghim tin nhắn">
+        <div class="figure-caption">Hình 3.20. Sơ đồ hoạt động của chức năng ghim tin nhắn</div>
+    </div>
+</div>
+
+<!-- 3.5.11 Tạo thread -->
+<div class="function-section">
+    <h3>3.5.11. Chức năng Tạo thread thảo luận</h3>
+    
+    <h4>Mục đích</h4>
+    <p class="purpose">Cho phép người dùng tạo thread thảo luận từ một tin nhắn để thảo luận chuyên sâu mà không làm gián đoạn luồng chat chính của kênh.</p>
+    
+    <h4>Giao diện</h4>
+    <div class="figure-container">
+        <img src="ui_thread_numbered.png" alt="Giao diện thread" class="ui-screenshot">
+        <div class="figure-caption">Hình 3.21. Giao diện chức năng tạo thread</div>
+    </div>
+    
+    <h4>Các thành phần trong giao diện</h4>
+    <p class="table-caption">Bảng 3.21. Bảng các thành phần trong giao diện tạo thread</p>
+    <table class="component-table">
+        <tr>
+            <th>STT</th>
+            <th>Loại điều khiển</th>
+            <th>Tên điều khiển</th>
+            <th>Nội dung thực hiện</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>Button</td>
+            <td>Reply in Thread</td>
+            <td>Mở panel thread</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Panel</td>
+            <td>Thread Panel</td>
+            <td>Hiển thị thread thảo luận</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Label</td>
+            <td>Root Message</td>
+            <td>Hiển thị tin nhắn gốc</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>List</td>
+            <td>Reply List</td>
+            <td>Hiển thị danh sách reply</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>Avatar Group</td>
+            <td>Participants</td>
+            <td>Hiển thị avatar người tham gia</td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td>Textarea</td>
+            <td>Reply Input</td>
+            <td>Nhập nội dung reply</td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td>Button</td>
+            <td>Send Reply</td>
+            <td>Gửi reply</td>
+        </tr>
+    </table>
+    
+    <h4>Bảng dữ liệu</h4>
+    <p class="table-caption">Bảng 3.22. Bảng dữ liệu chức năng tạo thread</p>
+    <table class="data-table">
+        <tr>
+            <th>STT</th>
+            <th>Tên bảng</th>
+            <th>Thêm</th>
+            <th>Sửa</th>
+            <th>Xóa</th>
+            <th>Truy vấn</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>threads</td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>messages</td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+    </table>
+    
+    <h4>Xử lý</h4>
+    <div class="figure-container">
+        <img src="act_create_thread.png" alt="Sơ đồ hoạt động tạo thread">
+        <div class="figure-caption">Hình 3.22. Sơ đồ hoạt động của chức năng tạo thread</div>
+    </div>
+</div>
+
+<!-- 3.5.12 Trả lời thread -->
+<div class="function-section">
+    <h3>3.5.12. Chức năng Trả lời thread</h3>
+    
+    <h4>Mục đích</h4>
+    <p class="purpose">Cho phép người dùng trả lời trong thread đã tồn tại, có thể mention các thành viên khác và đính kèm file.</p>
+    
+    <h4>Giao diện</h4>
+    <div class="figure-container">
+        <img src="ui_reply_thread_numbered.png" alt="Giao diện trả lời thread" class="ui-screenshot">
+        <div class="figure-caption">Hình 3.23. Giao diện chức năng trả lời thread</div>
+    </div>
+    
+    <h4>Các thành phần trong giao diện</h4>
+    <p class="table-caption">Bảng 3.23. Bảng các thành phần trong giao diện trả lời thread</p>
+    <table class="component-table">
+        <tr>
+            <th>STT</th>
+            <th>Loại điều khiển</th>
+            <th>Tên điều khiển</th>
+            <th>Nội dung thực hiện</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>Panel</td>
+            <td>Thread Panel</td>
+            <td>Hiển thị thread đang mở</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Textarea</td>
+            <td>Reply Input</td>
+            <td>Nhập nội dung reply</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Button</td>
+            <td>Attach File</td>
+            <td>Đính kèm file</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Button</td>
+            <td>Mention</td>
+            <td>Mention thành viên</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>Button</td>
+            <td>Send</td>
+            <td>Gửi reply</td>
+        </tr>
+    </table>
+    
+    <h4>Bảng dữ liệu</h4>
+    <p class="table-caption">Bảng 3.24. Bảng dữ liệu chức năng trả lời thread</p>
+    <table class="data-table">
+        <tr>
+            <th>STT</th>
+            <th>Tên bảng</th>
+            <th>Thêm</th>
+            <th>Sửa</th>
+            <th>Xóa</th>
+            <th>Truy vấn</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>messages</td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>threads</td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>mentions</td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+        </tr>
+    </table>
+    
+    <h4>Xử lý</h4>
+    <div class="figure-container">
+        <img src="act_reply_thread.png" alt="Sơ đồ hoạt động trả lời thread">
+        <div class="figure-caption">Hình 3.24. Sơ đồ hoạt động của chức năng trả lời thread</div>
+    </div>
+</div>
+
+<!-- ==================== NHÓM TÌM KIẾM ==================== -->
+<div class="group-title">NHÓM CHỨC NĂNG TÌM KIẾM</div>
+
+<!-- 3.5.13 Tìm kiếm tin nhắn -->
+<div class="function-section">
+    <h3>3.5.13. Chức năng Tìm kiếm tin nhắn</h3>
+    
+    <h4>Mục đích</h4>
+    <p class="purpose">Cho phép người dùng tìm kiếm tin nhắn theo từ khóa (full-text search) hoặc theo ngữ nghĩa (semantic search) với các bộ lọc theo kênh, người gửi, ngày tháng và loại file.</p>
+    
+    <h4>Giao diện</h4>
+    <div class="figure-container">
+        <img src="ui_search_numbered.png" alt="Giao diện tìm kiếm" class="ui-screenshot">
+        <div class="figure-caption">Hình 3.25. Giao diện chức năng tìm kiếm tin nhắn</div>
+    </div>
+    
+    <h4>Các thành phần trong giao diện</h4>
+    <p class="table-caption">Bảng 3.25. Bảng các thành phần trong giao diện tìm kiếm</p>
+    <table class="component-table">
+        <tr>
+            <th>STT</th>
+            <th>Loại điều khiển</th>
+            <th>Tên điều khiển</th>
+            <th>Nội dung thực hiện</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>Textbox</td>
+            <td>Search Input</td>
+            <td>Nhập từ khóa hoặc câu hỏi tìm kiếm</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Chip</td>
+            <td>Filter Chips</td>
+            <td>Thêm filter (in:channel, from:user, has:file)</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Tab</td>
+            <td>Result Tabs</td>
+            <td>Chuyển đổi giữa Messages/Files/AI</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>List</td>
+            <td>Search Results</td>
+            <td>Hiển thị kết quả tìm kiếm</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>Label</td>
+            <td>Match Percentage</td>
+            <td>Hiển thị độ khớp (cho semantic search)</td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td>Highlight</td>
+            <td>Keyword Highlight</td>
+            <td>Highlight từ khóa trong kết quả</td>
+        </tr>
+    </table>
+    
+    <h4>Bảng dữ liệu</h4>
+    <p class="table-caption">Bảng 3.26. Bảng dữ liệu chức năng tìm kiếm</p>
+    <table class="data-table">
+        <tr>
+            <th>STT</th>
+            <th>Tên bảng</th>
+            <th>Thêm</th>
+            <th>Sửa</th>
+            <th>Xóa</th>
+            <th>Truy vấn</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>messages</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>message_embeddings</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>attachments</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>channel_members</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+    </table>
+    
+    <h4>Xử lý</h4>
+    <div class="figure-container">
+        <img src="act_search_message.png" alt="Sơ đồ hoạt động tìm kiếm">
+        <div class="figure-caption">Hình 3.26. Sơ đồ hoạt động của chức năng tìm kiếm tin nhắn</div>
+    </div>
+</div>
+
+<!-- ==================== NHÓM AI ASSISTANT ==================== -->
+<div class="group-title">NHÓM CHỨC NĂNG AI ASSISTANT</div>
+
+<!-- 3.5.14 Hỏi đáp AI (RAG) -->
+<div class="function-section">
+    <h3>3.5.14. Chức năng Hỏi đáp AI (RAG)</h3>
+    
+    <h4>Mục đích</h4>
+    <p class="purpose">Cho phép người dùng đặt câu hỏi về nội dung hội thoại và tài liệu trong kênh. AI sử dụng kỹ thuật RAG (Retrieval-Augmented Generation) để tìm kiếm thông tin liên quan và sinh câu trả lời với trích dẫn nguồn.</p>
+    
+    <h4>Giao diện</h4>
+    <div class="figure-container">
+        <img src="ui_ai_assistant_numbered.png" alt="Giao diện AI Assistant" class="ui-screenshot">
+        <div class="figure-caption">Hình 3.27. Giao diện chức năng hỏi đáp AI</div>
+    </div>
+    
+    <h4>Các thành phần trong giao diện</h4>
+    <p class="table-caption">Bảng 3.27. Bảng các thành phần trong giao diện hỏi đáp AI</p>
+    <table class="component-table">
+        <tr>
+            <th>STT</th>
+            <th>Loại điều khiển</th>
+            <th>Tên điều khiển</th>
+            <th>Nội dung thực hiện</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>Tab</td>
+            <td>AI Tabs</td>
+            <td>Chuyển đổi giữa Q&A/Summary/Actions</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Textarea</td>
+            <td>Question Input</td>
+            <td>Nhập câu hỏi</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Button</td>
+            <td>Ask AI</td>
+            <td>Gửi câu hỏi cho AI</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Panel</td>
+            <td>Answer Panel</td>
+            <td>Hiển thị câu trả lời của AI</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>List</td>
+            <td>Source References</td>
+            <td>Hiển thị danh sách nguồn tham khảo</td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td>Link</td>
+            <td>Source Link</td>
+            <td>Link đến tin nhắn/tài liệu nguồn</td>
+        </tr>
+    </table>
+    
+    <h4>Bảng dữ liệu</h4>
+    <p class="table-caption">Bảng 3.28. Bảng dữ liệu chức năng hỏi đáp AI</p>
+    <table class="data-table">
+        <tr>
+            <th>STT</th>
+            <th>Tên bảng</th>
+            <th>Thêm</th>
+            <th>Sửa</th>
+            <th>Xóa</th>
+            <th>Truy vấn</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>message_embeddings</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>document_chunks</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>messages</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>ai_conversations</td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+    </table>
+    
+    <h4>Xử lý</h4>
+    <div class="figure-container">
+        <img src="act_ai_qa.png" alt="Sơ đồ hoạt động hỏi đáp AI">
+        <div class="figure-caption">Hình 3.28. Sơ đồ hoạt động của chức năng hỏi đáp AI</div>
+    </div>
+</div>
+
+<!-- 3.5.15 Tóm tắt hội thoại -->
+<div class="function-section">
+    <h3>3.5.15. Chức năng Tóm tắt hội thoại</h3>
+    
+    <h4>Mục đích</h4>
+    <p class="purpose">Cho phép người dùng tạo bản tóm tắt các tin nhắn mới trong kênh kể từ lần đọc cuối, giúp nhanh chóng nắm bắt nội dung thảo luận mà không cần đọc từng tin nhắn.</p>
+    
+    <h4>Giao diện</h4>
+    <div class="figure-container">
+        <img src="ui_ai_summary_numbered.png" alt="Giao diện tóm tắt hội thoại" class="ui-screenshot">
+        <div class="figure-caption">Hình 3.29. Giao diện chức năng tóm tắt hội thoại</div>
+    </div>
+    
+    <h4>Các thành phần trong giao diện</h4>
+    <p class="table-caption">Bảng 3.29. Bảng các thành phần trong giao diện tóm tắt hội thoại</p>
+    <table class="component-table">
+        <tr>
+            <th>STT</th>
+            <th>Loại điều khiển</th>
+            <th>Tên điều khiển</th>
+            <th>Nội dung thực hiện</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>Tab</td>
+            <td>Summary Tab</td>
+            <td>Chọn tab tóm tắt</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Dropdown</td>
+            <td>Time Range</td>
+            <td>Chọn khoảng thời gian tóm tắt</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Button</td>
+            <td>Generate Summary</td>
+            <td>Tạo bản tóm tắt</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Panel</td>
+            <td>Summary Panel</td>
+            <td>Hiển thị bản tóm tắt</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>Label</td>
+            <td>Message Count</td>
+            <td>Hiển thị số tin nhắn được tóm tắt</td>
+        </tr>
+    </table>
+    
+    <h4>Bảng dữ liệu</h4>
+    <p class="table-caption">Bảng 3.30. Bảng dữ liệu chức năng tóm tắt hội thoại</p>
+    <table class="data-table">
+        <tr>
+            <th>STT</th>
+            <th>Tên bảng</th>
+            <th>Thêm</th>
+            <th>Sửa</th>
+            <th>Xóa</th>
+            <th>Truy vấn</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>messages</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>threads</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>channel_members</td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>ai_conversations</td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+        </tr>
+    </table>
+    
+    <h4>Xử lý</h4>
+    <div class="figure-container">
+        <img src="act_ai_summary.png" alt="Sơ đồ hoạt động tóm tắt hội thoại">
+        <div class="figure-caption">Hình 3.30. Sơ đồ hoạt động của chức năng tóm tắt hội thoại</div>
+    </div>
+</div>
+
+<!-- 3.5.16 Trích xuất action items -->
+<div class="function-section">
+    <h3>3.5.16. Chức năng Trích xuất action items</h3>
+    
+    <h4>Mục đích</h4>
+    <p class="purpose">Cho phép AI tự động nhận diện và trích xuất các công việc cần làm (action items) từ cuộc hội thoại, bao gồm thông tin về task, người được giao và độ ưu tiên.</p>
+    
+    <h4>Giao diện</h4>
+    <div class="figure-container">
+        <img src="ui_ai_actions_numbered.png" alt="Giao diện trích xuất action items" class="ui-screenshot">
+        <div class="figure-caption">Hình 3.31. Giao diện chức năng trích xuất action items</div>
+    </div>
+    
+    <h4>Các thành phần trong giao diện</h4>
+    <p class="table-caption">Bảng 3.31. Bảng các thành phần trong giao diện trích xuất action items</p>
+    <table class="component-table">
+        <tr>
+            <th>STT</th>
+            <th>Loại điều khiển</th>
+            <th>Tên điều khiển</th>
+            <th>Nội dung thực hiện</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>Tab</td>
+            <td>Actions Tab</td>
+            <td>Chọn tab Action Items</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Button</td>
+            <td>Extract Actions</td>
+            <td>Trích xuất action items</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>List</td>
+            <td>Action Items List</td>
+            <td>Hiển thị danh sách action items</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Checkbox</td>
+            <td>Complete Checkbox</td>
+            <td>Đánh dấu hoàn thành</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>Label</td>
+            <td>Assignee</td>
+            <td>Hiển thị người được giao</td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td>Badge</td>
+            <td>Priority Badge</td>
+            <td>Hiển thị độ ưu tiên</td>
+        </tr>
+    </table>
+    
+    <h4>Bảng dữ liệu</h4>
+    <p class="table-caption">Bảng 3.32. Bảng dữ liệu chức năng trích xuất action items</p>
+    <table class="data-table">
+        <tr>
+            <th>STT</th>
+            <th>Tên bảng</th>
+            <th>Thêm</th>
+            <th>Sửa</th>
+            <th>Xóa</th>
+            <th>Truy vấn</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>messages</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>mentions</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>ai_conversations</td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+        </tr>
+    </table>
+    
+    <h4>Xử lý</h4>
+    <div class="figure-container">
+        <img src="act_extract_actions.png" alt="Sơ đồ hoạt động trích xuất action items">
+        <div class="figure-caption">Hình 3.32. Sơ đồ hoạt động của chức năng trích xuất action items</div>
+    </div>
+</div>
+
+<!-- 3.5.17 Tóm tắt tài liệu đính kèm -->
+<div class="function-section">
+    <h3>3.5.17. Chức năng Tóm tắt tài liệu đính kèm</h3>
+    
+    <h4>Mục đích</h4>
+    <p class="purpose">Cho phép người dùng tạo bản tóm tắt nội dung các file đính kèm (PDF, DOCX) trong kênh. AI sẽ trích xuất văn bản, phân tích và tạo bản tóm tắt ngắn gọn.</p>
+    
+    <h4>Giao diện</h4>
+    <div class="figure-container">
+        <img src="ui_summarize_doc_numbered.png" alt="Giao diện tóm tắt tài liệu" class="ui-screenshot">
+        <div class="figure-caption">Hình 3.33. Giao diện chức năng tóm tắt tài liệu</div>
+    </div>
+    
+    <h4>Các thành phần trong giao diện</h4>
+    <p class="table-caption">Bảng 3.33. Bảng các thành phần trong giao diện tóm tắt tài liệu</p>
+    <table class="component-table">
+        <tr>
+            <th>STT</th>
+            <th>Loại điều khiển</th>
+            <th>Tên điều khiển</th>
+            <th>Nội dung thực hiện</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>Card</td>
+            <td>File Card</td>
+            <td>Hiển thị thông tin file đính kèm</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Button</td>
+            <td>Summarize AI</td>
+            <td>Tạo bản tóm tắt file</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Progress</td>
+            <td>Processing Progress</td>
+            <td>Hiển thị tiến trình xử lý</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Panel</td>
+            <td>Summary Panel</td>
+            <td>Hiển thị bản tóm tắt</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>Label</td>
+            <td>File Info</td>
+            <td>Hiển thị thông tin file (tên, kích thước)</td>
+        </tr>
+    </table>
+    
+    <h4>Bảng dữ liệu</h4>
+    <p class="table-caption">Bảng 3.34. Bảng dữ liệu chức năng tóm tắt tài liệu</p>
+    <table class="data-table">
+        <tr>
+            <th>STT</th>
+            <th>Tên bảng</th>
+            <th>Thêm</th>
+            <th>Sửa</th>
+            <th>Xóa</th>
+            <th>Truy vấn</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>attachments</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>document_chunks</td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark">✓</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>ai_conversations</td>
+            <td class="checkmark">✓</td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+            <td class="checkmark"></td>
+        </tr>
+    </table>
+    
+    <h4>Xử lý</h4>
+    <div class="figure-container">
+        <img src="act_summarize_doc.png" alt="Sơ đồ hoạt động tóm tắt tài liệu">
+        <div class="figure-caption">Hình 3.34. Sơ đồ hoạt động của chức năng tóm tắt tài liệu</div>
+    </div>
+</div>
+
+</body>
+</html>

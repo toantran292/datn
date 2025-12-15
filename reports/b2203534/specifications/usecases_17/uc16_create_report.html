@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>UC16 - Tạo báo cáo AI</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; font-size: 13pt; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h3 { font-size: 14pt; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { border: 1px solid #000; padding: 8px; text-align: left; vertical-align: top; }
+        .caption { font-style: italic; font-weight: bold; text-align: center; margin: 10px 0; }
+        .figure { text-align: center; margin: 15px 0; }
+        .figure img { max-width: 100%; }
+        ol, ul { margin: 5px 0; padding-left: 20px; }
+    </style>
+</head>
+<body>
+
+<h3>- Chức năng tạo báo cáo AI</h3>
+
+<div class="figure">
+    <img src="uc16_create_report.png" alt="Sơ đồ Use Case tạo báo cáo AI">
+    <p class="caption">Hình 3.16. Sơ đồ use case chức năng tạo báo cáo AI</p>
+</div>
+
+<p class="caption">Bảng 3.16. Bảng đặc tả chức năng tạo báo cáo AI</p>
+
+<table>
+    <tr>
+        <td><b>Tên chức năng:</b> Tạo báo cáo AI</td>
+        <td><b>ID:</b> UC16</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Mức độ cần thiết:</b> Bắt buộc</td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <td><b>Người sử dụng:</b> Owner hoặc Admin của Workspace.</td>
+        <td><b>Phân loại:</b> Phức tạp</td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <td colspan="2"><b>Các thành phần tham gia và mối quan tâm:</b>
+            <ul>
+                <li><b>Owner/Admin:</b> Muốn tạo báo cáo tổng hợp sử dụng AI từ dữ liệu và tệp trong workspace.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Mô tả tóm tắt:</b> Chức năng cho phép tạo báo cáo AI tùy chỉnh bằng cách cấu hình tham số và prompt, sau đó gọi LLM Provider để sinh nội dung.</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Trigger:</b> Owner/Admin nhấn nút "Tạo báo cáo" trong trang báo cáo.</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Kiểu sự kiện:</b> External</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Luồng xử lý bình thường của sự kiện:</b>
+            <ol>
+                <li>Owner/Admin mở form tạo báo cáo AI.</li>
+                <li>Người dùng nhập tên báo cáo và chọn loại báo cáo.</li>
+                <li>Người dùng chọn LLM Provider (OpenAI, Anthropic, Google).</li>
+                <li>Người dùng chọn khoảng thời gian dữ liệu.</li>
+                <li>Người dùng nhập prompt tùy chỉnh (tùy chọn).</li>
+                <li>Người dùng nhấn "Tạo báo cáo".</li>
+                <li>Hệ thống thu thập dữ liệu từ workspace.</li>
+                <li>Hệ thống gọi API LLM Provider để sinh báo cáo.</li>
+                <li>Hệ thống lưu báo cáo và ghi audit log.</li>
+                <li>Hệ thống hiển thị kết quả báo cáo.</li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Các luồng sự kiện con (Subflows):</b>
+            <ul>
+                <li>Cấu hình tham số: Chọn loại, LLM, thời gian, prompt.</li>
+                <li>Truy vấn LLM: Gọi API và nhận kết quả từ AI.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Luồng luân phiên/đặc biệt (Alternative/Exceptional flows):</b>
+            <ul>
+                <li>7a. Không có dữ liệu: Thông báo cần upload tệp trước.</li>
+                <li>8a. LLM API lỗi: Thông báo lỗi và cho phép thử lại.</li>
+                <li>8b. Vượt quá giới hạn token: Yêu cầu thu hẹp phạm vi dữ liệu.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Kết quả:</b> Báo cáo AI được tạo và lưu trữ thành công.</td>
+    </tr>
+</table>
+
+</body>
+</html>

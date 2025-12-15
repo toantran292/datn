@@ -1,0 +1,59 @@
+% UC10: Xem Audit Log
+\paragraph{Chức năng xem Audit Log}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/uc10_audit_log.png}
+    \caption{Sơ đồ use case chức năng xem Audit Log}
+    \label{fig:uc10_audit_log}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Bảng đặc tả chức năng xem Audit Log},
+    label = {tab:uc10}
+]{
+    colspec = {|l|X|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+Tên chức năng & Xem Audit Log \\
+ID & UC10 \\
+Mức độ cần thiết & Bắt buộc \\
+Người sử dụng & Owner hoặc Admin của Work\-space \\
+Phân loại & Đơn giản \\
+Các thành phần tham gia và mối quan tâm & \textbf{Owner/Admin:} Muốn xem lịch sử hoạt động để theo dõi và kiểm tra bảo mật. \\
+Mô tả tóm tắt & Chức năng cho phép xem lịch sử các hoạt động trong work\-space với khả năng lọc theo hành động và người dùng. \\
+Trigger & Owner/Admin truy cập trang Audit Log trong cài đặt work\-space. \\
+Kiểu sự kiện & External \\
+Luồng xử lý bình thường &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{enumerate}[nosep, leftmargin=*]
+    \item Owner/Admin truy cập trang Audit Log.
+    \item Hệ thống tải danh sách log theo thứ tự thời gian.
+    \item Hệ thống hiển thị danh sách với thông tin: thời gian, người dùng, hành động, chi tiết.
+    \item Owner/Admin có thể sử dụng bộ lọc để tìm kiếm.
+\end{enumerate}
+\vspace{2pt}
+\end{minipage} \\
+Các luồng sự kiện con &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item Lọc theo hành động: Chọn loại hành động cần xem.
+    \item Lọc theo người dùng: Chọn người dùng cụ thể.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Luồng luân phiên/đặc biệt &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item 2a. Không có log: Hiển thị thông báo chưa có hoạt động nào.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Kết quả & Danh sách audit log được hiển thị theo điều kiện lọc. \\
+\end{longtblr}

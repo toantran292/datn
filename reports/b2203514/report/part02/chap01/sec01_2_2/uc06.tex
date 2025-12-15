@@ -1,0 +1,59 @@
+\paragraph{UC06: Tạo thread thảo luận}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.3\textwidth]{images/UC06.png}
+    \caption{Sơ đồ use case UC06 - Tạo thread thảo luận}
+    \label{fig:uc06}
+\end{figure}
+
+\begin{adjustwidth}{-2cm}{-1cm}
+\begin{longtblr}[
+    caption = {Đặc tả use case UC06 - Tạo thread thảo luận},
+    label = {tab:uc06}
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Tạo thread thảo luận} \\\hline
+ID & UC06 \\\hline
+Người sử dụng & Member \\\hline
+Mức độ cần thiết & Quan trọng \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{Member:} Muốn tạo thread từ một tin nhắn để thảo luận chi tiết mà không làm gián đoạn luồng hội thoại chính.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Cho phép Member tạo thread (luồng thảo luận phụ) từ một tin nhắn cụ thể để thảo luận sâu về một chủ đề mà không ảnh hưởng đến luồng chat chính. \\\hline
+Trigger & Member chọn một tin nhắn và chọn "Tạo thread". \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item Member hover vào một tin nhắn trong kênh.
+        \item Member chọn icon "Tạo thread" hoặc "Reply in thread".
+        \item Hệ thống mở panel thread bên phải màn hình.
+        \item Member nhập nội dung trả lời trong thread.
+        \item Member nhấn "Gửi".
+        \item Hệ thống lưu tin nhắn trong thread và hiển thị số reply trên tin nhắn gốc.
+        \item Các thành viên khác có thể xem và tham gia thread.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{A1}} -- Thread đã tồn tại: Hệ thống mở thread hiện có thay vì tạo mới.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Thread được tạo và các thành viên có thể thảo luận chi tiết trong thread. \\\hline
+\end{longtblr}
+\end{adjustwidth}

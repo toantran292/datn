@@ -1,0 +1,47 @@
+\subsection{Giới thiệu về Large Language Models (LLM)}
+
+\subsubsection{Khái quát}
+
+Large Lan\-guage Models (LLM) là các mô hình AI được huấn luyện trên lượng lớn dữ liệu văn bản. LLMs có khả năng hiểu và sinh ra ngôn ngữ tự nhiên, thực hiện nhiều tác vụ như tóm tắt, dịch thuật, và trả lời câu hỏi.
+
+Trong ứng dụng chat, LLMs hữu ích cho việc tóm tắt hội thoại dài và trích xuất thông tin quan trọng. Khi kết hợp với RAG, LLMs có thể truy xuất thông tin từ cơ sở dữ liệu để cung cấp câu trả lời chính xác hơn.
+
+\subsubsection{Embeddings và Vector Search}
+
+Text Embeddings là kỹ thuật chuyển đổi văn bản thành vector số học. Các văn bản có ý nghĩa tương tự sẽ có vectors gần nhau, tạo nền tảng cho semantic search - tìm kiếm dựa trên ý nghĩa thay vì từ khóa.
+
+OpenAI cung cấp các Em\-bed\-ding models như text-em\-bed\-ding-3-small phù hợp cho hầu hết ứng dụng. Quy trình gồm hai giai đoạn: Indexing chuyển văn bản thành embeddings và lưu vào database; Query tìm các vectors gần nhất với câu hỏi của người dùng.
+
+\subsubsection{RAG (Re\-triev\-al-Aug\-ment\-ed Ge\-ne\-ra\-tion)}
+
+RAG là kiến trúc kết hợp hệ thống truy xuất với LLM, cho phép trả lời câu hỏi dựa trên dữ liệu cụ thể thay vì chỉ dựa vào kiến thức huấn luyện. RAG giải quyết các hạn chế như thông tin lỗi thời và sinh ra nội dung không chính xác.
+
+Quy trình RAG gồm: chia tài liệu thành chunks nhỏ, chuyển thành embeddings và lưu vào vector database. Khi có câu hỏi, hệ thống tìm các chunks liên quan và đưa vào prompt để LLM sinh câu trả lời.
+
+\subsubsection{LLM Providers}
+
+Thị trường LLM có nhiều nhà cung cấp. OpenAI với GPT-4o mạnh về reasoning, GPT-4o-mini phù hợp cho tác vụ đơn giản. Anthropic Claude nổi bật với context window lớn. Google Gemini hỗ trợ đa phương tiện.
+
+Việc chọn model phụ thuộc vào độ phức tạp của tác vụ, yêu cầu về độ dài context, chi phí và tốc độ xử lý.
+
+\subsubsection{Kỹ thuật Prompt En\-gi\-neer\-ing}
+
+Prompt En\-gi\-neer\-ing là kỹ thuật thiết kế prompts hiệu quả để có kết quả mong muốn từ LLMs. Các kỹ thuật phổ biến gồm zero-shot (không cần ví dụ), few-shot (cung cấp vài ví dụ), và chain-of-thought (yêu cầu giải thích từng bước).
+
+System Prompts định nghĩa vai trò và ràng buộc cho model. Structured Output yêu cầu trả về format cụ thể như JSON để dễ tích hợp vào ứng dụng.
+
+\subsubsection{LangChain.js Framework}
+
+LangChain.js là framework Java\-Script/Type\-Script để xây dựng ứng dụng LLM. Framework cung cấp các thành phần như Document Loaders (đọc PDF, DOCX), Text Splitters (chia văn bản), và Vector Stores (lưu trữ embeddings).
+
+LangChain.js hỗ trợ tích hợp với nhiều LLM providers và vector databases. Chains cho phép kết hợp nhiều thành phần để xây dựng RAG pipeline hoàn chỉnh.
+
+\subsubsection{Vận dụng vào đề tài}
+
+AI Service được xây dựng bằng NestJS tích hợp LangChain.js. Service sử dụng kiến trúc RAG với pgvector để trả lời câu hỏi dựa trên lịch sử hội thoại và tài liệu đính kèm.
+
+Hệ thống gồm hai luồng: Indexing Pipeline xử lý tin nhắn và tài liệu mới, tạo embeddings và lưu vào database; Query Pipeline nhận câu hỏi, tìm chunks liên quan và gọi LLM sinh câu trả lời.
+
+Các tính năng AI chính gồm: tóm tắt hội thoại, trích xuất công việc cần làm, hỏi đáp theo ngữ cảnh qua RAG, và tóm tắt tài liệu đính kèm.
+
+Channel Admin có thể bật/tắt từng tính năng AI. Hệ thống theo dõi token usage và áp dụng rate limiting để kiểm soát chi phí.

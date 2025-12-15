@@ -1,0 +1,71 @@
+% UC12: Chuyển quyền sở hữu
+\paragraph{Chức năng chuyển quyền sở hữu}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/uc12_ownership.png}
+    \caption{Sơ đồ use case chức năng chuyển quyền sở hữu}
+    \label{fig:uc12_ownership}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Bảng đặc tả chức năng chuyển quyền sở hữu},
+    label = {tab:uc12}
+]{
+    colspec = {|l|X|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+Tên chức năng & Chuyển quyền sở hữu \\
+ID & UC12 \\
+Mức độ cần thiết & Bắt buộc \\
+Người sử dụng & Owner hoặc Super Admin \\
+Phân loại & Trung bình \\
+Các thành phần tham gia và mối quan tâm &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item \textbf{Owner:} Muốn chuyển quyền sở hữu work\-space cho thành viên khác.
+    \item \textbf{Super Admin:} Muốn thu hồi quyền Owner và chỉ định Owner mới.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Mô tả tóm tắt & Chức năng cho phép chuyển hoặc thu hồi quyền sở hữu work\-space. \\
+Trigger & Owner chọn "Chuyển quyền" hoặc Super Admin chọn "Thu hồi quyền". \\
+Kiểu sự kiện & External \\
+Luồng xử lý bình thường &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{enumerate}[nosep, leftmargin=*]
+    \item Owner/Super Admin truy cập chức năng quản lý quyền sở hữu.
+    \item Hệ thống hiển thị danh sách thành viên đủ điều kiện nhận quyền.
+    \item Người dùng chọn thành viên sẽ nhận quyền Owner.
+    \item Người dùng xác nhận thao tác.
+    \item Hệ thống cập nhật quyền sở hữu.
+    \item Hệ thống gửi thông báo cho các bên liên quan.
+    \item Hệ thống ghi audit log.
+\end{enumerate}
+\vspace{2pt}
+\end{minipage} \\
+Các luồng sự kiện con &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item Cấp quyền Owner: Owner hiện tại chuyển quyền cho thành viên khác.
+    \item Thu hồi quyền Owner: Super Admin thu hồi và chỉ định Owner mới.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Luồng luân phiên/đặc biệt &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item 3a. Không có thành viên phù hợp: Thông báo cần mời thêm thành viên.
+    \item 4a. Hủy xác nhận: Quay về trang trước, không thay đổi.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Kết quả & Quyền sở hữu được chuyển giao thành công. \\
+\end{longtblr}

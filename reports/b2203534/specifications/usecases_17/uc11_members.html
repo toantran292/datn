@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>UC11 - Quản lý thành viên</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; font-size: 13pt; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h3 { font-size: 14pt; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { border: 1px solid #000; padding: 8px; text-align: left; vertical-align: top; }
+        .caption { font-style: italic; font-weight: bold; text-align: center; margin: 10px 0; }
+        .figure { text-align: center; margin: 15px 0; }
+        .figure img { max-width: 100%; }
+        ol, ul { margin: 5px 0; padding-left: 20px; }
+    </style>
+</head>
+<body>
+
+<h3>- Chức năng quản lý thành viên</h3>
+
+<div class="figure">
+    <img src="uc11_members.png" alt="Sơ đồ Use Case quản lý thành viên">
+    <p class="caption">Hình 3.11. Sơ đồ use case chức năng quản lý thành viên</p>
+</div>
+
+<p class="caption">Bảng 3.11. Bảng đặc tả chức năng quản lý thành viên</p>
+
+<table>
+    <tr>
+        <td><b>Tên chức năng:</b> Quản lý thành viên</td>
+        <td><b>ID:</b> UC11</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Mức độ cần thiết:</b> Bắt buộc</td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <td><b>Người sử dụng:</b> Owner hoặc Admin của Workspace.</td>
+        <td><b>Phân loại:</b> Phức tạp</td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <td colspan="2"><b>Các thành phần tham gia và mối quan tâm:</b>
+            <ul>
+                <li><b>Owner/Admin:</b> Muốn mời, xóa, phân quyền và xem danh sách thành viên trong workspace.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Mô tả tóm tắt:</b> Chức năng cho phép quản lý toàn bộ thành viên trong workspace bao gồm mời, xóa, phân quyền và xem danh sách.</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Trigger:</b> Owner/Admin truy cập trang quản lý thành viên.</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Kiểu sự kiện:</b> External</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Luồng xử lý bình thường của sự kiện:</b>
+            <ol>
+                <li>Owner/Admin truy cập trang quản lý thành viên.</li>
+                <li>Hệ thống hiển thị danh sách thành viên hiện tại.</li>
+                <li>Owner/Admin chọn thao tác: mời, xóa hoặc phân quyền.</li>
+                <li>Hệ thống thực hiện thao tác được chọn.</li>
+                <li>Hệ thống gửi thông báo/email cho người liên quan.</li>
+                <li>Hệ thống ghi audit log và cập nhật danh sách.</li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Các luồng sự kiện con (Subflows):</b>
+            <ul>
+                <li>Mời thành viên: Nhập email, chọn vai trò, gửi email mời.</li>
+                <li>Xóa thành viên: Xác nhận và xóa khỏi workspace.</li>
+                <li>Phân quyền: Thay đổi vai trò của thành viên.</li>
+                <li>Xem danh sách: Hiển thị tất cả thành viên với thông tin vai trò.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Luồng luân phiên/đặc biệt (Alternative/Exceptional flows):</b>
+            <ul>
+                <li>3a. Email không hợp lệ: Thông báo lỗi định dạng email.</li>
+                <li>3b. Không thể xóa Owner: Yêu cầu chuyển quyền trước.</li>
+                <li>3c. Admin không thể phân quyền Admin khác: Thông báo không đủ quyền.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Kết quả:</b> Thao tác quản lý thành viên được thực hiện thành công.</td>
+    </tr>
+</table>
+
+</body>
+</html>

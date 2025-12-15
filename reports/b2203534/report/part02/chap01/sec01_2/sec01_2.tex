@@ -1,0 +1,54 @@
+\subsection{Yêu cầu chức năng}
+
+\subsubsection{Sơ đồ trường hợp sử dụng}
+
+Dựa trên mô tả bài toán ở mục 1.1, hệ thống có 3 tác nhân chính (Super Admin, Workspace Owner, Member) và các hệ thống bên ngoài tương tác với phân hệ nền tảng và thông tin. Các yêu cầu chức năng được phân loại theo từng tác nhân và được biểu diễn thông qua các sơ đồ trường hợp sử dụng (use case) dưới đây.
+
+\begin{itemize}
+    \item \textbf{Sơ đồ trường hợp sử dụng tổng quan:}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{images/usecase_tongquan.png}
+        \caption{Sơ đồ trường hợp sử dụng tổng quan của phân hệ nền tảng và thông tin}
+        \label{fig:usecase_tongquan}
+    \end{figure}
+
+    \item \textbf{Sơ đồ trường hợp sử dụng của Super Admin:}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.7\textwidth]{images/usecase_super_admin.png}
+        \caption{Sơ đồ trường hợp sử dụng của Super Admin}
+        \label{fig:usecase_super_admin}
+    \end{figure}
+
+    \item \textbf{Sơ đồ trường hợp sử dụng của Workspace Admin:}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.75\textwidth]{images/usecase_workspace_admin.png}
+        \caption{Sơ đồ trường hợp sử dụng của Workspace Admin}
+        \label{fig:usecase_workspace_admin}
+    \end{figure}
+
+    \item \textbf{Sơ đồ trường hợp sử dụng của Workspace Owner:}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.7\textwidth]{images/usecase_workspace_owner.png}
+        \caption{Sơ đồ trường hợp sử dụng của Workspace Owner}
+        \label{fig:usecase_workspace_owner}
+    \end{figure}
+
+    \item \textbf{Sơ đồ trường hợp sử dụng của Người dùng:}
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.7\textwidth]{images/usecase_member.png}
+        \caption{Sơ đồ trường hợp sử dụng của Người dùng}
+        \label{fig:usecase_member}
+    \end{figure}
+
+    \item \textbf{Tích hợp với các hệ thống bên ngoài:} Ngoài ba tác nhân chính, phân hệ nền tảng và thông tin còn tương tác với các hệ thống bên ngoài để cung cấp các chức năng mở rộng. Các hệ thống bên ngoài bao gồm: dịch vụ email (gửi thông báo qua email, xác nhận tài khoản, reset mật khẩu), dịch vụ lưu trữ đám mây (lưu trữ file trên S3-compatible storage), dịch vụ AI bên ngoài (OpenAI API, Gemini API để tổng hợp và phân tích dữ liệu), và các phân hệ chức năng khác (project management, communication, meeting) để đồng bộ dữ liệu và cung cấp thông tin tổng hợp. Việc tích hợp với các hệ thống bên ngoài giúp phân hệ nền tảng linh hoạt, dễ mở rộng và có thể tận dụng các dịch vụ sẵn có thay vì phải xây dựng lại từ đầu.
+\end{itemize}

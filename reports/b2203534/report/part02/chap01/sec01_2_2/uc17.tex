@@ -1,0 +1,66 @@
+% UC17: Xem và xuất báo cáo
+\paragraph{Chức năng xem và xuất báo cáo}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/uc17_export_report.png}
+    \caption{Sơ đồ use case chức năng xem và xuất báo cáo}
+    \label{fig:uc17_export_report}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Bảng đặc tả chức năng xem và xuất báo cáo},
+    label = {tab:uc17}
+]{
+    colspec = {|l|X|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+Tên chức năng & Xem và xuất báo cáo \\
+ID & UC17 \\
+Mức độ cần thiết & Bắt buộc \\
+Người sử dụng & Thành viên của Work\-space \\
+Phân loại & Đơn giản \\
+Các thành phần tham gia và mối quan tâm & \textbf{Người dùng:} Muốn xem danh sách báo cáo AI đã tạo và xuất sang các định dạng khác nhau. \\
+Mô tả tóm tắt & Chức năng cho phép xem danh sách báo cáo, xem chi tiết nội dung và xuất báo cáo sang PDF, DOCX hoặc Mark\-down. \\
+Trigger & Người dùng truy cập trang báo cáo hoặc chọn xuất báo cáo. \\
+Kiểu sự kiện & External \\
+Luồng xử lý bình thường &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{enumerate}[nosep, leftmargin=*]
+    \item Người dùng truy cập trang danh sách báo cáo.
+    \item Hệ thống hiển thị danh sách báo cáo với thông tin tóm tắt.
+    \item Người dùng chọn báo cáo để xem chi tiết.
+    \item Hệ thống hiển thị nội dung đầy đủ của báo cáo.
+    \item Người dùng chọn "Xuất báo cáo".
+    \item Hệ thống hiển thị các tùy chọn định dạng (PDF, DOCX, MD).
+    \item Người dùng chọn định dạng và nhấn "Tải xuống".
+    \item Hệ thống tạo file và tải về máy người dùng.
+    \item Hệ thống ghi audit log.
+\end{enumerate}
+\vspace{2pt}
+\end{minipage} \\
+Các luồng sự kiện con &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item Xem danh sách: Hiển thị tất cả báo cáo theo thời gian tạo.
+    \item Xem chi tiết: Hiển thị nội dung đầy đủ của một báo cáo.
+    \item Xuất PDF/DOCX/MD: Chuyển đổi và tải báo cáo về máy.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Luồng luân phiên/đặc biệt &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item 2a. Không có báo cáo: Hiển thị hướng dẫn tạo báo cáo mới.
+    \item 8a. Lỗi tạo file: Thông báo lỗi và cho phép thử lại.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Kết quả & Báo cáo được xem và xuất thành công theo định dạng mong muốn. \\
+\end{longtblr}

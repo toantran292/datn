@@ -1,0 +1,19 @@
+\newcommand{\figmini}[4][.93]{%
+  \par
+  \begin{minipage}{#1\linewidth}
+    \captionsetup{type=figure, width=#1\linewidth}
+    \includegraphics[width=\linewidth]{#2}
+    \caption{\centering #4}
+    \label{#3}
+  \end{minipage}%
+}
+
+
+\newcommand{\figminiskip}[4][.93]{%
+  \begin{minipage}{#1\linewidth}
+    \captionsetup{type=figure, skip=-15pt, width=#1\linewidth}
+    \includegraphics[width=\linewidth]{#2}
+    \caption{\centering #4}
+    \label{#3}
+  \end{minipage}%
+}

@@ -1,0 +1,55 @@
+% UC06: Tạo Workspace
+\paragraph{Chức năng tạo Work\-space}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/uc06_create_workspace.png}
+    \caption{Sơ đồ use case chức năng tạo Work\-space}
+    \label{fig:uc06_create_workspace}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Bảng đặc tả chức năng tạo Work\-space},
+    label = {tab:uc06}
+]{
+    colspec = {|l|X|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+Tên chức năng & Tạo Work\-space \\
+ID & UC06 \\
+Mức độ cần thiết & Bắt buộc \\
+Người sử dụng & Người dùng đã đăng nhập \\
+Phân loại & Trung bình \\
+Các thành phần tham gia và mối quan tâm & \textbf{Người dùng:} Muốn tạo không gian làm việc mới để quản lý nhóm và tài liệu. \\
+Mô tả tóm tắt & Chức năng cho phép người dùng tạo Work\-space mới với các thông tin cơ bản và được gán quyền Owner. \\
+Trigger & Người dùng nhấn nút "Tạo Work\-space" trong trang danh sách work\-space. \\
+Kiểu sự kiện & External \\
+Luồng xử lý bình thường &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{enumerate}[nosep, leftmargin=*]
+    \item Người dùng nhấn nút "Tạo Work\-space".
+    \item Hệ thống hiển thị form tạo work\-space.
+    \item Người dùng nhập tên, mô tả và chọn LLM Pro\-vider.
+    \item Người dùng nhấn nút "Tạo".
+    \item Hệ thống tạo work\-space mới.
+    \item Hệ thống gán người tạo làm Owner.
+    \item Hệ thống ghi audit log và chuyển đến Dash\-board work\-space.
+\end{enumerate}
+\vspace{2pt}
+\end{minipage} \\
+Các luồng sự kiện con & N/A \\
+Luồng luân phiên/đặc biệt &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item 3a. Tên work\-space đã tồn tại: Hệ thống yêu cầu đặt tên khác.
+    \item 5a. Vượt quá giới hạn work\-space: Thông báo giới hạn và yêu cầu nâng cấp.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Kết quả & Work\-space mới được tạo và người dùng trở thành Owner. \\
+\end{longtblr}

@@ -1,0 +1,63 @@
+\paragraph{UC14: Tóm tắt tài liệu}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.3\textwidth]{images/UC14.png}
+    \caption{Sơ đồ use case UC14 - Tóm tắt tài liệu}
+    \label{fig:uc14}
+\end{figure}
+
+\begin{adjustwidth}{-1.5cm}{-0.5cm}
+\begin{longtblr}[
+    caption = {Đặc tả use case UC14 - Tóm tắt tài liệu},
+    label = {tab:uc14}
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Tóm tắt tài liệu} \\\hline
+ID & UC14 \\\hline
+Người sử dụng & Member \\\hline
+Mức độ cần thiết & Quan trọng \\\hline
+Phân loại & Phức tạp \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{Member:} Muốn hiểu nhanh nội dung của tài liệu đính kèm mà không cần đọc toàn bộ. \\
+    + \textbf{AI Provider:} Xử lý tài liệu và sinh bản tóm tắt. \\
+    + \textbf{File Service:} Cung cấp nội dung tài liệu.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Cho phép Member yêu cầu AI tóm tắt nội dung của một tài liệu đính kèm trong chat (PDF, DOCX, v.v.) ngay trong khung chat. \\\hline
+Trigger & Member chọn một tài liệu đính kèm và yêu cầu tóm tắt. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item Member click vào tài liệu đính kèm trong tin nhắn.
+        \item Member chọn "Tóm tắt với AI".
+        \item Hệ thống lấy nội dung tài liệu từ File Service.
+        \item Hệ thống trích xuất văn bản từ tài liệu (PDF parser, DOCX parser).
+        \item Hệ thống gửi nội dung đến AI Service.
+        \item AI Service sinh bản tóm tắt.
+        \item Hệ thống hiển thị bản tóm tắt trong panel AI Assistant.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- Không thể trích xuất văn bản: Hệ thống thông báo "Không thể đọc nội dung tài liệu này".
+
+    \textbf{\textcolor{red}{A1}} -- Tài liệu quá dài: Hệ thống chia nhỏ, tóm tắt từng phần và tổng hợp.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Bản tóm tắt tài liệu được hiển thị, giúp Member nắm bắt nội dung nhanh chóng. \\\hline
+\end{longtblr}
+\end{adjustwidth}
