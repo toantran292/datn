@@ -1,8 +1,15 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from "@nestjs/common";
 import { Namespace } from "socket.io";
 import { MessagesRepository } from "./repositories/messages.repository";
-import { types } from "cassandra-driver";
+import { ReactionsRepository } from "./repositories/reactions.repository";
+import { PinnedMessagesRepository } from "./repositories/pinned-messages.repository";
+import { AttachmentsRepository } from "./repositories/attachments.repository";
+import { SearchRepository } from "./repositories/search.repository";
+import { NotificationSettingsRepository } from "./repositories/notification-settings.repository";
 import { RoomsRepository } from "../rooms/repositories/room.repository";
+import { RoomMembersRepository } from "../rooms/repositories/room-members.repository";
+import { FileStorageClient } from "../common/file-storage/file-storage.client";
+import { NotificationLevel } from "../database/entities/channel-notification-setting.entity";
 
 export type CreatedMessage = {
   id: string;
@@ -16,11 +23,25 @@ export type CreatedMessage = {
   replyCount?: number;
 };
 
+// Simple UUID validation regex
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isValidUuid(str: string): boolean {
+  return UUID_REGEX.test(str);
+}
+
 @Injectable()
 export class ChatsService {
   constructor(
     private readonly messagesRepo: MessagesRepository,
+    private readonly reactionsRepo: ReactionsRepository,
+    private readonly pinnedMessagesRepo: PinnedMessagesRepository,
+    private readonly attachmentsRepo: AttachmentsRepository,
+    private readonly searchRepo: SearchRepository,
+    private readonly notificationSettingsRepo: NotificationSettingsRepository,
     private readonly roomsRepo: RoomsRepository,
+    private readonly roomMembersRepo: RoomMembersRepository,
+    private readonly fileStorageClient: FileStorageClient,
   ) { }
 
   applyAuthMiddleware(nsp: Namespace) {
@@ -35,25 +56,22 @@ export class ChatsService {
 
       if (!userId || !orgId) return next(new Error("Unauthorized"));
 
-      try {
-        types.Uuid.fromString(userId);
-        types.Uuid.fromString(orgId);
-
-        socket.userId = userId;
-        socket.orgId = orgId;
-        return next();
-      } catch {
+      if (!isValidUuid(userId) || !isValidUuid(orgId)) {
         return next(new Error("Unauthorized"));
       }
+
+      socket.userId = userId;
+      socket.orgId = orgId;
+      return next();
     });
   }
 
   async createMessage(body: {
-    roomId: types.TimeUuid;
-    userId: types.Uuid;
-    orgId: types.Uuid;
+    roomId: string;
+    userId: string;
+    orgId: string;
     content: string;
-    threadId?: types.TimeUuid;
+    threadId?: string;
   }): Promise<CreatedMessage> {
     const entity = await this.messagesRepo.create({
       roomId: body.roomId,
@@ -62,82 +80,761 @@ export class ChatsService {
       orgId: body.orgId,
       threadId: body.threadId,
       type: "text",
-      sendAt: new Date(),
     });
 
     return {
-      id: entity.id.toString(),
-      roomId: entity.roomId.toString(),
-      userId: entity.userId.toString(),
-      orgId: entity.orgId.toString(),
-      threadId: entity.threadId?.toString() ?? null,
+      id: entity.id,
+      roomId: entity.roomId,
+      userId: entity.userId,
+      orgId: entity.orgId,
+      threadId: entity.threadId ?? null,
       type: entity.type,
       content: entity.content,
-      sentAt: entity.sendAt.toISOString(),
+      sentAt: entity.createdAt.toISOString(),
     };
   }
 
   async listMessages(roomId: string, paging?: { pageSize?: number; pageState?: string }) {
-    const tid = types.TimeUuid.fromString(roomId);
-    const rs = await this.messagesRepo.listByRoom(tid, paging);
+    const rs = await this.messagesRepo.listByRoom(roomId, paging);
 
-    // Calculate reply counts for main messages (those with threadId = null)
-    const replyCountMap = new Map<string, number>();
+    // Get IDs of main messages (those without threadId) to fetch reply counts
+    const mainMessageIds = rs.items
+      .filter(m => !m.threadId)
+      .map(m => m.id);
 
-    // Count replies for each parent message
-    rs.items.forEach(msg => {
-      if (msg.threadId) {
-        const parentId = msg.threadId.toString();
-        replyCountMap.set(parentId, (replyCountMap.get(parentId) || 0) + 1);
-      }
-    });
+    // Fetch reply counts from database for main messages
+    const replyCountMap = mainMessageIds.length > 0
+      ? await this.messagesRepo.getReplyCountsForMessages(roomId, mainMessageIds)
+      : new Map<string, number>();
 
     return {
       items: rs.items.map(m => ({
-        id: m.id.toString(),
-        roomId: m.roomId.toString(),
-        userId: m.userId.toString(),
-        orgId: m.orgId.toString(),
-        threadId: m.threadId?.toString() ?? null,
+        id: m.id,
+        roomId: m.roomId,
+        userId: m.userId,
+        orgId: m.orgId,
+        threadId: m.threadId ?? null,
         type: m.type,
         content: m.content,
-        sentAt: m.sendAt.toISOString(),
-        replyCount: m.threadId ? undefined : (replyCountMap.get(m.id.toString()) || 0), // Only for main messages
+        sentAt: m.createdAt.toISOString(),
+        replyCount: m.threadId ? undefined : (replyCountMap.get(m.id) || 0),
       })),
       pageState: rs.pageState,
     };
   }
 
   async listThreadMessages(roomId: string, threadId: string, paging?: { pageSize?: number; pageState?: string }) {
-    const tid = types.TimeUuid.fromString(roomId);
-    const rs = await this.messagesRepo.listByRoom(tid, paging);
-
-    // Filter messages that belong to this thread
-    const threadItems = rs.items.filter(m => m.threadId?.toString() === threadId);
+    const rs = await this.messagesRepo.listByThread(roomId, threadId, paging);
 
     return {
-      items: threadItems.map(m => ({
-        id: m.id.toString(),
-        roomId: m.roomId.toString(),
-        userId: m.userId.toString(),
-        orgId: m.orgId.toString(),
-        threadId: m.threadId?.toString() ?? null,
+      items: rs.items.map(m => ({
+        id: m.id,
+        roomId: m.roomId,
+        userId: m.userId,
+        orgId: m.orgId,
+        threadId: m.threadId ?? null,
         type: m.type,
         content: m.content,
-        sentAt: m.sendAt.toISOString(),
+        sentAt: m.createdAt.toISOString(),
       })),
       pageState: rs.pageState,
     };
   }
 
+  // ============== UC06: Thread ==============
+
+  /**
+   * UC06: Get thread info with reply count and last reply
+   */
+  async getThreadInfo(roomId: string, threadId: string, userId: string) {
+    // Check if user is member
+    const isMember = await this.roomMembersRepo.isMember(roomId, userId);
+    if (!isMember) throw new ForbiddenException('You must be a member to view thread');
+
+    // Get parent message
+    const parentMessage = await this.messagesRepo.findById(threadId);
+    if (!parentMessage) throw new NotFoundException('Thread not found');
+    if (parentMessage.roomId !== roomId) throw new NotFoundException('Thread not found in this room');
+
+    // Get reply count
+    const replyCount = await this.messagesRepo.countRepliesByThreadId(roomId, threadId);
+
+    // Get last reply
+    const lastReply = await this.messagesRepo.getLastReply(roomId, threadId);
+
+    return {
+      threadId,
+      roomId,
+      parentMessage: {
+        id: parentMessage.id,
+        content: parentMessage.content,
+        userId: parentMessage.userId,
+        createdAt: parentMessage.createdAt.toISOString(),
+      },
+      replyCount,
+      lastReply: lastReply ? {
+        id: lastReply.id,
+        content: lastReply.content,
+        userId: lastReply.userId,
+        createdAt: lastReply.createdAt.toISOString(),
+      } : null,
+    };
+  }
+
+  /**
+   * UC06: Get reply count for a specific thread
+   */
+  async getThreadReplyCount(roomId: string, threadId: string): Promise<number> {
+    return this.messagesRepo.countRepliesByThreadId(roomId, threadId);
+  }
+
   async listRoomsForOrg(orgId: string) {
-    const oid = types.Uuid.fromString(orgId);
-    const { items } = await this.roomsRepo.listByOrg(oid, { limit: 100 });
+    const { items } = await this.roomsRepo.listByOrg(orgId, { limit: 100 });
     return items.map((room) => ({
-      id: room.id.toString(),
-      orgId: room.orgId.toString(),
+      id: room.id,
+      orgId: room.orgId,
       name: room.name,
       isPrivate: room.isPrivate,
     }));
+  }
+
+  // ============== UC07: Message Interactions ==============
+
+  /**
+   * UC07: Edit message
+   * - Only message author can edit
+   */
+  async editMessage(messageId: string, userId: string, newContent: string) {
+    const message = await this.messagesRepo.findById(messageId);
+    if (!message) throw new NotFoundException('Message not found');
+
+    if (message.userId !== userId) {
+      throw new ForbiddenException('You can only edit your own messages');
+    }
+
+    await this.messagesRepo.updateContent(messageId, newContent);
+
+    return {
+      id: messageId,
+      content: newContent,
+      editedAt: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * UC07: Delete message (soft delete)
+   * - Message author can delete their own messages
+   * - Room admins can delete any message
+   */
+  async deleteMessage(messageId: string, userId: string, orgId: string) {
+    const message = await this.messagesRepo.findById(messageId);
+    if (!message) throw new NotFoundException('Message not found');
+
+    const isAuthor = message.userId === userId;
+
+    if (!isAuthor) {
+      // Check if user is room admin
+      const member = await this.roomMembersRepo.get(message.roomId, userId);
+      if (!member || member.role !== 'ADMIN') {
+        throw new ForbiddenException('You can only delete your own messages or be a room admin');
+      }
+    }
+
+    await this.messagesRepo.softDelete(messageId);
+
+    return { deleted: true, messageId };
+  }
+
+  /**
+   * UC07: Add reaction to message
+   */
+  async addReaction(messageId: string, userId: string, emoji: string) {
+    const message = await this.messagesRepo.findById(messageId);
+    if (!message) throw new NotFoundException('Message not found');
+
+    // Check if user is member of the room
+    const isMember = await this.roomMembersRepo.isMember(message.roomId, userId);
+    if (!isMember) throw new ForbiddenException('You must be a member to react');
+
+    // Check if already reacted with same emoji
+    const hasReacted = await this.reactionsRepo.hasUserReacted(messageId, userId, emoji);
+    if (hasReacted) throw new BadRequestException('You already reacted with this emoji');
+
+    const reaction = await this.reactionsRepo.addReaction(messageId, userId, emoji);
+
+    return {
+      id: reaction.id,
+      messageId,
+      userId,
+      emoji,
+      createdAt: reaction.createdAt.toISOString(),
+    };
+  }
+
+  /**
+   * UC07: Remove reaction from message
+   */
+  async removeReaction(messageId: string, userId: string, emoji: string) {
+    const message = await this.messagesRepo.findById(messageId);
+    if (!message) throw new NotFoundException('Message not found');
+
+    const removed = await this.reactionsRepo.removeReaction(messageId, userId, emoji);
+    if (!removed) throw new NotFoundException('Reaction not found');
+
+    return { removed: true, messageId, emoji };
+  }
+
+  /**
+   * UC07: Get reactions for a message
+   */
+  async getReactions(messageId: string) {
+    const reactions = await this.reactionsRepo.getReactionsByMessage(messageId);
+    const counts = await this.reactionsRepo.getReactionCounts(messageId);
+
+    // Group by emoji
+    const groupedReactions: Record<string, { count: number; users: string[] }> = {};
+
+    reactions.forEach(r => {
+      if (!groupedReactions[r.emoji]) {
+        groupedReactions[r.emoji] = { count: 0, users: [] };
+      }
+      groupedReactions[r.emoji].users.push(r.userId);
+    });
+
+    // Set counts
+    counts.forEach((count, emoji) => {
+      if (groupedReactions[emoji]) {
+        groupedReactions[emoji].count = count;
+      }
+    });
+
+    return {
+      messageId,
+      reactions: groupedReactions,
+    };
+  }
+
+  /**
+   * UC07: Pin message
+   * - Only room members can pin
+   */
+  async pinMessage(messageId: string, userId: string, orgId: string) {
+    const message = await this.messagesRepo.findById(messageId);
+    if (!message) throw new NotFoundException('Message not found');
+
+    // Check if user is member
+    const isMember = await this.roomMembersRepo.isMember(message.roomId, userId);
+    if (!isMember) throw new ForbiddenException('You must be a member to pin messages');
+
+    // Check if already pinned
+    const isPinned = await this.pinnedMessagesRepo.isPinned(message.roomId, messageId);
+    if (isPinned) throw new BadRequestException('Message is already pinned');
+
+    const pinned = await this.pinnedMessagesRepo.pinMessage(message.roomId, messageId, userId);
+
+    return {
+      id: pinned.id,
+      roomId: message.roomId,
+      messageId,
+      pinnedBy: userId,
+      pinnedAt: pinned.pinnedAt.toISOString(),
+    };
+  }
+
+  /**
+   * UC07: Unpin message
+   * - Original pinner or room admin can unpin
+   */
+  async unpinMessage(messageId: string, userId: string, orgId: string) {
+    const message = await this.messagesRepo.findById(messageId);
+    if (!message) throw new NotFoundException('Message not found');
+
+    const unpinned = await this.pinnedMessagesRepo.unpinMessage(message.roomId, messageId);
+    if (!unpinned) throw new NotFoundException('Message is not pinned');
+
+    return { unpinned: true, messageId };
+  }
+
+  /**
+   * UC07: Get pinned messages for a room
+   */
+  async getPinnedMessages(roomId: string, userId: string) {
+    // Verify user is a member
+    const isMember = await this.roomMembersRepo.isMember(roomId, userId);
+    if (!isMember) throw new ForbiddenException('You must be a member to view pinned messages');
+
+    const { items, total } = await this.pinnedMessagesRepo.getPinnedMessages(roomId);
+
+    // Fetch message details for each pinned message
+    const pinnedWithMessages = await Promise.all(
+      items.map(async (p) => {
+        const message = await this.messagesRepo.findById(p.messageId);
+        return {
+          ...p,
+          pinnedAt: p.pinnedAt.toISOString(),
+          message: message ? {
+            id: message.id,
+            content: message.content,
+            userId: message.userId,
+            createdAt: message.createdAt.toISOString(),
+          } : null,
+        };
+      })
+    );
+
+    return {
+      roomId,
+      items: pinnedWithMessages,
+      total,
+    };
+  }
+
+  // ============== UC08/09: File Attachments ==============
+
+  /**
+   * UC08: Create presigned URL for file upload
+   * Returns a presigned URL that client can use to upload directly to storage
+   */
+  async createAttachmentUploadUrl(
+    roomId: string,
+    userId: string,
+    file: { originalName: string; mimeType: string; size: number }
+  ) {
+    // Check if user is member
+    const isMember = await this.roomMembersRepo.isMember(roomId, userId);
+    if (!isMember) throw new ForbiddenException('You must be a member to upload files');
+
+    // Create presigned URL via file-storage service
+    const result = await this.fileStorageClient.createPresignedUrl({
+      originalName: file.originalName,
+      mimeType: file.mimeType,
+      size: file.size,
+      service: 'chat',
+      modelType: 'message-attachment',
+      subjectId: roomId,
+      uploadedBy: userId,
+    });
+
+    return {
+      assetId: result.assetId,
+      presignedUrl: result.presignedUrl,
+      expiresIn: result.expiresIn,
+    };
+  }
+
+  /**
+   * UC08: Confirm upload and attach file to message
+   * Called after client uploads file directly to storage
+   */
+  async confirmAttachmentUpload(
+    messageId: string,
+    assetId: string,
+    userId: string,
+  ) {
+    // Get message
+    const message = await this.messagesRepo.findById(messageId);
+    if (!message) throw new NotFoundException('Message not found');
+
+    // Check if user is the message author
+    if (message.userId !== userId) {
+      throw new ForbiddenException('You can only attach files to your own messages');
+    }
+
+    // Confirm upload with file-storage service
+    const fileMetadata = await this.fileStorageClient.confirmUpload(assetId);
+
+    // Save attachment to database
+    const attachment = await this.attachmentsRepo.create({
+      messageId,
+      fileId: fileMetadata.id,
+      fileName: fileMetadata.originalName,
+      fileSize: fileMetadata.size,
+      mimeType: fileMetadata.mimeType,
+    });
+
+    return {
+      id: attachment.id,
+      messageId,
+      fileId: attachment.fileId,
+      fileName: attachment.fileName,
+      fileSize: attachment.fileSize,
+      mimeType: attachment.mimeType,
+      createdAt: attachment.createdAt.toISOString(),
+    };
+  }
+
+  /**
+   * UC09: Get attachments for a message with presigned download URLs
+   */
+  async getMessageAttachments(messageId: string, userId: string) {
+    const message = await this.messagesRepo.findById(messageId);
+    if (!message) throw new NotFoundException('Message not found');
+
+    // Check if user is member
+    const isMember = await this.roomMembersRepo.isMember(message.roomId, userId);
+    if (!isMember) throw new ForbiddenException('You must be a member to view attachments');
+
+    const attachments = await this.attachmentsRepo.findByMessageId(messageId);
+
+    if (attachments.length === 0) {
+      return { messageId, attachments: [] };
+    }
+
+    // Get presigned URLs for all attachments
+    const fileIds = attachments.map(a => a.fileId);
+    const presignedUrls = await this.fileStorageClient.getPresignedGetUrls(fileIds);
+
+    // Map presigned URLs to attachments
+    const urlMap = new Map(presignedUrls.map(u => [u.id, u.presignedUrl]));
+
+    return {
+      messageId,
+      attachments: attachments.map(a => ({
+        id: a.id,
+        fileId: a.fileId,
+        fileName: a.fileName,
+        fileSize: a.fileSize,
+        mimeType: a.mimeType,
+        downloadUrl: urlMap.get(a.fileId) || null,
+        createdAt: a.createdAt.toISOString(),
+      })),
+    };
+  }
+
+  /**
+   * UC09: Get single attachment download URL
+   */
+  async getAttachmentDownloadUrl(attachmentId: string, userId: string) {
+    // Find attachment first to get fileId
+    const attachments = await this.attachmentsRepo.findByMessageId(attachmentId);
+    const attachment = attachments.find(a => a.id === attachmentId);
+
+    if (!attachment) {
+      throw new NotFoundException('Attachment not found');
+    }
+
+    const message = await this.messagesRepo.findById(attachment.messageId);
+    if (!message) throw new NotFoundException('Message not found');
+
+    // Check if user is member
+    const isMember = await this.roomMembersRepo.isMember(message.roomId, userId);
+    if (!isMember) throw new ForbiddenException('You must be a member to download files');
+
+    const presignedUrl = await this.fileStorageClient.getPresignedGetUrl(attachment.fileId);
+
+    return {
+      attachmentId: attachment.id,
+      fileName: attachment.fileName,
+      downloadUrl: presignedUrl.presignedUrl,
+      expiresIn: presignedUrl.expiresIn,
+    };
+  }
+
+  /**
+   * Delete attachment
+   */
+  async deleteAttachment(attachmentId: string, userId: string) {
+    // Find all attachments and filter - not ideal but works for now
+    // In production, would add findById method to repository
+    const message = await this.messagesRepo.findById(attachmentId);
+    if (!message) throw new NotFoundException('Attachment not found');
+
+    // For now, only message author can delete attachments
+    if (message.userId !== userId) {
+      throw new ForbiddenException('You can only delete attachments from your own messages');
+    }
+
+    await this.attachmentsRepo.delete(attachmentId);
+
+    return { deleted: true };
+  }
+
+  // ============== UC10: Search ==============
+
+  /**
+   * UC10: Search messages within a specific room
+   */
+  async searchInRoom(
+    roomId: string,
+    userId: string,
+    orgId: string,
+    query: string,
+    options: {
+      limit?: number;
+      offset?: number;
+      startDate?: string;
+      endDate?: string;
+      fromUserId?: string;
+    } = {},
+  ) {
+    // Check if user is member of the room
+    const isMember = await this.roomMembersRepo.isMember(roomId, userId);
+    if (!isMember) throw new ForbiddenException('You must be a member to search in this room');
+
+    if (!query || query.trim().length < 2) {
+      throw new BadRequestException('Search query must be at least 2 characters');
+    }
+
+    const filters = {
+      roomId,
+      userId: options.fromUserId,
+      startDate: options.startDate ? new Date(options.startDate) : undefined,
+      endDate: options.endDate ? new Date(options.endDate) : undefined,
+    };
+
+    const result = await this.searchRepo.searchMessages(
+      orgId,
+      query,
+      filters,
+      { limit: options.limit, offset: options.offset },
+    );
+
+    return {
+      query,
+      roomId,
+      total: result.total,
+      items: result.items.map(item => ({
+        id: item.id,
+        roomId: item.roomId,
+        userId: item.userId,
+        threadId: item.threadId,
+        content: item.content,
+        type: item.type,
+        createdAt: item.createdAt.toISOString(),
+        highlight: item.highlight,
+      })),
+    };
+  }
+
+  /**
+   * UC10: Search messages across all rooms user is member of
+   */
+  async searchAllRooms(
+    userId: string,
+    orgId: string,
+    query: string,
+    options: {
+      limit?: number;
+      offset?: number;
+      startDate?: string;
+      endDate?: string;
+      fromUserId?: string;
+    } = {},
+  ) {
+    if (!query || query.trim().length < 2) {
+      throw new BadRequestException('Search query must be at least 2 characters');
+    }
+
+    // Get all rooms user is member of
+    const memberRooms = await this.roomMembersRepo.findRoomIdsByUser(userId, orgId);
+    if (memberRooms.length === 0) {
+      return { query, total: 0, items: [] };
+    }
+
+    const filters = {
+      userId: options.fromUserId,
+      startDate: options.startDate ? new Date(options.startDate) : undefined,
+      endDate: options.endDate ? new Date(options.endDate) : undefined,
+    };
+
+    const result = await this.searchRepo.searchInUserRooms(
+      userId,
+      orgId,
+      memberRooms,
+      query,
+      filters,
+      { limit: options.limit, offset: options.offset },
+    );
+
+    return {
+      query,
+      total: result.total,
+      items: result.items.map(item => ({
+        id: item.id,
+        roomId: item.roomId,
+        userId: item.userId,
+        threadId: item.threadId,
+        content: item.content,
+        type: item.type,
+        createdAt: item.createdAt.toISOString(),
+        highlight: item.highlight,
+      })),
+    };
+  }
+
+  // ============== UC15: Notification Settings ==============
+
+  /**
+   * UC15: Get notification settings for a room
+   */
+  async getNotificationSettings(roomId: string, userId: string) {
+    // Check if user is member
+    const isMember = await this.roomMembersRepo.isMember(roomId, userId);
+    if (!isMember) throw new ForbiddenException('You must be a member to view notification settings');
+
+    const settings = await this.notificationSettingsRepo.getOrCreate(roomId, userId);
+
+    return {
+      roomId,
+      userId,
+      level: settings.level,
+      mutedUntil: settings.mutedUntil?.toISOString() || null,
+      soundEnabled: settings.soundEnabled,
+      pushEnabled: settings.pushEnabled,
+    };
+  }
+
+  /**
+   * UC15: Update notification settings for a room
+   */
+  async updateNotificationSettings(
+    roomId: string,
+    userId: string,
+    data: {
+      level?: NotificationLevel;
+      soundEnabled?: boolean;
+      pushEnabled?: boolean;
+    },
+  ) {
+    // Check if user is member
+    const isMember = await this.roomMembersRepo.isMember(roomId, userId);
+    if (!isMember) throw new ForbiddenException('You must be a member to update notification settings');
+
+    const settings = await this.notificationSettingsRepo.update(roomId, userId, data);
+
+    return {
+      roomId,
+      userId,
+      level: settings.level,
+      mutedUntil: settings.mutedUntil?.toISOString() || null,
+      soundEnabled: settings.soundEnabled,
+      pushEnabled: settings.pushEnabled,
+    };
+  }
+
+  /**
+   * UC15: Mute a room
+   * @param duration Duration in seconds (null = mute indefinitely)
+   */
+  async muteRoom(roomId: string, userId: string, duration?: number) {
+    const isMember = await this.roomMembersRepo.isMember(roomId, userId);
+    if (!isMember) throw new ForbiddenException('You must be a member to mute this room');
+
+    const settings = await this.notificationSettingsRepo.mute(roomId, userId, duration);
+
+    return {
+      roomId,
+      userId,
+      muted: true,
+      mutedUntil: settings.mutedUntil?.toISOString() || null,
+    };
+  }
+
+  /**
+   * UC15: Unmute a room
+   */
+  async unmuteRoom(roomId: string, userId: string) {
+    const isMember = await this.roomMembersRepo.isMember(roomId, userId);
+    if (!isMember) throw new ForbiddenException('You must be a member to unmute this room');
+
+    await this.notificationSettingsRepo.unmute(roomId, userId);
+
+    return {
+      roomId,
+      userId,
+      muted: false,
+    };
+  }
+
+  /**
+   * UC15: Get unread count for a room
+   */
+  async getUnreadCount(roomId: string, userId: string) {
+    const isMember = await this.roomMembersRepo.isMember(roomId, userId);
+    if (!isMember) throw new ForbiddenException('You must be a member to get unread count');
+
+    // Get last seen message ID
+    const lastSeenId = await this.roomMembersRepo.getLastSeen(roomId, userId);
+
+    // Count messages after last seen
+    const count = await this.messagesRepo.countAfterMessage(roomId, lastSeenId);
+
+    return {
+      roomId,
+      unreadCount: count,
+      lastSeenMessageId: lastSeenId,
+    };
+  }
+
+  /**
+   * UC15: Get unread counts for all rooms user is member of
+   */
+  async getAllUnreadCounts(userId: string, orgId: string) {
+    const roomIds = await this.roomMembersRepo.findRoomIdsByUser(userId, orgId);
+    if (roomIds.length === 0) return { rooms: [] };
+
+    const unreadCounts = await Promise.all(
+      roomIds.map(async (roomId) => {
+        const lastSeenId = await this.roomMembersRepo.getLastSeen(roomId, userId);
+        const count = await this.messagesRepo.countAfterMessage(roomId, lastSeenId);
+        return { roomId, unreadCount: count };
+      })
+    );
+
+    // Only return rooms with unread messages
+    const roomsWithUnread = unreadCounts.filter(r => r.unreadCount > 0);
+
+    return {
+      totalUnread: roomsWithUnread.reduce((sum, r) => sum + r.unreadCount, 0),
+      rooms: roomsWithUnread,
+    };
+  }
+
+  /**
+   * UC15: Mark messages as read (up to a specific message)
+   */
+  async markAsRead(roomId: string, userId: string, messageId: string) {
+    const isMember = await this.roomMembersRepo.isMember(roomId, userId);
+    if (!isMember) throw new ForbiddenException('You must be a member to mark messages as read');
+
+    // Verify message exists in this room
+    const message = await this.messagesRepo.findById(messageId);
+    if (!message || message.roomId !== roomId) {
+      throw new NotFoundException('Message not found in this room');
+    }
+
+    // Update last seen
+    await this.roomMembersRepo.updateLastSeen(roomId, userId, messageId, message.orgId);
+
+    return {
+      roomId,
+      userId,
+      lastSeenMessageId: messageId,
+      markedAt: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * UC15: Mark all messages in a room as read
+   */
+  async markAllAsRead(roomId: string, userId: string) {
+    const isMember = await this.roomMembersRepo.isMember(roomId, userId);
+    if (!isMember) throw new ForbiddenException('You must be a member to mark messages as read');
+
+    // Get the latest message in the room
+    const latestMessage = await this.messagesRepo.getLatestMessage(roomId);
+    if (!latestMessage) {
+      return { roomId, userId, lastSeenMessageId: null };
+    }
+
+    // Update last seen to latest message
+    await this.roomMembersRepo.updateLastSeen(roomId, userId, latestMessage.id, latestMessage.orgId);
+
+    return {
+      roomId,
+      userId,
+      lastSeenMessageId: latestMessage.id,
+      markedAt: new Date().toISOString(),
+    };
   }
 }

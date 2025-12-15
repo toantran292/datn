@@ -1,201 +1,277 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { mapping, types, Client } from 'cassandra-driver';
-import { CASS_MAPPER, CASS_CLIENT } from '../../cassandra/cassandra.module';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, In } from 'typeorm';
+import { Room, RoomType } from '../../database/entities/room.entity';
+import { RoomMember } from '../../database/entities/room-member.entity';
 
-export type RoomType = 'channel' | 'dm';
+export type { RoomType } from '../../database/entities/room.entity';
 
 export interface RoomEntity {
-  id: types.TimeUuid;
-  orgId: types.Uuid;
+  id: string;
+  orgId: string;
   isPrivate: boolean;
   name: string | undefined;
   type: RoomType;
-  projectId?: types.Uuid | null; // null = org-level, uuid = project-specific
+  projectId?: string | null;
 }
 
 export interface UserRoomEntity {
-  userId: types.Uuid;
-  orgId: types.Uuid;
-  roomId: types.TimeUuid;
+  userId: string;
+  orgId: string;
+  roomId: string;
   roomType: RoomType;
   roomName: string | undefined;
   isPrivate: boolean;
-  projectId?: types.Uuid | null;
+  projectId?: string | null;
   joinedAt: Date;
-  lastSeenMessageId?: types.TimeUuid;
+  lastSeenMessageId?: string;
 }
 
 @Injectable()
 export class RoomsRepository {
-  private model: mapping.ModelMapper<RoomEntity>;
-
-  constructor(@Inject(CASS_MAPPER) mapper: mapping.Mapper,
-    @Inject(CASS_CLIENT) private readonly client: Client,
-  ) {
-    this.model = mapper.forModel<RoomEntity>('Room');
-  }
+  constructor(
+    @InjectRepository(Room)
+    private readonly roomRepo: Repository<Room>,
+    @InjectRepository(RoomMember)
+    private readonly memberRepo: Repository<RoomMember>,
+  ) {}
 
   async create(
-    orgId: types.Uuid,
+    orgId: string,
     isPrivate: boolean,
     name: string | undefined,
     type: RoomType = 'channel',
-    projectId?: types.Uuid | null
-  ) {
-    const entity: RoomEntity = {
-      id: types.TimeUuid.now(),
-      orgId: orgId,
-      isPrivate: isPrivate,
-      name: name,
-      type: type,
-      projectId: projectId || null,
+    projectId?: string | null,
+  ): Promise<RoomEntity> {
+    const entity = this.roomRepo.create({
+      orgId,
+      isPrivate,
+      name: name ?? null,
+      type,
+      projectId: projectId ?? null,
+    });
+
+    const saved = await this.roomRepo.save(entity);
+
+    return {
+      id: saved.id,
+      orgId: saved.orgId,
+      isPrivate: saved.isPrivate,
+      name: saved.name ?? undefined,
+      type: saved.type,
+      projectId: saved.projectId,
     };
-    await this.model.insert(entity);
-    return entity;
   }
 
-  async findByOrgAndId(orgId: types.Uuid, roomId: types.TimeUuid) {
-    const res = await this.model.find({ orgId, id: roomId });
-    return res.first() as RoomEntity | null;
+  async findByOrgAndId(orgId: string, roomId: string): Promise<RoomEntity | null> {
+    const room = await this.roomRepo.findOne({
+      where: { id: roomId, orgId, status: 'ACTIVE' },
+    });
+
+    if (!room) return null;
+
+    return {
+      id: room.id,
+      orgId: room.orgId,
+      isPrivate: room.isPrivate,
+      name: room.name ?? undefined,
+      type: room.type,
+      projectId: room.projectId,
+    };
   }
 
-  async findByIds(orgId: types.Uuid, ids: types.TimeUuid[]): Promise<RoomEntity[]> {
+  async findByIds(orgId: string, ids: string[]): Promise<RoomEntity[]> {
     if (!ids?.length) return [];
-    const out: RoomEntity[] = [];
-    for (const id of ids) {
-      const res = await this.model.find({ orgId, id });
-      const row = res.first() as RoomEntity | null;
-      if (row) out.push(row);
-    }
-    return out;
+
+    const rooms = await this.roomRepo.find({
+      where: { orgId, id: In(ids), status: 'ACTIVE' },
+    });
+
+    return rooms.map((room) => ({
+      id: room.id,
+      orgId: room.orgId,
+      isPrivate: room.isPrivate,
+      name: room.name ?? undefined,
+      type: room.type,
+      projectId: room.projectId,
+    }));
   }
 
   async listByOrg(
-    orgId: types.Uuid,
+    orgId: string,
     opts: { limit?: number; pagingState?: string } = {},
   ): Promise<{ items: RoomEntity[]; pagingState?: string }> {
-    const q = 'SELECT org_id, id, is_private, name, type, project_id FROM chat.rooms WHERE org_id = ?';
-    const rs = await this.client.execute(q, [orgId], {
-      prepare: true,
-      fetchSize: opts.limit ?? 50,
-      pageState: opts.pagingState,
+    const limit = opts.limit ?? 50;
+    const offset = opts.pagingState ? parseInt(opts.pagingState, 10) : 0;
+
+    const [rooms, total] = await this.roomRepo.findAndCount({
+      where: { orgId, status: 'ACTIVE' },
+      order: { createdAt: 'DESC' },
+      skip: offset,
+      take: limit,
     });
-    const items = rs.rows.map(r => ({
-      orgId: r['org_id'] as types.Uuid,
-      id: r['id'] as types.TimeUuid,
-      isPrivate: r['is_private'] as boolean,
-      name: r['name'] as string | undefined,
-      type: (r['type'] as RoomType) || 'channel', // Default to 'channel' for existing rows
-      projectId: r['project_id'] as types.Uuid | null | undefined,
+
+    const items = rooms.map((room) => ({
+      id: room.id,
+      orgId: room.orgId,
+      isPrivate: room.isPrivate,
+      name: room.name ?? undefined,
+      type: room.type,
+      projectId: room.projectId,
     }));
-    return { items, pagingState: rs.pageState ?? undefined };
+
+    const nextOffset = offset + rooms.length;
+    const hasMore = nextOffset < total;
+
+    return {
+      items,
+      pagingState: hasMore ? nextOffset.toString() : undefined,
+    };
   }
 
-  /**
-   * Get joined rooms for a user in an org
-   * Uses denormalized user_rooms table for fast lookup
-   */
   async listJoinedRoomsByUser(
-    userId: types.Uuid,
-    orgId: types.Uuid,
+    userId: string,
+    orgId: string,
     opts: { limit?: number; pagingState?: string } = {},
   ): Promise<{ items: UserRoomEntity[]; pagingState?: string }> {
-    const query = `
-      SELECT user_id, org_id, room_id, room_type, room_name, is_private,
-             project_id, joined_at, last_seen_message_id
-      FROM chat.user_rooms
-      WHERE user_id = ? AND org_id = ?
-    `;
-    const rs = await this.client.execute(query, [userId, orgId], {
-      prepare: true,
-      fetchSize: opts.limit ?? 50,
-      pageState: opts.pagingState,
-    });
+    const limit = opts.limit ?? 50;
+    const offset = opts.pagingState ? parseInt(opts.pagingState, 10) : 0;
 
-    const items: UserRoomEntity[] = rs.rows.map(r => ({
-      userId: r['user_id'] as types.Uuid,
-      orgId: r['org_id'] as types.Uuid,
-      roomId: r['room_id'] as types.TimeUuid,
-      roomType: (r['room_type'] as RoomType) || 'channel',
-      roomName: r['room_name'] as string | undefined,
-      isPrivate: r['is_private'] as boolean,
-      projectId: r['project_id'] as types.Uuid | null | undefined,
-      joinedAt: r['joined_at'] as Date,
-      lastSeenMessageId: r['last_seen_message_id'] as types.TimeUuid | undefined,
+    const query = this.memberRepo
+      .createQueryBuilder('rm')
+      .innerJoinAndSelect('rm.room', 'r')
+      .where('rm.user_id = :userId', { userId })
+      .andWhere('rm.org_id = :orgId', { orgId })
+      .andWhere('r.status = :status', { status: 'ACTIVE' })
+      .orderBy('rm.joined_at', 'DESC')
+      .skip(offset)
+      .take(limit);
+
+    const [members, total] = await query.getManyAndCount();
+
+    const items: UserRoomEntity[] = members.map((m) => ({
+      userId: m.userId,
+      orgId: m.orgId,
+      roomId: m.roomId,
+      roomType: m.room.type,
+      roomName: m.room.name ?? undefined,
+      isPrivate: m.room.isPrivate,
+      projectId: m.room.projectId,
+      joinedAt: m.joinedAt,
+      lastSeenMessageId: m.lastSeenMessageId ?? undefined,
     }));
 
-    return { items, pagingState: rs.pageState ?? undefined };
+    const nextOffset = offset + members.length;
+    const hasMore = nextOffset < total;
+
+    return {
+      items,
+      pagingState: hasMore ? nextOffset.toString() : undefined,
+    };
   }
 
-  /**
-   * Get joined rooms for a user in an org + project
-   * Uses denormalized user_project_rooms table for fast lookup
-   */
   async listJoinedRoomsByUserAndProject(
-    userId: types.Uuid,
-    orgId: types.Uuid,
-    projectId: types.Uuid,
+    userId: string,
+    orgId: string,
+    projectId: string,
     opts: { limit?: number; pagingState?: string } = {},
   ): Promise<{ items: UserRoomEntity[]; pagingState?: string }> {
-    const query = `
-      SELECT user_id, org_id, room_id, room_type, room_name, is_private,
-             project_id, joined_at, last_seen_message_id
-      FROM chat.user_project_rooms
-      WHERE user_id = ? AND org_id = ? AND project_id = ?
-    `;
-    const rs = await this.client.execute(query, [userId, orgId, projectId], {
-      prepare: true,
-      fetchSize: opts.limit ?? 50,
-      pageState: opts.pagingState,
-    });
+    const limit = opts.limit ?? 50;
+    const offset = opts.pagingState ? parseInt(opts.pagingState, 10) : 0;
 
-    const items: UserRoomEntity[] = rs.rows.map(r => ({
-      userId: r['user_id'] as types.Uuid,
-      orgId: r['org_id'] as types.Uuid,
-      roomId: r['room_id'] as types.TimeUuid,
-      roomType: (r['room_type'] as RoomType) || 'channel',
-      roomName: r['room_name'] as string | undefined,
-      isPrivate: r['is_private'] as boolean,
-      projectId: r['project_id'] as types.Uuid | null | undefined,
-      joinedAt: r['joined_at'] as Date,
-      lastSeenMessageId: r['last_seen_message_id'] as types.TimeUuid | undefined,
+    const query = this.memberRepo
+      .createQueryBuilder('rm')
+      .innerJoinAndSelect('rm.room', 'r')
+      .where('rm.user_id = :userId', { userId })
+      .andWhere('rm.org_id = :orgId', { orgId })
+      .andWhere('r.project_id = :projectId', { projectId })
+      .andWhere('r.status = :status', { status: 'ACTIVE' })
+      .orderBy('rm.joined_at', 'DESC')
+      .skip(offset)
+      .take(limit);
+
+    const [members, total] = await query.getManyAndCount();
+
+    const items: UserRoomEntity[] = members.map((m) => ({
+      userId: m.userId,
+      orgId: m.orgId,
+      roomId: m.roomId,
+      roomType: m.room.type,
+      roomName: m.room.name ?? undefined,
+      isPrivate: m.room.isPrivate,
+      projectId: m.room.projectId,
+      joinedAt: m.joinedAt,
+      lastSeenMessageId: m.lastSeenMessageId ?? undefined,
     }));
 
-    return { items, pagingState: rs.pageState ?? undefined };
+    const nextOffset = offset + members.length;
+    const hasMore = nextOffset < total;
+
+    return {
+      items,
+      pagingState: hasMore ? nextOffset.toString() : undefined,
+    };
   }
 
-  /**
-   * Get DMs for a user in an org
-   * Uses denormalized user_dms table for fast lookup
-   */
   async listDmsByUser(
-    userId: types.Uuid,
-    orgId: types.Uuid,
+    userId: string,
+    orgId: string,
     opts: { limit?: number; pagingState?: string } = {},
   ): Promise<{ items: UserRoomEntity[]; pagingState?: string }> {
-    const query = `
-      SELECT user_id, org_id, room_id, room_name, joined_at, last_seen_message_id
-      FROM chat.user_dms
-      WHERE user_id = ? AND org_id = ?
-    `;
-    const rs = await this.client.execute(query, [userId, orgId], {
-      prepare: true,
-      fetchSize: opts.limit ?? 50,
-      pageState: opts.pagingState,
-    });
+    const limit = opts.limit ?? 50;
+    const offset = opts.pagingState ? parseInt(opts.pagingState, 10) : 0;
 
-    const items: UserRoomEntity[] = rs.rows.map(r => ({
-      userId: r['user_id'] as types.Uuid,
-      orgId: r['org_id'] as types.Uuid,
-      roomId: r['room_id'] as types.TimeUuid,
+    const query = this.memberRepo
+      .createQueryBuilder('rm')
+      .innerJoinAndSelect('rm.room', 'r')
+      .where('rm.user_id = :userId', { userId })
+      .andWhere('rm.org_id = :orgId', { orgId })
+      .andWhere('r.type = :type', { type: 'dm' })
+      .andWhere('r.status = :status', { status: 'ACTIVE' })
+      .orderBy('rm.joined_at', 'DESC')
+      .skip(offset)
+      .take(limit);
+
+    const [members, total] = await query.getManyAndCount();
+
+    const items: UserRoomEntity[] = members.map((m) => ({
+      userId: m.userId,
+      orgId: m.orgId,
+      roomId: m.roomId,
       roomType: 'dm',
-      roomName: r['room_name'] as string | undefined,
-      isPrivate: true, // DMs are always private
+      roomName: m.room.name ?? undefined,
+      isPrivate: true,
       projectId: null,
-      joinedAt: r['joined_at'] as Date,
-      lastSeenMessageId: r['last_seen_message_id'] as types.TimeUuid | undefined,
+      joinedAt: m.joinedAt,
+      lastSeenMessageId: m.lastSeenMessageId ?? undefined,
     }));
 
-    return { items, pagingState: rs.pageState ?? undefined };
+    const nextOffset = offset + members.length;
+    const hasMore = nextOffset < total;
+
+    return {
+      items,
+      pagingState: hasMore ? nextOffset.toString() : undefined,
+    };
+  }
+
+  async update(
+    roomId: string,
+    data: Partial<{ name: string; description: string; isPrivate: boolean; avatarUrl: string }>,
+  ): Promise<void> {
+    await this.roomRepo.update(roomId, data);
+  }
+
+  async archive(roomId: string): Promise<void> {
+    await this.roomRepo.update(roomId, {
+      status: 'ARCHIVED',
+      archivedAt: new Date(),
+    });
+  }
+
+  async softDelete(roomId: string): Promise<void> {
+    await this.roomRepo.update(roomId, {
+      status: 'DELETED',
+    });
   }
 }
