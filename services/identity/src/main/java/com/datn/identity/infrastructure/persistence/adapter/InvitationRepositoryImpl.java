@@ -40,13 +40,28 @@ public class InvitationRepositoryImpl implements InvitationRepository {
     }
     @Override public Optional<Invitation> findByToken(String token){ return repo.findByToken(token).map(InvitationRepositoryImpl::toDomain); }
     @Override
+    public Optional<Invitation> findById(UUID id) {
+        return repo.findById(id).map(InvitationRepositoryImpl::toDomain);
+    }
+    @Override
     public boolean existsOpenByEmail(UUID orgId, String emailCI) {
         return repo.existsByOrgIdAndEmailAndAcceptedAtIsNull(orgId, emailCI);
     }
     @Override public void save(Invitation inv){ repo.save(toEntity(inv)); }
     @Override
+    public void deleteById(UUID id) {
+        repo.deleteById(id);
+    }
+    @Override
     public List<Invitation> findPendingByEmail(String email) {
         return repo.findByEmailAndAcceptedAtIsNull(email.toLowerCase())
+                .stream()
+                .map(InvitationRepositoryImpl::toDomain)
+                .collect(Collectors.toList());
+    }
+    @Override
+    public List<Invitation> findPendingByOrgId(UUID orgId) {
+        return repo.findByOrgIdAndAcceptedAtIsNullOrderByCreatedAtDesc(orgId)
                 .stream()
                 .map(InvitationRepositoryImpl::toDomain)
                 .collect(Collectors.toList());

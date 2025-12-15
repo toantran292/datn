@@ -9,6 +9,7 @@ export interface CreatePresignedUrlRequest {
   modelType: string;
   subjectId: string;
   uploadedBy?: string;
+  orgId?: string;
   tags?: string[];
   metadata?: Record<string, any>;
 }

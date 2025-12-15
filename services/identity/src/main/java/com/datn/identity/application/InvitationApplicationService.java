@@ -126,6 +126,39 @@ public class InvitationApplicationService {
         return invites.findPendingByEmail(email);
     }
 
+    /**
+     * Find all pending invitations for an organization
+     */
+    public List<Invitation> findPendingByOrgId(UUID orgId) {
+        return invites.findPendingByOrgId(orgId);
+    }
+
+    /**
+     * Cancel a pending invitation
+     */
+    @Transactional
+    public void cancelInvitation(UUID actorUserId, UUID orgId, UUID invitationId) {
+        var inv = invites.findById(invitationId)
+                .orElseThrow(() -> new IllegalArgumentException("invitation_not_found"));
+
+        // Verify invitation belongs to the org
+        if (!inv.orgId().equals(orgId)) {
+            throw new IllegalArgumentException("invitation_not_found");
+        }
+
+        // Verify invitation is still pending
+        if (inv.acceptedAt() != null) {
+            throw new IllegalStateException("invitation_already_accepted");
+        }
+
+        invites.deleteById(invitationId);
+
+        // Audit log
+        auditLogs.save(AuditLog.create(orgId, actorUserId, AuditAction.INVITATION_CANCELLED,
+            "Invitation cancelled for " + inv.email(),
+            Map.of("email", inv.email(), "invitationId", invitationId.toString())));
+    }
+
     public record AcceptResult(UUID userId, UUID orgId) {}
 
     private String toJson(Object o) {

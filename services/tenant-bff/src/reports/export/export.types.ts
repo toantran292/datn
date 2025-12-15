@@ -12,7 +12,7 @@ export interface ExportResult {
 }
 
 export interface ExportOptions {
-  format: ExportFormat;
+  format?: ExportFormat;
   includeMetadata?: boolean;
   includeTokenUsage?: boolean;
 }

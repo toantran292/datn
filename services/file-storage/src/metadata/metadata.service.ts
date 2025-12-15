@@ -42,6 +42,7 @@ export class MetadataService {
     modelType?: string;
     subjectId?: string;
     uploadedBy?: string;
+    orgId?: string;
     tags?: string[];
     page?: number;
     limit?: number;
@@ -62,6 +63,7 @@ export class MetadataService {
     if (query.modelType) filter.modelType = query.modelType;
     if (query.subjectId) filter.subjectId = query.subjectId;
     if (query.uploadedBy) filter.uploadedBy = query.uploadedBy;
+    if (query.orgId) filter.orgId = query.orgId;
     if (query.tags && query.tags.length > 0) filter.tags = { $in: query.tags };
 
     const [docs, total] = await Promise.all([
@@ -125,6 +127,55 @@ export class MetadataService {
     return result.deletedCount;
   }
 
+  /**
+   * Get total storage usage for an organization
+   */
+  async getStorageUsage(orgId: string): Promise<{ usedBytes: number; fileCount: number }> {
+    const result = await this.fileMetadataModel.aggregate([
+      {
+        $match: {
+          orgId,
+          uploadStatus: 'completed',
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          usedBytes: { $sum: '$size' },
+          fileCount: { $sum: 1 },
+        },
+      },
+    ]);
+
+    if (result.length === 0) {
+      return { usedBytes: 0, fileCount: 0 };
+    }
+
+    return {
+      usedBytes: result[0].usedBytes,
+      fileCount: result[0].fileCount,
+    };
+  }
+
+  /**
+   * Get recent files for an organization
+   */
+  async getRecentFiles(
+    orgId: string,
+    limit: number = 5,
+  ): Promise<FileMetadataType[]> {
+    const docs = await this.fileMetadataModel
+      .find({
+        orgId,
+        uploadStatus: 'completed',
+      })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .exec();
+
+    return docs.map((doc) => this.toFileMetadata(doc));
+  }
+
   private toFileMetadata(doc: FileMetadataDocument): FileMetadataType {
     return {
       id: doc._id.toString(),
@@ -138,6 +189,7 @@ export class MetadataService {
       modelType: doc.modelType,
       subjectId: doc.subjectId,
       uploadedBy: doc.uploadedBy,
+      orgId: doc.orgId,
       tags: doc.tags,
       metadata: doc.metadata,
       uploadStatus: doc.uploadStatus as 'pending' | 'completed' | 'failed',

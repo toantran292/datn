@@ -24,7 +24,7 @@ import {
   ApiBearerAuth,
   ApiProduces,
 } from '@nestjs/swagger';
-import { Response } from 'express';
+import type { Response } from 'express';
 import { ReportsService } from './reports.service';
 import {
   CreateReportDto,

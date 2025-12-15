@@ -31,6 +31,7 @@ public enum AuditAction {
     MEMBER_ROLE_CHANGED,
     INVITATION_ACCEPTED,
     INVITATION_REJECTED,
+    INVITATION_CANCELLED,
     INVITATION_EXPIRED,
 
     // File actions

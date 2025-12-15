@@ -10,6 +10,7 @@ export interface FileMetadata {
   modelType: string;
   subjectId: string;
   uploadedBy?: string;
+  orgId?: string;
   tags?: string[];
   metadata?: Record<string, any>;
   uploadStatus: 'pending' | 'completed' | 'failed';
@@ -25,6 +26,7 @@ export interface CreatePresignedUrlRequest {
   modelType: string;
   subjectId: string;
   uploadedBy?: string;
+  orgId?: string;
   tags?: string[];
   metadata?: Record<string, any>;
 }
@@ -45,6 +47,7 @@ export interface UploadFileRequest {
   modelType: string;
   subjectId: string;
   uploadedBy?: string;
+  orgId?: string;
   tags?: string[];
   metadata?: Record<string, any>;
 }
@@ -54,6 +57,7 @@ export interface FileListQuery {
   modelType?: string;
   subjectId?: string;
   uploadedBy?: string;
+  orgId?: string;
   tags?: string[];
   page?: number;
   limit?: number;

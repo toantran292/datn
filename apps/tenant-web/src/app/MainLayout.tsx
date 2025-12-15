@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AppHeader } from "@uts/design-system/ui";
@@ -8,8 +8,8 @@ import {
   Users,
   LayoutDashboard,
   FolderOpen,
-  CreditCard,
-  ChevronRight
+  ChevronRight,
+  LucideIcon
 } from "lucide-react";
 import {
   Sidebar,
@@ -22,20 +22,38 @@ import {
   SidebarProvider,
   SidebarHeader
 } from "@/components/ui/sidebar";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 interface MainLayoutProps {
   children: ReactNode;
 }
 
-const menuItems = [
+interface MenuItem {
+  title: string;
+  icon: LucideIcon;
+  href: string;
+  requiredAccess?: "admin"; // admin means OWNER or ADMIN
+}
+
+const allMenuItems: MenuItem[] = [
   { title: "Overview", icon: LayoutDashboard, href: "/" },
-  { title: "Members", icon: Users, href: "/members" },
-  { title: "Billing", icon: CreditCard, href: "/billing" },
+  { title: "Members", icon: Users, href: "/members", requiredAccess: "admin" },
   { title: "Files", icon: FolderOpen, href: "/files" },
 ];
 
 export function MainLayout({ children }: MainLayoutProps) {
   const pathname = usePathname();
+  const { hasAdminAccess } = useCurrentUser();
+
+  // Filter menu items based on user role
+  const menuItems = useMemo(() => {
+    return allMenuItems.filter((item) => {
+      if (item.requiredAccess === "admin") {
+        return hasAdminAccess;
+      }
+      return true;
+    });
+  }, [hasAdminAccess]);
 
   const isActive = (href: string) => {
     if (href === "/") {

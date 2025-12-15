@@ -71,4 +71,83 @@ export class IdentityService {
       throw err.response?.data ?? err;
     }
   }
+
+  async updateMemberRole(orgId: string, userId: string, roles: string[]) {
+    const url = `http://identity:3000/orgs/${orgId}/members/roles`;
+
+    try {
+      const res = await firstValueFrom(
+        this.http.put(url, {
+          userId,
+          roles
+        }, {
+          headers: {
+            'X-Internal-Call': 'bff',
+          }
+        }),
+      );
+
+      return res.data;
+    } catch (err) {
+      console.log({err})
+      throw err.response?.data ?? err;
+    }
+  }
+
+  async removeMember(orgId: string, userId: string) {
+    const url = `http://identity:3000/orgs/${orgId}/members/${userId}`;
+
+    try {
+      const res = await firstValueFrom(
+        this.http.delete(url, {
+          headers: {
+            'X-Internal-Call': 'bff',
+          }
+        }),
+      );
+
+      return res.data;
+    } catch (err) {
+      console.log({err})
+      throw err.response?.data ?? err;
+    }
+  }
+
+  async listInvitations(orgId: string) {
+    const url = `http://identity:3000/orgs/${orgId}/invitations`;
+
+    try {
+      const res = await firstValueFrom(
+        this.http.get(url, {
+          headers: {
+            'X-Internal-Call': 'bff',
+          }
+        }),
+      );
+
+      return res.data;
+    } catch (err) {
+      console.log({err})
+      throw err.response?.data ?? err;
+    }
+  }
+
+  async cancelInvitation(orgId: string, invitationId: string) {
+    const url = `http://identity:3000/orgs/${orgId}/invitations/${invitationId}`;
+
+    try {
+      const res = await firstValueFrom(
+        this.http.delete(url, {
+          headers: {
+            'X-Internal-Call': 'bff',
+          }
+        }),
+      );
+
+      return res.data;
+    } catch (err) {
+      console.log({err})
+      throw err.response?.data ?? err;
+    }
+  }
 }

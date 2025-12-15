@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Req, UseGuards } from '@nestjs/common';
 import { HmacGuard } from '../common/guards/hmac.guard';
 import { IdentityService } from 'src/services/identity.service';
 
@@ -15,5 +15,30 @@ export class MemberController {
   @Post('invite')
   invite(@Req() req, @Body() body: { email: string; role: string; project_ids?: string[] }) {
     return this.identityService.inviteMember(req.orgId, body.email, body.role, body.project_ids);
+  }
+
+  @Patch(':userId/role')
+  updateRole(
+    @Req() req,
+    @Param('userId') userId: string,
+    @Body() body: { roles: string[] }
+  ) {
+    return this.identityService.updateMemberRole(req.orgId, userId, body.roles);
+  }
+
+  @Delete(':userId')
+  removeMember(@Req() req, @Param('userId') userId: string) {
+    return this.identityService.removeMember(req.orgId, userId);
+  }
+
+  // Invitations
+  @Get('invitations')
+  listInvitations(@Req() req) {
+    return this.identityService.listInvitations(req.orgId);
+  }
+
+  @Delete('invitations/:invitationId')
+  cancelInvitation(@Req() req, @Param('invitationId') invitationId: string) {
+    return this.identityService.cancelInvitation(req.orgId, invitationId);
   }
 }

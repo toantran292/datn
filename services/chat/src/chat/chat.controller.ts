@@ -121,7 +121,7 @@ export class ChatsController {
     @Ctx() ctx: RequestContext,
     @Body() body: { roomId: string; originalName: string; mimeType: string; size: number },
   ) {
-    return this.chats.createAttachmentUploadUrl(body.roomId, ctx.userId, {
+    return this.chats.createAttachmentUploadUrl(body.roomId, ctx.userId, ctx.orgId, {
       originalName: body.originalName,
       mimeType: body.mimeType,
       size: body.size,

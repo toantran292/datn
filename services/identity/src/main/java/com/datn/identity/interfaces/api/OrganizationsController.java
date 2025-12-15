@@ -131,6 +131,69 @@ public class OrganizationsController {
         return ResponseEntity.noContent().build();
     }
 
+    // ==================== UC11 - Invitations Management ====================
+
+    /**
+     * List pending invitations for an organization (UC11).
+     */
+    @GetMapping("/{orgId}/invitations")
+    public ResponseEntity<?> listInvitations(@PathVariable String orgId) {
+        UUID userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "not_authenticated"));
+        }
+
+        UUID orgUuid = UUID.fromString(orgId);
+        if (!orgs.isMember(userId, orgUuid)) {
+            return ResponseEntity.status(403).body(Map.of("error", "forbidden"));
+        }
+
+        var pendingInvitations = invites.findPendingByOrgId(orgUuid);
+        var invitationList = pendingInvitations.stream()
+                .map(inv -> Map.of(
+                        "id", inv.id().toString(),
+                        "email", inv.email(),
+                        "memberType", inv.memberType().name(),
+                        "createdAt", inv.createdAt().toString()
+                ))
+                .toList();
+
+        return ResponseEntity.ok(Map.of("invitations", invitationList));
+    }
+
+    /**
+     * Cancel a pending invitation (UC11).
+     */
+    @DeleteMapping("/{orgId}/invitations/{invitationId}")
+    public ResponseEntity<?> cancelInvitation(
+            @PathVariable String orgId,
+            @PathVariable String invitationId) {
+        UUID userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "not_authenticated"));
+        }
+
+        UUID orgUuid = UUID.fromString(orgId);
+        if (!orgs.isMember(userId, orgUuid)) {
+            return ResponseEntity.status(403).body(Map.of("error", "forbidden"));
+        }
+
+        try {
+            invites.cancelInvitation(userId, orgUuid, UUID.fromString(invitationId));
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            if ("invitation_not_found".equals(e.getMessage())) {
+                return ResponseEntity.status(404).body(Map.of("error", "invitation_not_found"));
+            }
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (IllegalStateException e) {
+            if ("invitation_already_accepted".equals(e.getMessage())) {
+                return ResponseEntity.status(400).body(Map.of("error", "invitation_already_accepted"));
+            }
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @GetMapping("/resolve")
     public ResponseEntity<?> resolve(@RequestParam("slug") String slug) {
         var n = normalizeSlug(slug);

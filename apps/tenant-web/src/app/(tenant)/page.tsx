@@ -1,7 +1,7 @@
 "use client";
 
-import { OverviewPage } from "@/components/OverviewPage";
+import { OverviewView } from "@/features/overview";
 
 export default function HomePage() {
-  return <OverviewPage />;
+  return <OverviewView />;
 }

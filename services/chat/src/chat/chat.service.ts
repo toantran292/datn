@@ -408,6 +408,7 @@ export class ChatsService {
   async createAttachmentUploadUrl(
     roomId: string,
     userId: string,
+    orgId: string,
     file: { originalName: string; mimeType: string; size: number }
   ) {
     // Check if user is member
@@ -423,6 +424,7 @@ export class ChatsService {
       modelType: 'message-attachment',
       subjectId: roomId,
       uploadedBy: userId,
+      orgId: orgId,
     });
 
     return {

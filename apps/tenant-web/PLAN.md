@@ -21,9 +21,38 @@ Tenant-web là ứng dụng **quản lý workspace cross-project** cho Owner/Adm
 
 ---
 
+## Kiến trúc Storage & Files
+
+### Storage Quota (Cross-Product)
+- **Phạm vi**: Tất cả files trong Organization (Projects + Channels)
+- **Giới hạn**: 10GB mặc định (config qua `STORAGE_LIMIT_BYTES`)
+- **Hiển thị**: Tổng % sử dụng, giống nhau cho mọi user trong org
+
+### DM Files (Direct Messages)
+- **KHÔNG tính vào quota**
+- **Tự động xóa** sau X ngày (configurable, mặc định 30 ngày)
+- **Private**: Chỉ người trong conversation thấy
+
+### Channel Types & File Visibility
+
+| Channel Type | Scope | File Visibility |
+|--------------|-------|-----------------|
+| Workspace Public | Org-wide | Tất cả org members |
+| Workspace Private | Org-wide | Chỉ channel members |
+| Project Public | Project | Tất cả project members |
+| Project Private | Project | Chỉ channel members trong project |
+
+### Recent Files (Permission-based)
+Mỗi user thấy **khác nhau** tùy quyền truy cập:
+- **Project files**: User phải là member của project đó
+- **Channel files**: User phải có quyền truy cập channel đó
+- **DM files**: KHÔNG hiển thị (private)
+
+---
+
 ## 1. UC09 - Dashboard/Overview (Trang `/`)
 
-### Trạng thái: 🔄 Đang điều chỉnh
+### Trạng thái: ✅ Cơ bản hoàn thành
 
 ### Mục tiêu Dashboard
 Dashboard là **trung tâm điều khiển** của workspace, giúp user:
@@ -31,7 +60,7 @@ Dashboard là **trung tâm điều khiển** của workspace, giúp user:
 2. **Truy cập nhanh** - Recent files, quick actions
 3. **Cross-project insights** - Thông qua UTS Agent Chat
 
-### Layout mới
+### Layout
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -40,17 +69,17 @@ Dashboard là **trung tâm điều khiển** của workspace, giúp user:
 │                                 │                                   │
 │  📊 WORKSPACE OVERVIEW          │  🤖 UTS AGENT CHAT                │
 │  ┌─────────┬─────────┬────────┐ │  ┌─────────────────────────────┐  │
-│  │ Members │ Projects│ Storage│ │  │ "Tổng hợp tiến độ các       │  │
-│  │   12    │    5    │ 45%    │ │  │  project tuần này"          │  │
+│  │ Members │ Projects│ Storage│ │  │ Streaming + Markdown        │  │
+│  │   12    │    5    │ 45%    │ │  │ support                     │  │
 │  └─────────┴─────────┴────────┘ │  │                             │  │
-│                                 │  │ "So sánh performance giữa   │  │
-│  📁 RECENT FILES (cross-project)│  │  project A và B"            │  │
+│                                 │  │ No history persistence      │  │
+│  📁 RECENT FILES (permission)   │  │ (MVP scope)                 │  │
 │  • report_q4.pdf (Project A)    │  │                             │  │
-│  • meeting_notes.md (Project B) │  │ "Ai chưa submit report      │  │
-│                                 │  │  tuần này?"                 │  │
-│  👥 TEAM ACTIVITY               │  │                             │  │
-│  • Toan joined Project X        │  │ [____________________] Send │  │
-│  • Mai uploaded file            │  └─────────────────────────────┘  │
+│  • meeting_notes.md (Project B) │  │                             │  │
+│                                 │  │ [____________________] Send │  │
+│  👥 TEAM ACTIVITY               │  └─────────────────────────────┘  │
+│  • Toan joined Project X        │                                   │
+│  • Mai uploaded file            │                                   │
 │                                 │                                   │
 │  ⚡ QUICK ACTIONS               │                                   │
 │  [+ Project] [+ Member] [Upload]│                                   │
@@ -62,63 +91,74 @@ Dashboard là **trung tâm điều khiển** của workspace, giúp user:
 
 | # | Task | Status | Chi tiết |
 |---|------|--------|----------|
-| 1.1 | Workspace Overview Stats | ⬜ | Members, Projects, Storage |
-| 1.2 | Recent Files (cross-project) | ⬜ | Files mới từ tất cả projects |
-| 1.3 | Team Activity | ✅ | Đã có RecentActivity |
+| 1.1 | Workspace Overview Stats | ✅ | Members, Projects, Storage từ API |
+| 1.2 | Recent Files (permission-based) | ⬜ | Files mới user có quyền xem |
+| 1.3 | Team Activity | ✅ | Từ Identity service |
 | 1.4 | Quick Actions | ✅ | Đã có |
-| 1.5 | UTS Agent Chat component | ⬜ | AI chat interface |
-| 1.6 | Tích hợp Agent API | ⬜ | Connect to AI backend |
+| 1.5 | UTS Agent Chat component | ✅ | Streaming + Markdown |
+| 1.6 | Tích hợp Agent API | ✅ | SSE streaming |
 
 ### Files đã tạo/cập nhật:
-- `src/hooks/useWorkspaceStats.ts` - Hook fetch thống kê
-- `src/hooks/useWorkspaceActivities.ts` - Hook fetch hoạt động
+- `src/hooks/useDashboard.ts` - Hook fetch dashboard (aggregated)
 - `src/lib/api.ts` - Dashboard types và API functions
 - `src/components/RecentActivity.tsx` - Activity timeline
 - `src/components/OverviewPage.tsx` - Main dashboard page
+- `src/components/AgentChat.tsx` - AI chat với streaming + markdown
 
-### API Endpoints:
+### API Endpoints (Implemented):
 
 ```typescript
-// GET /tenant/stats
-interface StatsResponse {
-  memberCount: number;
-  projectCount: number;
+// GET /tenant/dashboard (aggregated từ tenant-bff)
+interface DashboardResponse {
+  orgId: string;
+  orgName: string;
+  status: string;
+  members: {
+    total: number;
+    owners: number;
+    admins: number;
+    staff: number;
+    guests: number;
+  };
+  activities: {
+    totalActions: number;
+    todayActions: number;
+    thisWeekActions: number;
+    recentActivities: RecentActivity[];
+  };
+  projects: {
+    total: number;
+    items: ProjectLite[];
+  };
   storage: {
-    usedGb: number;
-    limitGb: number;
+    usedBytes: number;
+    limitBytes: number;
     usedPercent: number;
   };
 }
 
-// GET /tenant/activities?limit=10
-interface ActivitiesResponse {
-  activities: Activity[];
-  hasMore: boolean;
-}
+// POST /tenant/agent/chat (SSE streaming)
+// Request body: { message: string }
+// Response: Server-Sent Events với markdown content
+```
 
+### API Endpoints (TODO - Recent Files):
+
+```typescript
 // GET /tenant/recent-files?limit=5
+// Files user có quyền xem (cross-project, permission-based)
 interface RecentFilesResponse {
   files: {
     id: string;
     name: string;
     projectId: string;
     projectName: string;
+    channelId?: string;
+    channelName?: string;
     uploadedBy: { id: string; name: string };
     uploadedAt: string;
     size: number;
   }[];
-}
-
-// POST /tenant/agent/chat
-interface AgentChatRequest {
-  message: string;
-  conversationId?: string;
-}
-
-interface AgentChatResponse {
-  response: string;
-  conversationId: string;
-  sources?: { projectId: string; fileId?: string; type: string }[];
 }
 ```
 
@@ -289,12 +329,60 @@ tenant-web/
 
 ---
 
-## Thứ tự triển khai
+## Thứ tự triển khai (Roadmap)
 
-1. **UC09 - Dashboard** ← Đang làm
-2. **UC11 - Members** (hoàn thiện phân quyền)
-3. **UC07 - Settings** (tạo mới)
-4. **UC12 - Transfer Ownership** (thêm vào Settings)
+### Phase 1: Dashboard Core ✅
+- [x] UC09 Dashboard layout
+- [x] KPI Cards (Members, Projects, Storage)
+- [x] Team Activity từ API
+- [x] UTS Agent Chat (streaming + markdown)
+- [x] Storage stats từ API (hardcode limit 10GB)
+
+### Phase 2: Files & Storage
+- [ ] **File-storage service**: Endpoint `GET /api/storage/usage`
+- [ ] **Recent Files API**: Permission-based query
+- [ ] **Frontend**: Integrate recent files từ API
+- [ ] **DM cleanup job**: Auto-delete sau X ngày
+
+### Phase 3: Members Management
+- [ ] UC11 Phân quyền (change role)
+- [ ] Pending invitations list
+- [ ] Cancel invitation
+
+### Phase 4: Settings
+- [ ] UC07 Settings page
+- [ ] General settings (name, description, logo)
+- [ ] Storage settings
+
+### Phase 5: Ownership Transfer
+- [ ] UC12 Transfer ownership
+- [ ] Danger zone section
+- [ ] Password confirmation
+
+---
+
+## Backend Services Cần Update
+
+### file-storage-api
+```typescript
+// GET /api/storage/usage
+// Header: X-Org-Id
+interface StorageUsageResponse {
+  usedBytes: number;
+  fileCount: number;
+}
+
+// GET /api/files/recent?limit=5
+// Header: X-Org-Id, X-User-Id
+// Permission-based: chỉ trả files user có quyền xem
+interface RecentFilesResponse {
+  files: FileInfo[];
+}
+```
+
+### tenant-bff (đã implement)
+- `GET /dashboard` - Aggregated dashboard data
+- Storage stats với hardcode limit (10GB default)
 
 ---
 
@@ -304,3 +392,4 @@ tenant-web/
 - API base URL: `process.env.NEXT_PUBLIC_API_BASE` (default: `http://localhost:8080`)
 - Sử dụng React Query cho state management
 - UI components từ `@/components/ui` (shadcn/ui)
+- Storage limit config: `STORAGE_LIMIT_BYTES` env var

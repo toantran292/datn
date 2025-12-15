@@ -1,7 +1,7 @@
 "use client";
 
-import { FilesPage } from "@/components/FilesPage";
+import { FilesView } from "@/features/files";
 
 export default function FilesRoute() {
-  return <FilesPage />;
+  return <FilesView />;
 }
