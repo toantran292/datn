@@ -7,6 +7,8 @@ import { EmbeddingRepository } from './embedding.repository';
 import { DocumentProcessorService } from './document-processor.service';
 import { TextProcessor } from './processors/text.processor';
 import { PdfProcessor } from './processors/pdf.processor';
+import { AudioProcessor } from './processors/audio.processor';
+import { VideoProcessor } from './processors/video.processor';
 import { RagService } from './rag.service';
 import { ChatModule } from '../../chat/chat.module';
 import { FileStorageModule } from '../../common/file-storage/file-storage.module';
@@ -24,6 +26,8 @@ import { FileStorageModule } from '../../common/file-storage/file-storage.module
     DocumentProcessorService,
     TextProcessor,
     PdfProcessor,
+    AudioProcessor,
+    VideoProcessor,
     RagService,
     {
       provide: 'RagService',

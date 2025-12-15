@@ -28,7 +28,6 @@ async function bootstrap() {
   await app.listen(port);
 
   console.log(`🚀 Notification service is running on port ${port}`);
-  console.log(`📧 Email service connected to ${process.env.SMTP_HOST || 'mailhog'}`);
   console.log(`🔌 WebSocket available at ws://localhost:${port}`);
 }
 

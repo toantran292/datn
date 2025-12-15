@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { DocumentProcessor, DocumentMetadata, ProcessedChunk } from './processors/processor.interface';
 import { TextProcessor } from './processors/text.processor';
 import { PdfProcessor } from './processors/pdf.processor';
+import { AudioProcessor } from './processors/audio.processor';
+import { VideoProcessor } from './processors/video.processor';
 
 @Injectable()
 export class DocumentProcessorService {
@@ -10,10 +12,14 @@ export class DocumentProcessorService {
   constructor(
     private readonly textProcessor: TextProcessor,
     private readonly pdfProcessor: PdfProcessor,
+    private readonly audioProcessor: AudioProcessor,
+    private readonly videoProcessor: VideoProcessor,
   ) {
     // Register processors in order of priority
     this.processors = [
       this.pdfProcessor,
+      this.audioProcessor,
+      this.videoProcessor,
       this.textProcessor, // Text processor as fallback for text-like types
     ];
   }

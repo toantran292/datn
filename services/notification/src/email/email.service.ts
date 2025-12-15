@@ -1,6 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as sgMail from '@sendgrid/mail';
+import sgMail from '@sendgrid/mail';
 import * as nodemailer from 'nodemailer';
 import { Transporter } from 'nodemailer';
 import { EmailPayload } from '../types/notification.types';
@@ -11,6 +11,7 @@ export class EmailService implements OnModuleInit {
   private readonly logger = new Logger(EmailService.name);
   private provider: EmailProvider;
   private smtpTransporter: Transporter | null = null;
+  private sgMailClient: typeof sgMail | null = null;
 
   constructor(private configService: ConfigService) {}
 
@@ -37,6 +38,7 @@ export class EmailService implements OnModuleInit {
     }
 
     sgMail.setApiKey(apiKey);
+    this.sgMailClient = sgMail;
     this.logger.log('SendGrid email provider initialized');
   }
 
@@ -70,19 +72,31 @@ export class EmailService implements OnModuleInit {
   }
 
   private async sendWithSendGrid(payload: EmailPayload): Promise<void> {
+    if (!this.sgMailClient) {
+      throw new Error('SendGrid client not initialized');
+    }
+
     try {
       const defaultFrom = this.configService.get<string>('email.from');
       const fromName = this.configService.get<string>('email.fromName');
 
-      const msg: sgMail.MailDataRequired = {
+      // Ensure we have content - SendGrid requires at least 1 character
+      const htmlContent = payload.html || payload.text;
+      const textContent = payload.text || payload.html;
+
+      if (!htmlContent && !textContent) {
+        throw new Error('Email must have either text or html content');
+      }
+
+      const msg: Parameters<typeof sgMail.send>[0] = {
         to: payload.to,
         from: {
           email: payload.from || defaultFrom || 'noreply@uts.local',
           name: fromName || 'UTS Notification',
         },
         subject: payload.subject,
-        text: payload.text || '',
-        html: payload.html || payload.text || '',
+        ...(textContent && { text: textContent }),
+        ...(htmlContent && { html: htmlContent }),
       };
 
       // Add CC if provided
@@ -98,19 +112,25 @@ export class EmailService implements OnModuleInit {
       // Add attachments if provided
       if (payload.attachments && payload.attachments.length > 0) {
         msg.attachments = payload.attachments.map((att) => ({
-          content: att.content?.toString('base64') || '',
+          content: typeof att.content === 'string' ? att.content : att.content?.toString('base64') || '',
           filename: att.filename || 'attachment',
           type: att.contentType,
-          disposition: 'attachment',
+          disposition: 'attachment' as const,
         }));
       }
 
-      const [response] = await sgMail.send(msg);
+      const [response] = await this.sgMailClient.send(msg);
 
       this.logger.log(
         `Email sent via SendGrid to ${Array.isArray(payload.to) ? payload.to.join(', ') : payload.to}. Status: ${response.statusCode}`,
       );
     } catch (error: any) {
+      // Log detailed SendGrid error
+      if (error.response) {
+        this.logger.error(
+          `SendGrid error details: ${JSON.stringify(error.response.body)}`,
+        );
+      }
       this.logger.error(
         `Failed to send email via SendGrid: ${error.message}`,
         error.stack,

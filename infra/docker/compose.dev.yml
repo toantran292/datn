@@ -216,15 +216,18 @@ services:
     environment:
       NODE_ENV: development
       PORT: 3000
-      CASSANDRA_CONTACT_POINTS: cassandra
-      CASSANDRA_LOCAL_DATA_CENTER: dc1
-      CASSANDRA_KEYSPACE: chat
-      CASSANDRA_PORT: 9042
-      CASSANDRA_USER: cassandra
-      CASSANDRA_PASSWORD: cassandra
+      # PostgreSQL Configuration
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+      POSTGRES_DB: chat_db
+      # OpenAI API for embeddings and audio/video transcription (Whisper)
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      # File Storage Service
+      FILE_STORAGE_URL: http://file-storage-api:3000
     depends_on:
-      cassandra: { condition: service_healthy }
-      cass_init: { condition: service_completed_successfully }
+      postgres: { condition: service_healthy }
     healthcheck:
       test:
         [
@@ -393,5 +396,4 @@ volumes:
   mongodb_config:
   os_data:
   gradle_cache:
-  cassandra_data:
   pm_node_modules:
