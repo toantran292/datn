@@ -58,9 +58,9 @@ public class DashboardService {
         long owners = memberships.countByRole(orgId, "OWNER");
         long admins = memberships.countByRole(orgId, "ADMIN");
         long staff = memberships.countByMemberType(orgId, MemberType.STAFF);
-        long guests = memberships.countByMemberType(orgId, MemberType.GUEST);
+        long partners = memberships.countByMemberType(orgId, MemberType.PARTNER);
 
-        return new Dtos.MemberStats(total, owners, admins, staff, guests);
+        return new Dtos.MemberStats(total, owners, admins, staff, partners);
     }
 
     private Dtos.ActivityStats getActivityStats(UUID orgId) {

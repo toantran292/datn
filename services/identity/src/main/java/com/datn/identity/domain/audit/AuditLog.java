@@ -55,6 +55,20 @@ public record AuditLog(
     }
 
     /**
+     * Creates an audit log with metadata but without request context.
+     */
+    @SuppressWarnings("unchecked")
+    public static AuditLog create(
+            UUID orgId,
+            UUID userId,
+            AuditAction action,
+            String description,
+            Map<String, ?> metadata) {
+        Map<String, Object> meta = metadata != null ? (Map<String, Object>) (Map<?, ?>) metadata : null;
+        return create(orgId, userId, action, description, meta, null, null);
+    }
+
+    /**
      * Returns the category of this audit action.
      */
     public String category() {

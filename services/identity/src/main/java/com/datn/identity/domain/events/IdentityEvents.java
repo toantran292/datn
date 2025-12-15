@@ -77,6 +77,11 @@ public final class IdentityEvents {
         @Override public String topic(){ return "identity.profile.updated"; }
     }
 
+    public record PasswordChanged(UUID userId, Instant occurredAt) implements DomainEvent {
+        public PasswordChanged(UUID userId){ this(userId, Instant.now()); }
+        @Override public String topic(){ return "identity.password.changed"; }
+    }
+
     public record OrganizationUpdated(UUID orgId, Instant occurredAt) implements DomainEvent {
         public OrganizationUpdated(UUID orgId){ this(orgId, Instant.now()); }
         @Override public String topic(){ return "identity.organization.updated"; }
@@ -85,5 +90,10 @@ public final class IdentityEvents {
     public record OrganizationSettingsUpdated(UUID orgId, Instant occurredAt) implements DomainEvent {
         public OrganizationSettingsUpdated(UUID orgId){ this(orgId, Instant.now()); }
         @Override public String topic(){ return "identity.organization.settings_updated"; }
+    }
+
+    public record GoogleAccountLinked(UUID userId, String googleEmail, Instant occurredAt) implements DomainEvent {
+        public GoogleAccountLinked(UUID userId, String googleEmail){ this(userId, googleEmail, Instant.now()); }
+        @Override public String topic(){ return "identity.google.linked"; }
     }
 }

@@ -34,7 +34,7 @@ public class UserEntity {
     @Column(name = "bio", columnDefinition = "TEXT")
     private String bio;
     @Column(name = "avatar_asset_id")
-    private UUID avatarAssetId;
+    private String avatarAssetId;
 
     // getters/setters
     public UUID getId() {
@@ -109,11 +109,11 @@ public class UserEntity {
         this.bio = bio;
     }
 
-    public UUID getAvatarAssetId() {
+    public String getAvatarAssetId() {
         return avatarAssetId;
     }
 
-    public void setAvatarAssetId(UUID avatarAssetId) {
+    public void setAvatarAssetId(String avatarAssetId) {
         this.avatarAssetId = avatarAssetId;
     }
 }

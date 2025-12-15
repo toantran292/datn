@@ -5,7 +5,9 @@ import com.datn.identity.infrastructure.persistence.entity.ExternalIdentityId;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 public interface ExternalIdentityJpaRepo extends JpaRepository<ExternalIdentityEntity, ExternalIdentityId> {
     Optional<ExternalIdentityEntity> findByProviderAndSubject(String provider, String subject);
+    Optional<ExternalIdentityEntity> findByUserId(UUID userId);
 }

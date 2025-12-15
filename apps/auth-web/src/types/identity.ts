@@ -53,8 +53,7 @@ export type EmailAuthRequest = {
 export type EmailSignUpRequest = {
   email: string;
   password: string;
-  firstName: string;
-  lastName: string;
+  displayName?: string;
 };
 
 export type AuthResponse = {

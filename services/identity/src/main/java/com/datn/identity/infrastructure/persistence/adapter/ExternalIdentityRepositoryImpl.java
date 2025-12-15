@@ -7,6 +7,7 @@ import com.datn.identity.infrastructure.persistence.springdata.ExternalIdentityJ
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 public class ExternalIdentityRepositoryImpl implements ExternalIdentityRepository {
@@ -28,5 +29,10 @@ public class ExternalIdentityRepositoryImpl implements ExternalIdentityRepositor
     @Override public Optional<ExternalIdentity> find(String provider, String subject) {
         return repo.findByProviderAndSubject(provider, subject).map(ExternalIdentityRepositoryImpl::toDomain);
     }
+
+    @Override public Optional<ExternalIdentity> findByUserId(UUID userId) {
+        return repo.findByUserId(userId).map(ExternalIdentityRepositoryImpl::toDomain);
+    }
+
     @Override public void save(ExternalIdentity ei) { repo.save(toEntity(ei)); }
 }

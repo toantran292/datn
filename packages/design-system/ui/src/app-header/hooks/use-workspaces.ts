@@ -5,6 +5,7 @@ export const workspaceKeys = {
   all: ["workspaces"] as const,
   list: () => [...workspaceKeys.all, "list"] as const,
   me: () => [...workspaceKeys.all, "me"] as const,
+  profile: () => [...workspaceKeys.all, "profile"] as const,
 };
 
 export interface AuthMeResponse {
@@ -108,5 +109,49 @@ export function useAuthMe(options?: UseAuthMeOptions) {
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
     retry: false,
+  });
+}
+
+// User Profile types and hook
+export interface UserProfileResponse {
+  userId: string;
+  email: string;
+  first_name: string | null;
+  last_name: string | null;
+  displayName: string | null;
+  phone: string | null;
+  bio: string | null;
+  avatarAssetId: string | null;
+  avatarUrl: string | null;
+  emailVerified: boolean;
+  provider: string;
+}
+
+interface UseUserProfileOptions {
+  apiBaseUrl?: string;
+  enabled?: boolean;
+}
+
+export function useUserProfile(options?: UseUserProfileOptions) {
+  const apiBase = options?.apiBaseUrl || process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
+
+  return useQuery({
+    queryKey: workspaceKeys.profile(),
+    queryFn: async (): Promise<UserProfileResponse> => {
+      const res = await fetch(`${apiBase}/me/profile`, {
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        const error: any = new Error("Failed to fetch user profile");
+        error.status = res.status;
+        throw error;
+      }
+
+      return res.json();
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: false,
+    enabled: options?.enabled !== false,
   });
 }

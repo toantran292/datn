@@ -40,7 +40,7 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
 
     @Override
     public void save(Organization org) {
-        repo.save(toEntity(org));
+        repo.saveAndFlush(toEntity(org));
     }
 
     private Organization toDomain(OrganizationEntity e) {

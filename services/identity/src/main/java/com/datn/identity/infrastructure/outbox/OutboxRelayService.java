@@ -113,6 +113,14 @@ public class OutboxRelayService {
         };
     }
 
+    // UTS Design System Colors
+    private static final String UTS_ORANGE = "#FF8800";
+    private static final String UTS_TEAL = "#00C4AB";
+    private static final String TEXT_PRIMARY = "#0F172A";
+    private static final String TEXT_SECONDARY = "#475569";
+    private static final String BG_SURFACE = "#FFFFFF";
+    private static final String BG_PAGE = "#F9FAFB";
+
     private String buildPasswordResetEmail(JsonNode payload) {
         String resetLink = payload.get("resetLink").asText();
         return """
@@ -120,14 +128,18 @@ public class OutboxRelayService {
             <html>
             <head>
                 <meta charset="UTF-8">
+                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
                 <style>
-                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; color: %s; margin: 0; padding: 0; background: %s; }
                     .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                    .header { background: #4F46E5; color: white; padding: 20px; text-align: center; }
-                    .content { padding: 30px; background: #f9fafb; }
-                    .button { display: inline-block; background: #4F46E5; color: white; padding: 12px 30px;
-                              text-decoration: none; border-radius: 5px; margin: 20px 0; }
-                    .footer { padding: 20px; text-align: center; color: #666; font-size: 12px; }
+                    .header { background: %s; color: white; padding: 32px 20px; text-align: center; border-radius: 16px 16px 0 0; }
+                    .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
+                    .content { padding: 40px 30px; background: %s; border-radius: 0 0 16px 16px; box-shadow: 0 4px 16px rgba(15,23,42,0.08); }
+                    .button { display: inline-block; background: %s; color: white; padding: 14px 32px;
+                              text-decoration: none; border-radius: 12px; margin: 24px 0; font-weight: 600; font-size: 15px; }
+                    .button:hover { background: #E56600; }
+                    .footer { padding: 24px; text-align: center; color: %s; font-size: 12px; }
+                    a { color: %s; }
                 </style>
             </head>
             <body>
@@ -139,22 +151,23 @@ public class OutboxRelayService {
                         <p>Hello,</p>
                         <p>We received a request to reset your password. Click the button below to create a new password:</p>
                         <p style="text-align: center;">
-                            <a href="%s" class="button">Reset Password</a>
+                            <a href="%s" class="button" style="color: white;">Reset Password</a>
                         </p>
                         <p>This link will expire in <strong>1 hour</strong>.</p>
                         <p>If you didn't request this, you can safely ignore this email.</p>
-                        <p style="color: #666; font-size: 12px; margin-top: 30px;">
+                        <p style="color: %s; font-size: 12px; margin-top: 30px;">
                             If the button doesn't work, copy and paste this link:<br>
                             <a href="%s">%s</a>
                         </p>
                     </div>
                     <div class="footer">
-                        <p>This is an automated message. Please do not reply.</p>
+                        <p>This is an automated message from <strong>UTS</strong>. Please do not reply.</p>
                     </div>
                 </div>
             </body>
             </html>
-            """.formatted(resetLink, resetLink, resetLink);
+            """.formatted(TEXT_PRIMARY, BG_PAGE, UTS_ORANGE, BG_SURFACE, UTS_ORANGE, TEXT_SECONDARY, UTS_TEAL,
+                          resetLink, TEXT_SECONDARY, resetLink, resetLink);
     }
 
     private String buildEmailVerificationEmail(JsonNode payload) {
@@ -164,14 +177,18 @@ public class OutboxRelayService {
             <html>
             <head>
                 <meta charset="UTF-8">
+                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
                 <style>
-                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; color: %s; margin: 0; padding: 0; background: %s; }
                     .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                    .header { background: #10B981; color: white; padding: 20px; text-align: center; }
-                    .content { padding: 30px; background: #f9fafb; }
-                    .button { display: inline-block; background: #10B981; color: white; padding: 12px 30px;
-                              text-decoration: none; border-radius: 5px; margin: 20px 0; }
-                    .footer { padding: 20px; text-align: center; color: #666; font-size: 12px; }
+                    .header { background: %s; color: white; padding: 32px 20px; text-align: center; border-radius: 16px 16px 0 0; }
+                    .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
+                    .content { padding: 40px 30px; background: %s; border-radius: 0 0 16px 16px; box-shadow: 0 4px 16px rgba(15,23,42,0.08); }
+                    .button { display: inline-block; background: %s; color: white; padding: 14px 32px;
+                              text-decoration: none; border-radius: 12px; margin: 24px 0; font-weight: 600; font-size: 15px; }
+                    .button:hover { background: #00B9A0; }
+                    .footer { padding: 24px; text-align: center; color: %s; font-size: 12px; }
+                    a { color: %s; }
                 </style>
             </head>
             <body>
@@ -183,35 +200,58 @@ public class OutboxRelayService {
                         <p>Hello,</p>
                         <p>Thank you for registering! Please verify your email address by clicking the button below:</p>
                         <p style="text-align: center;">
-                            <a href="%s" class="button">Verify Email</a>
+                            <a href="%s" class="button" style="color: white;">Verify Email</a>
                         </p>
                         <p>This link will expire in <strong>24 hours</strong>.</p>
                         <p>If you didn't create an account, you can safely ignore this email.</p>
-                        <p style="color: #666; font-size: 12px; margin-top: 30px;">
+                        <p style="color: %s; font-size: 12px; margin-top: 30px;">
                             If the button doesn't work, copy and paste this link:<br>
                             <a href="%s">%s</a>
                         </p>
                     </div>
                     <div class="footer">
-                        <p>This is an automated message. Please do not reply.</p>
+                        <p>This is an automated message from <strong>UTS</strong>. Please do not reply.</p>
                     </div>
                 </div>
             </body>
             </html>
-            """.formatted(verifyLink, verifyLink, verifyLink);
+            """.formatted(TEXT_PRIMARY, BG_PAGE, UTS_TEAL, BG_SURFACE, UTS_TEAL, TEXT_SECONDARY, UTS_TEAL,
+                          verifyLink, TEXT_SECONDARY, verifyLink, verifyLink);
     }
 
     private String buildWelcomeEmail(JsonNode payload) {
         return """
             <!DOCTYPE html>
             <html>
-            <head><meta charset="UTF-8"></head>
+            <head>
+                <meta charset="UTF-8">
+                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+                <style>
+                    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; color: %s; margin: 0; padding: 0; background: %s; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background: linear-gradient(135deg, %s 0%%, %s 100%%); color: white; padding: 32px 20px; text-align: center; border-radius: 16px 16px 0 0; }
+                    .header h1 { margin: 0; font-size: 24px; font-weight: 600; }
+                    .content { padding: 40px 30px; background: %s; border-radius: 0 0 16px 16px; box-shadow: 0 4px 16px rgba(15,23,42,0.08); }
+                    .footer { padding: 24px; text-align: center; color: %s; font-size: 12px; }
+                </style>
+            </head>
             <body>
-                <h2>Welcome!</h2>
-                <p>Thank you for registering. Your account has been created successfully.</p>
+                <div class="container">
+                    <div class="header">
+                        <h1>Welcome to UTS!</h1>
+                    </div>
+                    <div class="content">
+                        <p>Hello,</p>
+                        <p>Thank you for registering. Your account has been created successfully.</p>
+                        <p>You can now start using UTS to collaborate with your team.</p>
+                    </div>
+                    <div class="footer">
+                        <p>This is an automated message from <strong>UTS</strong>. Please do not reply.</p>
+                    </div>
+                </div>
             </body>
             </html>
-            """;
+            """.formatted(TEXT_PRIMARY, BG_PAGE, UTS_ORANGE, UTS_TEAL, BG_SURFACE, TEXT_SECONDARY);
     }
 
     private String buildGenericEmail(JsonNode payload) {
@@ -219,12 +259,28 @@ public class OutboxRelayService {
         return """
             <!DOCTYPE html>
             <html>
-            <head><meta charset="UTF-8"></head>
+            <head>
+                <meta charset="UTF-8">
+                <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+                <style>
+                    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; line-height: 1.6; color: %s; margin: 0; padding: 0; background: %s; }
+                    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .content { padding: 40px 30px; background: %s; border-radius: 16px; box-shadow: 0 4px 16px rgba(15,23,42,0.08); }
+                    .footer { padding: 24px; text-align: center; color: %s; font-size: 12px; }
+                </style>
+            </head>
             <body>
-                <p>%s</p>
+                <div class="container">
+                    <div class="content">
+                        <p>%s</p>
+                    </div>
+                    <div class="footer">
+                        <p>This is an automated message from <strong>UTS</strong>. Please do not reply.</p>
+                    </div>
+                </div>
             </body>
             </html>
-            """.formatted(message);
+            """.formatted(TEXT_PRIMARY, BG_PAGE, BG_SURFACE, TEXT_SECONDARY, message);
     }
 
     /**

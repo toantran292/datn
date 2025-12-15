@@ -77,9 +77,10 @@ export function useEmailSignUp() {
 
   return useMutation({
     mutationFn: (data: EmailSignUpRequest) => apiPost(routes.api.emailSignUp(), data),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       toast.success("Account created successfully! Please check your email to verify your account.");
-      router.push(routes.login());
+      // Redirect to check-email page with email parameter
+      router.push(routes.checkEmail(variables.email));
     },
     onError: (error: Error) => {
       const errorMessage = error.message || "Sign up failed";
@@ -115,6 +116,57 @@ export function useResetPassword() {
     onError: (error: Error) => {
       const errorMessage = error.message || "Failed to reset password";
       toast.error(errorMessage);
+    },
+  });
+}
+
+// Hook for email verification
+export function useVerifyEmail() {
+  return useMutation({
+    mutationFn: (token: string) => apiPost(routes.api.verifyEmail(), { token }),
+    onSuccess: () => {
+      toast.success("Email verified successfully! You can now sign in.");
+    },
+    onError: (error: Error) => {
+      const errorMessage = error.message || "Email verification failed";
+      toast.error(errorMessage);
+    },
+  });
+}
+
+// Hook for resending verification email
+export function useResendVerification() {
+  return useMutation({
+    mutationFn: (email: string) => apiPost(routes.api.resendVerification(), { email }),
+    onSuccess: () => {
+      toast.success("Verification email sent! Please check your inbox.");
+    },
+    onError: (error: Error) => {
+      const errorMessage = error.message || "Failed to resend verification email";
+      toast.error(errorMessage);
+    },
+  });
+}
+
+// Hook for logout
+export function useLogout() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => apiPost(routes.api.logout()),
+    onSuccess: () => {
+      // Clear all cached queries
+      queryClient.clear();
+      toast.success("Logged out successfully");
+      // Redirect to login page
+      window.location.href = routes.login();
+    },
+    onError: (error: Error) => {
+      // Even if logout fails on server, clear client state and redirect
+      queryClient.clear();
+      const errorMessage = error.message || "Logout failed";
+      toast.error(errorMessage);
+      window.location.href = routes.login();
     },
   });
 }

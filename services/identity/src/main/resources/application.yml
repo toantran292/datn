@@ -53,11 +53,7 @@ logging:
   pattern:
     console: '%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx'
 
-cors:
-  allowed-origins: http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003
-  allowed-methods: GET,POST,PUT,DELETE,OPTIONS,PATCH
-  allowed-headers: "*"
-  allow-credentials: true
+# CORS is handled by Edge (nginx), disabled in this service
 
 uts:
   auth:
@@ -75,4 +71,4 @@ file-storage:
 # Application config for password reset and notifications
 app:
   frontend-url: ${FRONTEND_URL:http://localhost:3000}
-  notification-service-url: ${NOTIFICATION_SERVICE_URL:http://notification-api:3004}
+  notification-service-url: ${NOTIFICATION_SERVICE_URL:http://notification-api:3000}

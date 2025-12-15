@@ -46,20 +46,32 @@ public class Dtos {
 
     // Profile (UC05)
     public record UpdateProfileReq(
+        String first_name,
+        String last_name,
         String displayName,
         String phone,
         String bio,
-        UUID avatarAssetId
+        String avatarAssetId
     ) {}
 
     public record ProfileRes(
         String userId,
         String email,
+        String first_name,
+        String last_name,
         String displayName,
         String phone,
         String bio,
         String avatarAssetId,
-        boolean emailVerified
+        String avatarUrl,
+        boolean emailVerified,
+        String provider
+    ) {}
+
+    // Change Password
+    public record ChangePasswordReq(
+        @NotBlank String current_password,
+        @NotBlank String new_password
     ) {}
 
     public record AvatarPresignedUrlReq(

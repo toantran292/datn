@@ -16,10 +16,10 @@ public final class User {
     private final Instant emailVerifiedAt;
     private final String phone;
     private final String bio;
-    private final UUID avatarAssetId;
+    private final String avatarAssetId;
 
     public User(UUID id, Email email, String passwordHash, boolean disabled, boolean mustChangePassword,
-                String displayName, Instant emailVerifiedAt, String phone, String bio, UUID avatarAssetId) {
+                String displayName, Instant emailVerifiedAt, String phone, String bio, String avatarAssetId) {
         this.id = id;
         this.email = email;
         this.passwordHash = passwordHash;
@@ -82,11 +82,11 @@ public final class User {
         return new User(id, email, passwordHash, disabled, mustChangePassword, displayName, emailVerifiedAt, phone, newBio, avatarAssetId);
     }
 
-    public User withAvatarAssetId(UUID newAvatarAssetId) {
+    public User withAvatarAssetId(String newAvatarAssetId) {
         return new User(id, email, passwordHash, disabled, mustChangePassword, displayName, emailVerifiedAt, phone, bio, newAvatarAssetId);
     }
 
-    public User updateProfile(String newDisplayName, String newPhone, String newBio, UUID newAvatarAssetId) {
+    public User updateProfile(String newDisplayName, String newPhone, String newBio, String newAvatarAssetId) {
         return new User(id, email, passwordHash, disabled, mustChangePassword,
             newDisplayName != null ? newDisplayName : displayName,
             emailVerifiedAt,
@@ -108,7 +108,7 @@ public final class User {
     public Instant emailVerifiedAt(){ return emailVerifiedAt; }
     public String phone(){ return phone; }
     public String bio(){ return bio; }
-    public UUID avatarAssetId(){ return avatarAssetId; }
+    public String avatarAssetId(){ return avatarAssetId; }
 
     @Override public boolean equals(Object o){ return (o instanceof User u) && Objects.equals(id, u.id); }
     @Override public int hashCode(){ return Objects.hash(id); }

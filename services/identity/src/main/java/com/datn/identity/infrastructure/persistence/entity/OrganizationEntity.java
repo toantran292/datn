@@ -32,6 +32,7 @@ public class OrganizationEntity {
     @Column(name="llm_provider", length=20)
     private LlmProvider llmProvider;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name="settings", columnDefinition="jsonb")
     private String settingsJson;
 
