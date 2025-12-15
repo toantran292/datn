@@ -7,9 +7,13 @@ import { IdentityService } from 'src/services/identity.service';
 export class MemberController {
   constructor(private readonly identityService: IdentityService) {}
 
+  /**
+   * GET /members - Get unified list of members and invitations
+   * Returns both active members and pending invitations in a single response
+   */
   @Get()
   getList(@Req() req) {
-    return this.identityService.getListMembers(req.orgId);
+    return this.identityService.getMembersAndInvitations(req.orgId);
   }
 
   @Post('invite')
@@ -31,12 +35,7 @@ export class MemberController {
     return this.identityService.removeMember(req.orgId, userId);
   }
 
-  // Invitations
-  @Get('invitations')
-  listInvitations(@Req() req) {
-    return this.identityService.listInvitations(req.orgId);
-  }
-
+  // Cancel invitation
   @Delete('invitations/:invitationId')
   cancelInvitation(@Req() req, @Param('invitationId') invitationId: string) {
     return this.identityService.cancelInvitation(req.orgId, invitationId);

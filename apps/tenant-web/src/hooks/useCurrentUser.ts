@@ -1,27 +1,14 @@
-import { useState, useEffect, useCallback } from 'react';
-import { apiGet } from '@/lib/api';
+"use client";
 
-interface CurrentUser {
-  id: string;
-  roles: string[];
-  perms: string[];
-}
+import { useAppHeaderContext } from "@uts/design-system/ui";
 
-interface MeResponse {
-  user: CurrentUser;
-  orgId: string;
-  projectId?: string;
-}
-
-interface UseCurrentUserState {
-  user: CurrentUser | null;
+interface UseCurrentUserReturn {
+  userId: string | null;
   orgId: string | null;
+  email: string | null;
+  roles: string[];
   isLoading: boolean;
-  error: string | null;
-}
-
-interface UseCurrentUserReturn extends UseCurrentUserState {
-  refetch: () => Promise<void>;
+  error: unknown;
   isOwner: boolean;
   isAdmin: boolean;
   hasAdminAccess: boolean; // owner OR admin
@@ -29,49 +16,21 @@ interface UseCurrentUserReturn extends UseCurrentUserState {
 }
 
 export function useCurrentUser(): UseCurrentUserReturn {
-  const [state, setState] = useState<UseCurrentUserState>({
-    user: null,
-    orgId: null,
-    isLoading: true,
-    error: null,
-  });
+  const { auth, authLoading, authError } = useAppHeaderContext();
 
-  const fetchCurrentUser = useCallback(async () => {
-    try {
-      setState(prev => ({ ...prev, isLoading: true, error: null }));
-      const response = await apiGet<MeResponse>('/tenant/me');
-      setState({
-        user: response.user,
-        orgId: response.orgId,
-        isLoading: false,
-        error: null,
-      });
-    } catch (error: any) {
-      console.error('Failed to fetch current user:', error);
-      setState({
-        user: null,
-        orgId: null,
-        isLoading: false,
-        error: error.message || 'Failed to fetch user info',
-      });
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchCurrentUser();
-  }, [fetchCurrentUser]);
-
-  console.log('Current User State:', state);
-
-  const roles = state.user?.roles || [];
+  const roles = auth?.roles || [];
   const isOwner = roles.includes('OWNER');
   const isAdmin = roles.includes('ADMIN');
   const isMember = roles.includes('MEMBER');
   const hasAdminAccess = isOwner || isAdmin;
 
   return {
-    ...state,
-    refetch: fetchCurrentUser,
+    userId: auth?.user_id || null,
+    orgId: auth?.org_id || null,
+    email: auth?.email || null,
+    roles,
+    isLoading: authLoading,
+    error: authError,
     isOwner,
     isAdmin,
     hasAdminAccess,

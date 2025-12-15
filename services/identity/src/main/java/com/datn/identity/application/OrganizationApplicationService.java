@@ -10,6 +10,7 @@ import com.datn.identity.domain.outbox.OutboxMessage;
 import com.datn.identity.domain.outbox.OutboxRepository;
 import com.datn.identity.domain.user.PasswordHasher;
 import com.datn.identity.domain.user.UserRepository;
+import com.datn.identity.infrastructure.web.FileStorageClient;
 import com.datn.identity.interfaces.api.dto.Dtos;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,6 +37,7 @@ public class OrganizationApplicationService {
     private final AuditLogRepository auditLogs;
     private final PasswordHasher hasher;
     private final ObjectMapper mapper;
+    private final FileStorageClient fileStorageClient;
 
     public OrganizationApplicationService(OrganizationRepository orgs,
                                           MembershipRepository memberships,
@@ -43,9 +45,11 @@ public class OrganizationApplicationService {
                                           OutboxRepository outbox,
                                           AuditLogRepository auditLogs,
                                           PasswordHasher hasher,
-                                          ObjectMapper mapper) {
+                                          ObjectMapper mapper,
+                                          FileStorageClient fileStorageClient) {
         this.orgs = orgs; this.memberships = memberships; this.users = users;
         this.outbox = outbox; this.auditLogs = auditLogs; this.hasher = hasher; this.mapper = mapper;
+        this.fileStorageClient = fileStorageClient;
     }
 
     @Transactional
@@ -82,6 +86,19 @@ public class OrganizationApplicationService {
                 .map(m -> {
                     var userOpt = users.findById(m.userId());
                     String email = userOpt.map(u -> u.email().value()).orElse("unknown@email.com");
+                    String displayName = userOpt.map(u -> u.displayName()).orElse(null);
+                    String avatarAssetId = userOpt.map(u -> u.avatarAssetId()).orElse(null);
+
+                    // Get avatar URL from file storage if asset ID exists
+                    String avatarUrl = null;
+                    if (avatarAssetId != null && !avatarAssetId.isBlank()) {
+                        try {
+                            var presignedResponse = fileStorageClient.getPresignedGetUrl(avatarAssetId, 3600);
+                            avatarUrl = presignedResponse.presignedUrl();
+                        } catch (Exception e) {
+                            System.err.println("Failed to get avatar URL for user " + m.userId() + ": " + e.getMessage());
+                        }
+                    }
 
                     // Determine primary role for display
                     String primaryRole = m.roles().contains("OWNER") ? "owner" :
@@ -99,10 +116,10 @@ public class OrganizationApplicationService {
                     return new Dtos.MemberInfo(
                         m.userId().toString(),
                         email,
-                        email.split("@")[0], // Use email prefix as display name for now
+                        displayName != null ? displayName : email.split("@")[0],
                         primaryRole,
                         status,
-                        null, // avatar_url - not implemented yet
+                        avatarUrl,
                         joinedAt,
                         m.roles(),
                         m.memberType().name(),
@@ -142,6 +159,17 @@ public class OrganizationApplicationService {
         auditLogs.save(AuditLog.create(orgId, actorUserId, AuditAction.MEMBER_REMOVED,
             "Member removed: " + targetUserId,
             Map.of("targetUserId", targetUserId.toString())));
+    }
+
+    /**
+     * Remove member (internal use - no actor user required)
+     */
+    @Transactional
+    public void removeMemberInternal(UUID orgId, UUID targetUserId) {
+        memberships.delete(targetUserId, orgId);
+
+        var evt = new IdentityEvents.MembershipRemoved(orgId, targetUserId);
+        outbox.append(OutboxMessage.create(evt.topic(), toJson(evt)));
     }
 
     @Transactional

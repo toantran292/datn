@@ -46,23 +46,9 @@ import {
 } from "lucide-react";
 import { InviteMemberModal } from "./components/InviteMemberModal";
 import { toast } from "sonner";
-import { useMembers } from "./hooks/useMembers";
-import { useInvitations } from "./hooks/useInvitations";
+import { useMembersUnified } from "./hooks/useMembersUnified";
 
 type FilterStatus = "all" | "active" | "pending";
-
-interface UnifiedMember {
-  id: string;
-  type: "member" | "invitation";
-  name: string;
-  email: string;
-  role: string;
-  status: "active" | "pending";
-  avatar?: string;
-  joinedAt?: string;
-  invitedAt?: string;
-  projectRoles?: { projectId: string; projectName: string; role: string }[];
-}
 
 export function MembersView() {
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
@@ -71,91 +57,53 @@ export function MembersView() {
   const [statusFilter, setStatusFilter] = useState<FilterStatus>("all");
 
   const {
-    members: apiMembers,
+    items,
     totalMembers,
+    totalInvitations,
     isLoading,
     error,
+    refetch,
     invite,
-    remove,
-    refetch: refetchMembers,
-  } = useMembers();
-  const {
-    invitations,
-    isLoading: invitationsLoading,
-    cancel: cancelInvitation,
-    refetch: refetchInvitations,
-  } = useInvitations();
-
-  // Combine members and invitations into unified list
-  const unifiedList: UnifiedMember[] = useMemo(() => {
-    const membersList: UnifiedMember[] = apiMembers.map((m) => ({
-      id: m.id,
-      type: "member" as const,
-      name: m.display_name || m.email.split("@")[0],
-      email: m.email,
-      role: m.role,
-      status: "active" as const,
-      avatar: m.avatar_url,
-      joinedAt: m.joined_at,
-      projectRoles: m.project_roles?.map((pr) => ({
-        projectId: pr.project_id,
-        projectName: pr.project_name,
-        role: pr.role,
-      })),
-    }));
-
-    const invitationsList: UnifiedMember[] = invitations.map((inv) => ({
-      id: inv.id,
-      type: "invitation" as const,
-      name: inv.email.split("@")[0],
-      email: inv.email,
-      role: inv.memberType.toLowerCase(),
-      status: "pending" as const,
-      invitedAt: inv.createdAt,
-    }));
-
-    return [...membersList, ...invitationsList];
-  }, [apiMembers, invitations]);
+    removeMember,
+    cancelInvitation,
+  } = useMembersUnified();
 
   // Filter logic
   const filteredList = useMemo(() => {
-    return unifiedList.filter((item) => {
+    return items.filter((item) => {
       const matchesSearch =
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         item.email.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesRole = roleFilter === "all" || item.role === roleFilter;
       const matchesStatus =
         statusFilter === "all" || item.status === statusFilter;
       return matchesSearch && matchesRole && matchesStatus;
     });
-  }, [unifiedList, searchQuery, roleFilter, statusFilter]);
+  }, [items, searchQuery, roleFilter, statusFilter]);
 
   // Counts for filter pills
   const counts = useMemo(() => {
-    const all = unifiedList.length;
-    const active = unifiedList.filter((m) => m.status === "active").length;
-    const pending = unifiedList.filter((m) => m.status === "pending").length;
-    return { all, active, pending };
-  }, [unifiedList]);
+    return {
+      all: items.length,
+      active: totalMembers,
+      pending: totalInvitations,
+    };
+  }, [items.length, totalMembers, totalInvitations]);
 
   const handleInvite = async (data: {
-    name: string;
     email: string;
     role: string;
-    projects: number[];
   }) => {
-    const result = await invite({
+    const success = await invite({
       email: data.email,
       role: data.role,
-      project_ids: data.projects.map((id) => id.toString()),
     });
 
-    if (result) {
+    if (success) {
       toast.success(`Invitation sent to ${data.email}`, {
-        description: `${data.name} will receive an email to join the organization.`,
+        description: "They will receive an email to join the organization.",
       });
       setInviteModalOpen(false);
-      refetchInvitations();
     } else {
       toast.error(`Failed to invite ${data.email}`, {
         description: error || "Please try again later.",
@@ -178,7 +126,7 @@ export function MembersView() {
   };
 
   const handleRemoveMember = async (id: string, name: string) => {
-    const success = await remove(id);
+    const success = await removeMember(id);
     if (success) {
       toast.success(`${name} has been removed from the organization`);
     } else {
@@ -223,7 +171,7 @@ export function MembersView() {
     });
   };
 
-  if (isLoading || invitationsLoading) {
+  if (isLoading) {
     return (
       <div className="max-w-[1200px] mx-auto px-8 py-8">
         <div className="flex items-center justify-center min-h-[400px]">
@@ -248,10 +196,7 @@ export function MembersView() {
               <p className="text-sm mt-1">{error}</p>
             </div>
             <Button
-              onClick={() => {
-                refetchMembers();
-                refetchInvitations();
-              }}
+              onClick={() => refetch()}
               className="rounded-xl"
             >
               <RefreshCw size={16} className="mr-2" />
@@ -265,57 +210,78 @@ export function MembersView() {
 
   return (
     <>
-      <div className="max-w-[1200px] mx-auto px-8 py-8">
+      <div className="w-full px-6 py-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-semibold mb-1">Members</h1>
-            <p className="text-muted-foreground">
-              Manage organization members and invitations
-            </p>
+        <div className="mb-6">
+          <div className="flex items-center justify-between gap-4 mb-1">
+            <h1 className="text-2xl font-semibold">Members</h1>
+            <Button
+              className="shrink-0 rounded-xl bg-[#00C4AB] hover:bg-[#00B09A] text-white"
+              onClick={() => setInviteModalOpen(true)}
+            >
+              <UserPlus size={18} className="mr-2" />
+              Invite Member
+            </Button>
           </div>
-          <Button
-            className="rounded-xl bg-secondary hover:bg-secondary/90 text-white"
-            onClick={() => setInviteModalOpen(true)}
-          >
-            <UserPlus size={18} className="mr-2" />
-            Invite Member
-          </Button>
+          <p className="text-muted-foreground">
+            Manage organization members and invitations
+          </p>
         </div>
 
         {/* Filter Pills + Search */}
         <div className="flex flex-col lg:flex-row gap-4 mb-6">
           {/* Status Filter Pills */}
-          <div className="flex gap-2">
+          <div className="inline-flex bg-custom-background-90 rounded-xl p-1 gap-1">
             <button
               onClick={() => setStatusFilter("all")}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 statusFilter === "all"
-                  ? "bg-secondary text-white"
-                  : "bg-muted hover:bg-muted/80 text-muted-foreground"
+                  ? "bg-white text-custom-text-100 shadow-sm"
+                  : "text-custom-text-300 hover:text-custom-text-100"
               }`}
             >
-              All ({counts.all})
+              All
+              <span className={`ml-1.5 px-1.5 py-0.5 rounded-md text-xs ${
+                statusFilter === "all"
+                  ? "bg-custom-background-90"
+                  : "bg-custom-background-80"
+              }`}>
+                {counts.all}
+              </span>
             </button>
             <button
               onClick={() => setStatusFilter("active")}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 statusFilter === "active"
-                  ? "bg-secondary text-white"
-                  : "bg-muted hover:bg-muted/80 text-muted-foreground"
+                  ? "bg-white text-custom-text-100 shadow-sm"
+                  : "text-custom-text-300 hover:text-custom-text-100"
               }`}
             >
-              Active ({counts.active})
+              Active
+              <span className={`ml-1.5 px-1.5 py-0.5 rounded-md text-xs ${
+                statusFilter === "active"
+                  ? "bg-emerald-100 text-emerald-700"
+                  : "bg-custom-background-80"
+              }`}>
+                {counts.active}
+              </span>
             </button>
             <button
               onClick={() => setStatusFilter("pending")}
-              className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 statusFilter === "pending"
-                  ? "bg-secondary text-white"
-                  : "bg-muted hover:bg-muted/80 text-muted-foreground"
+                  ? "bg-white text-custom-text-100 shadow-sm"
+                  : "text-custom-text-300 hover:text-custom-text-100"
               }`}
             >
-              Pending ({counts.pending})
+              Pending
+              <span className={`ml-1.5 px-1.5 py-0.5 rounded-md text-xs ${
+                statusFilter === "pending"
+                  ? "bg-amber-100 text-amber-700"
+                  : "bg-custom-background-80"
+              }`}>
+                {counts.pending}
+              </span>
             </button>
           </div>
 
@@ -387,9 +353,9 @@ export function MembersView() {
                         <div className="flex items-center gap-3">
                           {item.status === "active" ? (
                             <Avatar className="h-10 w-10">
-                              <AvatarImage src={item.avatar} />
+                              <AvatarImage src={item.avatarUrl} />
                               <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
-                                {getInitials(item.name)}
+                                {getInitials(item.displayName)}
                               </AvatarFallback>
                             </Avatar>
                           ) : (
@@ -399,7 +365,7 @@ export function MembersView() {
                           )}
                           <div className="min-w-0">
                             <p className="font-medium truncate">
-                              {item.status === "active" ? item.name : item.email}
+                              {item.status === "active" ? item.displayName : item.email}
                             </p>
                             {item.status === "active" && (
                               <p className="text-sm text-muted-foreground truncate">
@@ -434,6 +400,11 @@ export function MembersView() {
                       <TableCell>
                         {item.status === "pending" ? (
                           <span className="text-sm text-muted-foreground">—</span>
+                        ) : item.role === "owner" || item.role === "admin" ? (
+                          <span className="flex items-center gap-1.5 text-sm text-secondary font-medium">
+                            <FolderKanban size={14} />
+                            All projects
+                          </span>
                         ) : projectCount > 0 ? (
                           <Popover>
                             <PopoverTrigger asChild>
@@ -525,7 +496,7 @@ export function MembersView() {
                                 <DropdownMenuItem
                                   className="text-destructive focus:text-destructive"
                                   onClick={() =>
-                                    handleRemoveMember(item.id, item.name)
+                                    handleRemoveMember(item.id, item.displayName)
                                   }
                                 >
                                   <Trash2 size={16} className="mr-2" />

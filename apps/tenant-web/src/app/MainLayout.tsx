@@ -8,7 +8,6 @@ import {
   Users,
   LayoutDashboard,
   FolderOpen,
-  ChevronRight,
   LucideIcon
 } from "lucide-react";
 import {
@@ -20,7 +19,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-  SidebarHeader
 } from "@/components/ui/sidebar";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 
@@ -70,42 +68,34 @@ export function MainLayout({ children }: MainLayoutProps) {
       {/* Sidebar + Content below header */}
       <SidebarProvider className="flex-1 !min-h-0">
         <Sidebar collapsible="none" className="border-r border-border">
-          <SidebarHeader className="px-4 py-5 border-b border-border">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-sm">
-                <span className="text-white font-semibold text-lg">UT</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <h2 className="font-semibold text-base truncate">Unified TeamSpace</h2>
-                <p className="text-xs text-muted-foreground">Enterprise Plan</p>
-              </div>
-            </div>
-          </SidebarHeader>
-
-          <SidebarContent>
+          <SidebarContent className="pt-4">
             <SidebarGroup>
               <SidebarGroupContent>
                 <SidebarMenu>
-                  {menuItems.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={isActive(item.href)}
-                        className="px-3 py-2.5 rounded-xl cursor-pointer relative"
-                      >
-                        <Link href={item.href}>
-                          {isActive(item.href) && (
-                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-secondary rounded-r-full" />
-                          )}
-                          <item.icon size={20} />
-                          <span>{item.title}</span>
-                          {isActive(item.href) && (
-                            <ChevronRight className="ml-auto" size={16} />
-                          )}
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
+                  {menuItems.map((item) => {
+                    const active = isActive(item.href);
+                    return (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={active}
+                          className={`px-3 py-2.5 rounded-md cursor-pointer relative transition-colors ${
+                            active
+                              ? "bg-[#00C4AB]/10 text-[#00C4AB] font-medium"
+                              : "hover:bg-muted"
+                          }`}
+                        >
+                          <Link href={item.href}>
+                            {active && (
+                              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-[#00C4AB] rounded-r-full" />
+                            )}
+                            <item.icon size={20} className={active ? "text-[#00C4AB]" : ""} />
+                            <span>{item.title}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>

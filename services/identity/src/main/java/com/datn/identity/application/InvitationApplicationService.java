@@ -71,6 +71,25 @@ public class InvitationApplicationService {
         return inv.token();
     }
 
+    /**
+     * Create invitation (internal use - no actor user required)
+     */
+    @Transactional
+    public String createInvitationInternal(UUID orgId, String emailRaw, MemberType type) {
+        var email = Email.of(emailRaw).value();
+        if (invites.existsOpenByEmail(orgId, email)) {
+            throw new IllegalStateException("invite_open_exists");
+        }
+
+        var inv = Invitation.create(orgId, email, type);
+        invites.save(inv);
+
+        var evt = new IdentityEvents.InvitationCreated(orgId, email, inv.memberType().name());
+        outbox.append(OutboxMessage.create(evt.topic(), toJson(evt)));
+
+        return inv.token();
+    }
+
     @Transactional
     public AcceptResult accept(String token, String rawPasswordIfNew) {
         var inv = invites.findByToken(token)
@@ -157,6 +176,27 @@ public class InvitationApplicationService {
         auditLogs.save(AuditLog.create(orgId, actorUserId, AuditAction.INVITATION_CANCELLED,
             "Invitation cancelled for " + inv.email(),
             Map.of("email", inv.email(), "invitationId", invitationId.toString())));
+    }
+
+    /**
+     * Cancel a pending invitation (internal use - no actor user required)
+     */
+    @Transactional
+    public void cancelInvitationInternal(UUID orgId, UUID invitationId) {
+        var inv = invites.findById(invitationId)
+                .orElseThrow(() -> new IllegalArgumentException("invitation_not_found"));
+
+        // Verify invitation belongs to the org
+        if (!inv.orgId().equals(orgId)) {
+            throw new IllegalArgumentException("invitation_not_found");
+        }
+
+        // Verify invitation is still pending
+        if (inv.acceptedAt() != null) {
+            throw new IllegalStateException("invitation_already_accepted");
+        }
+
+        invites.deleteById(invitationId);
     }
 
     public record AcceptResult(UUID userId, UUID orgId) {}
