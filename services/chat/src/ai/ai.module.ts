@@ -9,6 +9,7 @@ import { ChannelAIConfig } from '../database/entities/channel-ai-config.entity';
 import { ChatModule } from '../chat/chat.module';
 import { RoomsModule } from '../rooms/rooms.module';
 import { FileStorageModule } from '../common/file-storage/file-storage.module';
+import { RagModule } from './rag/rag.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { FileStorageModule } from '../common/file-storage/file-storage.module';
     forwardRef(() => ChatModule),
     forwardRef(() => RoomsModule),
     FileStorageModule,
+    RagModule,
   ],
   controllers: [AIController],
   providers: [
@@ -24,6 +26,6 @@ import { FileStorageModule } from '../common/file-storage/file-storage.module';
     LLMService,
     ChannelAIConfigRepository,
   ],
-  exports: [AIService, LLMService],
+  exports: [AIService, LLMService, RagModule],
 })
 export class AIModule {}

@@ -9,6 +9,7 @@ import { PinnedMessage } from './entities/pinned-message.entity';
 import { ChannelNotificationSetting } from './entities/channel-notification-setting.entity';
 import { MessageAttachment } from './entities/message-attachment.entity';
 import { ChannelAIConfig } from './entities/channel-ai-config.entity';
+import { DocumentEmbedding } from './entities/document-embedding.entity';
 
 @Global()
 @Module({
@@ -32,6 +33,7 @@ import { ChannelAIConfig } from './entities/channel-ai-config.entity';
           ChannelNotificationSetting,
           MessageAttachment,
           ChannelAIConfig,
+          DocumentEmbedding,
         ],
         synchronize: configService.get<string>('NODE_ENV') !== 'production',
         logging: configService.get<string>('NODE_ENV') === 'development',
@@ -46,6 +48,7 @@ import { ChannelAIConfig } from './entities/channel-ai-config.entity';
       ChannelNotificationSetting,
       MessageAttachment,
       ChannelAIConfig,
+      DocumentEmbedding,
     ]),
   ],
   exports: [TypeOrmModule],
