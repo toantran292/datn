@@ -9,6 +9,8 @@ import {
   BreakdownIssueDto,
   BreakdownResponseDto,
   BreakdownDataDto,
+  TranslateDescriptionDto,
+  TranslateLanguage,
 } from './dto';
 import { OpenAIService } from './openai.service';
 import { PromptService } from './prompt.service';
@@ -761,6 +763,63 @@ export class AIService {
       };
     } catch (error) {
       this.logger.error('AI streaming breakdown failed', error.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * Translate issue description using AI with streaming
+   */
+  async *translateDescriptionStream(dto: TranslateDescriptionDto) {
+    try {
+      this.logger.log(
+        `Translating description for issue: ${dto.issueId} to ${dto.targetLanguage}`,
+      );
+
+      // Language name mapping
+      const languageNames = {
+        [TranslateLanguage.ENGLISH]: 'English',
+        [TranslateLanguage.KOREAN]: 'Korean (한국어)',
+        [TranslateLanguage.JAPANESE]: 'Japanese (日本語)',
+        [TranslateLanguage.CHINESE]: 'Chinese (中文)',
+        [TranslateLanguage.VIETNAMESE]: 'Vietnamese (Tiếng Việt)',
+      };
+
+      const targetLanguageName = languageNames[dto.targetLanguage] || dto.targetLanguage;
+
+      // Build prompt
+      const systemPrompt = `You are a professional translator specializing in software project management and technical documentation.
+
+Your task is to translate issue descriptions accurately while:
+1. Preserving technical terms and terminology
+2. Maintaining the original formatting and structure
+3. Keeping code snippets, URLs, and technical references unchanged
+4. Using natural, professional language in the target language
+5. Preserving bullet points, numbering, and markdown formatting
+
+Translate to: ${targetLanguageName}`;
+
+      const userPrompt = `Please translate the following issue description to ${targetLanguageName}:
+
+${dto.currentDescription}
+
+Return ONLY the translated text, maintaining all formatting.`;
+
+      // Stream from OpenAI
+      const stream = this.openaiService.createStreamingChatCompletion({
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: 0.3, // Lower temperature for more consistent translation
+      });
+
+      // Stream chunks to client
+      for await (const chunk of stream) {
+        yield { chunk };
+      }
+    } catch (error) {
+      this.logger.error('AI translation stream failed', error.stack);
       throw error;
     }
   }

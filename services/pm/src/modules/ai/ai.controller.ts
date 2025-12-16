@@ -35,6 +35,7 @@ import {
   BreakdownResponseDto,
   SprintSummaryDto,
   SprintSummaryResponseDto,
+  TranslateDescriptionDto,
 } from './dto';
 import { SkipOrgCheck } from '../../common/decorators/skip-org-check.decorator';
 
@@ -490,6 +491,49 @@ export class AIController {
         `data: ${JSON.stringify({
           type: 'error',
           message: error.message || 'Streaming failed',
+        })}\n\n`,
+      );
+      res.end();
+    }
+  }
+
+  @Post('translate-description-stream')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Translate issue description using AI with streaming',
+    description: 'Translates issue description to target language with real-time streaming',
+  })
+  async translateDescriptionStream(
+    @Body() dto: TranslateDescriptionDto,
+    @Res() res: Response,
+  ): Promise<void> {
+    this.logger.log(`Streaming translate for issue: ${dto.issueId} to ${dto.targetLanguage}`);
+
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no');
+
+    try {
+      const stream = this.aiService.translateDescriptionStream(dto);
+
+      for await (const data of stream) {
+        res.write(`data: ${JSON.stringify(data)}\n\n`);
+
+        // Force flush to ensure immediate delivery
+        if (typeof (res as any).flush === 'function') {
+          (res as any).flush();
+        }
+      }
+
+      // Send completion signal
+      res.write('data: [DONE]\n\n');
+      res.end();
+    } catch (error) {
+      this.logger.error('Streaming translation error', error.stack);
+      res.write(
+        `data: ${JSON.stringify({
+          error: error.message || 'Translation streaming failed',
         })}\n\n`,
       );
       res.end();

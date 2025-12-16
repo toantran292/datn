@@ -9,6 +9,7 @@ export { AIErrorState } from "./ai-error-state";
 export { AIGeneratingButton } from "./ai-generating-button";
 export { AISprintSummaryModal } from "./ai-sprint-summary-modal";
 export { AISprintSummaryContent } from "./ai-sprint-summary-content";
+export { AITranslateSection } from "./ai-translate-section";
 
 export type { AIRefineButtonProps } from "./ai-refine-button";
 export type { AIRefineModalProps } from "./ai-refine-modal";
@@ -17,3 +18,4 @@ export type { AIEstimateSectionProps } from "./ai-estimate-section";
 export type { AIBreakdownSectionProps } from "./ai-breakdown-section";
 export type { AISprintSummaryModalProps } from "./ai-sprint-summary-modal";
 export type { AISprintSummaryContentProps } from "./ai-sprint-summary-content";
+export type { AITranslateSectionProps } from "./ai-translate-section";

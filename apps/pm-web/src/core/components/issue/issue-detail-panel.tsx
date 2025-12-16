@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Languages } from "lucide-react";
 import { Button, setToast, TOAST_TYPE } from "@uts/design-system/ui";
 import { IIssue } from "@/core/types/issue";
 import { formatIssueKey } from "@/core/components/backlog/utils";
@@ -10,9 +10,10 @@ import { IssueDetailProperties } from "./issue-detail-properties";
 import { IssueDetailActivity } from "./issue-detail-activity";
 import { IssueTitleInput } from "./issue-title-input";
 import { IssueDescription } from "./issue-description";
-import { AIRefineSection, AIBreakdownSection, AIGeneratingButton } from "@/core/components/ai";
+import { AIRefineSection, AIBreakdownSection, AIGeneratingButton, AITranslateSection } from "@/core/components/ai";
 import { useAIRefineStream } from "@/core/hooks/use-ai-refine-stream";
 import { useAIBreakdown } from "@/core/hooks/use-ai-breakdown";
+import { useAITranslateStream, LANGUAGE_LABELS, type TranslateLanguage, type TranslateData } from "@/core/hooks/use-ai-translate-stream";
 import { useIssue } from "@/core/hooks/store/use-issue";
 import type { RefineDescriptionData, BreakdownData, SubTask } from "@/core/types/ai";
 
@@ -43,6 +44,11 @@ export const IssueDetailPanel: React.FC<IssueDetailPanelProps> = (props) => {
   const { breakdown, isBreakingDown, error: breakdownError } = useAIBreakdown();
   const [breakdownData, setBreakdownData] = useState<BreakdownData | null>(null);
   const [isCreatingSubTasks, setIsCreatingSubTasks] = useState(false);
+
+  // AI Translate state
+  const { translate, isTranslating, streamedHtml: translatedStreamedHtml, error: translateError } = useAITranslateStream();
+  const [translatedData, setTranslatedData] = useState<TranslateData | null>(null);
+  const [selectedLanguage, setSelectedLanguage] = useState<TranslateLanguage>("en");
 
   // Local description state for immediate UI update
   const [localDescription, setLocalDescription] = useState<string>(issue.descriptionHtml || issue.description || "");
@@ -279,6 +285,44 @@ export const IssueDetailPanel: React.FC<IssueDetailPanelProps> = (props) => {
     setBreakdownData(null);
   };
 
+  const handleTranslate = async (language: TranslateLanguage) => {
+    const currentDescription = issue.description || issue.descriptionHtml || "";
+
+    // Validate description
+    if (!currentDescription || currentDescription.trim().length < 5) {
+      setToast({
+        type: TOAST_TYPE.WARNING,
+        title: "Mô tả quá ngắn",
+        message: "Vui lòng nhập ít nhất 5 ký tự để sử dụng AI translate.",
+      });
+      return;
+    }
+
+    setSelectedLanguage(language);
+
+    const result = await translate({
+      issueId: issue.id,
+      currentDescription,
+      targetLanguage: language,
+      issueName: issue.name,
+      issueType: issue.type,
+    });
+
+    if (result) {
+      setTranslatedData(result);
+    } else {
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: "Lỗi AI Translate",
+        message: translateError || "Không thể dịch description. Vui lòng thử lại.",
+      });
+    }
+  };
+
+  const handleCancelTranslate = () => {
+    setTranslatedData(null);
+  };
+
   // Check if issue is eligible for breakdown
   const canBreakdown = issue.type === "EPIC" || (issue.point !== null && issue.point >= 13);
 
@@ -336,6 +380,38 @@ export const IssueDetailPanel: React.FC<IssueDetailPanelProps> = (props) => {
                 onSubmit={handleUpdateDescription}
                 containerClassName="-pl-3 border-none"
               />
+
+              {/* AI Translate Section */}
+              {!disabled && (issue.description || issue.descriptionHtml) && !translatedData && !isTranslating && (
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Languages className="size-4 text-custom-text-400" />
+                  <span className="text-xs text-custom-text-400">Dịch sang:</span>
+                  <div className="flex gap-2 flex-wrap">
+                    {(Object.keys(LANGUAGE_LABELS) as TranslateLanguage[]).map((lang) => (
+                      <Button
+                        key={lang}
+                        variant="neutral-primary"
+                        size="sm"
+                        onClick={() => handleTranslate(lang)}
+                        className="text-xs"
+                      >
+                        {LANGUAGE_LABELS[lang]}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {(translatedData || isTranslating) && (
+                <AITranslateSection
+                  original={issue.description || issue.descriptionHtml || ""}
+                  translatedData={translatedData}
+                  streamedHtml={translatedStreamedHtml}
+                  isTranslating={isTranslating}
+                  onChangeLanguage={handleTranslate}
+                  onCancel={handleCancelTranslate}
+                />
+              )}
             </div>
 
             {/* AI Breakdown Section */}
