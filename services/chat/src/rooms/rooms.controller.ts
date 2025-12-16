@@ -73,6 +73,7 @@ export class RoomsController {
       isPrivate: room.isPrivate,
       name: room.name,
       type: room.type,
+      createdBy: room.createdBy || null,
     };
   }
 
@@ -98,6 +99,7 @@ export class RoomsController {
       isPrivate: room.isPrivate,
       name: room.name,
       type: room.type,
+      createdBy: room.createdBy || null,
     };
   }
 
@@ -123,6 +125,8 @@ export class RoomsController {
       name: room.name,
       type: room.type,
       projectId: room.projectId || null,
+      createdBy: room.createdBy || null,
+      description: room.description || null,
     };
   }
 

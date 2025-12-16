@@ -1,4 +1,5 @@
 import { Module, forwardRef } from "@nestjs/common";
+import { HttpModule } from "@nestjs/axios";
 import { ChatsController } from "./chat.controller";
 import { ChatsGateway } from "./chat.gateway";
 import { ChatsService } from "./chat.service";
@@ -19,6 +20,7 @@ import { RagModule } from "../ai/rag/rag.module";
   imports: [
     forwardRef(() => RoomsModule),
     forwardRef(() => RagModule),
+    HttpModule,
     PresenceModule,
     IdentityModule,
     FileStorageModule,

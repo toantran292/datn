@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect } from 'react';
 import { Hash, Lock } from 'lucide-react';
 import type { Message, Room } from '../../types';
 import type { UserInfo } from '../../contexts/ChatContext';
@@ -10,10 +10,27 @@ export interface MessageListProps {
   currentUserId: string;
   onOpenThread: (message: Message) => void;
   usersCache?: Map<string, UserInfo>;
+  onEditMessage?: (message: Message) => void;
+  onDeleteMessage?: (message: Message) => void;
+  onPinMessage?: (message: Message) => void;
+  onUnpinMessage?: (message: Message) => void;
+  onAddReaction?: (message: Message) => void;
+  onToggleReaction?: (messageId: string, emoji: string) => void;
 }
 
-export function MessageList({ room, messages, currentUserId, onOpenThread, usersCache }: MessageListProps) {
-  const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
+export function MessageList({
+  room,
+  messages,
+  currentUserId,
+  onOpenThread,
+  usersCache,
+  onEditMessage,
+  onDeleteMessage,
+  onPinMessage,
+  onUnpinMessage,
+  onAddReaction,
+  onToggleReaction,
+}: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -54,11 +71,16 @@ export function MessageList({ room, messages, currentUserId, onOpenThread, users
               key={msg.id}
               message={msg}
               isOwn={msg.userId === currentUserId}
-              isHovered={hoveredMessageId === msg.id}
-              onHover={setHoveredMessageId}
               onOpenThread={onOpenThread}
               senderName={userInfo?.displayName}
               senderAvatarUrl={userInfo?.avatarUrl}
+              onEdit={onEditMessage}
+              onDelete={onDeleteMessage}
+              onPin={onPinMessage}
+              onUnpin={onUnpinMessage}
+              onAddReaction={onAddReaction}
+              onToggleReaction={onToggleReaction}
+              usersCache={usersCache}
             />
           );
         })}

@@ -241,6 +241,26 @@ export class IdentityService {
   }
 
   /**
+   * Check if a user is the owner of an organization
+   * Owner has all permissions including room management
+   */
+  async isOrgOwner(userId: string, orgId: string): Promise<boolean> {
+    try {
+      const members = await this.getOrgMembers(orgId);
+      if (!members) return false;
+
+      const member = members.items.find(m => m.user.id === userId);
+      if (!member) return false;
+
+      // Check if OWNER role is in the roles array
+      return member.membership.roles.some(role => role.toUpperCase() === 'OWNER');
+    } catch (error) {
+      this.logger.error(`Failed to check org owner for user ${userId} in org ${orgId}:`, error);
+      return false;
+    }
+  }
+
+  /**
    * Clear cache for a user
    */
   clearUserCache(userId: string): void {

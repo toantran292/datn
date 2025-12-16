@@ -1,17 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { MessageSquare, Sparkles } from 'lucide-react';
 import type { Message, Room } from '../../types';
 import type { UserInfo } from '../../contexts/ChatContext';
 import { ChatHeader } from './ChatHeader';
 import { ComposeHeader, SelectedUser } from './ComposeHeader';
 import { MessageList } from './MessageList';
-import { MessageInput } from './MessageInput';
+import { MessageComposer } from './MessageComposer';
+import type { PendingFile } from './FilePreview';
 
 export interface ChatWindowProps {
   room: Room | null;
   messages: Message[];
   currentUserId: string;
-  onSendMessage: (content: string) => void;
+  onSendMessage: (html: string, mentionedUserIds?: string[]) => void;
   onLoadMessages: () => void;
   onOpenThread: (message: Message) => void;
   onToggleSidebar?: () => void;
@@ -22,7 +23,20 @@ export interface ChatWindowProps {
   composeUsers?: SelectedUser[];
   onComposeUserSelect?: (user: SelectedUser) => void;
   onComposeUserRemove?: (userId: string) => void;
-  onComposeSendMessage?: (content: string) => void;
+  onComposeSendMessage?: (html: string, mentionedUserIds?: string[]) => void;
+  // Message actions
+  onEditMessage?: (message: Message) => void;
+  onDeleteMessage?: (message: Message) => void;
+  onPinMessage?: (message: Message) => void;
+  onUnpinMessage?: (message: Message) => void;
+  onAddReaction?: (message: Message) => void;
+  onToggleReaction?: (messageId: string, emoji: string) => void;
+  // File upload
+  pendingFiles?: PendingFile[];
+  onFilesSelect?: (files: File[]) => void;
+  onFileRemove?: (fileId: string) => void;
+  // Search
+  onOpenSearch?: () => void;
 }
 
 export function ChatWindow({
@@ -40,24 +54,29 @@ export function ChatWindow({
   onComposeUserSelect,
   onComposeUserRemove,
   onComposeSendMessage,
+  onEditMessage,
+  onDeleteMessage,
+  onPinMessage,
+  onUnpinMessage,
+  onAddReaction,
+  onToggleReaction,
+  pendingFiles = [],
+  onFilesSelect,
+  onFileRemove,
+  onOpenSearch,
 }: ChatWindowProps) {
-  const [messageInput, setMessageInput] = useState('');
-
   useEffect(() => {
     if (room) {
       onLoadMessages();
     }
   }, [room?.id]);
 
-  const handleSendMessage = () => {
-    if (!messageInput.trim()) return;
-
+  const handleSendMessage = (html: string, mentionedUserIds?: string[]) => {
     if (isComposing && onComposeSendMessage) {
-      onComposeSendMessage(messageInput);
+      onComposeSendMessage(html, mentionedUserIds);
     } else {
-      onSendMessage(messageInput);
+      onSendMessage(html, mentionedUserIds);
     }
-    setMessageInput('');
   };
 
   // Compose mode - show compose header and message area
@@ -80,6 +99,12 @@ export function ChatWindow({
             currentUserId={currentUserId}
             onOpenThread={onOpenThread}
             usersCache={usersCache}
+            onEditMessage={onEditMessage}
+            onDeleteMessage={onDeleteMessage}
+            onPinMessage={onPinMessage}
+            onUnpinMessage={onUnpinMessage}
+            onAddReaction={onAddReaction}
+            onToggleReaction={onToggleReaction}
           />
         ) : composeUsers.length > 0 ? (
           // Show "beginning" message when users are selected but no messages
@@ -111,12 +136,12 @@ export function ChatWindow({
 
         {/* Only show input when users are selected */}
         {composeUsers.length > 0 && (
-          <MessageInput
+          <MessageComposer
             room={room}
-            value={messageInput}
-            onChange={setMessageInput}
-            onSubmit={handleSendMessage}
+            onSendMessage={handleSendMessage}
             placeholder="Write a message..."
+            members={usersCache}
+            currentUserId={currentUserId}
           />
         )}
       </div>
@@ -148,6 +173,7 @@ export function ChatWindow({
         room={room}
         sidebarOpen={sidebarOpen}
         onToggleSidebar={onToggleSidebar}
+        onOpenSearch={onOpenSearch}
       />
 
       <MessageList
@@ -156,13 +182,22 @@ export function ChatWindow({
         currentUserId={currentUserId}
         onOpenThread={onOpenThread}
         usersCache={usersCache}
+        onEditMessage={onEditMessage}
+        onDeleteMessage={onDeleteMessage}
+        onPinMessage={onPinMessage}
+        onUnpinMessage={onUnpinMessage}
+        onAddReaction={onAddReaction}
+        onToggleReaction={onToggleReaction}
       />
 
-      <MessageInput
+      <MessageComposer
         room={room}
-        value={messageInput}
-        onChange={setMessageInput}
-        onSubmit={handleSendMessage}
+        onSendMessage={handleSendMessage}
+        pendingFiles={pendingFiles}
+        onFilesSelect={onFilesSelect}
+        onFileRemove={onFileRemove}
+        members={usersCache}
+        currentUserId={currentUserId}
       />
     </div>
   );

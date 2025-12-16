@@ -1,11 +1,13 @@
 import type { Room, RoomMember } from '../../types';
 import { useAppPresence } from '@uts/design-system/ui';
+import { UnreadBadge } from './UnreadBadge';
 
 export interface DMItemProps {
   room: Room;
   selected: boolean;
   onClick: () => void;
   displayName: string;
+  unreadCount?: number;
 }
 
 // Generate avatar color based on name/id
@@ -39,10 +41,11 @@ function MemberAvatar({ member, size = 'sm' }: { member: RoomMember; size?: 'sm'
   );
 }
 
-export function DMItem({ room, selected, onClick, displayName }: DMItemProps) {
+export function DMItem({ room, selected, onClick, displayName, unreadCount = 0 }: DMItemProps) {
   const members = room.members || [];
   const memberCount = members.length;
   const firstMember = members[0];
+  const hasUnread = unreadCount > 0;
 
   // Get real-time presence from notification service
   const { isUserOnline, enabled: presenceEnabled } = useAppPresence();
@@ -59,7 +62,9 @@ export function DMItem({ room, selected, onClick, displayName }: DMItemProps) {
         flex items-center gap-2 px-3 py-1.5 mx-1 rounded-md cursor-pointer transition-all
         ${selected
           ? 'bg-custom-primary-100/10 text-custom-text-100 font-medium'
-          : 'text-custom-text-200 hover:bg-custom-background-80'
+          : hasUnread
+            ? 'text-custom-text-100 font-medium hover:bg-custom-background-80'
+            : 'text-custom-text-200 hover:bg-custom-background-80'
         }
       `}
     >
@@ -91,7 +96,8 @@ export function DMItem({ room, selected, onClick, displayName }: DMItemProps) {
         )}
       </div>
 
-      <span className="truncate text-sm">{displayName}</span>
+      <span className="truncate text-sm flex-1">{displayName}</span>
+      <UnreadBadge count={unreadCount} />
     </div>
   );
 }

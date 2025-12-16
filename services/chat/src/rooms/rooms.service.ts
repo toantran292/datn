@@ -23,7 +23,9 @@ export class RoomsService {
       orgId,
       dto.isPrivate,
       dto.name,
-      roomType
+      roomType,
+      null, // No projectId
+      userId // Set creator as createdBy
     );
 
     await this.roomMembersRepo.addMember(room.id, userId, orgId, {
@@ -31,7 +33,7 @@ export class RoomsService {
       roomName: room.name,
       isPrivate: room.isPrivate,
       projectId: room.projectId,
-    });
+    }, 'ADMIN'); // Creator is always admin
 
     this.chatsGateway.notifyRoomCreated(orgId, {
       id: room.id,
@@ -82,7 +84,9 @@ export class RoomsService {
       orgId,
       true, // DMs are always private
       dmName, // Use generated name
-      'dm'
+      'dm',
+      null, // No projectId for DM
+      currentUserId // Set creator as createdBy
     );
 
     // Add all members with room data for denormalized tables
@@ -126,16 +130,17 @@ export class RoomsService {
       isPrivate,
       name,
       'channel',
-      projectId
+      projectId,
+      userId // Set creator as createdBy
     );
 
-    // Add creator as a member with room data for denormalized tables
+    // Add creator as admin member with room data for denormalized tables
     await this.roomMembersRepo.addMember(room.id, userId, orgId, {
       roomType: 'channel',
       roomName: room.name,
       isPrivate: room.isPrivate,
       projectId: projectId,
-    });
+    }, 'ADMIN'); // Creator is always admin
 
     // Notify creator that they joined the room (for WebSocket subscription)
     this.chatsGateway.notifyRoomJoined(orgId, {
@@ -214,6 +219,8 @@ export class RoomsService {
           name: ur.roomName,
           type: ur.roomType,
           projectId: ur.projectId,
+          createdBy: ur.createdBy || null,
+          description: ur.description || null,
         })),
         pagingState: result.pagingState ?? null,
       };
@@ -237,6 +244,8 @@ export class RoomsService {
         name: ur.roomName,
         type: ur.roomType,
         projectId: ur.projectId,
+        createdBy: ur.createdBy || null,
+        description: ur.description || null,
       })),
       pagingState: result.pagingState ?? null,
     };
@@ -304,6 +313,8 @@ export class RoomsService {
         name: ur.roomName,
         type: 'dm' as const,
         projectId: null,
+        createdBy: ur.createdBy || null,
+        description: ur.description || null,
         members: membersMap.get(ur.roomId) || [],
       })),
       pagingState: result.pagingState ?? null,
@@ -337,6 +348,8 @@ export class RoomsService {
         name: ur.roomName,
         type: ur.roomType,
         projectId: null,
+        createdBy: ur.createdBy || null,
+        description: ur.description || null,
       })),
       pagingState: result.pagingState ?? null,
     };
@@ -365,6 +378,8 @@ export class RoomsService {
         name: ur.roomName,
         type: ur.roomType,
         projectId: ur.projectId,
+        createdBy: ur.createdBy || null,
+        description: ur.description || null,
       })),
       pagingState: result.pagingState ?? null,
     };
@@ -557,8 +572,36 @@ export class RoomsService {
   // ============== UC01: Room Management ==============
 
   /**
+   * Helper: Check if user has admin privileges for a room
+   * Admin privileges are granted to:
+   * - Room admin (role = 'ADMIN')
+   * - Room creator (createdBy = userId)
+   * - Org owner (has 'OWNER' role in organization)
+   */
+  private async hasRoomAdminPrivilege(
+    roomId: string,
+    orgId: string,
+    userId: string,
+    room: RoomEntity,
+  ): Promise<boolean> {
+    // Check room membership and role
+    const member = await this.roomMembersRepo.get(roomId, userId);
+
+    // Room admin or creator
+    if (member) {
+      if (member.role === 'ADMIN' || room.createdBy === userId) {
+        return true;
+      }
+    }
+
+    // Org owner has admin privileges on all rooms
+    const isOrgOwner = await this.identityService.isOrgOwner(userId, orgId);
+    return isOrgOwner;
+  }
+
+  /**
    * UC01: Update room info (name, description, isPrivate)
-   * - Only ADMIN can update
+   * - Only ADMIN, room creator, or org owner can update
    */
   async updateRoom(
     roomId: string,
@@ -569,10 +612,9 @@ export class RoomsService {
     const room = await this.roomsRepo.findByOrgAndId(orgId, roomId);
     if (!room) throw new NotFoundException('Room not found');
 
-    // Check if user is admin
-    const member = await this.roomMembersRepo.get(roomId, userId);
-    if (!member) throw new ForbiddenException('You are not a member of this room');
-    if (member.role !== 'ADMIN') throw new ForbiddenException('Only admins can update room');
+    // Check if user has admin privileges
+    const hasPrivilege = await this.hasRoomAdminPrivilege(roomId, orgId, userId, room);
+    if (!hasPrivilege) throw new ForbiddenException('Only admins can update room');
 
     await this.roomsRepo.update(roomId, data);
 
@@ -587,15 +629,15 @@ export class RoomsService {
 
   /**
    * UC01: Archive room
-   * - Only ADMIN can archive
+   * - Only ADMIN, room creator, or org owner can archive
    */
   async archiveRoom(roomId: string, orgId: string, userId: string) {
     const room = await this.roomsRepo.findByOrgAndId(orgId, roomId);
     if (!room) throw new NotFoundException('Room not found');
 
-    const member = await this.roomMembersRepo.get(roomId, userId);
-    if (!member) throw new ForbiddenException('You are not a member of this room');
-    if (member.role !== 'ADMIN') throw new ForbiddenException('Only admins can archive room');
+    // Check if user has admin privileges
+    const hasPrivilege = await this.hasRoomAdminPrivilege(roomId, orgId, userId, room);
+    if (!hasPrivilege) throw new ForbiddenException('Only admins can archive room');
 
     await this.roomsRepo.archive(roomId);
 
@@ -606,15 +648,15 @@ export class RoomsService {
 
   /**
    * UC01: Delete room (soft delete)
-   * - Only ADMIN can delete
+   * - Only ADMIN, room creator, or org owner can delete
    */
   async deleteRoom(roomId: string, orgId: string, userId: string) {
     const room = await this.roomsRepo.findByOrgAndId(orgId, roomId);
     if (!room) throw new NotFoundException('Room not found');
 
-    const member = await this.roomMembersRepo.get(roomId, userId);
-    if (!member) throw new ForbiddenException('You are not a member of this room');
-    if (member.role !== 'ADMIN') throw new ForbiddenException('Only admins can delete room');
+    // Check if user has admin privileges
+    const hasPrivilege = await this.hasRoomAdminPrivilege(roomId, orgId, userId, room);
+    if (!hasPrivilege) throw new ForbiddenException('Only admins can delete room');
 
     await this.roomsRepo.softDelete(roomId);
 

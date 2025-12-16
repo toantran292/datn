@@ -25,6 +25,8 @@ export function toRoomResponseDto(row: RoomWithMembers) {
       name: row.name,
       type: row.type || 'channel', // Default to 'channel' for backward compatibility
       projectId: row.projectId || null,
+      createdBy: row.createdBy || null,
+      description: row.description || null,
       members,
     },
     { excludeExtraneousValues: true },

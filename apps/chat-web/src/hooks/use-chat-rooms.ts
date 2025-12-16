@@ -19,6 +19,11 @@ export function useChatRooms() {
     handleJoinRoomFromBrowse,
     handleCreateChannel,
     handleCreateDM,
+    // Room management
+    handleUpdateRoom,
+    handleDeleteRoom,
+    handleArchiveRoom,
+    handleLeaveRoom,
     // Compose DM
     isComposingDM,
     composeUsers,
@@ -28,6 +33,11 @@ export function useChatRooms() {
     removeComposeUser,
     cancelCompose,
     handleSendComposeMessage,
+    // Unread
+    getUnreadCount,
+    // User
+    currentUserId,
+    isOrgOwner,
   } = useChatContext();
 
   return {
@@ -51,6 +61,16 @@ export function useChatRooms() {
     createChannel: handleCreateChannel,
     createDM: handleCreateDM,
 
+    // Room management
+    updateRoom: handleUpdateRoom,
+    deleteRoom: handleDeleteRoom,
+    archiveRoom: handleArchiveRoom,
+    leaveRoom: handleLeaveRoom,
+
+    // User
+    currentUserId,
+    isOrgOwner,
+
     // Compose DM
     isComposingDM,
     composeUsers,
@@ -60,5 +80,8 @@ export function useChatRooms() {
     removeComposeUser,
     cancelCompose,
     sendComposeMessage: handleSendComposeMessage,
+
+    // Unread
+    getUnreadCount,
   };
 }

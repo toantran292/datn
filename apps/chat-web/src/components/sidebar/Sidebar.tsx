@@ -13,6 +13,8 @@ export interface SidebarProps {
   currentProjectId: string | null | undefined;
   selectedRoomId: string | null;
   isComposingDM?: boolean;
+  currentUserId?: string;
+  isOrgOwner?: boolean;
   onSelectRoom: (roomId: string) => void;
   onCreateOrgChannel: () => void;
   onCreateProjectChannel: () => void;
@@ -21,6 +23,11 @@ export interface SidebarProps {
   onBrowseOrgChannels: () => void;
   onBrowseProjectChannels: () => void;
   getDMName: (room: Room) => string;
+  getUnreadCount?: (roomId: string) => number;
+  onRoomUpdated?: (room: Room) => void;
+  onRoomDeleted?: (roomId: string) => void;
+  onRoomArchived?: (roomId: string) => void;
+  onLeftRoom?: (roomId: string) => void;
 }
 
 export function Sidebar({
@@ -30,6 +37,8 @@ export function Sidebar({
   currentProjectId,
   selectedRoomId,
   isComposingDM = false,
+  currentUserId,
+  isOrgOwner = false,
   onSelectRoom,
   onCreateOrgChannel,
   onCreateProjectChannel,
@@ -38,6 +47,11 @@ export function Sidebar({
   onBrowseOrgChannels,
   onBrowseProjectChannels,
   getDMName,
+  getUnreadCount,
+  onRoomUpdated,
+  onRoomDeleted,
+  onRoomArchived,
+  onLeftRoom,
 }: SidebarProps) {
   const { currentProject } = useAppHeaderContext();
   const [projectMenuOpen, setProjectMenuOpen] = useState(false);
@@ -87,6 +101,12 @@ export function Sidebar({
                 selected={selectedRoomId === room.id}
                 onClick={() => onSelectRoom(room.id)}
                 displayName={room.name || 'Unnamed Channel'}
+                unreadCount={getUnreadCount?.(room.id)}
+                isOwner={room.createdBy === currentUserId || isOrgOwner}
+                onRoomUpdated={onRoomUpdated}
+                onRoomDeleted={onRoomDeleted}
+                onRoomArchived={onRoomArchived}
+                onLeftRoom={onLeftRoom}
               />
             ))}
           </SidebarCategory>
@@ -126,6 +146,12 @@ export function Sidebar({
               selected={selectedRoomId === room.id}
               onClick={() => onSelectRoom(room.id)}
               displayName={room.name || 'Unnamed Channel'}
+              unreadCount={getUnreadCount?.(room.id)}
+              isOwner={room.createdBy === currentUserId || isOrgOwner}
+              onRoomUpdated={onRoomUpdated}
+              onRoomDeleted={onRoomDeleted}
+              onRoomArchived={onRoomArchived}
+              onLeftRoom={onLeftRoom}
             />
           ))}
         </SidebarCategory>
@@ -157,6 +183,7 @@ export function Sidebar({
               selected={!isComposingDM && selectedRoomId === room.id}
               onClick={() => onSelectRoom(room.id)}
               displayName={getDMName(room)}
+              unreadCount={getUnreadCount?.(room.id)}
             />
           ))}
         </SidebarCategory>

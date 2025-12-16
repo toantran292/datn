@@ -5,6 +5,7 @@ import { MessagesRepository } from '../chat/repositories/messages.repository';
 import { RoomMembersRepository } from '../rooms/repositories/room-members.repository';
 import { AttachmentsRepository } from '../chat/repositories/attachments.repository';
 import { FileStorageClient } from '../common/file-storage/file-storage.client';
+import { IdentityService } from '../common/identity/identity.service';
 import { AIFeature } from '../database/entities/channel-ai-config.entity';
 
 @Injectable()
@@ -16,6 +17,7 @@ export class AIService {
     private readonly roomMembersRepo: RoomMembersRepository,
     private readonly attachmentsRepo: AttachmentsRepository,
     private readonly fileStorageClient: FileStorageClient,
+    private readonly identityService: IdentityService,
   ) {}
 
   // ============== UC03: Channel AI Config ==============
@@ -29,6 +31,7 @@ export class AIService {
   async updateAIConfig(
     roomId: string,
     userId: string,
+    orgId: string,
     data: {
       aiEnabled?: boolean;
       enabledFeatures?: AIFeature[];
@@ -38,7 +41,7 @@ export class AIService {
       customSystemPrompt?: string | null;
     },
   ) {
-    await this.checkAdminRole(roomId, userId);
+    await this.checkAdminRole(roomId, userId, orgId);
 
     const config = await this.aiConfigRepo.update(roomId, {
       ...data,
@@ -48,8 +51,8 @@ export class AIService {
     return this.formatConfig(config);
   }
 
-  async toggleAIFeature(roomId: string, userId: string, feature: AIFeature, enabled: boolean) {
-    await this.checkAdminRole(roomId, userId);
+  async toggleAIFeature(roomId: string, userId: string, orgId: string, feature: AIFeature, enabled: boolean) {
+    await this.checkAdminRole(roomId, userId, orgId);
 
     const config = await this.aiConfigRepo.getOrCreate(roomId, userId);
     let features = [...config.enabledFeatures];
@@ -321,13 +324,24 @@ export class AIService {
     }
   }
 
-  private async checkAdminRole(roomId: string, userId: string): Promise<void> {
+  /**
+   * Check if user can configure AI settings for a room
+   * Only OWNER/ADMIN of workspace can configure AI
+   */
+  private async checkAdminRole(roomId: string, userId: string, orgId: string): Promise<void> {
+    // Check if user is org owner (has OWNER role in organization)
+    const isOrgOwner = await this.identityService.isOrgOwner(userId, orgId);
+    if (isOrgOwner) {
+      return; // Org owner can configure AI for any room
+    }
+
+    // Check if user is room admin
     const member = await this.roomMembersRepo.get(roomId, userId);
     if (!member) {
-      throw new ForbiddenException('You must be a member to configure AI');
+      throw new ForbiddenException('You must be a workspace owner or admin to configure AI');
     }
     if (member.role !== 'ADMIN') {
-      throw new ForbiddenException('Only admins can configure AI settings');
+      throw new ForbiddenException('Only workspace owners and admins can configure AI settings');
     }
   }
 

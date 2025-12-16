@@ -1,7 +1,7 @@
-import { MessageSquare, Users, Paperclip, X, Hash, Lock } from 'lucide-react';
+import { MessageSquare, Users, Paperclip, X, Hash, Lock, Bot } from 'lucide-react';
 import type { Room } from '../../types';
 
-export type DetailsTab = 'thread' | 'members' | 'files';
+export type DetailsTab = 'thread' | 'members' | 'files' | 'ai';
 
 export interface DetailsPanelProps {
   room: Room;
@@ -11,6 +11,7 @@ export interface DetailsPanelProps {
   threadContent?: React.ReactNode;
   membersContent?: React.ReactNode;
   filesContent?: React.ReactNode;
+  aiContent?: React.ReactNode;
 }
 
 export function DetailsPanel({
@@ -21,11 +22,16 @@ export function DetailsPanel({
   threadContent,
   membersContent,
   filesContent,
+  aiContent,
 }: DetailsPanelProps) {
+  // Only show AI tab for channels (not DMs)
+  const showAITab = room.type === 'channel';
+
   const tabs: { id: DetailsTab; label: string; icon: React.ReactNode }[] = [
     { id: 'thread', label: 'Thread', icon: <MessageSquare size={16} /> },
     { id: 'members', label: 'Members', icon: <Users size={16} /> },
     { id: 'files', label: 'Files', icon: <Paperclip size={16} /> },
+    ...(showAITab ? [{ id: 'ai' as DetailsTab, label: 'AI', icon: <Bot size={16} /> }] : []),
   ];
 
   return (
@@ -80,6 +86,7 @@ export function DetailsPanel({
         {activeTab === 'thread' && threadContent}
         {activeTab === 'members' && membersContent}
         {activeTab === 'files' && filesContent}
+        {activeTab === 'ai' && aiContent}
       </div>
     </div>
   );

@@ -14,6 +14,8 @@ export class RoomResponseDto {
   @Expose() name: string | null;
   @Expose() type: 'channel' | 'dm';
   @Expose() projectId: string | null; // null = org-level, string = project-specific
+  @Expose() createdBy: string | null; // User ID of creator
+  @Expose() description: string | null; // Channel description
 
   @Expose()
   @Type(() => RoomMemberDto)

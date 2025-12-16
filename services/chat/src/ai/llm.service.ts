@@ -95,7 +95,24 @@ Yêu cầu:
 - Nêu bật các quyết định quan trọng (nếu có)
 - Ghi nhận các câu hỏi chưa được giải quyết (nếu có)
 - Viết bằng ngôn ngữ chuyên nghiệp, dễ hiểu
-- Độ dài tóm tắt từ 3-5 đoạn ngắn`;
+
+Format output bằng Markdown:
+- Sử dụng **bold** cho điểm quan trọng
+- Sử dụng danh sách bullet points (-) cho các mục
+- Sử dụng headings (##, ###) để phân chia sections
+- Sử dụng > blockquote cho trích dẫn quan trọng
+
+Ví dụ format:
+## Tóm tắt
+Cuộc hội thoại chủ yếu thảo luận về...
+
+## Các quyết định chính
+- **Quyết định 1**: Mô tả
+- **Quyết định 2**: Mô tả
+
+## Vấn đề chưa giải quyết
+- Vấn đề 1
+- Vấn đề 2`;
 
     const response = await model.invoke([
       new SystemMessage(systemPrompt),
@@ -184,13 +201,29 @@ Trả về JSON với format:
 Yêu cầu:
 - Chỉ trả lời dựa trên thông tin có trong ngữ cảnh
 - Nếu không tìm thấy câu trả lời, hãy nói rõ
-- Trích dẫn nguồn bằng MSG_ID khi có thể
 - Đánh giá độ tin cậy của câu trả lời (0-1)
 - Trả lời bằng tiếng Việt hoặc ngôn ngữ của câu hỏi
 
+**TUYỆT ĐỐI KHÔNG ĐƯỢC** bao gồm trong phần "answer":
+- MSG_ID, message ID, hoặc bất kỳ ID nào
+- User ID, userId, hoặc mã định danh người dùng
+- Timestamp, ngày giờ kỹ thuật
+- Bất kỳ metadata kỹ thuật nào
+
+Phần "answer" phải hoàn toàn tự nhiên, dễ đọc cho người dùng cuối. Chỉ sử dụng MSG_ID trong trường "sourceIds" để tham chiếu nội bộ.
+
+Format câu trả lời bằng Markdown:
+- Sử dụng **bold** cho thông tin quan trọng
+- Sử dụng danh sách (-) khi liệt kê nhiều điểm
+- Sử dụng \`code\` cho tên biến, hàm, technical terms
+- Sử dụng > blockquote khi trích dẫn từ hội thoại
+- Sử dụng ### heading cho các phần khác nhau nếu câu trả lời dài
+
+QUAN TRỌNG: sourceIds KHÔNG được để rỗng. Phải chứa ít nhất 1 MSG_ID từ ngữ cảnh.
+
 Trả về JSON với format:
 {
-  "answer": "Câu trả lời của bạn",
+  "answer": "Câu trả lời tự nhiên, không chứa ID hay metadata kỹ thuật",
   "sourceIds": ["msg_id_1", "msg_id_2"],
   "confidence": 0.8
 }`;
@@ -208,7 +241,7 @@ Trả về JSON với format:
         const parsed = JSON.parse(jsonMatch[0]);
 
         // Map source IDs to actual message content
-        const sources = (parsed.sourceIds || [])
+        let sources = (parsed.sourceIds || [])
           .map((id: string) => contextMessages.find(m => m.id === id))
           .filter(Boolean)
           .map((m: ConversationMessage & { id: string }) => ({
@@ -217,6 +250,21 @@ Trả về JSON với format:
             userId: m.userId,
             createdAt: m.createdAt.toISOString(),
           }));
+
+        // Fallback: if no sources found, pick most recent relevant messages
+        if (sources.length === 0 && contextMessages.length > 0) {
+          // Pick up to 3 most recent messages as fallback sources
+          const recentMessages = [...contextMessages]
+            .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+            .slice(0, 3);
+
+          sources = recentMessages.map(m => ({
+            messageId: m.id,
+            content: m.content,
+            userId: m.userId,
+            createdAt: m.createdAt.toISOString(),
+          }));
+        }
 
         return {
           answer: parsed.answer,
@@ -228,9 +276,22 @@ Trả về JSON với format:
       // Fallback
     }
 
+    // Fallback: if parsing failed, still provide some sources
+    const fallbackSources = contextMessages.length > 0
+      ? [...contextMessages]
+          .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+          .slice(0, 3)
+          .map(m => ({
+            messageId: m.id,
+            content: m.content,
+            userId: m.userId,
+            createdAt: m.createdAt.toISOString(),
+          }))
+      : [];
+
     return {
       answer: response.content as string,
-      sources: [],
+      sources: fallbackSources,
       confidence: 0.5,
     };
   }
@@ -253,7 +314,27 @@ Yêu cầu:
 - Nêu bật các điểm quan trọng
 - Liệt kê các key takeaways
 - Giữ độ dài tóm tắt phù hợp với độ dài tài liệu
-- Viết bằng ngôn ngữ chuyên nghiệp, dễ hiểu`;
+- Viết bằng ngôn ngữ chuyên nghiệp, dễ hiểu
+
+Format output bằng Markdown:
+- Sử dụng ## heading cho các phần chính
+- Sử dụng **bold** cho điểm quan trọng
+- Sử dụng danh sách bullet points (-) cho các mục
+- Sử dụng > blockquote cho trích dẫn từ tài liệu
+- Sử dụng \`code\` cho technical terms
+
+Ví dụ format:
+## Tổng quan
+Tài liệu này trình bày về...
+
+## Nội dung chính
+- **Điểm 1**: Mô tả
+- **Điểm 2**: Mô tả
+
+## Key Takeaways
+1. Takeaway 1
+2. Takeaway 2
+3. Takeaway 3`;
 
     const response = await model.invoke([
       new SystemMessage(systemPrompt),

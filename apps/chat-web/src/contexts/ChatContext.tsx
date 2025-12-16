@@ -1,11 +1,13 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
-import type { Room, Message } from "../types";
+import { createContext, useContext, useState, useEffect, useRef, ReactNode, useCallback } from "react";
+import type { Room, Message, UnreadCount } from "../types";
 import type { DetailsTab } from "../components/details";
 import { api } from "../services/api";
 import { socketService } from "../services/socket";
 import { useAppHeaderContext } from "@uts/design-system/ui";
+import type { PendingFile } from "../components/chat/FilePreview";
+import { prepareUpload, uploadToPresignedUrl } from "../services/files";
 
 // ============= Types =============
 export interface ComposeUser {
@@ -29,6 +31,7 @@ interface ChatContextValue {
   messages: Message[];
   connectionStatus: string;
   usersCache: Map<string, UserInfo>;
+  unreadCounts: Map<string, number>;
 
   // Project context
   currentProjectId: string | null | undefined;
@@ -64,15 +67,24 @@ interface ChatContextValue {
   handleJoinRoomFromBrowse: (roomId: string) => Promise<void>;
   handleCreateChannel: (name: string, isPrivate: boolean) => Promise<void>;
   handleCreateDM: (userIds: string[]) => Promise<void>;
+  handleUpdateRoom: (room: Room) => void;
+  handleDeleteRoom: (roomId: string) => void;
+  handleArchiveRoom: (roomId: string) => void;
+  handleLeaveRoom: (roomId: string) => void;
 
   // Actions - Messages
   handleLoadMessages: () => Promise<void>;
-  handleSendMessage: (content: string) => void;
+  handleSendMessage: (content: string, mentionedUserIds?: string[]) => void;
+  handleEditMessage: (messageId: string, content: string) => Promise<void>;
+  handleDeleteMessage: (messageId: string) => Promise<void>;
+  handlePinMessage: (messageId: string) => Promise<void>;
+  handleUnpinMessage: (messageId: string) => Promise<void>;
+  handleToggleReaction: (messageId: string, emoji: string) => Promise<void>;
 
   // Actions - Threads
   handleOpenThread: (message: Message) => void;
   handleLoadThread: (messageId: string) => Promise<void>;
-  handleSendThreadReply: (content: string) => void;
+  handleSendThreadReply: (content: string, mentionedUserIds?: string[]) => void;
 
   // Actions - Sidebar
   handleToggleSidebar: () => void;
@@ -93,8 +105,17 @@ interface ChatContextValue {
   cancelCompose: () => void;
   handleSendComposeMessage: (content: string) => Promise<void>;
 
+  // Actions - Unread
+  getUnreadCount: (roomId: string) => number;
+
+  // File Upload
+  pendingFiles: PendingFile[];
+  handleFilesSelect: (files: File[]) => void;
+  handleFileRemove: (fileId: string) => void;
+
   // User
   currentUserId: string;
+  isOrgOwner: boolean;
 }
 
 const ChatContext = createContext<ChatContextValue | null>(null);
@@ -127,6 +148,12 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [isComposingDM, setIsComposingDM] = useState(false);
   const [composeUsers, setComposeUsers] = useState<ComposeUser[]>([]);
   const [composeDMRoom, setComposeDMRoom] = useState<Room | null>(null);
+
+  // Unread counts
+  const [unreadCounts, setUnreadCounts] = useState<Map<string, number>>(new Map());
+
+  // Pending file uploads
+  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
 
   // Refs to access latest values in WebSocket callbacks
   const selectedRoomIdRef = useRef<string | null>(null);
@@ -207,6 +234,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
             });
           },
           onMessageNew: (message) => {
+            console.log('[ChatContext] onMessageNew:', message.id, 'roomId:', message.roomId, 'selectedRoomIdRef:', selectedRoomIdRef.current);
             if (message.roomId === selectedRoomIdRef.current) {
               if (message.threadId) {
                 // Update thread messages if thread is currently open
@@ -229,6 +257,17 @@ export function ChatProvider({ children }: { children: ReactNode }) {
               } else {
                 // Main message - add to messages list
                 setMessages((prev) => [...prev, message]);
+              }
+            } else {
+              // Message in non-active room - increment unread count
+              // Don't count messages from current user
+              if (message.userId !== userIdRef.current) {
+                setUnreadCounts((prev) => {
+                  const newCounts = new Map(prev);
+                  const currentCount = newCounts.get(message.roomId) || 0;
+                  newCounts.set(message.roomId, currentCount + 1);
+                  return newCounts;
+                });
               }
             }
           },
@@ -263,11 +302,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           },
         });
 
-        // Load rooms
+        // Load rooms and unread counts
         if (isMounted) {
-          console.log("[ChatContext] Loading rooms...");
-          await loadRooms();
-          console.log("[ChatContext] Rooms loaded successfully");
+          console.log("[ChatContext] Loading rooms and unread counts...");
+          await Promise.all([loadRooms(), loadUnreadCounts()]);
+          console.log("[ChatContext] Rooms and unread counts loaded successfully");
         }
       } catch (error) {
         console.error("[ChatContext] Initialization failed:", error);
@@ -298,11 +337,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     const loadMessagesAndMembers = async () => {
       try {
         // Load messages and members in parallel
+        // Backend now returns reactions embedded in each message
         const [messagesResult, members] = await Promise.all([
           api.listMessages(selectedRoomId, 50),
           api.listRoomMembers(selectedRoomId),
         ]);
 
+        // Set messages (reactions are already included from backend)
         setMessages(messagesResult.items);
 
         // Cache user info from room members
@@ -380,6 +421,91 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       console.error("[ChatContext] Failed to load rooms:", error);
     }
+  };
+
+  const loadUnreadCounts = async () => {
+    try {
+      const counts = await api.getAllUnreadCounts();
+      const countsMap = new Map<string, number>();
+      counts.forEach((item) => {
+        if (item.count > 0) {
+          countsMap.set(item.roomId, item.count);
+        }
+      });
+      setUnreadCounts(countsMap);
+      console.log("[ChatContext] Loaded unread counts:", countsMap.size, "rooms with unread");
+    } catch (error) {
+      console.error("[ChatContext] Failed to load unread counts:", error);
+    }
+  };
+
+  const getUnreadCount = useCallback((roomId: string): number => {
+    return unreadCounts.get(roomId) || 0;
+  }, [unreadCounts]);
+
+  // ===== Actions - File Upload =====
+  const handleFilesSelect = async (files: File[]) => {
+    if (!selectedRoomId) return;
+
+    // Create pending file entries
+    const newPendingFiles: PendingFile[] = files.map((file) => ({
+      id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+      file,
+      preview: file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined,
+      status: 'pending' as const,
+      progress: 0,
+    }));
+
+    setPendingFiles((prev) => [...prev, ...newPendingFiles]);
+
+    // Upload each file
+    for (const pendingFile of newPendingFiles) {
+      try {
+        // Update status to uploading
+        setPendingFiles((prev) =>
+          prev.map((f) => (f.id === pendingFile.id ? { ...f, status: 'uploading' as const } : f))
+        );
+
+        // Get presigned URL
+        const { uploadUrl, assetId, fileId } = await prepareUpload(selectedRoomId, pendingFile.file);
+
+        // Upload to presigned URL with progress
+        await uploadToPresignedUrl(uploadUrl, pendingFile.file, (progress) => {
+          setPendingFiles((prev) =>
+            prev.map((f) => (f.id === pendingFile.id ? { ...f, progress: progress.percent } : f))
+          );
+        });
+
+        // Mark as completed and store assetId for later confirmation
+        setPendingFiles((prev) =>
+          prev.map((f) =>
+            f.id === pendingFile.id
+              ? { ...f, status: 'completed' as const, progress: 100, assetId, fileId }
+              : f
+          )
+        );
+      } catch (error) {
+        console.error('File upload failed:', error);
+        setPendingFiles((prev) =>
+          prev.map((f) =>
+            f.id === pendingFile.id
+              ? { ...f, status: 'error' as const, error: 'Upload failed' }
+              : f
+          )
+        );
+      }
+    }
+  };
+
+  const handleFileRemove = (fileId: string) => {
+    setPendingFiles((prev) => {
+      const file = prev.find((f) => f.id === fileId);
+      // Revoke object URL to free memory
+      if (file?.preview) {
+        URL.revokeObjectURL(file.preview);
+      }
+      return prev.filter((f) => f.id !== fileId);
+    });
   };
 
   const handleBrowsePublicRooms = async (): Promise<Room[]> => {
@@ -481,6 +607,55 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       socketService.joinRoom(roomId);
       return roomId;
     });
+
+    // Mark room as read and clear unread count
+    if (unreadCounts.has(roomId)) {
+      try {
+        await api.markAsRead(roomId);
+        setUnreadCounts((prev) => {
+          const newCounts = new Map(prev);
+          newCounts.delete(roomId);
+          return newCounts;
+        });
+      } catch (error) {
+        console.error("[ChatContext] Failed to mark room as read:", error);
+      }
+    }
+  };
+
+  // ===== Actions - Room Management =====
+  const handleUpdateRoom = (updatedRoom: Room) => {
+    setRooms((prev) =>
+      prev.map((room) =>
+        room.id === updatedRoom.id ? { ...room, ...updatedRoom } : room
+      )
+    );
+  };
+
+  const handleDeleteRoom = (roomId: string) => {
+    setRooms((prev) => prev.filter((room) => room.id !== roomId));
+    // If deleted room was selected, clear selection
+    if (selectedRoomId === roomId) {
+      setSelectedRoomId(null);
+      setMessages([]);
+    }
+  };
+
+  const handleArchiveRoom = (roomId: string) => {
+    // For now, treat archive same as delete from UI perspective
+    setRooms((prev) => prev.filter((room) => room.id !== roomId));
+    if (selectedRoomId === roomId) {
+      setSelectedRoomId(null);
+      setMessages([]);
+    }
+  };
+
+  const handleLeaveRoom = (roomId: string) => {
+    setRooms((prev) => prev.filter((room) => room.id !== roomId));
+    if (selectedRoomId === roomId) {
+      setSelectedRoomId(null);
+      setMessages([]);
+    }
   };
 
   // ===== Actions - Messages =====
@@ -494,9 +669,152 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const handleSendMessage = (content: string) => {
+  const handleSendMessage = async (content: string, mentionedUserIds?: string[]) => {
     if (!selectedRoomId) return;
-    socketService.sendMessage(selectedRoomId, content);
+
+    // Get completed uploads to attach
+    const completedUploads = pendingFiles.filter(
+      (f) => f.status === 'completed' && f.assetId
+    );
+
+    // Send message with attachments if any
+    if (completedUploads.length > 0) {
+      const attachmentIds = completedUploads
+        .map((f) => f.assetId)
+        .filter((id): id is string => !!id);
+
+      // Send message via WebSocket with attachment references
+      socketService.sendMessage(selectedRoomId, content, undefined, attachmentIds, mentionedUserIds);
+
+      // Clear pending files after send
+      pendingFiles.forEach((f) => {
+        if (f.preview) URL.revokeObjectURL(f.preview);
+      });
+      setPendingFiles([]);
+    } else {
+      // Simple message without attachments
+      socketService.sendMessage(selectedRoomId, content, undefined, undefined, mentionedUserIds);
+    }
+  };
+
+  const handleEditMessage = async (messageId: string, content: string) => {
+    try {
+      const updatedMessage = await api.editMessage(messageId, content);
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === messageId
+            ? { ...msg, content: updatedMessage.content, editedAt: updatedMessage.editedAt }
+            : msg
+        )
+      );
+    } catch (error) {
+      console.error("Failed to edit message:", error);
+      throw error;
+    }
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    try {
+      await api.deleteMessage(messageId);
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === messageId
+            ? { ...msg, deletedAt: new Date().toISOString() }
+            : msg
+        )
+      );
+    } catch (error) {
+      console.error("Failed to delete message:", error);
+      throw error;
+    }
+  };
+
+  const handlePinMessage = async (messageId: string) => {
+    try {
+      await api.pinMessage(messageId);
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === messageId ? { ...msg, isPinned: true } : msg
+        )
+      );
+    } catch (error) {
+      console.error("Failed to pin message:", error);
+      throw error;
+    }
+  };
+
+  const handleUnpinMessage = async (messageId: string) => {
+    try {
+      await api.unpinMessage(messageId);
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === messageId ? { ...msg, isPinned: false } : msg
+        )
+      );
+    } catch (error) {
+      console.error("Failed to unpin message:", error);
+      throw error;
+    }
+  };
+
+  const handleToggleReaction = async (messageId: string, emoji: string) => {
+    try {
+      // Find the message to check if user already reacted
+      const message = messages.find((m) => m.id === messageId);
+      const existingReaction = message?.reactions?.find((r) => r.emoji === emoji);
+      const hasReacted = existingReaction?.hasReacted;
+
+      if (hasReacted) {
+        // Remove reaction
+        await api.removeReaction(messageId, emoji);
+        setMessages((prev) =>
+          prev.map((msg) => {
+            if (msg.id !== messageId) return msg;
+            const reactions = msg.reactions || [];
+            const updatedReactions = reactions
+              .map((r) => {
+                if (r.emoji !== emoji) return r;
+                const newCount = r.count - 1;
+                if (newCount <= 0) return null;
+                return { ...r, count: newCount, hasReacted: false };
+              })
+              .filter((r): r is NonNullable<typeof r> => r !== null);
+            return { ...msg, reactions: updatedReactions };
+          })
+        );
+      } else {
+        // Add reaction
+        await api.addReaction(messageId, emoji);
+        setMessages((prev) =>
+          prev.map((msg) => {
+            if (msg.id !== messageId) return msg;
+            const reactions = msg.reactions || [];
+            const existing = reactions.find((r) => r.emoji === emoji);
+            if (existing) {
+              return {
+                ...msg,
+                reactions: reactions.map((r) =>
+                  r.emoji === emoji
+                    ? { ...r, count: r.count + 1, hasReacted: true }
+                    : r
+                ),
+              };
+            } else {
+              return {
+                ...msg,
+                reactions: [
+                  ...reactions,
+                  { emoji, count: 1, users: [], hasReacted: true },
+                ],
+              };
+            }
+          })
+        );
+      }
+    } catch (error) {
+      console.error("Failed to toggle reaction:", error);
+      throw error;
+    }
   };
 
   // ===== Actions - Threads =====
@@ -525,10 +843,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const handleSendThreadReply = (content: string) => {
+  const handleSendThreadReply = (content: string, mentionedUserIds?: string[]) => {
     if (!selectedRoomId || !activeThread) return;
-    socketService.sendMessage(selectedRoomId, content, activeThread.id);
-    console.log("Send thread reply to message:", activeThread.id);
+    socketService.sendMessage(selectedRoomId, content, activeThread.id, undefined, mentionedUserIds);
+    console.log("Send thread reply to message:", activeThread.id, "mentionedUserIds:", mentionedUserIds);
   };
 
   // ===== Actions - Sidebar =====
@@ -659,6 +977,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const selectedRoom = rooms.find((r) => r.id === selectedRoomId) || null;
   const currentUserId = user?.user_id || "";
 
+  // Check if current user is org owner (has OWNER role)
+  const isOrgOwner = user?.roles?.some(role => role.toUpperCase() === "OWNER") || false;
+
   // Separate rooms by type for UI rendering
   // Backend returns different room types via separate API calls
   const orgLevelRooms = rooms.filter((r) => (r.type === "channel" && !r.projectId) || r.type === "dm");
@@ -672,6 +993,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     messages,
     connectionStatus,
     usersCache,
+    unreadCounts,
 
     // Project context
     currentProjectId,
@@ -706,10 +1028,19 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     handleJoinRoomFromBrowse,
     handleCreateChannel,
     handleCreateDM,
+    handleUpdateRoom,
+    handleDeleteRoom,
+    handleArchiveRoom,
+    handleLeaveRoom,
 
     // Actions - Messages
     handleLoadMessages,
     handleSendMessage,
+    handleEditMessage,
+    handleDeleteMessage,
+    handlePinMessage,
+    handleUnpinMessage,
+    handleToggleReaction,
 
     // Actions - Threads
     handleOpenThread,
@@ -736,8 +1067,17 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     cancelCompose,
     handleSendComposeMessage,
 
+    // Actions - Unread
+    getUnreadCount,
+
+    // File Upload
+    pendingFiles,
+    handleFilesSelect,
+    handleFileRemove,
+
     // User
     currentUserId,
+    isOrgOwner,
   };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

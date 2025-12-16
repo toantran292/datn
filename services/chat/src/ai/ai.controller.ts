@@ -34,7 +34,7 @@ export class AIController {
       customSystemPrompt?: string | null;
     },
   ) {
-    return this.aiService.updateAIConfig(roomId, ctx.userId, body);
+    return this.aiService.updateAIConfig(roomId, ctx.userId, ctx.orgId, body);
   }
 
   @Put('config/:roomId/features/:feature')
@@ -44,7 +44,7 @@ export class AIController {
     @Param('feature') feature: AIFeature,
     @Body('enabled') enabled: boolean,
   ) {
-    return this.aiService.toggleAIFeature(roomId, ctx.userId, feature, enabled);
+    return this.aiService.toggleAIFeature(roomId, ctx.userId, ctx.orgId, feature, enabled);
   }
 
   // ============== UC11: Conversation Summary ==============
