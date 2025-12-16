@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { initializeJitsi } from '@/lib/jitsi';
 import { useJitsiConnection } from '@/hooks/useJitsiConnection';
@@ -242,21 +242,20 @@ export default function MeetingPage() {
               <Video className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-white font-semibold">UTS Meet</h1>
-              <p className="text-sm" style={{ color: 'var(--ts-text-secondary)' }}>{roomId}</p>
+              <h1 className="font-semibold" style={{ color: 'var(--ts-text-primary)' }}>{roomId}</h1>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-4 py-2 rounded-lg border" style={{ backgroundColor: 'rgba(34, 197, 94, 0.2)', borderColor: 'rgba(34, 197, 94, 0.3)' }}>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-lg border" style={{ backgroundColor: 'rgba(34, 197, 94, 0.1)', borderColor: 'rgba(34, 197, 94, 0.3)' }}>
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-green-400 text-sm font-medium">Connected</span>
+              <span className="text-green-500 text-sm font-medium">Connected</span>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 rounded-lg" style={{ backgroundColor: 'var(--ts-bg-dark)' }}>
+            <div className="flex items-center gap-2 px-4 py-2 rounded-lg" style={{ backgroundColor: 'var(--ts-input-bg)' }}>
               <svg className="w-4 h-4" style={{ color: 'var(--ts-text-secondary)' }} fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
               </svg>
-              <span className="text-white font-medium">{participantsArray.length + 1}</span>
+              <span className="font-medium" style={{ color: 'var(--ts-text-primary)' }}>{participantsArray.length + 1}</span>
             </div>
           </div>
         </div>

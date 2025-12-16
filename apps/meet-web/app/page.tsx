@@ -10,7 +10,7 @@ export default function Home() {
     // Otherwise redirect to join page
     const userId = localStorage.getItem('userId');
     if (userId) {
-      router.push('/meetings');
+      router.push('/');
     } else {
       router.push('/join');
     }

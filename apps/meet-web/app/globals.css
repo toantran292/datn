@@ -2,7 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/* Default (Dark Theme) */
+:root,
+.dark {
   --ts-orange: #FF8800;
   --ts-teal: #00C4AB;
   --ts-accent: #FF3B69;
@@ -11,6 +13,28 @@
   --ts-border: #1E293B;
   --ts-text-primary: #F9FAFB;
   --ts-text-secondary: #94A3B8;
+  --ts-bg-hover: #1F2937;
+  --ts-input-bg: #1E293B;
+  --ts-shadow: 0px 4px 12px rgba(0, 0, 0, 0.4);
+  --ts-widget-bg: rgba(17, 24, 39, 0.95);
+  --ts-widget-border: rgba(255, 255, 255, 0.1);
+}
+
+/* Light Theme */
+.light {
+  --ts-orange: #FF8800;
+  --ts-teal: #00A895;
+  --ts-accent: #FF3B69;
+  --ts-bg-dark: #F7F7F7;
+  --ts-card-surface: #FFFFFF;
+  --ts-border: #E5E7EB;
+  --ts-text-primary: #171717;
+  --ts-text-secondary: #525252;
+  --ts-bg-hover: #F3F4F6;
+  --ts-input-bg: #F3F4F6;
+  --ts-shadow: 0px 4px 12px rgba(0, 0, 0, 0.08), 0px 1px 4px rgba(0, 0, 0, 0.04);
+  --ts-widget-bg: rgba(255, 255, 255, 0.95);
+  --ts-widget-border: rgba(0, 0, 0, 0.1);
 }
 
 body {

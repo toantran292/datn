@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Maximize2, MicOff } from 'lucide-react';
+import { X, Maximize2, MicOff, GripHorizontal } from 'lucide-react';
 import type { JitsiTrack } from '@/types/jitsi';
 
 interface Participant {
@@ -33,6 +33,74 @@ export function HuddleWidget({
   onExpand,
 }: HuddleWidgetProps) {
   const [isVisible, setIsVisible] = useState(true);
+
+  // Drag state
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef({ x: 0, y: 0, posX: 0, posY: 0 });
+
+  // Drag handlers
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+    dragStartRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      posX: position.x,
+      posY: position.y,
+    };
+  }, [position]);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    setIsDragging(true);
+    dragStartRef.current = {
+      x: touch.clientX,
+      y: touch.clientY,
+      posX: position.x,
+      posY: position.y,
+    };
+  }, [position]);
+
+  // Handle drag move and end
+  useEffect(() => {
+    if (!isDragging) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const deltaX = e.clientX - dragStartRef.current.x;
+      const deltaY = e.clientY - dragStartRef.current.y;
+      setPosition({
+        x: dragStartRef.current.posX + deltaX,
+        y: dragStartRef.current.posY + deltaY,
+      });
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const touch = e.touches[0];
+      const deltaX = touch.clientX - dragStartRef.current.x;
+      const deltaY = touch.clientY - dragStartRef.current.y;
+      setPosition({
+        x: dragStartRef.current.posX + deltaX,
+        y: dragStartRef.current.posY + deltaY,
+      });
+    };
+
+    const handleEnd = () => {
+      setIsDragging(false);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleEnd);
+    window.addEventListener('touchmove', handleTouchMove);
+    window.addEventListener('touchend', handleEnd);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleEnd);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleEnd);
+    };
+  }, [isDragging]);
 
   // Build all participants list
   const allParticipants = [
@@ -92,39 +160,54 @@ export function HuddleWidget({
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 20, scale: 0.95 }}
-        className="fixed bottom-24 left-6 z-40"
+        className="fixed z-40"
+        style={{
+          left: `calc(24px + ${position.x}px)`,
+          bottom: `calc(96px - ${position.y}px)`,
+          cursor: isDragging ? 'grabbing' : 'default',
+        }}
       >
         <div
           className="rounded-2xl overflow-hidden"
           style={{
-            background: 'rgba(17, 24, 39, 0.95)',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+            background: 'var(--ts-widget-bg)',
+            border: '1px solid var(--ts-widget-border)',
+            boxShadow: 'var(--ts-shadow)',
             backdropFilter: 'blur(12px)',
           }}
         >
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3">
+          {/* Header - Draggable */}
+          <div
+            className="flex items-center justify-between px-4 py-3 select-none"
+            onMouseDown={handleMouseDown}
+            onTouchStart={handleTouchStart}
+            style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+          >
             <div className="flex items-center gap-2">
+              <GripHorizontal className="w-4 h-4" style={{ color: 'var(--ts-text-secondary)' }} />
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-white text-sm font-medium">Huddle Active</span>
+              <span className="text-sm font-medium" style={{ color: 'var(--ts-text-primary)' }}>Huddle Active</span>
             </div>
             <div className="flex items-center gap-1">
               {onExpand && (
                 <button
                   onClick={onExpand}
-                  className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+                  onMouseDown={(e) => e.stopPropagation()}
+                  className="p-1.5 rounded-lg transition-colors"
+                  style={{ color: 'var(--ts-text-secondary)' }}
                   title="Expand"
                 >
-                  <Maximize2 className="w-4 h-4 text-white/60" />
+                  <Maximize2 className="w-4 h-4" />
                 </button>
               )}
               <button
                 onClick={() => setIsVisible(false)}
-                className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+                onMouseDown={(e) => e.stopPropagation()}
+                className="p-1.5 rounded-lg transition-colors"
+                style={{ color: 'var(--ts-text-secondary)' }}
                 title="Close"
               >
-                <X className="w-4 h-4 text-white/60" />
+                <X className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -170,8 +253,8 @@ export function HuddleWidget({
                         <div
                           className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full flex items-center justify-center"
                           style={{
-                            background: '#1f2937',
-                            border: '2px solid rgba(17, 24, 39, 0.95)',
+                            background: 'var(--ts-card-surface)',
+                            border: '2px solid var(--ts-widget-bg)',
                           }}
                         >
                           <MicOff className="w-2.5 h-2.5 text-red-400" />
@@ -186,11 +269,11 @@ export function HuddleWidget({
                   <div
                     className="w-12 h-12 rounded-full flex items-center justify-center"
                     style={{
-                      background: '#374151',
-                      border: '2px solid #4b5563',
+                      background: 'var(--ts-input-bg)',
+                      border: '2px solid var(--ts-border)',
                     }}
                   >
-                    <span className="text-white/70 text-sm font-medium">
+                    <span className="text-sm font-medium" style={{ color: 'var(--ts-text-secondary)' }}>
                       +{remainingCount}
                     </span>
                   </div>
@@ -199,7 +282,7 @@ export function HuddleWidget({
 
               {/* Speaking indicator */}
               {speakingText && (
-                <p className="text-white/50 text-xs mt-3 italic">
+                <p className="text-xs mt-3 italic" style={{ color: 'var(--ts-text-secondary)' }}>
                   {speakingText}
                 </p>
               )}

@@ -343,20 +343,20 @@ export function CaptionDisplay({ captions, isEnabled, maxSpeakers = 2 }: Caption
       <div
         className="rounded-lg overflow-hidden"
         style={{
-          background: 'rgba(17, 24, 39, 0.9)',
-          border: '1px solid var(--ts-border)',
-          boxShadow: isDragging ? '0 4px 16px rgba(0, 0, 0, 0.5)' : '0 2px 8px rgba(0, 0, 0, 0.3)',
+          background: 'var(--ts-widget-bg)',
+          border: '1px solid var(--ts-widget-border)',
+          boxShadow: 'var(--ts-shadow)',
         }}
       >
         {/* Drag handle + popout button */}
         <div
-          className="px-3 py-1.5 border-b border-white/10 flex items-center justify-between select-none"
+          className="px-3 py-1.5 flex items-center justify-between select-none"
+          style={{ borderBottom: '1px solid var(--ts-widget-border)', cursor: isDragging ? 'grabbing' : 'grab' }}
           onMouseDown={handleMouseDown}
           onTouchStart={handleTouchStart}
-          style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
         >
-          <span className="text-white/50 text-[10px] flex items-center gap-1.5">
-            <GripHorizontal className="w-3 h-3 text-white/40" />
+          <span className="text-[10px] flex items-center gap-1.5" style={{ color: 'var(--ts-text-secondary)' }}>
+            <GripHorizontal className="w-3 h-3" />
             Live Captions
           </span>
           <button
@@ -365,7 +365,8 @@ export function CaptionDisplay({ captions, isEnabled, maxSpeakers = 2 }: Caption
               openPopout();
             }}
             onMouseDown={(e) => e.stopPropagation()}
-            className="text-white/40 hover:text-white/80 transition-colors p-1 rounded hover:bg-white/10"
+            className="transition-colors p-1 rounded"
+            style={{ color: 'var(--ts-text-secondary)' }}
             title="Open in separate window"
           >
             <ExternalLink className="w-3 h-3" />
@@ -373,23 +374,23 @@ export function CaptionDisplay({ captions, isEnabled, maxSpeakers = 2 }: Caption
         </div>
 
         {/* Captions for each active speaker */}
-        <div className="divide-y divide-white/5">
+        <div style={{ borderColor: 'var(--ts-widget-border)' }}>
           {activeCaptions.length > 0 ? (
             activeCaptions.map((caption) => (
-              <div key={caption.participantId} className="px-3 py-2">
+              <div key={caption.participantId} className="px-3 py-2" style={{ borderBottom: '1px solid var(--ts-widget-border)' }}>
                 <span className="text-ts-orange font-medium text-xs mr-2">
                   {caption.participantName}:
                 </span>
-                <span className="text-white text-sm">
+                <span className="text-sm" style={{ color: 'var(--ts-text-primary)' }}>
                   {caption.text}
                   {!caption.isFinal && (
-                    <span className="inline-block w-0.5 h-3 bg-white/50 ml-0.5 animate-pulse align-middle" />
+                    <span className="inline-block w-0.5 h-3 ml-0.5 animate-pulse align-middle" style={{ background: 'var(--ts-text-secondary)' }} />
                   )}
                 </span>
               </div>
             ))
           ) : (
-            <div className="px-3 py-2 text-white/40 text-sm text-center">
+            <div className="px-3 py-2 text-sm text-center" style={{ color: 'var(--ts-text-secondary)' }}>
               Waiting for speech...
             </div>
           )}
@@ -576,12 +577,7 @@ export function useSpeechRecognition(
       if (!isEnabledRef.current || !recognitionRef.current) return;
 
       console.log('[Caption] Attempting to start recognition...');
-      try {
-        recognitionRef.current.start();
-        console.log('[Caption] recognition.start() called successfully');
-      } catch (err) {
-        console.error('[Caption] Failed to start speech recognition:', err);
-      }
+      startRecognition();
     }, 2000); // Wait 2 seconds for WebRTC to stabilize
 
     return () => {

@@ -57,7 +57,11 @@ export function MeetingGrid({ participants, localParticipant, isLocalSpeaking = 
   // Grid configuration based on participant count
   const getGridConfig = () => {
     const count = allParticipants.length;
-    if (count > 50) {
+    if (count === 1) {
+      return { perPage: 1, cols: 1, size: 'large' as const };
+    } else if (count === 2) {
+      return { perPage: 2, cols: 2, size: 'large' as const };
+    } else if (count > 50) {
       return { perPage: 16, cols: 4, size: 'medium' as const };
     } else if (count > 20) {
       return { perPage: 9, cols: 3, size: 'medium' as const };
@@ -103,6 +107,8 @@ export function MeetingGrid({ participants, localParticipant, isLocalSpeaking = 
   };
 
   const gridColsClass = {
+    1: 'grid-cols-1',
+    2: 'grid-cols-2',
     3: 'grid-cols-3',
     4: 'grid-cols-4',
   }[config.cols];

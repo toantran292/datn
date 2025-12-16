@@ -363,10 +363,12 @@ export function ParticipantTile({
 
       {/* Name label */}
       <div
-        className="px-3 py-1.5 rounded-lg backdrop-blur-sm"
-        style={{ background: 'rgba(17, 24, 39, 0.8)' }}
+        className="px-3 py-1.5 rounded-lg"
+        style={{
+          background: 'linear-gradient(135deg, var(--ts-orange) 0%, var(--ts-teal) 100%)',
+        }}
       >
-        <p className="text-sm text-white whitespace-nowrap">
+        <p className="text-sm font-medium whitespace-nowrap text-white">
           {isLocal ? `${name} (You)` : name}
         </p>
       </div>

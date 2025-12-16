@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Camera, Mic, Image, Check, Upload } from 'lucide-react';
+import { X, Camera, Mic, Image, Check, Upload, Sun, Moon, Palette } from 'lucide-react';
+import { useTheme } from 'next-themes';
 
 interface DeviceInfo {
   deviceId: string;
@@ -51,7 +52,14 @@ export function SettingsPanel({
   const [selectedBackground, setSelectedBackground] = useState<BackgroundOption>(
     { type: 'none' }
   );
-  const [activeTab, setActiveTab] = useState<'devices' | 'background'>('devices');
+  const [activeTab, setActiveTab] = useState<'devices' | 'background' | 'appearance'>('devices');
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   const [customBackgrounds, setCustomBackgrounds] = useState<BackgroundOption[]>([]);
 
   // Get available devices
@@ -163,12 +171,13 @@ export function SettingsPanel({
         >
           {/* Header */}
           <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: 'var(--ts-border)' }}>
-            <h2 className="text-lg font-semibold text-white">Settings</h2>
+            <h2 className="text-lg font-semibold" style={{ color: 'var(--ts-text-primary)' }}>Settings</h2>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-white/10 transition-colors"
+              className="p-2 rounded-lg transition-colors"
+              style={{ color: 'var(--ts-text-secondary)' }}
             >
-              <X className="w-5 h-5 text-white/60" />
+              <X className="w-5 h-5" />
             </button>
           </div>
 
@@ -178,8 +187,8 @@ export function SettingsPanel({
               onClick={() => setActiveTab('devices')}
               className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
                 activeTab === 'devices'
-                  ? 'text-ts-orange border-b-2 border-ts-orange'
-                  : 'text-white/60 hover:text-white'
+                  ? 'text-[var(--ts-orange)] border-b-2 border-[var(--ts-orange)]'
+                  : 'text-[var(--ts-text-secondary)] hover:text-[var(--ts-text-primary)]'
               }`}
             >
               Devices
@@ -188,21 +197,31 @@ export function SettingsPanel({
               onClick={() => setActiveTab('background')}
               className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
                 activeTab === 'background'
-                  ? 'text-ts-orange border-b-2 border-ts-orange'
-                  : 'text-white/60 hover:text-white'
+                  ? 'text-[var(--ts-orange)] border-b-2 border-[var(--ts-orange)]'
+                  : 'text-[var(--ts-text-secondary)] hover:text-[var(--ts-text-primary)]'
               }`}
             >
               Background
+            </button>
+            <button
+              onClick={() => setActiveTab('appearance')}
+              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                activeTab === 'appearance'
+                  ? 'text-[var(--ts-orange)] border-b-2 border-[var(--ts-orange)]'
+                  : 'text-[var(--ts-text-secondary)] hover:text-[var(--ts-text-primary)]'
+              }`}
+            >
+              Appearance
             </button>
           </div>
 
           {/* Content */}
           <div className="p-6 max-h-[60vh] overflow-y-auto">
-            {activeTab === 'devices' ? (
+            {activeTab === 'devices' && (
               <div className="space-y-6">
                 {/* Camera Selection */}
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-white/80 mb-3">
+                  <label className="flex items-center gap-2 text-sm font-medium mb-3" style={{ color: 'var(--ts-text-primary)' }}>
                     <Camera className="w-4 h-4" />
                     Camera
                   </label>
@@ -214,24 +233,27 @@ export function SettingsPanel({
                         className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all ${
                           selectedCamera === camera.deviceId
                             ? 'bg-ts-orange/20 border border-ts-orange'
-                            : 'bg-white/5 border border-transparent hover:bg-white/10'
+                            : 'border border-transparent'
                         }`}
+                        style={{
+                          backgroundColor: selectedCamera === camera.deviceId ? undefined : 'var(--ts-input-bg)',
+                        }}
                       >
-                        <span className="text-sm text-white truncate">{camera.label}</span>
+                        <span className="text-sm truncate" style={{ color: 'var(--ts-text-primary)' }}>{camera.label}</span>
                         {selectedCamera === camera.deviceId && (
                           <Check className="w-4 h-4 text-ts-orange flex-shrink-0" />
                         )}
                       </button>
                     ))}
                     {cameras.length === 0 && (
-                      <p className="text-white/40 text-sm text-center py-4">No cameras found</p>
+                      <p className="text-sm text-center py-4" style={{ color: 'var(--ts-text-secondary)' }}>No cameras found</p>
                     )}
                   </div>
                 </div>
 
                 {/* Microphone Selection */}
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-medium text-white/80 mb-3">
+                  <label className="flex items-center gap-2 text-sm font-medium mb-3" style={{ color: 'var(--ts-text-primary)' }}>
                     <Mic className="w-4 h-4" />
                     Microphone
                   </label>
@@ -243,24 +265,29 @@ export function SettingsPanel({
                         className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all ${
                           selectedMic === mic.deviceId
                             ? 'bg-ts-teal/20 border border-ts-teal'
-                            : 'bg-white/5 border border-transparent hover:bg-white/10'
+                            : 'border border-transparent'
                         }`}
+                        style={{
+                          backgroundColor: selectedMic === mic.deviceId ? undefined : 'var(--ts-input-bg)',
+                        }}
                       >
-                        <span className="text-sm text-white truncate">{mic.label}</span>
+                        <span className="text-sm truncate" style={{ color: 'var(--ts-text-primary)' }}>{mic.label}</span>
                         {selectedMic === mic.deviceId && (
                           <Check className="w-4 h-4 text-ts-teal flex-shrink-0" />
                         )}
                       </button>
                     ))}
                     {microphones.length === 0 && (
-                      <p className="text-white/40 text-sm text-center py-4">No microphones found</p>
+                      <p className="text-sm text-center py-4" style={{ color: 'var(--ts-text-secondary)' }}>No microphones found</p>
                     )}
                   </div>
                 </div>
               </div>
-            ) : (
+            )}
+
+            {activeTab === 'background' && (
               <div className="space-y-4">
-                <label className="flex items-center gap-2 text-sm font-medium text-white/80 mb-3">
+                <label className="flex items-center gap-2 text-sm font-medium mb-3" style={{ color: 'var(--ts-text-primary)' }}>
                   <Image className="w-4 h-4" />
                   Virtual Background
                 </label>
@@ -273,11 +300,11 @@ export function SettingsPanel({
                     className={`aspect-video rounded-xl flex items-center justify-center transition-all ${
                       selectedBackground.type === 'none'
                         ? 'ring-2 ring-ts-orange'
-                        : 'hover:ring-2 hover:ring-white/30'
+                        : ''
                     }`}
-                    style={{ background: 'var(--ts-bg-dark)' }}
+                    style={{ background: 'var(--ts-input-bg)', border: '1px solid var(--ts-border)' }}
                   >
-                    <span className="text-xs text-white/60">None</span>
+                    <span className="text-xs" style={{ color: 'var(--ts-text-secondary)' }}>None</span>
                   </button>
 
                   {/* Blur option */}
@@ -286,14 +313,14 @@ export function SettingsPanel({
                     className={`aspect-video rounded-xl flex items-center justify-center transition-all ${
                       selectedBackground.type === 'blur'
                         ? 'ring-2 ring-ts-orange'
-                        : 'hover:ring-2 hover:ring-white/30'
+                        : ''
                     }`}
                     style={{
                       background: 'linear-gradient(135deg, rgba(255,136,0,0.3), rgba(0,196,171,0.3))',
                       backdropFilter: 'blur(10px)',
                     }}
                   >
-                    <span className="text-xs text-white/80">Blur</span>
+                    <span className="text-xs" style={{ color: 'var(--ts-text-primary)' }}>Blur</span>
                   </button>
 
                   {/* Preset backgrounds */}
@@ -304,7 +331,7 @@ export function SettingsPanel({
                       className={`aspect-video rounded-xl overflow-hidden transition-all relative ${
                         selectedBackground.value === bg.value
                           ? 'ring-2 ring-ts-orange'
-                          : 'hover:ring-2 hover:ring-white/30'
+                          : ''
                       }`}
                     >
                       <div
@@ -315,7 +342,7 @@ export function SettingsPanel({
                         }}
                       />
                       <div className="absolute inset-0 bg-black/30 flex items-end justify-center pb-1">
-                        <span className="text-[10px] text-white/80">{bg.name}</span>
+                        <span className="text-[10px] text-white">{bg.name}</span>
                       </div>
                     </button>
                   ))}
@@ -328,7 +355,7 @@ export function SettingsPanel({
                       className={`aspect-video rounded-xl overflow-hidden transition-all relative ${
                         selectedBackground.value === bg.value
                           ? 'ring-2 ring-ts-orange'
-                          : 'hover:ring-2 hover:ring-white/30'
+                          : ''
                       }`}
                     >
                       <div
@@ -336,17 +363,18 @@ export function SettingsPanel({
                         style={{ backgroundImage: `url(${bg.value})` }}
                       />
                       <div className="absolute inset-0 bg-black/30 flex items-end justify-center pb-1">
-                        <span className="text-[10px] text-white/80 truncate px-1">{bg.name}</span>
+                        <span className="text-[10px] text-white truncate px-1">{bg.name}</span>
                       </div>
                     </button>
                   ))}
 
                   {/* Upload button */}
                   <label
-                    className="aspect-video rounded-xl border-2 border-dashed border-white/20 flex flex-col items-center justify-center cursor-pointer hover:border-white/40 transition-colors"
+                    className="aspect-video rounded-xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-colors"
+                    style={{ borderColor: 'var(--ts-border)' }}
                   >
-                    <Upload className="w-5 h-5 text-white/40 mb-1" />
-                    <span className="text-[10px] text-white/40">Upload</span>
+                    <Upload className="w-5 h-5 mb-1" style={{ color: 'var(--ts-text-secondary)' }} />
+                    <span className="text-[10px]" style={{ color: 'var(--ts-text-secondary)' }}>Upload</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -356,8 +384,67 @@ export function SettingsPanel({
                   </label>
                 </div>
 
-                <p className="text-xs text-white/40 mt-4">
+                <p className="text-xs text-[var(--ts-text-secondary)] mt-4">
                   Virtual backgrounds use your device&apos;s processing power. Performance may vary.
+                </p>
+              </div>
+            )}
+
+            {activeTab === 'appearance' && (
+              /* Appearance Tab */
+              <div className="space-y-6">
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-medium text-[var(--ts-text-primary)] mb-3">
+                    <Palette className="w-4 h-4" />
+                    Theme
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Light Theme */}
+                    <button
+                      onClick={() => setTheme('light')}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                        mounted && theme === 'light'
+                          ? 'bg-[var(--ts-orange)]/20 border border-[var(--ts-orange)]'
+                          : 'bg-[var(--ts-input-bg)] border border-transparent hover:border-[var(--ts-border)]'
+                      }`}
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-white border border-gray-200 flex items-center justify-center">
+                        <Sun className="w-5 h-5 text-yellow-500" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-sm font-medium text-[var(--ts-text-primary)]">Light</p>
+                        <p className="text-xs text-[var(--ts-text-secondary)]">Bright mode</p>
+                      </div>
+                      {mounted && theme === 'light' && (
+                        <Check className="w-4 h-4 text-[var(--ts-orange)] ml-auto" />
+                      )}
+                    </button>
+
+                    {/* Dark Theme */}
+                    <button
+                      onClick={() => setTheme('dark')}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                        mounted && theme === 'dark'
+                          ? 'bg-[var(--ts-orange)]/20 border border-[var(--ts-orange)]'
+                          : 'bg-[var(--ts-input-bg)] border border-transparent hover:border-[var(--ts-border)]'
+                      }`}
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-gray-900 border border-gray-700 flex items-center justify-center">
+                        <Moon className="w-5 h-5 text-blue-400" />
+                      </div>
+                      <div className="text-left">
+                        <p className="text-sm font-medium text-[var(--ts-text-primary)]">Dark</p>
+                        <p className="text-xs text-[var(--ts-text-secondary)]">Dark mode</p>
+                      </div>
+                      {mounted && theme === 'dark' && (
+                        <Check className="w-4 h-4 text-[var(--ts-orange)] ml-auto" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <p className="text-xs text-[var(--ts-text-secondary)]">
+                  Choose your preferred appearance for UTS Meet.
                 </p>
               </div>
             )}

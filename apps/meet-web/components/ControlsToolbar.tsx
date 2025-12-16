@@ -215,8 +215,8 @@ export function ControlsToolbar({
                 style={{ backgroundColor: '#EF4444' }}
               >
                 <PhoneOff className="w-5 h-5 text-white" />
-                <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 rounded text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap"
-                  style={{ backgroundColor: 'var(--ts-card-surface)' }}
+                <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border"
+                  style={{ backgroundColor: 'var(--ts-card-surface)', borderColor: 'var(--ts-border)', color: 'var(--ts-text-primary)' }}
                 >
                   Leave
                 </span>
@@ -275,10 +275,11 @@ function ControlButton({ icon, active, onClick, activeColor = 'orange', label }:
         <motion.div
           initial={{ opacity: 0, y: -5 }}
           animate={{ opacity: 1, y: 0 }}
-          className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 rounded text-xs text-white whitespace-nowrap border"
+          className="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 rounded text-xs whitespace-nowrap border"
           style={{
             backgroundColor: 'var(--ts-card-surface)',
             borderColor: 'var(--ts-border)',
+            color: 'var(--ts-text-primary)',
           }}
         >
           {label}

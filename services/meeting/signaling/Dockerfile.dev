@@ -1,0 +1,39 @@
+# syntax=docker/dockerfile:1
+FROM node:20-alpine AS base
+WORKDIR /app
+
+# Dùng development environment
+ENV NODE_ENV=development
+
+# Bật corepack để dùng pnpm
+RUN corepack enable
+
+# Copy file package để install
+COPY package.json pnpm-lock.yaml* ./
+
+# ---- Install deps ----
+FROM base AS deps
+RUN pnpm install
+
+# ---- Runtime with hot reload ----
+FROM node:20-alpine AS dev
+WORKDIR /app
+ENV NODE_ENV=development
+
+RUN corepack enable
+
+# Copy node_modules từ deps stage
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copy toàn bộ project (optional)
+# Khi chạy với volume mount thì phần này bị override
+COPY . .
+
+# Generate Prisma client
+RUN npx prisma generate || true
+
+# Expose API port
+EXPOSE 40600 40601
+
+# Default command: run in dev mode with hot reload
+CMD ["pnpm", "run", "dev"]
