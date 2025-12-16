@@ -37,8 +37,10 @@ public final class IdentityEvents {
         public String topic() { return "identity.membership.roles.updated"; }
     }
 
-    public record InvitationCreated(UUID orgId, String email, String memberType, Instant occurredAt) implements DomainEvent {
-        public InvitationCreated(UUID orgId, String email, String memberType){ this(orgId, email, memberType, Instant.now()); }
+    public record InvitationCreated(UUID orgId, String email, String memberType, String role, String token, Instant occurredAt) implements DomainEvent {
+        public InvitationCreated(UUID orgId, String email, String memberType, String role, String token){ this(orgId, email, memberType, role, token, Instant.now()); }
+        // Backward compatible constructor
+        public InvitationCreated(UUID orgId, String email, String memberType){ this(orgId, email, memberType, "MEMBER", null, Instant.now()); }
         @Override public String topic(){ return "identity.invitation.created"; }
     }
 

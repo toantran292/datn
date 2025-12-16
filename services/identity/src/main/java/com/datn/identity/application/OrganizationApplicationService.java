@@ -172,6 +172,31 @@ public class OrganizationApplicationService {
         outbox.append(OutboxMessage.create(evt.topic(), toJson(evt)));
     }
 
+    /**
+     * Update member roles (internal use - no actor user required)
+     */
+    @Transactional
+    public void updateMemberRolesInternal(UUID orgId, UUID targetUserId, String newRole) {
+        var m = memberships.find(targetUserId, orgId)
+            .orElseThrow(() -> new IllegalStateException("not_member"));
+
+        // Cannot change owner's role
+        if (m.roles().contains("OWNER")) {
+            throw new IllegalStateException("cannot_change_owner_role");
+        }
+
+        // Validate role
+        if (!newRole.equals("ADMIN") && !newRole.equals("MEMBER")) {
+            throw new IllegalArgumentException("invalid_role");
+        }
+
+        Set<String> newRoles = Set.of(newRole);
+        memberships.save(m.withRoles(newRoles));
+
+        var evt = new IdentityEvents.MembershipRolesUpdated(orgId, targetUserId, newRoles);
+        outbox.append(OutboxMessage.create(evt.topic(), toJson(evt)));
+    }
+
     @Transactional
     public Optional<Organization> findBySlug(String slug) {
         return orgs.findBySlug(slug);

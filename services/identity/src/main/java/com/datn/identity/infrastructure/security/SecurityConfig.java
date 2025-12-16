@@ -72,6 +72,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/auth/reset-password").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/link-google").permitAll()
                         .requestMatchers(HttpMethod.POST, "/invitations/accept").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/invitations/preview").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/internal/**").permitAll() // Allow internal service-to-service calls
                         .requestMatchers(HttpMethod.POST, "/auth/password/set").authenticated()

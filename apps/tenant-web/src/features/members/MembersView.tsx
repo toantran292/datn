@@ -21,13 +21,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -36,15 +29,18 @@ import {
   Search,
   UserPlus,
   MoreVertical,
-  Edit,
-  Trash2,
   Mail,
   Shield,
   FolderKanban,
   X,
   RefreshCw,
+  Copy,
+  UserCircle,
+  Link,
+  UserMinus,
 } from "lucide-react";
 import { InviteMemberModal } from "./components/InviteMemberModal";
+import { ChangeRoleModal } from "./components/ChangeRoleModal";
 import { toast } from "sonner";
 import { useMembersUnified } from "./hooks/useMembersUnified";
 
@@ -52,6 +48,8 @@ type FilterStatus = "all" | "active" | "pending";
 
 export function MembersView() {
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [changeRoleModalOpen, setChangeRoleModalOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<{ id: string; name: string; currentRole: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState<FilterStatus>("all");
@@ -66,6 +64,8 @@ export function MembersView() {
     invite,
     removeMember,
     cancelInvitation,
+    resendInvitation,
+    updateMemberRole,
   } = useMembersUnified();
 
   // Filter logic
@@ -120,9 +120,30 @@ export function MembersView() {
     }
   };
 
-  const handleResendInvitation = async (email: string) => {
-    // TODO: Implement resend API
-    toast.info(`Resending invitation to ${email}...`);
+  const handleResendInvitation = async (id: string, email: string) => {
+    const success = await resendInvitation(id);
+    if (success) {
+      toast.success(`Invitation resent to ${email}`);
+    } else {
+      toast.error(`Failed to resend invitation`);
+    }
+  };
+
+  const handleCopyEmail = (email: string) => {
+    navigator.clipboard.writeText(email);
+    toast.success("Email copied to clipboard");
+  };
+
+  const handleCopyInviteLink = (id: string) => {
+    // TODO: Get actual invite link from API
+    const inviteLink = `${window.location.origin}/invite/${id}`;
+    navigator.clipboard.writeText(inviteLink);
+    toast.success("Invite link copied to clipboard");
+  };
+
+  const handleChangeRole = (id: string, name: string, currentRole: string) => {
+    setSelectedMember({ id, name, currentRole });
+    setChangeRoleModalOpen(true);
   };
 
   const handleRemoveMember = async (id: string, name: string) => {
@@ -314,7 +335,7 @@ export function MembersView() {
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-border shadow-sm">
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/30 hover:bg-muted/30">
@@ -468,65 +489,87 @@ export function MembersView() {
 
                       {/* Actions */}
                       <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8"
-                            >
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <button className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-muted transition-colors">
                               <MoreVertical size={16} />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent
-                            align="end"
-                            className="rounded-xl w-48"
-                          >
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent align="end" className="w-48 p-1">
                             {item.status === "active" ? (
                               <>
-                                <DropdownMenuItem>
-                                  <Edit size={16} className="mr-2" />
-                                  Edit Member
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                  <Shield size={16} className="mr-2" />
-                                  Change Role
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  className="text-destructive focus:text-destructive"
-                                  onClick={() =>
-                                    handleRemoveMember(item.id, item.displayName)
-                                  }
+                                <button
+                                  onClick={() => handleCopyEmail(item.email)}
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted rounded-md transition-colors"
                                 >
-                                  <Trash2 size={16} className="mr-2" />
+                                  <Copy size={16} />
+                                  Copy Email
+                                </button>
+                                <button
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted rounded-md transition-colors"
+                                >
+                                  <UserCircle size={16} />
+                                  View Profile
+                                </button>
+                                <div className="my-1 h-px bg-border" />
+                                <button
+                                  disabled={item.role === "owner"}
+                                  onClick={() =>
+                                    item.role !== "owner" && handleChangeRole(item.id, item.displayName, item.role)
+                                  }
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  <Shield size={16} />
+                                  Change Role
+                                </button>
+                                <div className="my-1 h-px bg-border" />
+                                <button
+                                  disabled={item.role === "owner"}
+                                  onClick={() =>
+                                    item.role !== "owner" && handleRemoveMember(item.id, item.displayName)
+                                  }
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  <UserMinus size={16} />
                                   Remove Member
-                                </DropdownMenuItem>
+                                </button>
                               </>
                             ) : (
                               <>
-                                <DropdownMenuItem
-                                  onClick={() =>
-                                    handleResendInvitation(item.email)
-                                  }
+                                <button
+                                  onClick={() => handleCopyEmail(item.email)}
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted rounded-md transition-colors"
                                 >
-                                  <RefreshCw size={16} className="mr-2" />
+                                  <Copy size={16} />
+                                  Copy Email
+                                </button>
+                                <button
+                                  onClick={() => handleCopyInviteLink(item.id)}
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted rounded-md transition-colors"
+                                >
+                                  <Link size={16} />
+                                  Copy Invite Link
+                                </button>
+                                <div className="my-1 h-px bg-border" />
+                                <button
+                                  onClick={() => handleResendInvitation(item.id, item.email)}
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted rounded-md transition-colors"
+                                >
+                                  <RefreshCw size={16} />
                                   Resend Invitation
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  className="text-destructive focus:text-destructive"
-                                  onClick={() =>
-                                    handleCancelInvitation(item.id, item.email)
-                                  }
+                                </button>
+                                <div className="my-1 h-px bg-border" />
+                                <button
+                                  onClick={() => handleCancelInvitation(item.id, item.email)}
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
                                 >
-                                  <X size={16} className="mr-2" />
+                                  <X size={16} />
                                   Cancel Invitation
-                                </DropdownMenuItem>
+                                </button>
                               </>
                             )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                          </PopoverContent>
+                        </Popover>
                       </TableCell>
                     </TableRow>
                   );
@@ -547,6 +590,27 @@ export function MembersView() {
         open={inviteModalOpen}
         onOpenChange={setInviteModalOpen}
         onInvite={handleInvite}
+      />
+
+      {/* Change Role Modal */}
+      <ChangeRoleModal
+        open={changeRoleModalOpen}
+        onOpenChange={(open) => {
+          setChangeRoleModalOpen(open);
+          if (!open) setSelectedMember(null);
+        }}
+        member={selectedMember}
+        onConfirm={async (newRole) => {
+          if (!selectedMember) return;
+          const success = await updateMemberRole(selectedMember.id, newRole);
+          if (success) {
+            toast.success(`${selectedMember.name}'s role has been changed to ${newRole}`);
+            setChangeRoleModalOpen(false);
+            setSelectedMember(null);
+          } else {
+            toast.error(`Failed to change role`);
+          }
+        }}
       />
     </>
   );

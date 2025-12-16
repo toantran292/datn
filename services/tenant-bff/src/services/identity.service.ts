@@ -56,6 +56,21 @@ export class IdentityService {
     }
   }
 
+  async getInvitationPreview(token: string) {
+    const url = `${this.baseUrl}/invitations/preview?token=${encodeURIComponent(token)}`;
+
+    try {
+      const res = await firstValueFrom(
+        this.http.get(url),
+      );
+
+      return res.data;
+    } catch (err) {
+      console.log({err})
+      throw err.response?.data ?? err;
+    }
+  }
+
   async acceptInvitation(token: string, password?: string) {
     const url = `${this.baseUrl}/invitations/accept`;
 
@@ -78,14 +93,13 @@ export class IdentityService {
     }
   }
 
-  async updateMemberRole(orgId: string, userId: string, roles: string[]) {
-    const url = `${this.baseUrl}/orgs/${orgId}/members/roles`;
+  async updateMemberRole(orgId: string, userId: string, role: string) {
+    const url = `${this.baseUrl}/internal/orgs/${orgId}/members/${userId}/role`;
 
     try {
       const res = await firstValueFrom(
-        this.http.put(url, {
-          userId,
-          roles
+        this.http.patch(url, {
+          role
         }, {
           headers: {
             'X-Internal-Call': 'bff',
@@ -157,6 +171,25 @@ export class IdentityService {
     }
   }
 
+  async resendInvitation(orgId: string, invitationId: string) {
+    const url = `${this.baseUrl}/internal/orgs/${orgId}/invitations/${invitationId}/resend`;
+
+    try {
+      const res = await firstValueFrom(
+        this.http.post(url, {}, {
+          headers: {
+            'X-Internal-Call': 'bff',
+          }
+        }),
+      );
+
+      return res.data;
+    } catch (err) {
+      console.log({err})
+      throw err.response?.data ?? err;
+    }
+  }
+
   /**
    * Get unified list of members and pending invitations
    * Returns both active members and pending invitations in a single response
@@ -187,7 +220,7 @@ export class IdentityService {
         type: 'invitation' as const,
         email: inv.email,
         displayName: inv.email?.split('@')[0],
-        role: inv.memberType?.toLowerCase() || 'member',
+        role: inv.role?.toLowerCase() || 'member',
         status: 'pending' as const,
         invitedAt: inv.createdAt,
       }));

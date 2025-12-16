@@ -1,40 +1,38 @@
-import { useState } from "react";
-import { ModalCore, EModalWidth, EModalPosition, Button, Input } from "@uts/design-system/ui";
-import { Mail, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ModalCore, EModalWidth, EModalPosition, Button } from "@uts/design-system/ui";
+import { Shield, X } from "lucide-react";
 
-interface InviteMemberModalProps {
+interface ChangeRoleModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onInvite: (data: {
-    email: string;
-    role: string;
-  }) => void;
+  member: { id: string; name: string; currentRole: string } | null;
+  onConfirm: (newRole: string) => Promise<void>;
 }
 
-// Role values: ADMIN, MEMBER
 type MemberRole = "ADMIN" | "MEMBER";
 
-export function InviteMemberModal({ open, onOpenChange, onInvite }: InviteMemberModalProps) {
-  const [email, setEmail] = useState("");
+export function ChangeRoleModal({ open, onOpenChange, member, onConfirm }: ChangeRoleModalProps) {
   const [role, setRole] = useState<MemberRole>("MEMBER");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Sync role with member's current role when modal opens
+  useEffect(() => {
+    if (member?.currentRole) {
+      setRole(member.currentRole.toUpperCase() as MemberRole);
+    }
+  }, [member?.currentRole]);
+
   const handleClose = () => {
     onOpenChange(false);
-    setEmail("");
-    setRole("MEMBER");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) return;
+    if (!member) return;
 
     setIsSubmitting(true);
     try {
-      await onInvite({ email, role });
-      setEmail("");
-      setRole("MEMBER");
-      onOpenChange(false);
+      await onConfirm(role);
     } finally {
       setIsSubmitting(false);
     }
@@ -52,10 +50,10 @@ export function InviteMemberModal({ open, onOpenChange, onInvite }: InviteMember
         <div className="flex items-center justify-between px-5 py-4 border-b border-custom-border-200">
           <div>
             <h3 className="text-lg font-semibold text-custom-text-100">
-              Invite Team Member
+              Change Role
             </h3>
             <p className="text-sm text-custom-text-300 mt-0.5">
-              Send an invitation to join your organization
+              Update role for {member?.name}
             </p>
           </div>
           <button
@@ -69,27 +67,10 @@ export function InviteMemberModal({ open, onOpenChange, onInvite }: InviteMember
 
         {/* Content */}
         <div className="px-5 py-5 space-y-5">
-          {/* Email Field */}
-          <div className="space-y-2">
-            <label htmlFor="invite-email" className="text-sm font-medium text-custom-text-200">
-              Email Address
-            </label>
-            <Input
-              id="invite-email"
-              type="email"
-              placeholder="colleague@company.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              inputSize="md"
-              className="w-full"
-              required
-            />
-          </div>
-
           {/* Role Selection */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-custom-text-200">
-              Role
+              Select Role
             </label>
             <div className="grid grid-cols-2 gap-3">
               <button
@@ -166,11 +147,11 @@ export function InviteMemberModal({ open, onOpenChange, onInvite }: InviteMember
             variant="primary"
             size="md"
             loading={isSubmitting}
-            disabled={!email.trim() || isSubmitting}
-            prependIcon={<Mail size={16} />}
+            disabled={isSubmitting || role.toLowerCase() === member?.currentRole}
+            prependIcon={<Shield size={16} />}
             className="bg-[#00C4AB] hover:bg-[#00B09A]"
           >
-            Send Invitation
+            Update Role
           </Button>
         </div>
       </form>

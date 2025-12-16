@@ -2,7 +2,6 @@ package com.datn.identity.interfaces.api;
 
 import com.datn.identity.application.InvitationApplicationService;
 import com.datn.identity.application.OrganizationApplicationService;
-import com.datn.identity.domain.org.MemberType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -49,6 +48,7 @@ public class InternalController {
                         "id", inv.id().toString(),
                         "email", inv.email(),
                         "memberType", inv.memberType().name(),
+                        "role", inv.role(),
                         "createdAt", inv.createdAt().toString()
                 ))
                 .toList();
@@ -91,18 +91,55 @@ public class InternalController {
     }
 
     /**
+     * Update member role (internal use).
+     * Role should be ADMIN or MEMBER.
+     */
+    @PatchMapping("/orgs/{orgId}/members/{userId}/role")
+    public ResponseEntity<?> updateMemberRole(
+            @PathVariable String orgId,
+            @PathVariable String userId,
+            @RequestBody UpdateRoleRequest request) {
+        try {
+            String role = request.role().toUpperCase();
+            orgs.updateMemberRolesInternal(UUID.fromString(orgId), UUID.fromString(userId), role);
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (IllegalStateException e) {
+            if ("not_member".equals(e.getMessage())) {
+                return ResponseEntity.status(404).body(Map.of("error", "member_not_found"));
+            }
+            if ("cannot_change_owner_role".equals(e.getMessage())) {
+                return ResponseEntity.status(403).body(Map.of("error", "cannot_change_owner_role"));
+            }
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (IllegalArgumentException e) {
+            if ("invalid_role".equals(e.getMessage())) {
+                return ResponseEntity.badRequest().body(Map.of("error", "invalid_role", "message", "Role must be ADMIN or MEMBER"));
+            }
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
      * Invite member (internal use).
+     * Role should be ADMIN or MEMBER.
      */
     @PostMapping("/orgs/{orgId}/members/invite")
     public ResponseEntity<?> inviteMember(
             @PathVariable String orgId,
             @RequestBody InviteRequest request) {
         try {
-            MemberType memberType = MemberType.valueOf(request.role().toUpperCase());
+            // Validate role
+            String role = request.role().toUpperCase();
+            if (!role.equals("ADMIN") && !role.equals("MEMBER")) {
+                return ResponseEntity.badRequest().body(Map.of("error", "invalid_role", "message", "Role must be ADMIN or MEMBER"));
+            }
+
             String token = invites.createInvitationInternal(
                     UUID.fromString(orgId),
                     request.email(),
-                    memberType
+                    role
             );
             return ResponseEntity.ok(Map.of("token", token));
         } catch (IllegalStateException e) {
@@ -115,5 +152,31 @@ public class InternalController {
         }
     }
 
+    /**
+     * Resend invitation email (internal use).
+     */
+    @PostMapping("/orgs/{orgId}/invitations/{invitationId}/resend")
+    public ResponseEntity<?> resendInvitation(
+            @PathVariable String orgId,
+            @PathVariable String invitationId) {
+        try {
+            invites.resendInvitationInternal(UUID.fromString(orgId), UUID.fromString(invitationId));
+            return ResponseEntity.ok(Map.of("success", true));
+        } catch (IllegalArgumentException e) {
+            if ("invitation_not_found".equals(e.getMessage())) {
+                return ResponseEntity.status(404).body(Map.of("error", "invitation_not_found"));
+            }
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (IllegalStateException e) {
+            if ("invitation_already_accepted".equals(e.getMessage())) {
+                return ResponseEntity.status(409).body(Map.of("error", "invitation_already_accepted"));
+            }
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     public record InviteRequest(String email, String role) {}
+    public record UpdateRoleRequest(String role) {}
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { apiGet, apiPost, apiDelete } from '@/lib/api';
+import { apiGet, apiPost, apiDelete, apiPatch } from '@/lib/api';
 
 // Unified member type (can be active member or pending invitation)
 export interface UnifiedMember {
@@ -36,6 +36,8 @@ interface UseMembersUnifiedReturn extends UseMembersUnifiedState {
   invite: (data: { email: string; role: string; project_ids?: string[] }) => Promise<boolean>;
   removeMember: (memberId: string) => Promise<boolean>;
   cancelInvitation: (invitationId: string) => Promise<boolean>;
+  resendInvitation: (invitationId: string) => Promise<boolean>;
+  updateMemberRole: (memberId: string, role: string) => Promise<boolean>;
 }
 
 export function useMembersUnified(): UseMembersUnifiedReturn {
@@ -131,11 +133,50 @@ export function useMembersUnified(): UseMembersUnifiedReturn {
     }
   }, []);
 
+  const resendInvitation = useCallback(async (invitationId: string): Promise<boolean> => {
+    try {
+      await apiPost(`/tenant/members/invitations/${invitationId}/resend`, {});
+      return true;
+    } catch (error: any) {
+      console.error('Failed to resend invitation:', error);
+      setState(prev => ({
+        ...prev,
+        error: error.message || 'Failed to resend invitation',
+      }));
+      return false;
+    }
+  }, []);
+
+  const updateMemberRole = useCallback(async (memberId: string, role: string): Promise<boolean> => {
+    try {
+      await apiPatch(`/tenant/members/${memberId}/role`, { role });
+      // Update local state
+      setState(prev => ({
+        ...prev,
+        items: prev.items.map(item =>
+          item.type === 'member' && item.id === memberId
+            ? { ...item, role: role.toLowerCase() }
+            : item
+        ),
+      }));
+      return true;
+    } catch (error: any) {
+      console.error('Failed to update member role:', error);
+      setState(prev => ({
+        ...prev,
+        error: error.message || 'Failed to update member role',
+      }));
+      return false;
+    }
+  }, []);
+
   return {
     ...state,
     refetch: fetchData,
     invite,
     removeMember,
     cancelInvitation,
+    resendInvitation,
+    updateMemberRole,
   };
 }

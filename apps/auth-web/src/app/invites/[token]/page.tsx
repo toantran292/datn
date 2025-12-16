@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Card } from "@uts/design-system/ui";
-import { apiPost } from "@/lib/api";
+import { apiGet, apiPost } from "@/lib/api";
 import { routes } from "@/lib/routes";
 import { toast } from "@/lib/toast";
 import { useAuthStatus } from "@/hooks/use-auth";
@@ -14,11 +14,22 @@ interface InvitePageProps {
   };
 }
 
+interface InvitePreview {
+  id: string;
+  orgId: string;
+  orgName: string;
+  email: string;
+  role: string;
+  memberType: string;
+}
+
 export default function InviteAcceptPage({ params }: InvitePageProps) {
   const router = useRouter();
   const { token } = params;
   const [loading, setLoading] = useState(false);
+  const [loadingPreview, setLoadingPreview] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [inviteData, setInviteData] = useState<InvitePreview | null>(null);
 
   // Check authentication status
   const { data: authData, isLoading: isCheckingAuth } = useAuthStatus();
@@ -31,12 +42,31 @@ export default function InviteAcceptPage({ params }: InvitePageProps) {
     }
   }, [token]);
 
-  // Mock invite data
-  const inviteData = {
-    orgName: "Organization",
-    memberType: "Member",
-    inviterEmail: "admin@company.com"
-  };
+  // Fetch invitation preview
+  useEffect(() => {
+    async function fetchPreview() {
+      try {
+        const data = await apiGet<InvitePreview>(routes.api.invitePreview(token));
+        setInviteData(data);
+      } catch (err: any) {
+        console.error("Failed to load invitation:", err);
+        const errorCode = err?.error || err?.message || "unknown";
+        if (errorCode === "invitation_not_found") {
+          setError("This invitation link is invalid or has expired.");
+        } else if (errorCode === "invitation_already_accepted") {
+          setError("This invitation has already been accepted.");
+        } else {
+          setError("Failed to load invitation details. Please try again.");
+        }
+      } finally {
+        setLoadingPreview(false);
+      }
+    }
+
+    if (token) {
+      fetchPreview();
+    }
+  }, [token]);
 
   const handleAcceptInvitation = async () => {
     setLoading(true);
@@ -54,15 +84,17 @@ export default function InviteAcceptPage({ params }: InvitePageProps) {
       setTimeout(() => {
         router.push(routes.workspaces());
       }, 1500);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to accept invitation:", err);
-      const errorMessage = err instanceof Error ? err.message : "Failed to accept invitation";
+      const errorCode = err?.error || err?.message || "unknown";
 
-      if (errorMessage.includes("400") || errorMessage.includes("404") || errorMessage.includes("expired")) {
+      if (errorCode === "invalid_token" || errorCode === "invitation_not_found") {
         setError("This invitation is no longer valid or has expired.");
+      } else if (errorCode === "already_accepted") {
+        setError("This invitation has already been accepted.");
       } else {
-        setError(errorMessage);
-        toast.error(errorMessage);
+        setError("Failed to accept invitation. Please try again.");
+        toast.error("Failed to accept invitation");
       }
     } finally {
       setLoading(false);
@@ -77,13 +109,13 @@ export default function InviteAcceptPage({ params }: InvitePageProps) {
     router.push(routes.signUp());
   };
 
-  // Loading state while checking authentication
-  if (isCheckingAuth) {
+  // Loading state while checking authentication or fetching preview
+  if (isCheckingAuth || loadingPreview) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-transparent to-teal-50 flex items-center justify-center p-6">
         <Card className="bg-white rounded-2xl p-8 flex flex-col items-center space-y-4">
           <div className="w-8 h-8 border-4 border-[#FF8800] border-t-transparent rounded-full animate-spin" />
-          <p className="text-gray-600 font-medium">Loading...</p>
+          <p className="text-gray-600 font-medium">Loading invitation...</p>
         </Card>
       </div>
     );
@@ -117,7 +149,10 @@ export default function InviteAcceptPage({ params }: InvitePageProps) {
     );
   }
 
-  // If NOT authenticated - show login prompt (like the image)
+  const orgName = inviteData?.orgName || "Organization";
+  const roleName = inviteData?.role === "ADMIN" ? "Administrator" : "Member";
+
+  // If NOT authenticated - show login prompt
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-transparent to-teal-50 flex items-center justify-center p-6">
@@ -136,10 +171,14 @@ export default function InviteAcceptPage({ params }: InvitePageProps) {
             <p className="text-gray-600 text-lg mb-2">
               Sign in to your Unified TeamSpace account
             </p>
-            <p className="text-sm text-gray-500 mt-4 p-3 bg-blue-50 rounded-lg">
-              You&apos;ve been invited to join <span className="font-semibold text-[#FF8800]">{inviteData.orgName}</span>.
-              Please sign in or create an account to accept this invitation.
-            </p>
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+              <p className="text-sm text-gray-700">
+                You&apos;ve been invited to join <span className="font-semibold text-[#FF8800]">{orgName}</span> as a <span className="font-semibold text-[#00C4AB]">{roleName}</span>.
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                Please sign in or create an account to accept this invitation.
+              </p>
+            </div>
           </div>
 
           {/* Action Buttons */}
@@ -222,17 +261,17 @@ export default function InviteAcceptPage({ params }: InvitePageProps) {
             </svg>
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Join {inviteData.orgName}
+            Join {orgName}
           </h1>
           <p className="text-gray-600 leading-relaxed">
-            You&apos;ve been invited to join the organization
+            You&apos;ve been invited to join as a <span className="font-semibold text-[#00C4AB]">{roleName}</span>
           </p>
         </div>
 
         {/* Info */}
         <div className="mb-6 p-4 bg-blue-50 rounded-xl">
           <p className="text-sm text-blue-700">
-            You will be added to the organization with your current account.
+            You will be added to <strong>{orgName}</strong> with your current account.
           </p>
         </div>
 

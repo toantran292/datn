@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactStrictMode: false,
   webpack: (config, { isServer }) => {
     if (isServer) {
       const externalModules = ["jsdom", "isomorphic-dompurify"];

@@ -29,6 +29,7 @@ export const routes = {
     meTenants: () => '/me/tenants',
     createOrg: () => '/orgs',
     acceptInvite: () => '/tenant/public/invitations/accept',
+    invitePreview: (token: string) => `/tenant/public/invitations/preview?token=${encodeURIComponent(token)}`,
     orgAvailability: (slug: string) => `/orgs/availability?slug=${slug}`,
     orgLogoPresignedUrl: (orgId: string) => `/orgs/${orgId}/logo/presigned-url`,
     orgLogo: (orgId: string) => `/orgs/${orgId}/logo`,

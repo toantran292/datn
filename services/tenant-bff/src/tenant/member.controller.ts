@@ -25,9 +25,9 @@ export class MemberController {
   updateRole(
     @Req() req,
     @Param('userId') userId: string,
-    @Body() body: { roles: string[] }
+    @Body() body: { role: string }
   ) {
-    return this.identityService.updateMemberRole(req.orgId, userId, body.roles);
+    return this.identityService.updateMemberRole(req.orgId, userId, body.role);
   }
 
   @Delete(':userId')
@@ -39,5 +39,11 @@ export class MemberController {
   @Delete('invitations/:invitationId')
   cancelInvitation(@Req() req, @Param('invitationId') invitationId: string) {
     return this.identityService.cancelInvitation(req.orgId, invitationId);
+  }
+
+  // Resend invitation email
+  @Post('invitations/:invitationId/resend')
+  resendInvitation(@Req() req, @Param('invitationId') invitationId: string) {
+    return this.identityService.resendInvitation(req.orgId, invitationId);
   }
 }

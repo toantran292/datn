@@ -108,7 +108,8 @@ export function useResetPassword() {
   const router = useRouter();
 
   return useMutation({
-    mutationFn: (data: { token: string; password: string }) => apiPost(routes.api.resetPassword(), data),
+    mutationFn: (data: { token: string; password: string }) =>
+      apiPost(routes.api.resetPassword(), { token: data.token, newPassword: data.password }),
     onSuccess: () => {
       toast.success("Password reset successfully! Please sign in with your new password.");
       router.push(routes.login());

@@ -23,7 +23,8 @@ public class InvitationRepositoryImpl implements InvitationRepository {
                 e.getToken(),
                 e.getCreatedAt(),
                 e.getAcceptedAt(),
-                e.getMemberType()
+                e.getMemberType(),
+                e.getRole()
         );
     }
 
@@ -36,6 +37,7 @@ public class InvitationRepositoryImpl implements InvitationRepository {
         e.setCreatedAt(d.createdAt());
         e.setAcceptedAt(d.acceptedAt());
         e.setMemberType(d.memberType());
+        e.setRole(d.role());
         return e;
     }
     @Override public Optional<Invitation> findByToken(String token){ return repo.findByToken(token).map(InvitationRepositoryImpl::toDomain); }
