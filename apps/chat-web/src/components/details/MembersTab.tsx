@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { UserPlus, Users } from 'lucide-react';
+import { useAppPresence } from '@uts/design-system/ui';
 
 interface Member {
   userId: string;
   displayName?: string;
+  avatarUrl?: string | null;
   status?: 'online' | 'offline';
 }
 
@@ -12,8 +14,8 @@ interface MembersTabProps {
   onLoadMembers?: () => Promise<Member[]>;
 }
 
-// Avatar component
-function Avatar({ name }: { name: string }) {
+// Avatar component with image support
+function Avatar({ name, avatarUrl }: { name: string; avatarUrl?: string | null }) {
   const getAvatarColor = (str: string) => {
     const colors = [
       'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-orange-500',
@@ -22,6 +24,16 @@ function Avatar({ name }: { name: string }) {
     const index = str.charCodeAt(0) % colors.length;
     return colors[index];
   };
+
+  if (avatarUrl) {
+    return (
+      <img
+        src={avatarUrl}
+        alt={name}
+        className="w-9 h-9 rounded-lg flex-shrink-0 object-cover"
+      />
+    );
+  }
 
   return (
     <div className={`
@@ -36,6 +48,9 @@ function Avatar({ name }: { name: string }) {
 export function MembersTab({ roomId, onLoadMembers }: MembersTabProps) {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Get real-time presence from notification service
+  const { isUserOnline, enabled: presenceEnabled } = useAppPresence();
 
   useEffect(() => {
     loadMembers();
@@ -53,6 +68,14 @@ export function MembersTab({ roomId, onLoadMembers }: MembersTabProps) {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Get member's online status - prefer real-time presence, fallback to cached status
+  const getMemberStatus = (member: Member): 'online' | 'offline' => {
+    if (presenceEnabled) {
+      return isUserOnline(member.userId) ? 'online' : 'offline';
+    }
+    return member.status || 'offline';
   };
 
   if (loading) {
@@ -91,6 +114,7 @@ export function MembersTab({ roomId, onLoadMembers }: MembersTabProps) {
           <div className="p-2">
             {members.map((member) => {
               const displayName = member.displayName || `User ${member.userId.slice(0, 8)}`;
+              const status = getMemberStatus(member);
               return (
                 <div
                   key={member.userId}
@@ -98,14 +122,14 @@ export function MembersTab({ roomId, onLoadMembers }: MembersTabProps) {
                 >
                   {/* Avatar */}
                   <div className="relative">
-                    <Avatar name={displayName} />
+                    <Avatar name={displayName} avatarUrl={member.avatarUrl} />
                     {/* Online indicator */}
                     <div
                       className={`
                         absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-custom-background-100
-                        ${member.status === 'online' ? 'bg-green-500' : 'bg-custom-text-400'}
+                        ${status === 'online' ? 'bg-green-500' : 'bg-custom-text-400'}
                       `}
-                      title={member.status === 'online' ? 'Online' : 'Offline'}
+                      title={status === 'online' ? 'Online' : 'Offline'}
                     />
                   </div>
 
@@ -115,7 +139,7 @@ export function MembersTab({ roomId, onLoadMembers }: MembersTabProps) {
                       {displayName}
                     </div>
                     <div className="text-xs text-custom-text-400 truncate">
-                      {member.status === 'online' ? 'Active now' : 'Offline'}
+                      {status === 'online' ? 'Active now' : 'Offline'}
                     </div>
                   </div>
                 </div>

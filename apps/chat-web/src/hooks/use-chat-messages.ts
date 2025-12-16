@@ -11,6 +11,7 @@ export function useChatMessages() {
     handleLoadMessages,
     handleSendMessage,
     currentUserId,
+    usersCache,
   } = useChatContext();
 
   return {
@@ -18,5 +19,6 @@ export function useChatMessages() {
     loadMessages: handleLoadMessages,
     sendMessage: handleSendMessage,
     currentUserId,
+    usersCache,
   };
 }

@@ -19,6 +19,15 @@ export function useChatRooms() {
     handleJoinRoomFromBrowse,
     handleCreateChannel,
     handleCreateDM,
+    // Compose DM
+    isComposingDM,
+    composeUsers,
+    composeDMRoom,
+    startComposingDM,
+    addComposeUser,
+    removeComposeUser,
+    cancelCompose,
+    handleSendComposeMessage,
   } = useChatContext();
 
   return {
@@ -41,5 +50,15 @@ export function useChatRooms() {
     joinRoom: handleJoinRoomFromBrowse,
     createChannel: handleCreateChannel,
     createDM: handleCreateDM,
+
+    // Compose DM
+    isComposingDM,
+    composeUsers,
+    composeDMRoom,
+    startComposingDM,
+    addComposeUser,
+    removeComposeUser,
+    cancelCompose,
+    sendComposeMessage: handleSendComposeMessage,
   };
 }

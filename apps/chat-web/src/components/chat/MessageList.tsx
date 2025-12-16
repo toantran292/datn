@@ -1,16 +1,18 @@
 import { useRef, useEffect, useState } from 'react';
 import { Hash, Lock } from 'lucide-react';
 import type { Message, Room } from '../../types';
+import type { UserInfo } from '../../contexts/ChatContext';
 import { MessageItem } from './MessageItem';
 
 export interface MessageListProps {
-  room: Room;
+  room: Room | null;
   messages: Message[];
   currentUserId: string;
   onOpenThread: (message: Message) => void;
+  usersCache?: Map<string, UserInfo>;
 }
 
-export function MessageList({ room, messages, currentUserId, onOpenThread }: MessageListProps) {
+export function MessageList({ room, messages, currentUserId, onOpenThread, usersCache }: MessageListProps) {
   const [hoveredMessageId, setHoveredMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -26,13 +28,13 @@ export function MessageList({ room, messages, currentUserId, onOpenThread }: Mes
       <div className="flex-1 overflow-y-auto px-5 py-4 vertical-scrollbar scrollbar-sm">
         <div className="flex flex-col items-center justify-center h-full text-center px-4">
           <div className="w-12 h-12 mb-3 rounded-xl bg-custom-background-80 flex items-center justify-center">
-            {room.type === 'dm' ? null : (room.isPrivate ? <Lock size={24} className="text-custom-text-300" /> : <Hash size={24} className="text-custom-text-300" />)}
+            {room?.type === 'dm' ? null : (room?.isPrivate ? <Lock size={24} className="text-custom-text-300" /> : <Hash size={24} className="text-custom-text-300" />)}
           </div>
           <h3 className="font-semibold text-custom-text-100 mb-1">
-            {room.type === 'channel' ? `Welcome to #${room.name}` : 'Start a conversation'}
+            {room?.type === 'channel' ? `Welcome to #${room.name}` : 'Start a conversation'}
           </h3>
           <p className="text-sm text-custom-text-300 max-w-xs">
-            {room.type === 'channel'
+            {room?.type === 'channel'
               ? 'This is the beginning of the channel. Send a message to get started!'
               : 'Send a message to start the conversation.'
             }
@@ -45,16 +47,21 @@ export function MessageList({ room, messages, currentUserId, onOpenThread }: Mes
   return (
     <div className="flex-1 overflow-y-auto px-5 py-4 vertical-scrollbar scrollbar-sm">
       <div className="space-y-0.5">
-        {mainMessages.map((msg) => (
-          <MessageItem
-            key={msg.id}
-            message={msg}
-            isOwn={msg.userId === currentUserId}
-            isHovered={hoveredMessageId === msg.id}
-            onHover={setHoveredMessageId}
-            onOpenThread={onOpenThread}
-          />
-        ))}
+        {mainMessages.map((msg) => {
+          const userInfo = usersCache?.get(msg.userId);
+          return (
+            <MessageItem
+              key={msg.id}
+              message={msg}
+              isOwn={msg.userId === currentUserId}
+              isHovered={hoveredMessageId === msg.id}
+              onHover={setHoveredMessageId}
+              onOpenThread={onOpenThread}
+              senderName={userInfo?.displayName}
+              senderAvatarUrl={userInfo?.avatarUrl}
+            />
+          );
+        })}
         <div ref={messagesEndRef} />
       </div>
     </div>

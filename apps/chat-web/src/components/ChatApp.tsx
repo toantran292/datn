@@ -37,6 +37,7 @@ export function ChatApp() {
       return members.map(m => ({
         userId: m.userId,
         displayName: m.displayName,
+        avatarUrl: m.avatarUrl,
         status: m.isOnline ? 'online' as const : 'offline' as const,
       }));
     } catch (error) {
@@ -58,10 +59,18 @@ export function ChatApp() {
             projectRooms={rooms.projectRooms}
             currentProjectId={rooms.currentProjectId}
             selectedRoomId={rooms.selectedRoomId}
-            onSelectRoom={rooms.selectRoom}
+            isComposingDM={rooms.isComposingDM}
+            onSelectRoom={(roomId) => {
+              // Cancel compose mode when selecting a room
+              if (rooms.isComposingDM) {
+                rooms.cancelCompose();
+              }
+              rooms.selectRoom(roomId);
+            }}
             onCreateOrgChannel={modals.createChannel.openOrg}
             onCreateProjectChannel={modals.createChannel.openProject}
             onCreateDM={modals.createDM.open}
+            onStartComposeDM={rooms.startComposingDM}
             onBrowseOrgChannels={modals.browse.openOrg}
             onBrowseProjectChannels={modals.browse.openProject}
             getDMName={getDMName}
@@ -69,7 +78,7 @@ export function ChatApp() {
         }
         main={
           <ChatWindow
-            room={rooms.selectedRoom}
+            room={rooms.isComposingDM ? rooms.composeDMRoom : rooms.selectedRoom}
             messages={messages.messages}
             currentUserId={messages.currentUserId}
             onSendMessage={messages.sendMessage}
@@ -77,6 +86,13 @@ export function ChatApp() {
             onOpenThread={threads.openThread}
             onToggleSidebar={sidebar.toggle}
             sidebarOpen={sidebar.isOpen}
+            usersCache={messages.usersCache}
+            // Compose mode props
+            isComposing={rooms.isComposingDM}
+            composeUsers={rooms.composeUsers}
+            onComposeUserSelect={rooms.addComposeUser}
+            onComposeUserRemove={rooms.removeComposeUser}
+            onComposeSendMessage={rooms.sendComposeMessage}
           />
         }
         details={
@@ -95,6 +111,7 @@ export function ChatApp() {
                     onSendReply={threads.sendReply}
                     onClose={sidebar.close}
                     onLoadThread={threads.loadThread}
+                    usersCache={messages.usersCache}
                   />
                 ) : (
                   <div style={{ padding: '32px', textAlign: 'center', color: '#999' }}>

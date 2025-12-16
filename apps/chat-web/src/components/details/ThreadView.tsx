@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Send, MessageSquare } from 'lucide-react';
 import type { Message } from '../../types';
+import type { UserInfo } from '../../contexts/ChatContext';
 
 interface ThreadViewProps {
   parentMessage: Message;
@@ -9,10 +10,11 @@ interface ThreadViewProps {
   onSendReply: (content: string) => void;
   onClose: () => void;
   onLoadThread: (messageId: string) => void;
+  usersCache?: Map<string, UserInfo>;
 }
 
-// Avatar component
-function Avatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md' }) {
+// Avatar component with image support
+function Avatar({ name, avatarUrl, size = 'md' }: { name: string; avatarUrl?: string | null; size?: 'sm' | 'md' }) {
   const getAvatarColor = (str: string) => {
     const colors = [
       'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-orange-500',
@@ -26,6 +28,16 @@ function Avatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md' }) {
     sm: 'w-6 h-6 text-xs',
     md: 'w-8 h-8 text-sm',
   };
+
+  if (avatarUrl) {
+    return (
+      <img
+        src={avatarUrl}
+        alt={name}
+        className={`${sizeClasses[size]} rounded-lg flex-shrink-0 object-cover`}
+      />
+    );
+  }
 
   return (
     <div className={`
@@ -43,6 +55,7 @@ export function ThreadView({
   currentUserId,
   onSendReply,
   onLoadThread,
+  usersCache,
 }: ThreadViewProps) {
   const [replyInput, setReplyInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -67,8 +80,9 @@ export function ThreadView({
   };
 
   const renderMessage = (msg: Message, isParent = false) => {
-    const isOwn = msg.userId === currentUserId;
-    const senderName = isOwn ? 'You' : `User ${msg.userId.slice(0, 6)}`;
+    const userInfo = usersCache?.get(msg.userId);
+    const senderName = userInfo?.displayName || `User ${msg.userId.slice(0, 6)}`;
+    const avatarUrl = userInfo?.avatarUrl;
     const timestamp = new Date(msg.sentAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     return (
@@ -79,7 +93,7 @@ export function ThreadView({
           ${isParent ? 'bg-custom-background-90 border-l-4 border-custom-primary-100' : 'hover:bg-custom-background-90'}
         `}
       >
-        <Avatar name={senderName} size={isParent ? 'md' : 'sm'} />
+        <Avatar name={senderName} avatarUrl={avatarUrl} size={isParent ? 'md' : 'sm'} />
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline gap-2 mb-0.5">
             <span className="font-semibold text-custom-text-100 text-sm">

@@ -1,10 +1,14 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { Ctx, type RequestContext } from '../common/context/context.decorator';
 import { IdentityService } from '../common/identity/identity.service';
+import { PresenceService } from '../common/presence/presence.service';
 
 @Controller('internal')
 export class InternalController {
-  constructor(private readonly identityService: IdentityService) {}
+  constructor(
+    private readonly identityService: IdentityService,
+    private readonly presenceService: PresenceService,
+  ) {}
 
   /**
    * List users in the organization
@@ -24,12 +28,18 @@ export class InternalController {
       return [];
     }
 
-    // Extract user info from membership data
+    // Get user IDs and check online status
+    const userIds = members.items.map(item => item.user.id);
+    const onlineStatus = this.presenceService.getOnlineStatus(userIds);
+
+    // Extract user info from membership data with online status
     return members.items.map(item => ({
       userId: item.user.id,
       email: item.user.email,
       displayName: item.user.display_name || item.user.email.split('@')[0],
       disabled: item.user.disabled,
+      avatarUrl: item.user.avatar_url || null,
+      isOnline: onlineStatus.get(item.user.id) ?? false,
     }));
   }
 }

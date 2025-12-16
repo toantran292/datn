@@ -69,11 +69,36 @@ class ApiService {
     return response.json();
   }
 
+  /**
+   * Find existing DM with the given set of users
+   * Returns the DM room if exists, null otherwise
+   */
+  async findExistingDM(userIds: string[]): Promise<Room | null> {
+    const params = new URLSearchParams();
+    params.append('user_ids', userIds.join(','));
+
+    const response = await fetch(`${this.baseURL}/rooms/dm/find?${params}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
+
+    if (response.status === 404) {
+      return null;
+    }
+    if (!response.ok) throw new Error('Failed to find DM');
+    return response.json();
+  }
+
   async listOrgUsers(): Promise<Array<{
     userId: string;
     email: string;
     displayName: string;
     disabled: boolean;
+    avatarUrl?: string | null;
+    isOnline?: boolean;
   }>> {
     // orgId is taken from context (X-Org-ID header set by Edge from JWT)
     const response = await fetch(`${this.baseURL}/internal/users`, {
@@ -244,6 +269,7 @@ class ApiService {
     lastSeenMessageId: string | null;
     email: string | null;
     displayName: string;
+    avatarUrl: string | null;
     disabled: boolean;
     isOnline: boolean;
   }>> {

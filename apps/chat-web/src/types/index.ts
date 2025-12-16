@@ -1,3 +1,10 @@
+export interface RoomMember {
+  userId: string;
+  displayName: string;
+  avatarUrl?: string | null;
+  isOnline?: boolean;
+}
+
 export interface Room {
   id: string;
   name?: string | null; // Backend may return undefined
@@ -5,6 +12,7 @@ export interface Room {
   isPrivate: boolean;
   type: 'channel' | 'dm';
   projectId?: string | null; // null = org-level, string = project-specific
+  members?: RoomMember[]; // For DMs - list of other members (excluding current user)
 }
 
 export interface Message {

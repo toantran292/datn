@@ -8,6 +8,19 @@ import { socketService } from "../services/socket";
 import { useAppHeaderContext } from "@uts/design-system/ui";
 
 // ============= Types =============
+export interface ComposeUser {
+  userId: string;
+  displayName: string;
+  email: string;
+}
+
+export interface UserInfo {
+  userId: string;
+  displayName: string;
+  avatarUrl?: string | null;
+  isOnline?: boolean;
+}
+
 interface ChatContextValue {
   // State
   rooms: Room[];
@@ -15,6 +28,7 @@ interface ChatContextValue {
   selectedRoom: Room | null;
   messages: Message[];
   connectionStatus: string;
+  usersCache: Map<string, UserInfo>;
 
   // Project context
   currentProjectId: string | null | undefined;
@@ -37,6 +51,11 @@ interface ChatContextValue {
 
   // Create channel scope
   createChannelScope: "org" | "project";
+
+  // Compose DM mode
+  isComposingDM: boolean;
+  composeUsers: ComposeUser[];
+  composeDMRoom: Room | null;
 
   // Actions - Rooms
   loadRooms: () => Promise<void>;
@@ -67,6 +86,13 @@ interface ChatContextValue {
   setBrowseScope: (scope: "org" | "project") => void;
   setCreateChannelScope: (scope: "org" | "project") => void;
 
+  // Actions - Compose DM
+  startComposingDM: () => void;
+  addComposeUser: (user: ComposeUser) => void;
+  removeComposeUser: (userId: string) => void;
+  cancelCompose: () => void;
+  handleSendComposeMessage: (content: string) => Promise<void>;
+
   // User
   currentUserId: string;
 }
@@ -82,6 +108,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [connectionStatus, setConnectionStatus] = useState("disconnected");
+  const [usersCache, setUsersCache] = useState<Map<string, UserInfo>>(new Map());
 
   // Right Sidebar state
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -95,6 +122,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [showCreateDMModal, setShowCreateDMModal] = useState(false);
   const [browseScope, setBrowseScope] = useState<"org" | "project">("org");
   const [createChannelScope, setCreateChannelScope] = useState<"org" | "project">("org");
+
+  // Compose DM mode
+  const [isComposingDM, setIsComposingDM] = useState(false);
+  const [composeUsers, setComposeUsers] = useState<ComposeUser[]>([]);
+  const [composeDMRoom, setComposeDMRoom] = useState<Room | null>(null);
 
   // Refs to access latest values in WebSocket callbacks
   const selectedRoomIdRef = useRef<string | null>(null);
@@ -205,9 +237,29 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           },
           onUserOnline: (data) => {
             console.log("[ChatContext] User online:", data.userId);
+            // Update online status for DM members in real-time
+            setRooms((prev) =>
+              prev.map((room) => {
+                if (room.type !== "dm" || !room.members) return room;
+                const updatedMembers = room.members.map((member) =>
+                  member.userId === data.userId ? { ...member, isOnline: true } : member
+                );
+                return { ...room, members: updatedMembers };
+              })
+            );
           },
           onUserOffline: (data) => {
             console.log("[ChatContext] User offline:", data.userId);
+            // Update offline status for DM members in real-time
+            setRooms((prev) =>
+              prev.map((room) => {
+                if (room.type !== "dm" || !room.members) return room;
+                const updatedMembers = room.members.map((member) =>
+                  member.userId === data.userId ? { ...member, isOnline: false } : member
+                );
+                return { ...room, members: updatedMembers };
+              })
+            );
           },
         });
 
@@ -230,7 +282,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     };
   }, [user]);
 
-  // Auto-load messages when room is selected
+  // Auto-load messages and room members when room is selected
   useEffect(() => {
     if (!selectedRoomId) {
       // When no room is selected, also clear thread state
@@ -243,16 +295,35 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setActiveThread(null);
     setThreadMessages([]);
 
-    const loadMessages = async () => {
+    const loadMessagesAndMembers = async () => {
       try {
-        const result = await api.listMessages(selectedRoomId, 50);
-        setMessages(result.items);
+        // Load messages and members in parallel
+        const [messagesResult, members] = await Promise.all([
+          api.listMessages(selectedRoomId, 50),
+          api.listRoomMembers(selectedRoomId),
+        ]);
+
+        setMessages(messagesResult.items);
+
+        // Cache user info from room members
+        setUsersCache((prev) => {
+          const newCache = new Map(prev);
+          members.forEach((member) => {
+            newCache.set(member.userId, {
+              userId: member.userId,
+              displayName: member.displayName,
+              avatarUrl: member.avatarUrl,
+              isOnline: member.isOnline,
+            });
+          });
+          return newCache;
+        });
       } catch (error) {
-        console.error("Failed to load messages:", error);
+        console.error("Failed to load messages or members:", error);
       }
     };
 
-    loadMessages();
+    loadMessagesAndMembers();
   }, [selectedRoomId]);
 
   // Cleanup
@@ -475,6 +546,115 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setSidebarOpen(!sidebarOpen);
   };
 
+  // ===== Actions - Compose DM =====
+  const startComposingDM = () => {
+    setIsComposingDM(true);
+    setComposeUsers([]);
+    setComposeDMRoom(null);
+    setSelectedRoomId(null);
+    setMessages([]);
+  };
+
+  const addComposeUser = async (user: ComposeUser) => {
+    const newUsers = [...composeUsers, user];
+    setComposeUsers(newUsers);
+
+    // Check if DM already exists with these users
+    const userIds = newUsers.map((u) => u.userId);
+    try {
+      const existingRoom = await api.findExistingDM(userIds);
+      if (existingRoom) {
+        setComposeDMRoom(existingRoom);
+        // Load messages for the existing DM
+        const result = await api.listMessages(existingRoom.id, 50);
+        setMessages(result.items);
+      } else {
+        setComposeDMRoom(null);
+        setMessages([]);
+      }
+    } catch (error) {
+      console.error("Failed to check existing DM:", error);
+      setComposeDMRoom(null);
+      setMessages([]);
+    }
+  };
+
+  const removeComposeUser = async (userId: string) => {
+    const newUsers = composeUsers.filter((u) => u.userId !== userId);
+    setComposeUsers(newUsers);
+
+    if (newUsers.length === 0) {
+      setComposeDMRoom(null);
+      setMessages([]);
+      return;
+    }
+
+    // Re-check if DM exists with remaining users
+    const userIds = newUsers.map((u) => u.userId);
+    try {
+      const existingRoom = await api.findExistingDM(userIds);
+      if (existingRoom) {
+        setComposeDMRoom(existingRoom);
+        const result = await api.listMessages(existingRoom.id, 50);
+        setMessages(result.items);
+      } else {
+        setComposeDMRoom(null);
+        setMessages([]);
+      }
+    } catch (error) {
+      console.error("Failed to check existing DM:", error);
+      setComposeDMRoom(null);
+      setMessages([]);
+    }
+  };
+
+  const cancelCompose = () => {
+    setIsComposingDM(false);
+    setComposeUsers([]);
+    setComposeDMRoom(null);
+    setMessages([]);
+  };
+
+  const handleSendComposeMessage = async (content: string) => {
+    if (composeUsers.length === 0) return;
+
+    const userIds = composeUsers.map((u) => u.userId);
+
+    if (composeDMRoom) {
+      // DM exists - send message to existing room
+      socketService.sendMessage(composeDMRoom.id, content);
+      // Transition to normal chat mode
+      setSelectedRoomId(composeDMRoom.id);
+      setIsComposingDM(false);
+      setComposeUsers([]);
+      setComposeDMRoom(null);
+      // Add room to list if not already there
+      setRooms((prev) => {
+        if (prev.some((r) => r.id === composeDMRoom.id)) return prev;
+        return [composeDMRoom, ...prev];
+      });
+    } else {
+      // Create new DM and send message
+      try {
+        const room = await api.createDM(userIds);
+        // Send message to new room
+        socketService.sendMessage(room.id, content);
+        // Transition to normal chat mode
+        setSelectedRoomId(room.id);
+        setIsComposingDM(false);
+        setComposeUsers([]);
+        setComposeDMRoom(null);
+        // Add room to list
+        setRooms((prev) => {
+          if (prev.some((r) => r.id === room.id)) return prev;
+          return [room, ...prev];
+        });
+      } catch (error) {
+        console.error("Failed to create DM:", error);
+      }
+    }
+  };
+
   // ===== Computed Values =====
   const selectedRoom = rooms.find((r) => r.id === selectedRoomId) || null;
   const currentUserId = user?.user_id || "";
@@ -491,6 +671,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     selectedRoom,
     messages,
     connectionStatus,
+    usersCache,
 
     // Project context
     currentProjectId,
@@ -512,6 +693,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     browseScope,
     // Create channel scope
     createChannelScope,
+
+    // Compose DM mode
+    isComposingDM,
+    composeUsers,
+    composeDMRoom,
 
     // Actions - Rooms
     loadRooms,
@@ -542,6 +728,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
     setBrowseScope,
     setCreateChannelScope,
+
+    // Actions - Compose DM
+    startComposingDM,
+    addComposeUser,
+    removeComposeUser,
+    cancelCompose,
+    handleSendComposeMessage,
 
     // User
     currentUserId,

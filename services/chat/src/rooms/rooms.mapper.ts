@@ -1,8 +1,21 @@
 import { plainToInstance } from 'class-transformer';
-import { RoomResponseDto } from './dto/room.response.dto';
+import { RoomResponseDto, RoomMemberDto } from './dto/room.response.dto';
 import { RoomEntity } from './repositories/room.repository';
 
-export function toRoomResponseDto(row: RoomEntity) {
+interface RoomWithMembers extends RoomEntity {
+  members?: Array<{
+    userId: string;
+    displayName: string;
+    avatarUrl: string | null;
+    isOnline: boolean;
+  }>;
+}
+
+export function toRoomResponseDto(row: RoomWithMembers) {
+  const members = row.members?.map(m =>
+    plainToInstance(RoomMemberDto, m, { excludeExtraneousValues: true })
+  );
+
   return plainToInstance(
     RoomResponseDto,
     {
@@ -12,6 +25,7 @@ export function toRoomResponseDto(row: RoomEntity) {
       name: row.name,
       type: row.type || 'channel', // Default to 'channel' for backward compatibility
       projectId: row.projectId || null,
+      members,
     },
     { excludeExtraneousValues: true },
   );

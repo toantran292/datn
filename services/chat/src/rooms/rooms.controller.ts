@@ -76,6 +76,31 @@ export class RoomsController {
     };
   }
 
+  @Get('dm/find')
+  async findExistingDm(
+    @Ctx() ctx: RequestContext,
+    @Query('user_ids') userIdsParam: string,
+  ) {
+    // Parse comma-separated user IDs
+    const userIds = userIdsParam?.split(',').filter(Boolean) || [];
+    if (userIds.length === 0) {
+      return null;
+    }
+
+    const room = await this.roomsService.findExistingDm(userIds, ctx.orgId, ctx.userId);
+    if (!room) {
+      return null;
+    }
+
+    return {
+      id: room.id,
+      orgId: room.orgId,
+      isPrivate: room.isPrivate,
+      name: room.name,
+      type: room.type,
+    };
+  }
+
   @Post('channel')
   async createChannel(
     @Ctx() ctx: RequestContext,

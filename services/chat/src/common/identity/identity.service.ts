@@ -6,8 +6,31 @@ export interface UserInfo {
   email: string;
   display_name: string;
   disabled: boolean;
+  avatar_url?: string | null;
 }
 
+// Raw response from Identity service /internal/orgs/{orgId}/members
+export interface IdentityMemberInfo {
+  id: string;
+  email: string;
+  display_name: string | null;
+  role: string;
+  status: string;
+  avatar_url: string | null;
+  joined_at: string;
+  roles: string[];
+  member_type: string;
+}
+
+export interface IdentityPagedMembers {
+  items: IdentityMemberInfo[];
+  page: number;
+  size: number;
+  total: number;
+  totalPages: number;
+}
+
+// Transformed format for internal use
 export interface MemberInfo {
   user: UserInfo;
   membership: {
@@ -108,17 +131,41 @@ export class IdentityService {
         return null;
       }
 
-      const data: PagedMembers = await response.json();
+      const rawData: IdentityPagedMembers = await response.json();
 
-      // Update cache with fetched users
-      data.items.forEach(item => {
-        this.userCache.set(item.user.id, {
-          data: item.user,
+      // Transform Identity service response to internal format
+      const items: MemberInfo[] = rawData.items.map(item => {
+        const userInfo: UserInfo = {
+          id: item.id,
+          email: item.email,
+          display_name: item.display_name || item.email.split('@')[0],
+          disabled: item.status !== 'ACTIVE',
+          avatar_url: item.avatar_url,
+        };
+
+        // Update cache
+        this.userCache.set(item.id, {
+          data: userInfo,
           expiry: Date.now() + this.CACHE_TTL,
         });
+
+        return {
+          user: userInfo,
+          membership: {
+            user_id: item.id,
+            org_id: orgId,
+            roles: item.roles || [item.role],
+            member_type: item.member_type,
+          },
+        };
       });
 
-      return data;
+      return {
+        items,
+        page: rawData.page,
+        size: rawData.size,
+        total: rawData.total,
+      };
     } catch (error) {
       this.logger.error('Failed to fetch org members:', error);
       return null;
@@ -162,6 +209,7 @@ export class IdentityService {
         email: string;
         display_name: string;
         disabled: boolean;
+        avatar_url?: string | null;
       }> = await response.json();
 
       // Update cache and build result map
@@ -171,6 +219,7 @@ export class IdentityService {
           email: user.email,
           display_name: user.display_name,
           disabled: user.disabled,
+          avatar_url: user.avatar_url ?? null,
         };
 
         // Update cache

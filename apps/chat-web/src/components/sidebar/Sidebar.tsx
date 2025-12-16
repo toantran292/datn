@@ -12,10 +12,12 @@ export interface SidebarProps {
   projectRooms: Room[];
   currentProjectId: string | null | undefined;
   selectedRoomId: string | null;
+  isComposingDM?: boolean;
   onSelectRoom: (roomId: string) => void;
   onCreateOrgChannel: () => void;
   onCreateProjectChannel: () => void;
   onCreateDM: () => void;
+  onStartComposeDM?: () => void;
   onBrowseOrgChannels: () => void;
   onBrowseProjectChannels: () => void;
   getDMName: (room: Room) => string;
@@ -27,10 +29,12 @@ export function Sidebar({
   projectRooms,
   currentProjectId,
   selectedRoomId,
+  isComposingDM = false,
   onSelectRoom,
   onCreateOrgChannel,
   onCreateProjectChannel,
   onCreateDM,
+  onStartComposeDM,
   onBrowseOrgChannels,
   onBrowseProjectChannels,
   getDMName,
@@ -131,15 +135,26 @@ export function Sidebar({
           title="Direct Messages"
           icon={<Users size={14} />}
           defaultExpanded={true}
-          onAddClick={onCreateDM}
+          onAddClick={onStartComposeDM || onCreateDM}
           isEmpty={dms.length === 0}
           emptyMessage="No conversations yet"
         >
+          {/* Show "New Message" item when composing */}
+          {isComposingDM && (
+            <div className="px-2 mb-1">
+              <div className="flex items-center gap-2 px-2 py-1.5 bg-custom-primary-100/10 rounded-md">
+                <div className="w-5 h-5 rounded bg-custom-primary-100/20 flex items-center justify-center">
+                  <span className="text-custom-primary-100 text-xs">+</span>
+                </div>
+                <span className="text-sm font-medium text-custom-primary-100">New Message</span>
+              </div>
+            </div>
+          )}
           {dms.map((room) => (
             <DMItem
               key={room.id}
               room={room}
-              selected={selectedRoomId === room.id}
+              selected={!isComposingDM && selectedRoomId === room.id}
               onClick={() => onSelectRoom(room.id)}
               displayName={getDMName(room)}
             />

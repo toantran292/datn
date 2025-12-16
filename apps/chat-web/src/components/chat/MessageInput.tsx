@@ -3,13 +3,14 @@ import { Send } from 'lucide-react';
 import type { Room } from '../../types';
 
 export interface MessageInputProps {
-  room: Room;
+  room: Room | null;
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
+  placeholder?: string;
 }
 
-export function MessageInput({ room, value, onChange, onSubmit }: MessageInputProps) {
+export function MessageInput({ room, value, onChange, onSubmit, placeholder }: MessageInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -17,6 +18,12 @@ export function MessageInput({ room, value, onChange, onSubmit }: MessageInputPr
     if (!value.trim()) return;
     onSubmit();
     inputRef.current?.focus();
+  };
+
+  const getPlaceholder = () => {
+    if (placeholder) return placeholder;
+    if (!room) return 'Write a message...';
+    return `Message ${room.type === 'channel' ? '#' + (room.name || 'channel') : room.name || 'conversation'}`;
   };
 
   return (
@@ -30,7 +37,7 @@ export function MessageInput({ room, value, onChange, onSubmit }: MessageInputPr
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder={`Message ${room.type === 'channel' ? '#' + (room.name || 'channel') : room.name || 'conversation'}`}
+          placeholder={getPlaceholder()}
           className="flex-1 py-2.5 bg-transparent text-custom-text-100 placeholder:text-custom-text-400 focus:outline-none text-[15px]"
         />
         <button

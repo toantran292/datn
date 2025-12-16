@@ -140,10 +140,10 @@ export class RoomsRepository {
     const query = this.memberRepo
       .createQueryBuilder('rm')
       .innerJoinAndSelect('rm.room', 'r')
-      .where('rm.user_id = :userId', { userId })
-      .andWhere('rm.org_id = :orgId', { orgId })
+      .where('rm.userId = :userId', { userId })
+      .andWhere('rm.orgId = :orgId', { orgId })
       .andWhere('r.status = :status', { status: 'ACTIVE' })
-      .orderBy('rm.joined_at', 'DESC')
+      .orderBy('rm.joinedAt', 'DESC')
       .skip(offset)
       .take(limit);
 
@@ -182,11 +182,11 @@ export class RoomsRepository {
     const query = this.memberRepo
       .createQueryBuilder('rm')
       .innerJoinAndSelect('rm.room', 'r')
-      .where('rm.user_id = :userId', { userId })
-      .andWhere('rm.org_id = :orgId', { orgId })
-      .andWhere('r.project_id = :projectId', { projectId })
+      .where('rm.userId = :userId', { userId })
+      .andWhere('rm.orgId = :orgId', { orgId })
+      .andWhere('r.projectId = :projectId', { projectId })
       .andWhere('r.status = :status', { status: 'ACTIVE' })
-      .orderBy('rm.joined_at', 'DESC')
+      .orderBy('rm.joinedAt', 'DESC')
       .skip(offset)
       .take(limit);
 
@@ -224,11 +224,11 @@ export class RoomsRepository {
     const query = this.memberRepo
       .createQueryBuilder('rm')
       .innerJoinAndSelect('rm.room', 'r')
-      .where('rm.user_id = :userId', { userId })
-      .andWhere('rm.org_id = :orgId', { orgId })
+      .where('rm.userId = :userId', { userId })
+      .andWhere('rm.orgId = :orgId', { orgId })
       .andWhere('r.type = :type', { type: 'dm' })
       .andWhere('r.status = :status', { status: 'ACTIVE' })
-      .orderBy('rm.joined_at', 'DESC')
+      .orderBy('rm.joinedAt', 'DESC')
       .skip(offset)
       .take(limit);
 

@@ -59,7 +59,7 @@ export class RoomsService {
     }
 
     // Check if DM already exists with these exact members
-    const existingDm = await this.findExistingDm(allUserIds, orgId);
+    const existingDm = await this.findExistingDm(allUserIds, orgId, undefined);
     if (existingDm) {
       return existingDm;
     }
@@ -159,11 +159,15 @@ export class RoomsService {
   }
 
   /**
-   * Find existing DM with exact same members
+   * Find existing DM with exact same members (public API)
+   * Used by controller to check if DM exists before creating
    */
-  private async findExistingDm(userIds: string[], orgId: string): Promise<RoomEntity | null> {
+  async findExistingDm(userIds: string[], orgId: string, currentUserId?: string): Promise<RoomEntity | null> {
+    // Include current user in the member list if provided
+    const allUserIds = currentUserId ? [...new Set([currentUserId, ...userIds])] : userIds;
+
     // Get all rooms for the first user
-    const firstUserId = userIds[0];
+    const firstUserId = allUserIds[0];
     const { items: joinedRooms } = await this.listJoinedRooms(firstUserId, orgId, { limit: 1000 });
 
     // Filter DMs only
@@ -175,7 +179,7 @@ export class RoomsService {
       const dmMemberIds = new Set(members.map(m => m.userId));
 
       // Check if member sets are identical
-      if (dmMemberIds.size === userIds.length && userIds.every(id => dmMemberIds.has(id))) {
+      if (dmMemberIds.size === allUserIds.length && allUserIds.every(id => dmMemberIds.has(id))) {
         return dm;
       }
     }
@@ -241,6 +245,7 @@ export class RoomsService {
   /**
    * List DMs for a user in an org
    * - Uses optimized user_dms table
+   * - Includes member info for each DM (excluding current user)
    */
   async listDms(
     userId: string,
@@ -252,7 +257,45 @@ export class RoomsService {
       pagingState: opts.pagingState,
     });
 
-    // Convert UserRoomEntity to RoomEntity format
+    // Get all room IDs to fetch members
+    const roomIds = result.items.map(ur => ur.roomId);
+
+    // Fetch members for all DMs in parallel
+    const membersMap = new Map<string, Array<{ userId: string; displayName: string; avatarUrl: string | null; isOnline: boolean }>>();
+
+    if (roomIds.length > 0) {
+      // Get all unique user IDs across all DMs
+      const allMemberUserIds = new Set<string>();
+      const roomMembersRaw = new Map<string, string[]>();
+
+      await Promise.all(roomIds.map(async (roomId) => {
+        const { items: members } = await this.roomMembersRepo.findMembersByRoom(roomId, { limit: 100 });
+        const memberUserIds = members.map(m => m.userId).filter(id => id !== userId); // Exclude current user
+        roomMembersRaw.set(roomId, memberUserIds);
+        memberUserIds.forEach(id => allMemberUserIds.add(id));
+      }));
+
+      // Fetch user info for all members at once
+      const userIds = Array.from(allMemberUserIds);
+      const usersInfo = await this.identityService.getUsersFromOrg(orgId, userIds);
+      const onlineStatus = this.presenceService.getOnlineStatus(userIds);
+
+      // Build members map for each room
+      for (const [roomId, memberUserIds] of roomMembersRaw) {
+        const members = memberUserIds.map(memberId => {
+          const userInfo = usersInfo.get(memberId);
+          return {
+            userId: memberId,
+            displayName: userInfo?.display_name || `User ${memberId.slice(0, 8)}`,
+            avatarUrl: userInfo?.avatar_url || null,
+            isOnline: onlineStatus.get(memberId) ?? false,
+          };
+        });
+        membersMap.set(roomId, members);
+      }
+    }
+
+    // Convert UserRoomEntity to RoomEntity format with members
     return {
       items: result.items.map(ur => ({
         id: ur.roomId,
@@ -261,6 +304,7 @@ export class RoomsService {
         name: ur.roomName,
         type: 'dm' as const,
         projectId: null,
+        members: membersMap.get(ur.roomId) || [],
       })),
       pagingState: result.pagingState ?? null,
     };
@@ -502,6 +546,7 @@ export class RoomsService {
         // User info from Identity
         email: userInfo?.email ?? null,
         displayName: userInfo?.display_name ?? `User ${memberUserId.slice(0, 8)}`,
+        avatarUrl: userInfo?.avatar_url ?? null,
         disabled: userInfo?.disabled ?? false,
         // Online status
         isOnline: onlineStatus.get(memberUserId) ?? false,
