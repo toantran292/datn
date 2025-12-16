@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Download, X, ZoomIn, FileText, Maximize2, Sparkles } from 'lucide-react';
+import { Download, X, ZoomIn, FileText, Maximize2, Sparkles, Music, Play, Pause } from 'lucide-react';
 import type { Attachment } from '../../types';
 import { formatFileSize, getFileIcon, isImageFile } from '../../services/files';
 import { DocumentSummaryModal } from '../modals/DocumentSummaryModal';
@@ -8,6 +8,11 @@ import { DocumentSummaryModal } from '../modals/DocumentSummaryModal';
 // Check if file is a PDF
 function isPdfFile(mimeType: string): boolean {
   return mimeType === 'application/pdf';
+}
+
+// Check if file is audio
+function isAudioFile(mimeType: string): boolean {
+  return mimeType.startsWith('audio/');
 }
 
 // Check if file can be summarized (documents that AI can read)
@@ -23,6 +28,10 @@ function canSummarize(mimeType: string): boolean {
     'application/vnd.ms-excel',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   ];
+  // Audio files can be transcribed
+  if (mimeType.startsWith('audio/')) {
+    return true;
+  }
   return summarizableTypes.includes(mimeType);
 }
 
@@ -140,6 +149,163 @@ function PdfPreviewModal({
   );
 }
 
+// Audio Player component
+function AudioPlayer({
+  src,
+  fileName,
+  fileSize,
+  compact,
+  roomId,
+  attachmentId,
+  onSummarize,
+}: {
+  src: string;
+  fileName: string;
+  fileSize: number;
+  compact?: boolean;
+  roomId?: string;
+  attachmentId?: string;
+  onSummarize?: () => void;
+}) {
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const canTranscribe = !!roomId && !!attachmentId;
+
+  const formatTime = (time: number) => {
+    if (isNaN(time)) return '0:00';
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
+  const togglePlay = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    if (audioRef.current) {
+      setCurrentTime(audioRef.current.currentTime);
+    }
+  };
+
+  const handleLoadedMetadata = () => {
+    if (audioRef.current) {
+      setDuration(audioRef.current.duration);
+    }
+  };
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const time = parseFloat(e.target.value);
+    if (audioRef.current) {
+      audioRef.current.currentTime = time;
+      setCurrentTime(time);
+    }
+  };
+
+  const handleEnded = () => {
+    setIsPlaying(false);
+    setCurrentTime(0);
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+    }
+  };
+
+  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+  return (
+    <div className={`bg-custom-background-90 border border-custom-border-200 rounded-lg overflow-hidden ${compact ? 'w-[200px]' : 'w-[280px]'}`}>
+      <audio
+        ref={audioRef}
+        src={src}
+        onTimeUpdate={handleTimeUpdate}
+        onLoadedMetadata={handleLoadedMetadata}
+        onEnded={handleEnded}
+        preload="metadata"
+      />
+
+      <div className="p-3">
+        {/* Header with icon and file info */}
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+            <Music className="text-purple-500" size={16} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-custom-text-100 truncate" title={fileName}>
+              {fileName}
+            </p>
+            <p className="text-[10px] text-custom-text-400">{formatFileSize(fileSize)}</p>
+          </div>
+        </div>
+
+        {/* Player controls */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={togglePlay}
+            className="w-8 h-8 rounded-full bg-custom-primary-100 hover:bg-custom-primary-200 flex items-center justify-center flex-shrink-0 transition-colors"
+          >
+            {isPlaying ? (
+              <Pause className="text-white" size={14} />
+            ) : (
+              <Play className="text-white ml-0.5" size={14} />
+            )}
+          </button>
+
+          <div className="flex-1 flex flex-col gap-1">
+            {/* Progress bar */}
+            <div className="relative h-1 bg-custom-background-80 rounded-full overflow-hidden">
+              <div
+                className="absolute top-0 left-0 h-full bg-custom-primary-100 rounded-full transition-all"
+                style={{ width: `${progress}%` }}
+              />
+              <input
+                type="range"
+                min="0"
+                max={duration || 0}
+                value={currentTime}
+                onChange={handleSeek}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+            </div>
+            {/* Time display */}
+            <div className="flex justify-between text-[10px] text-custom-text-400">
+              <span>{formatTime(currentTime)}</span>
+              <span>{formatTime(duration)}</span>
+            </div>
+          </div>
+
+          {canTranscribe && (
+            <button
+              onClick={onSummarize}
+              className="p-1.5 rounded hover:bg-custom-background-80 text-custom-text-400 hover:text-custom-primary-100 transition-colors flex-shrink-0"
+              title="Transcribe with AI"
+            >
+              <Sparkles size={14} />
+            </button>
+          )}
+          <a
+            href={src}
+            download={fileName}
+            className="p-1.5 rounded hover:bg-custom-background-80 text-custom-text-400 hover:text-custom-text-100 transition-colors flex-shrink-0"
+            title="Download"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Download size={14} />
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export interface FileAttachmentProps {
   attachment: Attachment;
   compact?: boolean; // Use compact layout when multiple files
@@ -153,8 +319,35 @@ export function FileAttachment({ attachment, compact, roomId }: FileAttachmentPr
 
   const isImage = isImageFile(attachment.mimeType);
   const isPdf = isPdfFile(attachment.mimeType);
+  const isAudio = isAudioFile(attachment.mimeType);
   const downloadUrl = attachment.downloadUrl;
   const showSummarize = roomId && canSummarize(attachment.mimeType);
+
+  // Audio attachment - inline player
+  if (isAudio && downloadUrl) {
+    return (
+      <>
+        <AudioPlayer
+          src={downloadUrl}
+          fileName={attachment.fileName}
+          fileSize={attachment.fileSize}
+          compact={compact}
+          roomId={roomId}
+          attachmentId={attachment.id}
+          onSummarize={() => setShowSummaryModal(true)}
+        />
+        {showSummaryModal && roomId && (
+          <DocumentSummaryModal
+            isOpen={showSummaryModal}
+            roomId={roomId}
+            attachmentId={attachment.id}
+            fileName={attachment.fileName}
+            onClose={() => setShowSummaryModal(false)}
+          />
+        )}
+      </>
+    );
+  }
 
   // Image attachment - inline preview with click to expand
   if (isImage && (attachment.thumbnailUrl || attachment.downloadUrl)) {

@@ -577,6 +577,58 @@ Tài liệu này trình bày về...
   }
 
   /**
+   * Stream summarize audio transcription
+   */
+  async *streamSummarizeAudioTranscription(
+    transcription: string,
+    fileName: string,
+    config?: Partial<LLMConfig>,
+    customPrompt?: string,
+  ): AsyncGenerator<string> {
+    const model = this.getModel(config);
+
+    const systemPrompt = customPrompt || `Bạn là trợ lý AI chuyên phân tích và tóm tắt nội dung audio/podcast.
+
+Yêu cầu:
+- Tóm tắt nội dung chính của bản ghi âm
+- Nêu bật các điểm quan trọng được đề cập
+- Trích xuất thông tin hữu ích từ cuộc hội thoại/bài nói
+- Giữ độ dài tóm tắt phù hợp với độ dài nội dung
+- Viết bằng ngôn ngữ chuyên nghiệp, dễ hiểu
+
+Format output bằng Markdown:
+- Sử dụng ## heading cho các phần chính
+- Sử dụng **bold** cho điểm quan trọng
+- Sử dụng danh sách bullet points (-) cho các mục
+- Sử dụng > blockquote cho trích dẫn từ bản ghi
+- Sử dụng \`code\` cho technical terms
+
+Ví dụ format:
+## Tổng quan
+Bản ghi âm này nói về...
+
+## Nội dung chính
+- **Điểm 1**: Mô tả
+- **Điểm 2**: Mô tả
+
+## Key Takeaways
+1. Takeaway 1
+2. Takeaway 2
+3. Takeaway 3`;
+
+    const stream = await model.stream([
+      new SystemMessage(systemPrompt),
+      new HumanMessage(`Hãy tóm tắt nội dung audio "${fileName}":\n\nBản chép lời (transcription):\n${transcription}`),
+    ]);
+
+    for await (const chunk of stream) {
+      if (chunk.content) {
+        yield chunk.content as string;
+      }
+    }
+  }
+
+  /**
    * Get relevant sources for a question (non-streaming, called before streaming)
    */
   async getRelevantSources(

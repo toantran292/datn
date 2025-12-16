@@ -9,6 +9,7 @@ import { IdentityService } from '../common/identity/identity.service';
 import { EmbeddingService } from './rag/embedding.service';
 import { EmbeddingSourceType } from '../database/entities/document-embedding.entity';
 import { AIFeature } from '../database/entities/channel-ai-config.entity';
+import { AudioProcessor } from './rag/processors/audio.processor';
 
 @Injectable()
 export class AIService {
@@ -23,6 +24,7 @@ export class AIService {
     private readonly fileStorageClient: FileStorageClient,
     private readonly identityService: IdentityService,
     private readonly embeddingService: EmbeddingService,
+    private readonly audioProcessor: AudioProcessor,
   ) {}
 
   // ============== UC03: Channel AI Config ==============
@@ -322,7 +324,7 @@ export class AIService {
   // ============== Streaming Methods ==============
 
   /**
-   * UC14: Stream summarize document
+   * UC14: Stream summarize document (supports text documents and audio files)
    */
   async *streamSummarizeDocument(
     roomId: string,
@@ -342,6 +344,10 @@ export class AIService {
       return;
     }
 
+    // Check if it's an audio file
+    const isAudio = this.audioProcessor.canProcess(attachment.mimeType);
+    this.logger.log(`Attachment mimeType: ${attachment.mimeType}, isAudio: ${isAudio}`);
+
     // Check if it's a text-based file
     const textMimeTypes = [
       'text/plain',
@@ -351,9 +357,10 @@ export class AIService {
       'application/pdf',
       'text/html',
     ];
+    const isText = textMimeTypes.some(type => attachment.mimeType.startsWith(type.split('/')[0]));
 
-    if (!textMimeTypes.some(type => attachment.mimeType.startsWith(type.split('/')[0]))) {
-      yield { type: 'error', data: 'Only text-based documents can be summarized' };
+    if (!isAudio && !isText) {
+      yield { type: 'error', data: 'Only text-based documents and audio files can be summarized' };
       return;
     }
 
@@ -362,32 +369,83 @@ export class AIService {
 
     const response = await fetch(presignedUrl.presignedUrl);
     if (!response.ok) {
-      yield { type: 'error', data: 'Could not fetch document content' };
-      return;
-    }
-
-    const content = await response.text();
-
-    if (content.length > 50000) {
-      yield { type: 'error', data: 'Document is too large to summarize (max 50KB)' };
+      yield { type: 'error', data: 'Could not fetch file content' };
       return;
     }
 
     try {
-      const stream = this.llmService.streamSummarizeDocument(
-        content,
-        attachment.fileName,
-        {
-          modelName: config.modelName,
-          temperature: config.temperature,
-          maxTokens: config.maxTokens,
-          modelProvider: config.modelProvider,
-        },
-        config.customSystemPrompt ?? undefined,
-      );
+      if (isAudio) {
+        // Handle audio file - transcribe first then summarize
+        const audioBuffer = Buffer.from(await response.arrayBuffer());
 
-      for await (const chunk of stream) {
-        yield { type: 'chunk', data: chunk };
+        // Check file size (max 25MB for Whisper API)
+        if (audioBuffer.length > 25 * 1024 * 1024) {
+          yield { type: 'error', data: 'Audio file is too large (max 25MB)' };
+          return;
+        }
+
+        this.logger.log(`Transcribing audio file: ${attachment.fileName}`);
+
+        // Transcribe using AudioProcessor
+        const chunks = await this.audioProcessor.process(audioBuffer, {
+          fileName: attachment.fileName,
+          mimeType: attachment.mimeType,
+          sourceId: attachment.id,
+          size: audioBuffer.length,
+          roomId: roomId,
+          orgId: '', // Not needed for transcription only
+        });
+
+        if (chunks.length === 0) {
+          yield { type: 'error', data: 'Could not transcribe audio file' };
+          return;
+        }
+
+        // Combine all transcription chunks
+        const transcription = chunks.map(c => c.content).join('\n');
+
+        this.logger.log(`Transcription complete: ${transcription.length} characters`);
+
+        // Stream summarize the transcription
+        const stream = this.llmService.streamSummarizeAudioTranscription(
+          transcription,
+          attachment.fileName,
+          {
+            modelName: config.modelName,
+            temperature: config.temperature,
+            maxTokens: config.maxTokens,
+            modelProvider: config.modelProvider,
+          },
+          config.customSystemPrompt ?? undefined,
+        );
+
+        for await (const chunk of stream) {
+          yield { type: 'chunk', data: chunk };
+        }
+      } else {
+        // Handle text-based document
+        const content = await response.text();
+
+        if (content.length > 50000) {
+          yield { type: 'error', data: 'Document is too large to summarize (max 50KB)' };
+          return;
+        }
+
+        const stream = this.llmService.streamSummarizeDocument(
+          content,
+          attachment.fileName,
+          {
+            modelName: config.modelName,
+            temperature: config.temperature,
+            maxTokens: config.maxTokens,
+            modelProvider: config.modelProvider,
+          },
+          config.customSystemPrompt ?? undefined,
+        );
+
+        for await (const chunk of stream) {
+          yield { type: 'chunk', data: chunk };
+        }
       }
 
       yield {
@@ -397,6 +455,7 @@ export class AIService {
         documentType: attachment.mimeType,
       };
     } catch (error) {
+      this.logger.error(`Error processing file: ${error}`);
       yield { type: 'error', data: error instanceof Error ? error.message : 'Unknown error' };
     }
   }
