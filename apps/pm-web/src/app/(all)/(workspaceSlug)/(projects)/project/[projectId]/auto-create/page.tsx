@@ -28,6 +28,7 @@ import { useProject } from "@/core/hooks/store/use-project";
 import { useIssue } from "@/core/hooks/store/use-issue";
 import { useAIRefineStream } from "@/core/hooks/use-ai-refine-stream";
 import { useAIBreakdown } from "@/core/hooks/use-ai-breakdown";
+import { useDocumentUpload } from "@/core/hooks/use-document-upload";
 import { useAIEstimate } from "@/core/hooks/use-ai-estimate";
 import { ProjectTabs } from "@/core/components/project/project-tabs";
 import type { SubTask } from "@/core/types/ai";
@@ -55,6 +56,7 @@ const AutoCreatePage = observer(() => {
   const { refine, isRefining, streamedHtml } = useAIRefineStream();
   const { breakdown, isBreakingDown, lastResult: breakdownData } = useAIBreakdown();
   const { estimate, isEstimating, lastResult: estimateData } = useAIEstimate();
+  const { uploadDocument, isUploading, uploadProgress, uploadedDocument, resetUpload } = useDocumentUpload();
 
   // Workflow State
   const [currentStep, setCurrentStep] = useState<WorkflowStep>(1);
@@ -496,15 +498,75 @@ const AutoCreatePage = observer(() => {
                       <div className="rounded-lg border-2 border-dashed border-custom-border-300 bg-custom-background-90 p-12 text-center">
                         <FileText className="size-12 mx-auto mb-4 text-custom-text-300" />
                         <p className="text-sm font-medium text-custom-text-200 mb-1">Upload file tài liệu</p>
-                        <p className="text-xs text-custom-text-400 mb-4">Hỗ trợ PDF, Word, Excel (Coming soon)</p>
-                        <Button variant="neutral-primary" size="sm" disabled>
-                          <Upload className="size-4" />
-                          Chọn file
-                        </Button>
+                        <p className="text-xs text-custom-text-400 mb-4">Hỗ trợ PDF, Word (.doc, .docx), Excel (.xls, .xlsx)</p>
+
+                        {uploadedDocument ? (
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-center gap-2 text-sm text-green-600">
+                              <CheckCircle2 className="size-4" />
+                              <span>{uploadedDocument.fileName}</span>
+                            </div>
+                            <Button variant="neutral-primary" size="sm" onClick={resetUpload}>
+                              <X className="size-4" />
+                              Xóa và chọn file khác
+                            </Button>
+                          </div>
+                        ) : (
+                          <>
+                            <input
+                              type="file"
+                              id="document-upload"
+                              accept=".pdf,.doc,.docx,.xls,.xlsx"
+                              className="hidden"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  await uploadDocument(file, { projectId });
+                                }
+                                // Reset input
+                                e.target.value = "";
+                              }}
+                              disabled={isUploading}
+                            />
+                            <Button
+                              variant="neutral-primary"
+                              size="sm"
+                              disabled={isUploading}
+                              onClick={() => document.getElementById("document-upload")?.click()}
+                            >
+                              {isUploading ? (
+                                <>
+                                  <Loader2 className="size-4 animate-spin" />
+                                  Đang upload... {uploadProgress}%
+                                </>
+                              ) : (
+                                <>
+                                  <Upload className="size-4" />
+                                  Chọn file
+                                </>
+                              )}
+                            </Button>
+                          </>
+                        )}
                       </div>
-                      <p className="text-xs text-custom-text-400 text-center">
-                        Tính năng upload file đang được phát triển
-                      </p>
+                      {isUploading && (
+                        <div className="space-y-2">
+                          <div className="h-2 bg-custom-background-80 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-custom-primary-100 transition-all duration-300"
+                              style={{ width: `${uploadProgress}%` }}
+                            />
+                          </div>
+                          <p className="text-xs text-custom-text-400 text-center">
+                            Đang upload và xử lý file...
+                          </p>
+                        </div>
+                      )}
+                      {uploadedDocument && (
+                        <p className="text-xs text-green-600 text-center">
+                          ✓ File đã được upload thành công. Tính năng extract text đang được phát triển.
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>

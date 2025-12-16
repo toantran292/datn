@@ -192,6 +192,7 @@ services:
       DATABASE_NAME: ${PM_DATABASE_NAME}
       DATABASE_URL: ${PM_DATABASE_URL}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      FILE_STORAGE_URL: http://file-storage-api:3000
     ports:
       - "41003:${PM_PORT}"
     healthcheck:

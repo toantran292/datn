@@ -26,6 +26,7 @@ import { createHash } from 'crypto';
 // import { User } from '@prisma/client';
 import { AIService } from './ai.service';
 import { AISprintSummaryService } from './ai-sprint-summary.service';
+import { FileStorageClient } from '../../common/file-storage/file-storage.client';
 import {
   RefineDescriptionDto,
   RefineDescriptionResponseDto,
@@ -36,6 +37,9 @@ import {
   SprintSummaryDto,
   SprintSummaryResponseDto,
   TranslateDescriptionDto,
+  CreateDocumentUploadUrlDto,
+  CreateDocumentUploadUrlResponseDto,
+  ConfirmDocumentUploadDto,
 } from './dto';
 import { SkipOrgCheck } from '../../common/decorators/skip-org-check.decorator';
 
@@ -51,6 +55,7 @@ export class AIController {
   constructor(
     private readonly aiService: AIService,
     private readonly sprintSummaryService: AISprintSummaryService,
+    private readonly fileStorageClient: FileStorageClient,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
@@ -537,6 +542,78 @@ export class AIController {
         })}\n\n`,
       );
       res.end();
+    }
+  }
+
+  @Post('documents/upload-url')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Create presigned URL for document upload',
+    description: 'Creates a presigned URL to upload documents (PDF, Word, Excel) for AI processing',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Presigned URL created successfully',
+    type: CreateDocumentUploadUrlResponseDto,
+  })
+  async createDocumentUploadUrl(
+    @Body() dto: CreateDocumentUploadUrlDto,
+  ): Promise<CreateDocumentUploadUrlResponseDto> {
+    this.logger.log(`Creating presigned URL for document: ${dto.originalName}`);
+
+    try {
+      const result = await this.fileStorageClient.createPresignedUrl({
+        originalName: dto.originalName,
+        mimeType: dto.mimeType,
+        size: dto.size,
+        service: 'pm',
+        modelType: 'document',
+        subjectId: dto.projectId || 'auto-create',
+        uploadedBy: dto.userId,
+        orgId: dto.orgId,
+        tags: ['ai-auto-create', 'document'],
+        metadata: {
+          projectId: dto.projectId,
+        },
+      });
+
+      return {
+        assetId: result.assetId,
+        presignedUrl: result.presignedUrl,
+        objectKey: result.objectKey,
+        expiresIn: result.expiresIn,
+      };
+    } catch (error) {
+      this.logger.error('Failed to create presigned URL', error.stack);
+      throw error;
+    }
+  }
+
+  @Post('documents/confirm-upload')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Confirm document upload completion',
+    description: 'Confirms that the document has been successfully uploaded to storage',
+  })
+  async confirmDocumentUpload(@Body() dto: ConfirmDocumentUploadDto) {
+    this.logger.log(`Confirming upload for asset: ${dto.assetId}`);
+
+    try {
+      const result = await this.fileStorageClient.confirmUpload(dto.assetId);
+
+      return {
+        success: true,
+        data: {
+          assetId: result.id,
+          fileName: result.originalName,
+          mimeType: result.mimeType,
+          size: result.size,
+          uploadStatus: result.uploadStatus,
+        },
+      };
+    } catch (error) {
+      this.logger.error('Failed to confirm upload', error.stack);
+      throw error;
     }
   }
 }
