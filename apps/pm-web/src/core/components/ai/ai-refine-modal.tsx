@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles, X } from "lucide-react";
+import { Sparkles, X, RefreshCw } from "lucide-react";
 import { Button, EModalPosition, EModalWidth, ModalCore } from "@uts/design-system/ui";
+import { cn } from "@uts/fe-utils";
 import type { RefineDescriptionData } from "@/core/types/ai";
 import { AIImprovementsList } from "./ai-improvements-list";
 
@@ -11,6 +12,8 @@ export interface AIRefineModalProps {
   refined: RefineDescriptionData;
   onApply: (refinedDescription: string) => void;
   onCancel: () => void;
+  onRegenerate?: () => void;
+  isRegenerating?: boolean;
 }
 
 type TabType = "original" | "refined";
@@ -20,6 +23,8 @@ export const AIRefineModal: React.FC<AIRefineModalProps> = ({
   refined,
   onApply,
   onCancel,
+  onRegenerate,
+  isRegenerating = false,
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>("refined");
 
@@ -31,24 +36,40 @@ export const AIRefineModal: React.FC<AIRefineModalProps> = ({
     <ModalCore isOpen handleClose={onCancel} position={EModalPosition.CENTER} width={EModalWidth.XL}>
       <div className="flex flex-col h-full max-h-[90vh]">
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-custom-border-200">
-          <div className="flex items-center gap-3">
-            <div className="size-10 rounded-full bg-custom-primary-100/10 grid place-items-center">
-              <Sparkles className="size-5 text-custom-primary-100" />
+        <div className="p-5 border-b border-custom-border-200">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
+              <div className="size-10 rounded-full bg-custom-primary-100/10 grid place-items-center">
+                <Sparkles className="size-5 text-custom-primary-100" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-custom-text-100">AI Refined Description</h2>
+                <p className="text-sm text-custom-text-300">Độ tin cậy: {Math.round(refined.confidence * 100)}%</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-lg font-semibold text-custom-text-100">AI Refined Description</h2>
-              <p className="text-sm text-custom-text-300">
-                Độ tin cậy: {Math.round(refined.confidence * 100)}%
-              </p>
-            </div>
+            <button
+              onClick={onCancel}
+              className="size-8 rounded grid place-items-center hover:bg-custom-background-80 transition-colors"
+            >
+              <X className="size-4 text-custom-text-300" />
+            </button>
           </div>
-          <button
-            onClick={onCancel}
-            className="size-8 rounded grid place-items-center hover:bg-custom-background-80 transition-colors"
-          >
-            <X className="size-4 text-custom-text-300" />
-          </button>
+
+          {/* Regenerate button row */}
+          {onRegenerate && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="neutral-primary"
+                size="sm"
+                onClick={onRegenerate}
+                disabled={isRegenerating}
+                className="gap-2"
+              >
+                <RefreshCw className={cn("h-4 w-4", isRegenerating && "animate-spin")} />
+                <span className="text-sm font-medium">{isRegenerating ? "Đang tạo lại..." : "Regenerate"}</span>
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Improvements List */}
@@ -102,7 +123,8 @@ export const AIRefineModal: React.FC<AIRefineModalProps> = ({
         {/* Footer */}
         <div className="flex items-center justify-between px-5 py-4 border-t border-custom-border-200 bg-custom-background-100">
           <div className="text-xs text-custom-text-400">
-            {refined.refinedDescription.length} ký tự • Model: {refined.confidence > 0.8 ? "High confidence" : "Medium confidence"}
+            {refined.refinedDescription.length} ký tự • Model:{" "}
+            {refined.confidence > 0.8 ? "High confidence" : "Medium confidence"}
           </div>
           <div className="flex items-center gap-2">
             <Button variant="neutral-primary" size="sm" onClick={onCancel}>

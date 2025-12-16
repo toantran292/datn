@@ -10,8 +10,8 @@ import { IssueDetailProperties } from "./issue-detail-properties";
 import { IssueDetailActivity } from "./issue-detail-activity";
 import { IssueTitleInput } from "./issue-title-input";
 import { IssueDescription } from "./issue-description";
-import { AIRefineSection, AIBreakdownSection } from "@/core/components/ai";
-import { useAIRefine } from "@/core/hooks/use-ai-refine";
+import { AIRefineSection, AIBreakdownSection, AIGeneratingButton } from "@/core/components/ai";
+import { useAIRefineStream } from "@/core/hooks/use-ai-refine-stream";
 import { useAIBreakdown } from "@/core/hooks/use-ai-breakdown";
 import { useIssue } from "@/core/hooks/store/use-issue";
 import type { RefineDescriptionData, BreakdownData, SubTask } from "@/core/types/ai";
@@ -34,9 +34,10 @@ export const IssueDetailPanel: React.FC<IssueDetailPanelProps> = (props) => {
   // Stores
   const issueStore = useIssue();
 
-  // AI Refine state
-  const { refine, isRefining, error } = useAIRefine();
+  // AI Refine state (with streaming)
+  const { refine, isRefining, streamedText, streamedHtml, error } = useAIRefineStream();
   const [refinedData, setRefinedData] = useState<RefineDescriptionData | null>(null);
+  const [isRegenerating, setIsRegenerating] = useState(false);
 
   // AI Breakdown state
   const { breakdown, isBreakingDown, error: breakdownError } = useAIBreakdown();
@@ -117,7 +118,7 @@ export const IssueDetailPanel: React.FC<IssueDetailPanelProps> = (props) => {
   const handleApplyRefined = async (refinedHtml: string) => {
     // Update local state immediately for instant UI update
     setLocalDescription(refinedHtml);
-    setDescriptionKey(prev => prev + 1);
+    setDescriptionKey((prev) => prev + 1);
     setRefinedData(null);
 
     // Then update backend
@@ -132,6 +133,35 @@ export const IssueDetailPanel: React.FC<IssueDetailPanelProps> = (props) => {
 
   const handleCancelRefined = () => {
     setRefinedData(null);
+  };
+
+  const handleRegenerate = async () => {
+    setIsRegenerating(true);
+
+    const currentDescription = issue.description || issue.descriptionHtml || "";
+
+    const result = await refine({
+      issueId: issue.id,
+      currentDescription,
+      issueName: issue.name,
+      issueType: issue.type,
+      priority: issue.priority,
+      context: {
+        projectName: projectIdentifier || undefined,
+      },
+    });
+
+    if (result) {
+      setRefinedData(result);
+    } else {
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: "Lỗi Regenerate",
+        message: error || "Không thể regenerate. Vui lòng thử lại.",
+      });
+    }
+
+    setIsRegenerating(false);
   };
 
   const handleBreakdown = async () => {
@@ -255,7 +285,6 @@ export const IssueDetailPanel: React.FC<IssueDetailPanelProps> = (props) => {
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-custom-background-100">
       <IssueDetailHeader issueKey={issueKey} onClose={onClose} onCopyLink={handleCopyLink} />
-
       <div className="vertical-scrollbar flex h-full w-full overflow-auto">
         <div className="relative h-full w-full space-y-6 overflow-auto p-4 py-5">
           <div className="space-y-3">
@@ -270,19 +299,30 @@ export const IssueDetailPanel: React.FC<IssueDetailPanelProps> = (props) => {
               <div className="flex items-center justify-between">
                 <label className="text-xs font-medium text-custom-text-300">Mô tả</label>
                 {!disabled && (issue.description || issue.descriptionHtml) && !refinedData && (
-                  <Button variant="neutral-primary" size="sm" onClick={handleRefine} disabled={disabled || isRefining}>
-                    <Sparkles className="size-3.5" />
-                    {isRefining ? "Đang xử lý..." : "AI Refine"}
-                  </Button>
+                  <>
+                    {isRefining ? (
+                      <AIGeneratingButton disabled />
+                    ) : (
+                      <Button variant="neutral-primary" size="sm" onClick={handleRefine} disabled={disabled}>
+                        <Sparkles className="size-3.5" />
+                        AI Refine
+                      </Button>
+                    )}
+                  </>
                 )}
               </div>
 
-              {refinedData && (
+              {(refinedData || isRefining) && (
                 <AIRefineSection
                   original={issue.description || issue.descriptionHtml || ""}
-                  refined={refinedData}
+                  refined={refinedData || { refinedDescription: "", refinedDescriptionHtml: "", confidence: 0, improvements: [] }}
                   onApply={handleApplyRefined}
                   onCancel={handleCancelRefined}
+                  onRegenerate={!isRefining ? handleRegenerate : undefined}
+                  isRegenerating={isRegenerating}
+                  streamedText={streamedText}
+                  streamedHtml={streamedHtml}
+                  isStreaming={isRefining}
                   isExpanded={true}
                 />
               )}
@@ -304,19 +344,12 @@ export const IssueDetailPanel: React.FC<IssueDetailPanelProps> = (props) => {
                 {!disabled && (issue.description || issue.descriptionHtml) && !breakdownData && (
                   <div className="flex items-center gap-2 p-3 rounded-lg border border-custom-border-200 bg-custom-primary-100/5">
                     <div className="flex-1">
-                      <p className="text-sm font-medium text-custom-text-100">
-                        Issue này có thể được chia nhỏ
-                      </p>
+                      <p className="text-sm font-medium text-custom-text-100">Issue này có thể được chia nhỏ</p>
                       <p className="text-xs text-custom-text-300 mt-0.5">
                         Sử dụng AI để tự động breakdown thành các sub-tasks có cấu trúc
                       </p>
                     </div>
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      onClick={handleBreakdown}
-                      disabled={disabled || isBreakingDown}
-                    >
+                    <Button variant="primary" size="sm" onClick={handleBreakdown} disabled={disabled || isBreakingDown}>
                       <Sparkles className="size-3.5" />
                       {isBreakingDown ? "Đang phân tích..." : "AI Breakdown"}
                     </Button>

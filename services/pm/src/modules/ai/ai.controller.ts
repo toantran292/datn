@@ -6,12 +6,17 @@ import {
   HttpStatus,
   Logger,
   Inject,
+  Sse,
+  MessageEvent,
+  Res,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
 } from '@nestjs/swagger';
+import { Observable } from 'rxjs';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
 import { createHash } from 'crypto';
@@ -273,5 +278,127 @@ export class AIController {
       .substring(0, 16);
 
     return `ai-breakdown:${dto.issueId}:${hash}`;
+  }
+
+  /**
+   * Streaming endpoints using Server-Sent Events (SSE)
+   */
+
+  @Post('refine-description-stream')
+  @ApiOperation({
+    summary: 'Refine issue description with real-time streaming',
+    description: 'Streams the refined description word-by-word like ChatGPT',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Streaming response with text chunks, confidence, and metadata',
+    headers: {
+      'Content-Type': {
+        description: 'text/event-stream',
+      },
+    },
+  })
+  async refineDescriptionStream(
+    @Body() dto: RefineDescriptionDto,
+    @Res() res: Response,
+  ): Promise<void> {
+    this.logger.log(`Streaming refine request for issue ${dto.issueId}`);
+
+    // Set SSE headers
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    try {
+      for await (const chunk of this.aiService.refineDescriptionStream(dto)) {
+        // Send SSE format: data: {...}\n\n
+        res.write(`data: ${JSON.stringify(chunk)}\n\n`);
+      }
+      res.end();
+    } catch (error) {
+      this.logger.error('Streaming refine error', error.stack);
+      res.write(`data: ${JSON.stringify({
+        type: 'error',
+        message: error.message || 'Streaming failed',
+      })}\n\n`);
+      res.end();
+    }
+  }
+
+  @Post('estimate-points-stream')
+  @Sse()
+  @ApiOperation({
+    summary: 'Estimate story points with real-time streaming',
+    description: 'Streams the estimation analysis word-by-word',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Streaming response with text chunks, confidence, and metadata',
+  })
+  async estimatePointsStream(
+    @Body() dto: EstimatePointsDto,
+  ): Promise<Observable<MessageEvent>> {
+    this.logger.log(`Streaming estimate request for issue ${dto.issueId}`);
+
+    return new Observable<MessageEvent>((subscriber) => {
+      (async () => {
+        try {
+          for await (const chunk of this.aiService.estimateStoryPointsStream(dto)) {
+            subscriber.next({
+              data: JSON.stringify(chunk),
+            } as MessageEvent);
+          }
+          subscriber.complete();
+        } catch (error) {
+          this.logger.error('Streaming estimate error', error.stack);
+          subscriber.next({
+            data: JSON.stringify({
+              type: 'error',
+              message: error.message || 'Streaming failed',
+            }),
+          } as MessageEvent);
+          subscriber.complete();
+        }
+      })();
+    });
+  }
+
+  @Post('breakdown-issue-stream')
+  @Sse()
+  @ApiOperation({
+    summary: 'Break down Epic/Story with real-time streaming',
+    description: 'Streams the breakdown analysis word-by-word',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Streaming response with text chunks, confidence, and metadata',
+  })
+  async breakdownIssueStream(
+    @Body() dto: BreakdownIssueDto,
+  ): Promise<Observable<MessageEvent>> {
+    this.logger.log(`Streaming breakdown request for issue ${dto.issueId}`);
+
+    return new Observable<MessageEvent>((subscriber) => {
+      (async () => {
+        try {
+          for await (const chunk of this.aiService.breakdownEpicStream(dto)) {
+            subscriber.next({
+              data: JSON.stringify(chunk),
+            } as MessageEvent);
+          }
+          subscriber.complete();
+        } catch (error) {
+          this.logger.error('Streaming breakdown error', error.stack);
+          subscriber.next({
+            data: JSON.stringify({
+              type: 'error',
+              message: error.message || 'Streaming failed',
+            }),
+          } as MessageEvent);
+          subscriber.complete();
+        }
+      })();
+    });
   }
 }

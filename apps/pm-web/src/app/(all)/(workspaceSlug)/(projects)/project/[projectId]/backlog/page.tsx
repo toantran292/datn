@@ -385,17 +385,19 @@ const ProjectBacklogPage = observer(() => {
     return grouped;
   }, [visibleIssues]);
 
-  const sprintSections = useMemo(() =>
-    visibleSprints.map<IBacklogSectionData>((sprint) => ({
-      id: sprint.id,
-      name: sprint.name,
-      type: "sprint",
-      goal: sprint.goal,
-      startDate: sprint.startDate,
-      endDate: sprint.endDate,
-      issues: issuesGroupedBySprint.get(sprint.id) ?? [],
-    }))
-  , [visibleSprints, issuesGroupedBySprint]);
+  const sprintSections = useMemo(
+    () =>
+      visibleSprints.map<IBacklogSectionData>((sprint) => ({
+        id: sprint.id,
+        name: sprint.name,
+        type: "sprint",
+        goal: sprint.goal,
+        startDate: sprint.startDate,
+        endDate: sprint.endDate,
+        issues: issuesGroupedBySprint.get(sprint.id) ?? [],
+      })),
+    [visibleSprints, issuesGroupedBySprint]
+  );
 
   const backlogSection = useMemo<IBacklogSectionData>(
     () => ({
@@ -458,9 +460,7 @@ const ProjectBacklogPage = observer(() => {
           {/* Sprint Selector */}
           {activeSprints.length > 1 && (
             <div className="flex items-center gap-3">
-              <label className="text-sm font-medium text-custom-text-200">
-                Phân tích rủi ro cho sprint:
-              </label>
+              <label className="text-sm font-medium text-custom-text-200">Phân tích rủi ro cho sprint:</label>
               <select
                 value={selectedSprintIdForRisk}
                 onChange={(e) => setSelectedSprintIdForRisk(e.target.value)}

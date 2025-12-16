@@ -35,6 +35,7 @@ export const AIRefineButton: React.FC<AIRefineButtonProps> = ({
   const { refine, isRefining, error } = useAIRefine();
   const [showModal, setShowModal] = useState(false);
   const [refinedData, setRefinedData] = useState<RefineDescriptionData | null>(null);
+  const [isRegenerating, setIsRegenerating] = useState(false);
 
   const handleRefine = async () => {
     // Validate description
@@ -89,6 +90,34 @@ export const AIRefineButton: React.FC<AIRefineButtonProps> = ({
     setRefinedData(null);
   };
 
+  const handleRegenerate = async () => {
+    setIsRegenerating(true);
+
+    const result = await refine({
+      issueId,
+      currentDescription,
+      issueName,
+      issueType,
+      priority,
+      context: {
+        projectName,
+        sprintGoal,
+      },
+    });
+
+    if (result) {
+      setRefinedData(result);
+    } else {
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: "Lỗi Regenerate",
+        message: error || "Không thể regenerate. Vui lòng thử lại.",
+      });
+    }
+
+    setIsRegenerating(false);
+  };
+
   return (
     <>
       <Button
@@ -108,6 +137,8 @@ export const AIRefineButton: React.FC<AIRefineButtonProps> = ({
           refined={refinedData}
           onApply={handleApply}
           onCancel={handleCancel}
+          onRegenerate={handleRegenerate}
+          isRegenerating={isRegenerating}
         />
       )}
     </>

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ChevronUp, Sparkles } from "lucide-react";
+import { ChevronDown, ChevronUp, Sparkles, RefreshCw } from "lucide-react";
 import { Button } from "@uts/design-system/ui";
+import { cn } from "@uts/fe-utils";
 import type { RefineDescriptionData } from "@/core/types/ai";
 import { AIImprovementsList } from "./ai-improvements-list";
 
@@ -11,7 +12,12 @@ export interface AIRefineSectionProps {
   refined: RefineDescriptionData;
   onApply: (refinedDescription: string) => void;
   onCancel: () => void;
+  onRegenerate?: () => void;
+  isRegenerating?: boolean;
   isExpanded?: boolean;
+  streamedText?: string; // For showing raw text while streaming
+  streamedHtml?: string; // For showing formatted HTML while streaming
+  isStreaming?: boolean; // To show streaming indicator
 }
 
 type TabType = "original" | "refined";
@@ -21,7 +27,12 @@ export const AIRefineSection: React.FC<AIRefineSectionProps> = ({
   refined,
   onApply,
   onCancel,
+  onRegenerate,
+  isRegenerating = false,
   isExpanded = true,
+  streamedText = "",
+  streamedHtml = "",
+  isStreaming = false,
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>("refined");
   const [expanded, setExpanded] = useState(isExpanded);
@@ -34,30 +45,46 @@ export const AIRefineSection: React.FC<AIRefineSectionProps> = ({
   return (
     <div className="border border-custom-border-200 rounded-lg bg-custom-background-90 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-custom-primary-100/5 border-b border-custom-border-200">
-        <div className="flex items-center gap-2.5">
-          <div className="size-8 rounded-full bg-custom-primary-100/10 grid place-items-center">
-            <Sparkles className="size-4 text-custom-primary-100" />
+      <div className="px-4 py-3 bg-custom-primary-100/5 border-b border-custom-border-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="size-8 rounded-full bg-custom-primary-100/10 grid place-items-center">
+              <Sparkles className="size-4 text-custom-primary-100" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-custom-text-100">AI Refined Description</h3>
+              <p className="text-xs text-custom-text-300">Độ tin cậy: {Math.round(refined.confidence * 100)}%</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-sm font-semibold text-custom-text-100">AI Refined Description</h3>
-            <p className="text-xs text-custom-text-300">
-              Độ tin cậy: {Math.round(refined.confidence * 100)}%
-            </p>
+          <div className="flex items-center gap-2">
+            {/* Regenerate button */}
+            {onRegenerate && (
+              <Button
+                variant="neutral-primary"
+                size="sm"
+                onClick={onRegenerate}
+                disabled={isRegenerating}
+                className="gap-1.5"
+              >
+                <RefreshCw className={cn("h-3.5 w-3.5", isRegenerating && "animate-spin")} />
+                <span className="text-xs font-medium">
+                  {isRegenerating ? "Đang tạo lại..." : "Regenerate"}
+                </span>
+              </Button>
+            )}
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="size-7 rounded grid place-items-center hover:bg-custom-background-80 transition-colors"
+            >
+              {expanded ? (
+                <ChevronUp className="size-4 text-custom-text-300" />
+              ) : (
+                <ChevronDown className="size-4 text-custom-text-300" />
+              )}
+            </button>
           </div>
         </div>
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="size-7 rounded grid place-items-center hover:bg-custom-background-80 transition-colors"
-        >
-          {expanded ? (
-            <ChevronUp className="size-4 text-custom-text-300" />
-          ) : (
-            <ChevronDown className="size-4 text-custom-text-300" />
-          )}
-        </button>
       </div>
-
       {expanded && (
         <>
           {/* Improvements List */}
@@ -95,18 +122,21 @@ export const AIRefineSection: React.FC<AIRefineSectionProps> = ({
           {/* Content */}
           <div className="max-h-[400px] overflow-y-auto px-4 py-3 bg-custom-background-100">
             {activeTab === "refined" ? (
-              <div className="prose prose-sm max-w-none dark:prose-invert">
-                <div
-                  className="text-custom-text-200"
-                  dangerouslySetInnerHTML={{ __html: refined.refinedDescriptionHtml }}
-                />
+              <div className="prose prose-sm max-w-none dark:prose-invert text-custom-text-200">
+                {isStreaming ? (
+                  // Show streaming HTML with cursor animation
+                  <div>
+                    <div dangerouslySetInnerHTML={{ __html: streamedHtml || streamedText }} />
+                    <span className="inline-block w-2 h-4 ml-1 bg-custom-primary-100 animate-pulse" />
+                  </div>
+                ) : (
+                  // Show final refined HTML
+                  <div dangerouslySetInnerHTML={{ __html: refined.refinedDescriptionHtml }} />
+                )}
               </div>
             ) : (
               <div className="prose prose-sm max-w-none dark:prose-invert">
-                <div
-                  className="text-custom-text-200"
-                  dangerouslySetInnerHTML={{ __html: original }}
-                />
+                <div className="text-custom-text-200" dangerouslySetInnerHTML={{ __html: original }} />
               </div>
             )}
           </div>

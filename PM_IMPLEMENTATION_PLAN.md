@@ -9,6 +9,7 @@
 **Mục tiêu**: Hoàn thiện 100% use cases trong specifications
 
 **Lưu ý quan trọng**:
+
 - Hệ thống hỗ trợ **flexible workflow**, cho phép nhiều sprint ACTIVE cùng lúc
 - Không enforce strict Scrum rules về "1 sprint tại 1 thời điểm"
 
@@ -19,16 +20,19 @@
 ### ✅ ĐÃ HOÀN THÀNH (20/28 use cases = 71%)
 
 #### Quản lý Dự án (4/4)
+
 - ✅ UC01.1 - Tạo dự án mới
 - ✅ UC01.2 - Cấu hình dự án
 - ✅ UC01.3 - Xem danh sách và chi tiết dự án
 - ✅ UC01.4 - Xóa dự án
 
 #### Quản lý Sprint (2/4)
+
 - ✅ UC02.1 - Tạo sprint mới
 - ✅ UC02.4 - Xem danh sách sprint
 
 #### Quản lý Công việc (5/6)
+
 - ✅ UC03.1 - Tạo công việc mới
 - ✅ UC03.2 - Cập nhật công việc
 - ✅ UC03.3 - Xem chi tiết công việc
@@ -36,12 +40,14 @@
 - ✅ UC03.5 - Thêm bình luận
 
 #### Quản lý Trạng thái (4/4)
+
 - ✅ UC04.1 - Tạo trạng thái mới
 - ✅ UC04.2 - Cập nhật trạng thái
 - ✅ UC04.3 - Sắp xếp lại trạng thái
 - ✅ UC04.4 - Xóa trạng thái (có thiếu logic migration)
 
 #### Board & Views (5/6)
+
 - ✅ UC05.1 - Board View
 - ✅ UC05.2 - Backlog View
 - ✅ UC05.4 - Drag-and-drop
@@ -55,11 +61,13 @@
 ### 🔴 CRITICAL - Cần làm ngay (2 tasks)
 
 #### 1. UC02.2 - Bắt đầu Sprint (⚠️ Partially Done)
+
 **Độ ưu tiên**: CRITICAL
 **Thời gian ước tính**: 1-2 ngày
 **Lý do quan trọng**: Metrics quan trọng cho báo cáo và velocity tracking
 
 **Thiếu gì:**
+
 - ❌ Ghi lại metrics khi bắt đầu sprint (snapshot issue count & story points)
 - ❌ Warning nếu sprint không có issue
 
@@ -68,6 +76,7 @@
 **Công việc cần làm:**
 
 **Backend** (`services/pm`):
+
 ```typescript
 // File: src/modules/sprint/sprint.service.ts
 
@@ -114,6 +123,7 @@ async startSprint(sprintId: string, orgId: string, dto: StartSprintDto) {
 ```
 
 **Frontend** (`apps/pm-web`):
+
 ```typescript
 // File: src/core/components/sprint/start-sprint-modal.tsx
 
@@ -122,23 +132,26 @@ async startSprint(sprintId: string, orgId: string, dto: StartSprintDto) {
 // 2. Validation dates ở UI
 // 3. Hiển thị overview: số issues và story points
 
-{sprint.issueCount === 0 && (
-  <div className="rounded-md bg-yellow-50 p-3">
-    <p className="text-sm text-yellow-800">
-      ⚠️ Sprint này chưa có công việc nào. Bạn có chắc muốn bắt đầu?
-    </p>
-  </div>
-)}
+{
+  sprint.issueCount === 0 && (
+    <div className="rounded-md bg-yellow-50 p-3">
+      <p className="text-sm text-yellow-800">
+        ⚠️ Sprint này chưa có công việc nào. Bạn có chắc muốn bắt đầu?
+      </p>
+    </div>
+  );
+}
 
 <div className="mt-4 rounded-md bg-blue-50 p-3">
   <p className="text-sm text-blue-800">
     📊 Sprint sẽ bắt đầu với: <strong>{sprint.issueCount} issues</strong>
     {sprint.totalStoryPoints && ` (${sprint.totalStoryPoints} story points)`}
   </p>
-</div>
+</div>;
 ```
 
 **Database Migration**:
+
 ```sql
 -- Add columns to Sprint table if not exists
 ALTER TABLE "Sprint" ADD COLUMN IF NOT EXISTS "initialIssueCount" INTEGER DEFAULT 0;
@@ -147,6 +160,7 @@ ALTER TABLE "Sprint" ADD COLUMN IF NOT EXISTS "completedAt" TIMESTAMP;
 ```
 
 **Test Cases**:
+
 - ✅ Yêu cầu startDate và endDate
 - ✅ endDate phải sau startDate
 - ✅ Ghi lại initialIssueCount và initialStoryPoints
@@ -156,11 +170,13 @@ ALTER TABLE "Sprint" ADD COLUMN IF NOT EXISTS "completedAt" TIMESTAMP;
 ---
 
 #### 2. UC02.3 - Hoàn thành Sprint (⚠️ Partially Done)
+
 **Độ ưu tiên**: CRITICAL
 **Thời gian ước tính**: 3-5 ngày
 **Lý do quan trọng**: Metrics quan trọng cho báo cáo, sprint velocity
 
 **Thiếu gì:**
+
 - ❌ Logic xử lý incomplete issues (move to backlog / next sprint)
 - ❌ Tính toán và lưu velocity (story points completed)
 - ❌ Ghi lại metrics: completedIssueCount, incompletedIssueCount
@@ -169,6 +185,7 @@ ALTER TABLE "Sprint" ADD COLUMN IF NOT EXISTS "completedAt" TIMESTAMP;
 **Công việc cần làm:**
 
 **Backend**:
+
 ```typescript
 // File: src/modules/sprint/sprint.service.ts
 
@@ -252,16 +269,18 @@ async completeSprint(
 ```
 
 **DTO**:
+
 ```typescript
 // File: src/modules/sprint/dto/complete-sprint.dto.ts
 
 export class CompleteSprintDto {
-  @IsEnum(['MOVE_TO_BACKLOG', 'MOVE_TO_NEXT_SPRINT', 'KEEP'])
-  incompleteAction: 'MOVE_TO_BACKLOG' | 'MOVE_TO_NEXT_SPRINT' | 'KEEP';
+  @IsEnum(["MOVE_TO_BACKLOG", "MOVE_TO_NEXT_SPRINT", "KEEP"])
+  incompleteAction: "MOVE_TO_BACKLOG" | "MOVE_TO_NEXT_SPRINT" | "KEEP";
 }
 ```
 
 **Frontend**:
+
 ```typescript
 // File: src/core/components/sprint/complete-sprint-modal.tsx
 
@@ -284,11 +303,15 @@ export class CompleteSprintDto {
       </div>
       <div>
         <p className="text-sm text-gray-500">Completed</p>
-        <p className="text-2xl font-bold text-green-600">{sprint.completedIssues}</p>
+        <p className="text-2xl font-bold text-green-600">
+          {sprint.completedIssues}
+        </p>
       </div>
       <div>
         <p className="text-sm text-gray-500">Incomplete</p>
-        <p className="text-2xl font-bold text-orange-600">{sprint.incompleteIssues}</p>
+        <p className="text-2xl font-bold text-orange-600">
+          {sprint.incompleteIssues}
+        </p>
       </div>
     </div>
   </div>
@@ -299,15 +322,9 @@ export class CompleteSprintDto {
         Xử lý {sprint.incompleteIssues} công việc chưa hoàn thành:
       </label>
       <RadioGroup value={action} onChange={setAction}>
-        <Radio value="MOVE_TO_BACKLOG">
-          Chuyển về Backlog
-        </Radio>
-        <Radio value="MOVE_TO_NEXT_SPRINT">
-          Chuyển sang Sprint tiếp theo
-        </Radio>
-        <Radio value="KEEP">
-          Giữ nguyên trong Sprint này
-        </Radio>
+        <Radio value="MOVE_TO_BACKLOG">Chuyển về Backlog</Radio>
+        <Radio value="MOVE_TO_NEXT_SPRINT">Chuyển sang Sprint tiếp theo</Radio>
+        <Radio value="KEEP">Giữ nguyên trong Sprint này</Radio>
       </RadioGroup>
     </div>
   )}
@@ -315,6 +332,7 @@ export class CompleteSprintDto {
 ```
 
 **Database Migration**:
+
 ```sql
 ALTER TABLE "Sprint" ADD COLUMN IF NOT EXISTS "completedIssueCount" INTEGER DEFAULT 0;
 ALTER TABLE "Sprint" ADD COLUMN IF NOT EXISTS "incompletedIssueCount" INTEGER DEFAULT 0;
@@ -325,11 +343,13 @@ ALTER TABLE "Sprint" ADD COLUMN IF NOT EXISTS "aiSummary" TEXT;
 ---
 
 #### 3. UC04.4 - Xóa Trạng thái với Issue Migration (⚠️ Partially Done)
+
 **Độ ưu tiên**: HIGH
 **Thời gian ước tính**: 1-2 ngày
 **Lý do quan trọng**: Tránh mất data, business logic quan trọng
 
 **Thiếu gì:**
+
 - ❌ Logic migrate issues sang target status
 - ❌ Validation không cho xóa status cuối cùng
 - ❌ UI chọn target status
@@ -337,6 +357,7 @@ ALTER TABLE "Sprint" ADD COLUMN IF NOT EXISTS "aiSummary" TEXT;
 **Công việc cần làm:**
 
 **Backend**:
+
 ```typescript
 // File: src/modules/issue-status/issue-status.service.ts
 
@@ -395,34 +416,37 @@ async remove(statusId: string, orgId: string, targetStatusId?: string) {
 ```
 
 **Frontend**:
+
 ```typescript
 // File: src/core/components/issue-status/delete-status-modal.tsx
 
-const [targetStatusId, setTargetStatusId] = useState<string>('');
-const otherStatuses = statuses.filter(s => s.id !== status.id);
+const [targetStatusId, setTargetStatusId] = useState<string>("");
+const otherStatuses = statuses.filter((s) => s.id !== status.id);
 
 // Trong modal:
-{status.issueCount > 0 && (
-  <div className="space-y-3">
-    <Alert variant="warning">
-      Có {status.issueCount} công việc đang ở trạng thái "{status.name}".
-      Các công việc này sẽ được chuyển sang trạng thái bạn chọn.
-    </Alert>
+{
+  status.issueCount > 0 && (
+    <div className="space-y-3">
+      <Alert variant="warning">
+        Có {status.issueCount} công việc đang ở trạng thái "{status.name}". Các
+        công việc này sẽ được chuyển sang trạng thái bạn chọn.
+      </Alert>
 
-    <Select
-      label="Chuyển sang trạng thái"
-      value={targetStatusId}
-      onChange={setTargetStatusId}
-      required
-    >
-      {otherStatuses.map(s => (
-        <option key={s.id} value={s.id}>
-          {s.name}
-        </option>
-      ))}
-    </Select>
-  </div>
-)}
+      <Select
+        label="Chuyển sang trạng thái"
+        value={targetStatusId}
+        onChange={setTargetStatusId}
+        required
+      >
+        {otherStatuses.map((s) => (
+          <option key={s.id} value={s.id}>
+            {s.name}
+          </option>
+        ))}
+      </Select>
+    </div>
+  );
+}
 ```
 
 ---
@@ -430,10 +454,12 @@ const otherStatuses = statuses.filter(s => s.id !== status.id);
 ### 🟡 HIGH PRIORITY - Tính năng nâng cao (2 tasks)
 
 #### 4. UC05.3 - Filter và Search Issues (⚠️ Partially Done)
+
 **Độ ưu tiên**: HIGH
 **Thời gian ước tính**: 3-4 ngày
 
 **Thiếu gì:**
+
 - ❌ Comprehensive filter UI (assignee, priority, type, status)
 - ❌ Save filter presets
 - ❌ Clear all filters
@@ -441,6 +467,7 @@ const otherStatuses = statuses.filter(s => s.id !== status.id);
 **Công việc cần làm:**
 
 **Frontend**:
+
 ```typescript
 // File: src/core/components/filters/issue-filter-bar.tsx
 
@@ -454,11 +481,11 @@ interface IssueFilters {
 
 const IssueFilterBar = () => {
   const [filters, setFilters] = useState<IssueFilters>({
-    search: '',
+    search: "",
     assignees: [],
     priorities: [],
     types: [],
-    statuses: []
+    statuses: [],
   });
 
   const activeFilterCount = useMemo(() => {
@@ -475,7 +502,7 @@ const IssueFilterBar = () => {
     <div className="flex items-center gap-2">
       <SearchInput
         value={filters.search}
-        onChange={(v) => setFilters(f => ({ ...f, search: v }))}
+        onChange={(v) => setFilters((f) => ({ ...f, search: v }))}
         placeholder="Tìm kiếm theo tên hoặc ID..."
       />
 
@@ -483,21 +510,21 @@ const IssueFilterBar = () => {
         label="Assignee"
         options={members}
         selected={filters.assignees}
-        onChange={(v) => setFilters(f => ({ ...f, assignees: v }))}
+        onChange={(v) => setFilters((f) => ({ ...f, assignees: v }))}
       />
 
       <FilterDropdown
         label="Priority"
         options={PRIORITIES}
         selected={filters.priorities}
-        onChange={(v) => setFilters(f => ({ ...f, priorities: v }))}
+        onChange={(v) => setFilters((f) => ({ ...f, priorities: v }))}
       />
 
       <FilterDropdown
         label="Type"
         options={ISSUE_TYPES}
         selected={filters.types}
-        onChange={(v) => setFilters(f => ({ ...f, types: v }))}
+        onChange={(v) => setFilters((f) => ({ ...f, types: v }))}
       />
 
       {activeFilterCount > 0 && (
@@ -511,6 +538,7 @@ const IssueFilterBar = () => {
 ```
 
 **Optional - Filter Presets**:
+
 ```typescript
 // LocalStorage hoặc backend API để lưu filter presets
 const [presets, setPresets] = useState<FilterPreset[]>([]);
@@ -529,16 +557,19 @@ const loadPreset = (name: string) => {
 ---
 
 #### 5. Sprint Velocity Analytics
+
 **Độ ưu tiên**: HIGH
 **Thời gian ước tính**: 2-3 ngày
 
 **Thiếu gì:**
+
 - ❌ Backend API để lấy sprint velocity history
 - ❌ Frontend chart component hiển thị velocity
 
 **Công việc cần làm:**
 
 **Backend**:
+
 ```typescript
 // File: src/modules/analytics/analytics.controller.ts
 
@@ -569,10 +600,11 @@ async getSprintVelocity(@Param('projectId') projectId: string) {
 ```
 
 **Frontend**:
+
 ```typescript
 // File: src/core/components/analytics/sprint-velocity-chart.tsx
 
-import { BarChart } from '@uts/design-system/charts';
+import { BarChart } from "@uts/design-system/charts";
 
 const SprintVelocityChart = ({ projectId }) => {
   const { data } = useSWR(
@@ -600,12 +632,14 @@ const SprintVelocityChart = ({ projectId }) => {
 ### 🟢 MEDIUM PRIORITY - AI Features (4 tasks)
 
 #### 6. UC06.4 - LLM API Integration Module
+
 **Độ ưu tiên**: MEDIUM (nền tảng cho các AI features)
 **Thời gian ước tính**: 5-7 ngày
 
 **Công việc cần làm:**
 
 **Backend - Tạo AI Module mới**:
+
 ```bash
 cd services/pm
 nest g module ai
@@ -616,10 +650,10 @@ nest g controller ai
 ```typescript
 // File: src/modules/ai/ai.service.ts
 
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import Anthropic from '@anthropic-ai/sdk';
-import OpenAI from 'openai';
+import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 
 @Injectable()
 export class AiService {
@@ -628,58 +662,60 @@ export class AiService {
 
   constructor(private config: ConfigService) {
     this.anthropic = new Anthropic({
-      apiKey: config.get('ANTHROPIC_API_KEY')
+      apiKey: config.get("ANTHROPIC_API_KEY"),
     });
 
     this.openai = new OpenAI({
-      apiKey: config.get('OPENAI_API_KEY')
+      apiKey: config.get("OPENAI_API_KEY"),
     });
   }
 
   async generateCompletion(
     prompt: string,
     options: {
-      provider?: 'anthropic' | 'openai';
+      provider?: "anthropic" | "openai";
       model?: string;
       maxTokens?: number;
       temperature?: number;
     } = {}
   ) {
     const {
-      provider = 'anthropic',
-      model = provider === 'anthropic' ? 'claude-3-5-sonnet-20241022' : 'gpt-4o',
+      provider = "anthropic",
+      model = provider === "anthropic"
+        ? "claude-3-5-sonnet-20241022"
+        : "gpt-4o",
       maxTokens = 4096,
-      temperature = 0.7
+      temperature = 0.7,
     } = options;
 
     try {
-      if (provider === 'anthropic') {
+      if (provider === "anthropic") {
         const response = await this.anthropic.messages.create({
           model,
           max_tokens: maxTokens,
           temperature,
-          messages: [{ role: 'user', content: prompt }]
+          messages: [{ role: "user", content: prompt }],
         });
 
         return {
           content: response.content[0].text,
           tokens: response.usage.input_tokens + response.usage.output_tokens,
           provider,
-          model
+          model,
         };
       } else {
         const response = await this.openai.chat.completions.create({
           model,
           max_tokens: maxTokens,
           temperature,
-          messages: [{ role: 'user', content: prompt }]
+          messages: [{ role: "user", content: prompt }],
         });
 
         return {
           content: response.choices[0].message.content,
           tokens: response.usage.total_tokens,
           provider,
-          model
+          model,
         };
       }
     } catch (error) {
@@ -690,6 +726,7 @@ export class AiService {
 ```
 
 **Environment Variables**:
+
 ```env
 ANTHROPIC_API_KEY=sk-ant-xxx
 OPENAI_API_KEY=sk-xxx
@@ -698,6 +735,7 @@ OPENAI_API_KEY=sk-xxx
 ---
 
 #### 7. UC06.1 - AI Sprint Summary
+
 **Độ ưu tiên**: MEDIUM
 **Thời gian ước tính**: 3-4 ngày
 **Phụ thuộc**: UC06.4
@@ -705,6 +743,7 @@ OPENAI_API_KEY=sk-xxx
 **Công việc cần làm:**
 
 **Backend**:
+
 ```typescript
 // File: src/modules/sprint/sprint.service.ts
 
@@ -770,6 +809,7 @@ Format in Markdown.
 ```
 
 **Frontend - Thêm vào Complete Sprint Modal**:
+
 ```typescript
 // File: src/core/components/sprint/complete-sprint-modal.tsx
 
@@ -777,32 +817,36 @@ Format in Markdown.
   label="Tạo AI Sprint Summary"
   checked={generateAiSummary}
   onChange={setGenerateAiSummary}
-/>
+/>;
 
 // Khi complete:
 if (generateAiSummary) {
-  await fetch(`/api/sprints/${sprint.id}/ai-summary`, { method: 'POST' });
+  await fetch(`/api/sprints/${sprint.id}/ai-summary`, { method: "POST" });
 }
 ```
 
 **Sprint Detail Page - Hiển thị Summary**:
+
 ```typescript
 // File: src/core/components/sprint/sprint-detail-view.tsx
 
-{sprint.aiSummary && (
-  <div className="mt-6 rounded-lg border p-6">
-    <h3 className="text-lg font-semibold mb-4">AI Sprint Summary</h3>
-    <div
-      className="prose prose-sm max-w-none"
-      dangerouslySetInnerHTML={{ __html: marked(sprint.aiSummary) }}
-    />
-  </div>
-)}
+{
+  sprint.aiSummary && (
+    <div className="mt-6 rounded-lg border p-6">
+      <h3 className="text-lg font-semibold mb-4">AI Sprint Summary</h3>
+      <div
+        className="prose prose-sm max-w-none"
+        dangerouslySetInnerHTML={{ __html: marked(sprint.aiSummary) }}
+      />
+    </div>
+  );
+}
 ```
 
 ---
 
 #### 8. UC06.2 - AI Refine Issue Description
+
 **Độ ưu tiên**: MEDIUM
 **Thời gian ước tính**: 3-4 ngày
 **Phụ thuộc**: UC06.4
@@ -810,6 +854,7 @@ if (generateAiSummary) {
 **Công việc cần làm:**
 
 **Backend**:
+
 ```typescript
 // File: src/modules/ai/ai.controller.ts
 
@@ -851,6 +896,7 @@ Keep it concise and clear. Use bullet points.
 ```
 
 **Frontend**:
+
 ```typescript
 // File: src/core/components/issue/issue-description.tsx
 
@@ -860,13 +906,13 @@ const [refinedContent, setRefinedContent] = useState<string | null>(null);
 const handleRefineWithAi = async () => {
   setIsRefining(true);
   try {
-    const res = await fetch('/api/ai/refine-description', {
-      method: 'POST',
+    const res = await fetch("/api/ai/refine-description", {
+      method: "POST",
       body: JSON.stringify({
         currentDescription: value,
         issueType: issue.type,
-        projectContext: project.name
-      })
+        projectContext: project.name,
+      }),
     });
     const data = await res.json();
     setRefinedContent(data.refinedDescription);
@@ -883,33 +929,40 @@ const handleRefineWithAi = async () => {
     onClick={handleRefineWithAi}
     disabled={isRefining}
   >
-    {isRefining ? 'Đang xử lý...' : '✨ Refine with AI'}
+    {isRefining ? "Đang xử lý..." : "✨ Refine with AI"}
   </Button>
-</div>
+</div>;
 
-{refinedContent && (
-  <div className="mt-4 rounded-lg border-2 border-blue-500 p-4">
-    <div className="flex items-center justify-between mb-2">
-      <h4 className="font-semibold">AI Refined Description</h4>
-      <div className="flex gap-2">
-        <Button size="sm" onClick={() => onSubmit(refinedContent)}>
-          Accept
-        </Button>
-        <Button size="sm" variant="ghost" onClick={() => setRefinedContent(null)}>
-          Reject
-        </Button>
+{
+  refinedContent && (
+    <div className="mt-4 rounded-lg border-2 border-blue-500 p-4">
+      <div className="flex items-center justify-between mb-2">
+        <h4 className="font-semibold">AI Refined Description</h4>
+        <div className="flex gap-2">
+          <Button size="sm" onClick={() => onSubmit(refinedContent)}>
+            Accept
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setRefinedContent(null)}
+          >
+            Reject
+          </Button>
+        </div>
+      </div>
+      <div className="prose prose-sm">
+        <ReactMarkdown>{refinedContent}</ReactMarkdown>
       </div>
     </div>
-    <div className="prose prose-sm">
-      <ReactMarkdown>{refinedContent}</ReactMarkdown>
-    </div>
-  </div>
-)}
+  );
+}
 ```
 
 ---
 
 #### 9. UC03.6 - AI Auto-Generate Issues
+
 **Độ ưu tiên**: MEDIUM
 **Thời gian ước tính**: 4-5 ngày
 **Phụ thuộc**: UC06.4
@@ -917,6 +970,7 @@ const handleRefineWithAi = async () => {
 **Công việc cần làm:**
 
 **Backend**:
+
 ```typescript
 // File: src/modules/ai/ai.controller.ts
 
@@ -963,11 +1017,12 @@ Return ONLY valid JSON, no additional text.
 ```
 
 **Frontend - Create Issues from Description Modal**:
+
 ```typescript
 // File: src/core/components/issue/generate-issues-modal.tsx
 
 const GenerateIssuesModal = ({ projectId, onClose }) => {
-  const [description, setDescription] = useState('');
+  const [description, setDescription] = useState("");
   const [generatedIssues, setGeneratedIssues] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedIssues, setSelectedIssues] = useState<Set<number>>(new Set());
@@ -975,9 +1030,9 @@ const GenerateIssuesModal = ({ projectId, onClose }) => {
   const handleGenerate = async () => {
     setIsGenerating(true);
     try {
-      const res = await fetch('/api/ai/generate-issues', {
-        method: 'POST',
-        body: JSON.stringify({ description, projectId })
+      const res = await fetch("/api/ai/generate-issues", {
+        method: "POST",
+        body: JSON.stringify({ description, projectId }),
       });
       const data = await res.json();
       setGeneratedIssues(data.issues);
@@ -996,7 +1051,7 @@ const GenerateIssuesModal = ({ projectId, onClose }) => {
     for (const issue of issuesToCreate) {
       await issueStore.createIssue({
         projectId,
-        ...issue
+        ...issue,
       });
     }
 
@@ -1022,13 +1077,14 @@ const GenerateIssuesModal = ({ projectId, onClose }) => {
               disabled={description.length < 50 || isGenerating}
               fullWidth
             >
-              {isGenerating ? 'Generating...' : '✨ Generate Issues with AI'}
+              {isGenerating ? "Generating..." : "✨ Generate Issues with AI"}
             </Button>
           </div>
         ) : (
           <div className="space-y-4">
             <Alert variant="info">
-              AI generated {generatedIssues.length} issues. Review and uncheck any you don't want to create.
+              AI generated {generatedIssues.length} issues. Review and uncheck
+              any you don't want to create.
             </Alert>
 
             <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -1046,11 +1102,17 @@ const GenerateIssuesModal = ({ projectId, onClose }) => {
                       <div className="ml-2">
                         <div className="flex items-center gap-2">
                           <Badge variant={issue.type}>{issue.type}</Badge>
-                          <Badge variant={issue.priority}>{issue.priority}</Badge>
+                          <Badge variant={issue.priority}>
+                            {issue.priority}
+                          </Badge>
                           <span className="font-medium">{issue.name}</span>
-                          <span className="text-sm text-gray-500">({issue.estimatedPoints} pts)</span>
+                          <span className="text-sm text-gray-500">
+                            ({issue.estimatedPoints} pts)
+                          </span>
                         </div>
-                        <p className="mt-1 text-sm text-gray-600">{issue.description}</p>
+                        <p className="mt-1 text-sm text-gray-600">
+                          {issue.description}
+                        </p>
                       </div>
                     }
                   />
@@ -1082,6 +1144,7 @@ const GenerateIssuesModal = ({ projectId, onClose }) => {
 ## TỔNG KẾT ROADMAP
 
 ### Sprint 1 (Week 1-2): CRITICAL Fixes
+
 - ✅ UC02.2 - Start Sprint với snapshot metrics (1-2 ngày)
 - ✅ UC02.3 - Complete Sprint với velocity calculation (3-5 ngày)
 - ✅ UC04.4 - Delete Status với migration (1-2 ngày)
@@ -1091,6 +1154,7 @@ const GenerateIssuesModal = ({ projectId, onClose }) => {
 ---
 
 ### Sprint 2 (Week 3-4): Analytics & Filters
+
 - ✅ UC05.3 - Comprehensive filters (3-4 ngày)
 - ✅ Sprint Velocity Chart (2-3 ngày)
 
@@ -1099,6 +1163,7 @@ const GenerateIssuesModal = ({ projectId, onClose }) => {
 ---
 
 ### Sprint 3 (Week 5-6): AI Foundation
+
 - ✅ UC06.4 - LLM API Integration Module (5-7 ngày)
 - ✅ Basic testing & documentation (2 ngày)
 
@@ -1107,6 +1172,7 @@ const GenerateIssuesModal = ({ projectId, onClose }) => {
 ---
 
 ### Sprint 4 (Week 7-9): AI Features
+
 - ✅ UC06.1 - AI Sprint Summary (3-4 ngày)
 - ✅ UC06.2 - AI Refine Description (3-4 ngày)
 - ✅ UC03.6 - AI Generate Issues (4-5 ngày)
@@ -1118,6 +1184,7 @@ const GenerateIssuesModal = ({ projectId, onClose }) => {
 ## CHECKLIST HOÀN THÀNH
 
 ### Backend Tasks
+
 - [ ] Start Sprint snapshot metrics recording (issue count + story points)
 - [ ] Start Sprint date validation
 - [ ] Complete Sprint với incomplete issue handling
@@ -1132,6 +1199,7 @@ const GenerateIssuesModal = ({ projectId, onClose }) => {
 - [ ] Database migrations (Sprint metrics columns: initialIssueCount, initialStoryPoints, startedAt, completedAt, velocity)
 
 ### Frontend Tasks
+
 - [ ] Start Sprint modal improvements (empty sprint warning, date validation, metrics overview)
 - [ ] Complete Sprint modal (incomplete issues handling UI)
 - [ ] Delete Status modal (target status selection)
@@ -1144,12 +1212,14 @@ const GenerateIssuesModal = ({ projectId, onClose }) => {
 - [ ] Loading states & error handling cho tất cả AI features
 
 ### Testing
+
 - [ ] Unit tests cho sprint validation logic
 - [ ] Integration tests cho issue migration
 - [ ] E2E tests cho AI features (mock API responses)
 - [ ] Performance testing cho filters với large datasets
 
 ### Documentation
+
 - [ ] API documentation cho AI endpoints
 - [ ] User guide cho AI features
 - [ ] Migration guide cho database changes
@@ -1159,6 +1229,7 @@ const GenerateIssuesModal = ({ projectId, onClose }) => {
 ## RESOURCES & DEPENDENCIES
 
 ### NPM Packages cần cài
+
 ```json
 {
   "@anthropic-ai/sdk": "^0.27.0",
@@ -1169,6 +1240,7 @@ const GenerateIssuesModal = ({ projectId, onClose }) => {
 ```
 
 ### Environment Variables
+
 ```env
 # AI Configuration
 ANTHROPIC_API_KEY=sk-ant-xxx
@@ -1179,6 +1251,7 @@ AI_MAX_TOKENS=4096
 ```
 
 ### API Rate Limits (Cần lưu ý)
+
 - Anthropic: 50 requests/min (tier 1)
 - OpenAI: 60 requests/min (tier 1)
 - Cần implement retry với exponential backoff
@@ -1189,17 +1262,22 @@ AI_MAX_TOKENS=4096
 ## RISK MANAGEMENT
 
 ### Technical Risks
+
 1. **AI API Costs** - Cần monitor token usage, có thể tốn chi phí cao
+
    - Mitigation: Rate limiting, token limits per user/org
 
 2. **AI Response Quality** - AI có thể generate nội dung không chính xác
+
    - Mitigation: User review & edit, disclaimer rõ ràng
 
 3. **Database Migration** - Thêm columns có thể ảnh hưởng production
    - Mitigation: Run migrations off-peak hours, có rollback plan
 
 ### Business Risks
+
 1. **User Adoption** - Users có thể không dùng AI features
+
    - Mitigation: Onboarding tooltips, examples, documentation
 
 2. **Data Privacy** - Sending issue data to LLM providers
@@ -1210,6 +1288,7 @@ AI_MAX_TOKENS=4096
 ## MONITORING & SUCCESS METRICS
 
 ### Cần track:
+
 - Sprint start/complete success rate
 - Issue migration accuracy (0 data loss)
 - AI feature usage rate
@@ -1218,6 +1297,7 @@ AI_MAX_TOKENS=4096
 - Time saved with AI features
 
 ### KPIs
+
 - 100% use cases implemented ✅
 - 0 critical bugs in production
 - < 2s response time cho AI endpoints

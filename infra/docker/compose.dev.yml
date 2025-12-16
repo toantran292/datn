@@ -253,6 +253,8 @@ services:
       dockerfile: Dockerfile.dev
     container_name: uts_pm
     restart: unless-stopped
+    env_file:
+      - .env.dev
     volumes:
       - ../../services/pm:/app
       - pm_node_modules:/app/node_modules
@@ -265,7 +267,7 @@ services:
       DATABASE_PASSWORD: ${PM_DATABASE_PASSWORD}
       DATABASE_NAME: ${PM_DATABASE_NAME}
       DATABASE_URL: ${PM_DATABASE_URL}
-      OPENAI_API_KEY: ${PM_OPENAI_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
     healthcheck:
       test:
         [

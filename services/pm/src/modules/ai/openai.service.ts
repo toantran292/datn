@@ -105,6 +105,66 @@ export class OpenAIService {
   }
 
   /**
+   * Create streaming chat completion
+   * Returns async generator for Server-Sent Events
+   */
+  async *createStreamingChatCompletion(
+    request: Partial<ChatCompletionRequest>,
+  ): AsyncGenerator<string> {
+    const startTime = Date.now();
+
+    try {
+      this.logger.log('Starting OpenAI streaming completion...');
+
+      const stream = await this.openai.chat.completions.create({
+        model: request.model || this.model,
+        messages: request.messages || [],
+        temperature: request.temperature ?? this.temperature,
+        max_tokens: request.max_tokens ?? this.maxTokens,
+        stream: true,
+      });
+
+      for await (const chunk of stream) {
+        const content = chunk.choices[0]?.delta?.content;
+        if (content) {
+          yield content;
+        }
+      }
+
+      const processingTime = Date.now() - startTime;
+      this.logger.log(`OpenAI streaming completed in ${processingTime}ms`);
+    } catch (error) {
+      this.logger.error('OpenAI streaming error', error.stack);
+
+      // Handle specific OpenAI errors
+      if (error.response) {
+        const status = error.response.status;
+        const message = error.response.data?.error?.message || error.message;
+
+        if (status === 429) {
+          throw new InternalServerErrorException(
+            'OpenAI API rate limit exceeded. Please try again later.',
+          );
+        }
+
+        if (status === 401) {
+          throw new InternalServerErrorException('OpenAI API authentication failed');
+        }
+
+        if (status === 500) {
+          throw new InternalServerErrorException('OpenAI API service error');
+        }
+
+        throw new InternalServerErrorException(`OpenAI API error: ${message}`);
+      }
+
+      throw new InternalServerErrorException(
+        'Failed to communicate with AI service. Please try again.',
+      );
+    }
+  }
+
+  /**
    * Estimate tokens for a text
    * Rough estimation: 1 token ≈ 4 characters
    */

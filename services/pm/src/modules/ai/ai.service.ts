@@ -585,4 +585,183 @@ export class AIService {
 
     return false;
   }
+
+  /**
+   * Refine description with streaming (SSE)
+   */
+  async *refineDescriptionStream(dto: RefineDescriptionDto): AsyncGenerator<{
+    type: 'text' | 'confidence' | 'metadata';
+    content?: string;
+    value?: any;
+  }> {
+    try {
+      this.logger.log(
+        `Streaming refine for issue: ${dto.issueId} (${dto.issueType})`,
+      );
+
+      // 1. Get prompts
+      const { system, user } = this.promptService.getRefinePrompt(dto);
+
+      // 2. Check token limit
+      const estimatedTokens = this.openaiService.estimateTokens(system + user);
+      if (this.openaiService.wouldExceedTokenLimit(estimatedTokens)) {
+        throw new InternalServerErrorException(
+          'Description is too long. Please reduce the content.',
+        );
+      }
+
+      let fullText = '';
+
+      // 3. Stream from OpenAI
+      for await (const chunk of this.openaiService.createStreamingChatCompletion({
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: user },
+        ],
+      })) {
+        fullText += chunk;
+        yield { type: 'text', content: chunk };
+      }
+
+      // 4. Calculate confidence after streaming
+      const { html, improvements } = this.parseAIResponse(fullText);
+      const confidence = this.calculateConfidence(
+        dto.currentDescription,
+        html,
+        improvements.length,
+      );
+
+      // 5. Send confidence
+      yield { type: 'confidence', value: confidence };
+
+      // 6. Send metadata
+      yield {
+        type: 'metadata',
+        value: {
+          improvementsCount: improvements.length,
+        },
+      };
+    } catch (error) {
+      this.logger.error('AI streaming refine failed', error.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * Estimate story points with streaming (SSE)
+   */
+  async *estimateStoryPointsStream(dto: EstimatePointsDto): AsyncGenerator<{
+    type: 'text' | 'confidence' | 'metadata';
+    content?: string;
+    value?: any;
+  }> {
+    try {
+      this.logger.log(
+        `Streaming estimate for issue: ${dto.issueId} (${dto.issueType})`,
+      );
+
+      // 1. Get prompts
+      const { system, user } = this.promptService.getEstimatePrompt(dto);
+
+      // 2. Check token limit
+      const estimatedTokens = this.openaiService.estimateTokens(system + user);
+      if (this.openaiService.wouldExceedTokenLimit(estimatedTokens)) {
+        throw new InternalServerErrorException(
+          'Description is too long. Please reduce the content.',
+        );
+      }
+
+      let fullText = '';
+
+      // 3. Stream from OpenAI
+      for await (const chunk of this.openaiService.createStreamingChatCompletion({
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: user },
+        ],
+      })) {
+        fullText += chunk;
+        yield { type: 'text', content: chunk };
+      }
+
+      // 4. Parse and extract confidence after streaming
+      const estimationData = this.parseEstimationResponse(fullText);
+
+      // 5. Send confidence
+      yield { type: 'confidence', value: estimationData.confidence };
+
+      // 6. Send metadata
+      yield {
+        type: 'metadata',
+        value: {
+          suggestedPoints: estimationData.suggestedPoints,
+        },
+      };
+    } catch (error) {
+      this.logger.error('AI streaming estimation failed', error.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * Break down Epic/Story with streaming (SSE)
+   */
+  async *breakdownEpicStream(dto: BreakdownIssueDto): AsyncGenerator<{
+    type: 'text' | 'confidence' | 'metadata';
+    content?: string;
+    value?: any;
+  }> {
+    try {
+      this.logger.log(
+        `Streaming breakdown for issue: ${dto.issueId} (${dto.issueType})`,
+      );
+
+      // 1. Get prompts
+      const { system, user } = this.promptService.getBreakdownPrompt(dto);
+
+      // 2. Check token limit
+      const breakdownMaxTokens = 6000;
+      const estimatedTokens = this.openaiService.estimateTokens(system + user);
+      if (this.openaiService.wouldExceedTokenLimit(estimatedTokens, breakdownMaxTokens)) {
+        throw new InternalServerErrorException(
+          'Description is too long. Please reduce the content.',
+        );
+      }
+
+      let fullText = '';
+
+      // 3. Stream from OpenAI
+      for await (const chunk of this.openaiService.createStreamingChatCompletion({
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: user },
+        ],
+        max_tokens: breakdownMaxTokens,
+      })) {
+        fullText += chunk;
+        yield { type: 'text', content: chunk };
+      }
+
+      // 4. Parse and validate after streaming
+      const breakdownData = this.parseBreakdownResponse(fullText);
+      this.validateBreakdown(breakdownData);
+
+      // 5. Send confidence (based on validation scores)
+      const confidence = breakdownData.validation.completeness;
+      yield { type: 'confidence', value: confidence };
+
+      // 6. Send metadata
+      yield {
+        type: 'metadata',
+        value: {
+          subtasksCount: breakdownData.subTasks.length,
+          totalPoints: breakdownData.validation.totalPoints,
+          complexity: breakdownData.subTasks.length > 10 ? 'high' : 'medium',
+        },
+      };
+    } catch (error) {
+      this.logger.error('AI streaming breakdown failed', error.stack);
+      throw error;
+    }
+  }
 }
