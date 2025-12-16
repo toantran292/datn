@@ -1,4 +1,4 @@
-import { ListTodo, KanbanSquare, BarChart3, Calendar, GanttChartSquare } from "lucide-react";
+import { ListTodo, KanbanSquare, BarChart3, Calendar, GanttChartSquare, Sparkles } from "lucide-react";
 import { cn } from "@uts/fe-utils";
 
 export const getSidebarNavigationItemIcon = (key: string, className: string = "") => {
@@ -13,6 +13,8 @@ export const getSidebarNavigationItemIcon = (key: string, className: string = ""
       return <GanttChartSquare className={cn("size-4 flex-shrink-0", className)} />;
     case "summary":
       return <BarChart3 className={cn("size-4 flex-shrink-0", className)} />;
+    case "auto-create":
+      return <Sparkles className={cn("size-4 flex-shrink-0", className)} />;
     default:
       return null;
   }

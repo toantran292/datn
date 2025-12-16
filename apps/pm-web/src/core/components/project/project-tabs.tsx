@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { cn } from "@uts/fe-utils";
 
-export type TProjectTabKey = "backlog" | "board" | "calendar" | "timeline";
+export type TProjectTabKey = "backlog" | "board" | "calendar" | "timeline" | "summary" | "auto-create";
 
 interface ProjectTabsProps {
   workspaceSlug?: string;
@@ -16,6 +16,8 @@ const TABS: Array<{ key: TProjectTabKey; label: string; path: string }> = [
   { key: "board", label: "Board", path: "board" },
   { key: "calendar", label: "Calendar", path: "calendar" },
   { key: "timeline", label: "Timeline", path: "timeline" },
+  { key: "summary", label: "Summary", path: "summary" },
+  { key: "auto-create", label: "Tự động tạo", path: "auto-create" },
 ];
 
 export const ProjectTabs: FC<ProjectTabsProps> = ({ workspaceSlug, projectId, active }) => {
