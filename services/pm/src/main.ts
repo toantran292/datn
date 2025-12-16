@@ -6,12 +6,7 @@ import { AppModule } from "./app.module";
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Enable CORS
-  app.enableCors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:40401",
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  });
+  // CORS is handled by Edge (nginx), disabled here
 
   // Global validation pipe
   app.useGlobalPipes(

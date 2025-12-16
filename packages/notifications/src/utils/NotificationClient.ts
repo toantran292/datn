@@ -65,9 +65,10 @@ export class NotificationClient {
       };
     }
 
-    this.log(`Connecting to ${this.config.gatewayUrl}/notifications`);
+    this.log(`Connecting to ${this.config.gatewayUrl}`);
 
-    this.socket = io(`${this.config.gatewayUrl}/notifications`, socketOptions);
+    // Connect to gateway URL, Socket.IO path handles the routing
+    this.socket = io(this.config.gatewayUrl, socketOptions);
 
     this.setupEventListeners();
   }

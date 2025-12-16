@@ -36,6 +36,9 @@ public class InvitationEntity {
     @Column(name = "member_type", nullable = false)
     private MemberType memberType = MemberType.STAFF;
 
+    @Column(name = "role", nullable = false)
+    private String role = "MEMBER";
+
     // getters/setters ...
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
@@ -51,4 +54,6 @@ public class InvitationEntity {
     public void setAcceptedAt(Instant acceptedAt) { this.acceptedAt = acceptedAt; }
     public MemberType getMemberType() { return memberType; }
     public void setMemberType(MemberType memberType) { this.memberType = memberType; }
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
 }

@@ -41,5 +41,6 @@
                 "pdflatex"
             ]
         }
-    ]
+    ],
+    "prisma.pinToPrisma6": true
 }

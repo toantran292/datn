@@ -1,103 +1,250 @@
-import { Inject, Injectable } from "@nestjs/common";
-import { mapping, types } from "cassandra-driver";
-import { CASS_MAPPER } from "../../cassandra/cassandra.module";
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, IsNull } from 'typeorm';
+import { Message } from '../../database/entities/message.entity';
 
 export interface MessageEntity {
-  id?: types.TimeUuid;
-  roomId: types.TimeUuid;
-  userId: types.Uuid;
-  orgId: types.Uuid;
-  threadId?: types.TimeUuid | null;
+  id?: string;
+  roomId: string;
+  userId: string;
+  orgId: string;
+  threadId?: string | null;
   type: string;
   content: string;
-  sendAt?: Date;
+  createdAt?: Date;
 }
 
 export interface PersistedMessage {
-  id: types.TimeUuid;
-  roomId: types.TimeUuid;
-  userId: types.Uuid;
-  orgId: types.Uuid;
-  threadId: types.TimeUuid | null;
+  id: string;
+  roomId: string;
+  userId: string;
+  orgId: string;
+  threadId: string | null;
   type: string;
   content: string;
-  sendAt: Date;
+  createdAt: Date;
 }
 
 @Injectable()
 export class MessagesRepository {
-  private model: mapping.ModelMapper<MessageEntity>;
-
-  constructor(@Inject(CASS_MAPPER) mapper: mapping.Mapper) {
-    this.model = mapper.forModel<MessageEntity>("Message");
-  }
+  constructor(
+    @InjectRepository(Message)
+    private readonly messageRepo: Repository<Message>,
+  ) {}
 
   async create(msg: MessageEntity): Promise<PersistedMessage> {
-    const id = msg.id ?? types.TimeUuid.now();
-    const sendAt = msg.sendAt ?? new Date();
-
-    const dbPayload: MessageEntity = {
-      id,
+    const entity = this.messageRepo.create({
       roomId: msg.roomId,
       userId: msg.userId,
       orgId: msg.orgId,
       threadId: msg.threadId ?? null,
-      type: msg.type,
+      type: msg.type as any,
       content: msg.content,
-      sendAt,
-    };
+    });
 
-    await this.model.insert(dbPayload as any);
+    const saved = await this.messageRepo.save(entity);
 
     return {
-      id,
-      roomId: msg.roomId,
-      userId: msg.userId,
-      orgId: msg.orgId,
-      threadId: msg.threadId ?? null,
-      type: msg.type,
-      content: msg.content,
-      sendAt,
+      id: saved.id,
+      roomId: saved.roomId,
+      userId: saved.userId,
+      orgId: saved.orgId,
+      threadId: saved.threadId,
+      type: saved.type,
+      content: saved.content,
+      createdAt: saved.createdAt,
     };
   }
 
   async listByRoom(
-    roomId: types.TimeUuid,
+    roomId: string,
     opts: { pageSize?: number; pageState?: string } = {},
   ): Promise<{ items: PersistedMessage[]; pageState?: string }> {
-    const rs = await this.model.find({ roomId }, {
-      fetchSize: opts.pageSize ?? 50,
-      pageState: opts.pageState,
-      orderBy: { sendAt: "ASC", id: "ASC" },
-    } as any);
+    const limit = opts.pageSize ?? 50;
+    const offset = opts.pageState ? parseInt(opts.pageState, 10) : 0;
 
-    const items: PersistedMessage[] = rs.toArray().map(row => ({
-      id: row.id!,
+    const [messages, total] = await this.messageRepo.findAndCount({
+      where: { roomId, deletedAt: IsNull() },
+      order: { createdAt: 'ASC' },
+      skip: offset,
+      take: limit,
+    });
+
+    const items: PersistedMessage[] = messages.map((row) => ({
+      id: row.id,
       roomId: row.roomId,
       userId: row.userId,
       orgId: row.orgId,
-      threadId: row.threadId ?? null,
+      threadId: row.threadId,
       type: row.type,
       content: row.content,
-      sendAt: row.sendAt!,
+      createdAt: row.createdAt,
     }));
 
-    return { items, pageState: (rs as any).pageState ?? undefined };
+    const nextOffset = offset + messages.length;
+    const hasMore = nextOffset < total;
+
+    return {
+      items,
+      pageState: hasMore ? nextOffset.toString() : undefined,
+    };
   }
 
-  async countRepliesByThreadId(
-    roomId: types.TimeUuid,
-    threadId: types.TimeUuid,
-  ): Promise<number> {
-    // Simple count query - in production, consider caching this
-    const rs = await this.model.find({ roomId }, {
-      fetchSize: 10000, // Get all to filter
-    } as any);
+  async listByThread(
+    roomId: string,
+    threadId: string,
+    opts: { pageSize?: number; pageState?: string } = {},
+  ): Promise<{ items: PersistedMessage[]; pageState?: string }> {
+    const limit = opts.pageSize ?? 50;
+    const offset = opts.pageState ? parseInt(opts.pageState, 10) : 0;
 
-    const count = rs.toArray().filter(row =>
-      row.threadId?.toString() === threadId.toString()
-    ).length;
+    const [messages, total] = await this.messageRepo.findAndCount({
+      where: { roomId, threadId, deletedAt: IsNull() },
+      order: { createdAt: 'ASC' },
+      skip: offset,
+      take: limit,
+    });
 
-    return count;
+    const items: PersistedMessage[] = messages.map((row) => ({
+      id: row.id,
+      roomId: row.roomId,
+      userId: row.userId,
+      orgId: row.orgId,
+      threadId: row.threadId,
+      type: row.type,
+      content: row.content,
+      createdAt: row.createdAt,
+    }));
+
+    const nextOffset = offset + messages.length;
+    const hasMore = nextOffset < total;
+
+    return {
+      items,
+      pageState: hasMore ? nextOffset.toString() : undefined,
+    };
+  }
+
+  async countRepliesByThreadId(roomId: string, threadId: string): Promise<number> {
+    return this.messageRepo.count({
+      where: { roomId, threadId, deletedAt: IsNull() },
+    });
+  }
+
+  async findById(id: string): Promise<PersistedMessage | null> {
+    const message = await this.messageRepo.findOne({
+      where: { id, deletedAt: IsNull() },
+    });
+
+    if (!message) return null;
+
+    return {
+      id: message.id,
+      roomId: message.roomId,
+      userId: message.userId,
+      orgId: message.orgId,
+      threadId: message.threadId,
+      type: message.type,
+      content: message.content,
+      createdAt: message.createdAt,
+    };
+  }
+
+  async updateContent(id: string, content: string): Promise<void> {
+    await this.messageRepo.update(id, {
+      content,
+      editedAt: new Date(),
+    });
+  }
+
+  async softDelete(id: string): Promise<void> {
+    await this.messageRepo.update(id, {
+      deletedAt: new Date(),
+    });
+  }
+
+  async getReplyCountsForMessages(
+    roomId: string,
+    messageIds: string[],
+  ): Promise<Map<string, number>> {
+    if (messageIds.length === 0) return new Map();
+
+    const counts = await this.messageRepo
+      .createQueryBuilder('m')
+      .select('m.thread_id', 'threadId')
+      .addSelect('COUNT(*)', 'count')
+      .where('m.room_id = :roomId', { roomId })
+      .andWhere('m.thread_id IN (:...messageIds)', { messageIds })
+      .andWhere('m.deleted_at IS NULL')
+      .groupBy('m.thread_id')
+      .getRawMany();
+
+    const result = new Map<string, number>();
+    for (const row of counts) {
+      result.set(row.threadId, parseInt(row.count, 10));
+    }
+    return result;
+  }
+
+  async getLastReply(roomId: string, threadId: string): Promise<PersistedMessage | null> {
+    const message = await this.messageRepo.findOne({
+      where: { roomId, threadId, deletedAt: IsNull() },
+      order: { createdAt: 'DESC' },
+    });
+
+    if (!message) return null;
+
+    return {
+      id: message.id,
+      roomId: message.roomId,
+      userId: message.userId,
+      orgId: message.orgId,
+      threadId: message.threadId,
+      type: message.type,
+      content: message.content,
+      createdAt: message.createdAt,
+    };
+  }
+
+  async countAfterMessage(roomId: string, afterMessageId: string | null): Promise<number> {
+    const qb = this.messageRepo
+      .createQueryBuilder('m')
+      .where('m.room_id = :roomId', { roomId })
+      .andWhere('m.deleted_at IS NULL')
+      .andWhere('m.thread_id IS NULL'); // Only count main messages, not replies
+
+    if (afterMessageId) {
+      // Get the timestamp of the reference message
+      const refMessage = await this.messageRepo.findOne({
+        where: { id: afterMessageId },
+        select: ['createdAt'],
+      });
+
+      if (refMessage) {
+        qb.andWhere('m.created_at > :afterTime', { afterTime: refMessage.createdAt });
+      }
+    }
+
+    return qb.getCount();
+  }
+
+  async getLatestMessage(roomId: string): Promise<PersistedMessage | null> {
+    const message = await this.messageRepo.findOne({
+      where: { roomId, deletedAt: IsNull(), threadId: IsNull() },
+      order: { createdAt: 'DESC' },
+    });
+
+    if (!message) return null;
+
+    return {
+      id: message.id,
+      roomId: message.roomId,
+      userId: message.userId,
+      orgId: message.orgId,
+      threadId: message.threadId,
+      type: message.type,
+      content: message.content,
+      createdAt: message.createdAt,
+    };
   }
 }

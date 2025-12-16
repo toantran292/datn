@@ -6,11 +6,10 @@ import { IoAdapter } from '@nestjs/platform-socket.io';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // Enable CORS for development (Edge also handles CORS)
   app.enableCors({
-    origin: '*',
+    origin: true,
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-user-id', 'x-org-id'],
   });
 
   app.useGlobalPipes(
@@ -28,7 +27,6 @@ async function bootstrap() {
   await app.listen(port);
 
   console.log(`🚀 Notification service is running on port ${port}`);
-  console.log(`📧 Email service connected to ${process.env.SMTP_HOST || 'mailhog'}`);
   console.log(`🔌 WebSocket available at ws://localhost:${port}`);
 }
 

@@ -2,6 +2,7 @@ package com.datn.identity.interfaces.api;
 
 import com.datn.identity.application.OrganizationApplicationService;
 import com.datn.identity.application.InvitationApplicationService;
+import com.datn.identity.application.UserApplicationService;
 import com.datn.identity.domain.invite.Invitation;
 import com.datn.identity.domain.org.Organization;
 import com.datn.identity.domain.org.OrganizationRepository;
@@ -24,16 +25,98 @@ public class MeController {
     private final InvitationApplicationService invites;
     private final OrganizationRepository orgRepo;
     private final FileStorageClient fileStorageClient;
+    private final UserApplicationService users;
 
     public MeController(OrganizationApplicationService orgs,
                        InvitationApplicationService invites,
                        OrganizationRepository orgRepo,
-                       FileStorageClient fileStorageClient) {
+                       FileStorageClient fileStorageClient,
+                       UserApplicationService users) {
         this.orgs = orgs;
         this.invites = invites;
         this.orgRepo = orgRepo;
         this.fileStorageClient = fileStorageClient;
+        this.users = users;
     }
+
+    /**
+     * Get current user's profile
+     */
+    @GetMapping("/profile")
+    public ResponseEntity<?> getProfile() {
+        UUID userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "not_authenticated"));
+        }
+        var profile = users.getProfile(userId);
+        return ResponseEntity.ok(profile);
+    }
+
+    /**
+     * Update current user's profile
+     */
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateProfile(@RequestBody UpdateProfileReq req) {
+        UUID userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "not_authenticated"));
+        }
+        var profile = users.updateProfile(userId, req);
+        return ResponseEntity.ok(profile);
+    }
+
+    /**
+     * Get presigned URL for avatar upload
+     */
+    @PostMapping("/avatar/presigned-url")
+    public ResponseEntity<?> getAvatarPresignedUrl(@RequestBody AvatarPresignedUrlReq req) {
+        UUID userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "not_authenticated"));
+        }
+
+        var presignedReq = new FileStorageClient.CreatePresignedUrlRequest(
+            req.originalName(),
+            req.mimeType(),
+            req.size(),
+            "identity",
+            "user_avatar",
+            userId.toString(),
+            userId.toString(),
+            List.of("avatar", "user"),
+            Map.of("userId", userId.toString())
+        );
+
+        var response = fileStorageClient.createPresignedUrl(presignedReq);
+        return ResponseEntity.ok(Map.of(
+            "assetId", response.assetId(),
+            "presignedUrl", response.presignedUrl(),
+            "objectKey", response.objectKey(),
+            "expiresIn", response.expiresIn()
+        ));
+    }
+
+    /**
+     * Update user avatar after upload
+     */
+    @PatchMapping("/avatar")
+    public ResponseEntity<?> updateAvatar(@RequestBody UpdateAvatarReq req) {
+        UUID userId = SecurityUtils.getCurrentUserId();
+        if (userId == null) {
+            return ResponseEntity.status(401).body(Map.of("error", "not_authenticated"));
+        }
+
+        if (req == null || req.assetId() == null || req.assetId().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "assetId_required"));
+        }
+
+        // Update avatar in profile
+        var updateReq = new UpdateProfileReq(null, null, null, null, null, req.assetId());
+        var profile = users.updateProfile(userId, updateReq);
+        return ResponseEntity.ok(profile);
+    }
+
+    public record UpdateAvatarReq(String assetId) {}
 
     /**
      * Get user's organizations and invitations in the format expected by frontend

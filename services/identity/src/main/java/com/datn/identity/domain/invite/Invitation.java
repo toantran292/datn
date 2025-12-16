@@ -13,9 +13,10 @@ public final class Invitation {
     private final Instant createdAt;
     private final Instant acceptedAt;    // nullable
     private final MemberType memberType;
+    private final String role;           // ADMIN or MEMBER
 
     public Invitation(UUID id, UUID orgId, String email, String token,
-                      Instant createdAt, Instant acceptedAt, MemberType memberType) {
+                      Instant createdAt, Instant acceptedAt, MemberType memberType, String role) {
         this.id = id;
         this.orgId = orgId;
         this.email = email;
@@ -23,9 +24,16 @@ public final class Invitation {
         this.createdAt = createdAt;
         this.acceptedAt = acceptedAt;
         this.memberType = memberType;
+        this.role = role;
     }
 
-    public static Invitation create(UUID orgId, String email, MemberType type) {
+    // Backward compatible constructor
+    public Invitation(UUID id, UUID orgId, String email, String token,
+                      Instant createdAt, Instant acceptedAt, MemberType memberType) {
+        this(id, orgId, email, token, createdAt, acceptedAt, memberType, "MEMBER");
+    }
+
+    public static Invitation create(UUID orgId, String email, MemberType type, String role) {
         if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("email_required");
         }
@@ -33,18 +41,24 @@ public final class Invitation {
                 UUID.randomUUID(),
                 orgId,
                 email.toLowerCase(),
-                UUID.randomUUID().toString(), 
+                UUID.randomUUID().toString(),
                 Instant.now(),
                 null,
-                type == null ? MemberType.STAFF : type
+                type == null ? MemberType.STAFF : type,
+                role == null ? "MEMBER" : role
         );
+    }
+
+    // Backward compatible factory method
+    public static Invitation create(UUID orgId, String email, MemberType type) {
+        return create(orgId, email, type, "MEMBER");
     }
 
     public Invitation markAccepted() {
         if (acceptedAt != null) {
             throw new IllegalStateException("already_accepted");
         }
-        return new Invitation(id, orgId, email, token, createdAt, Instant.now(), memberType);
+        return new Invitation(id, orgId, email, token, createdAt, Instant.now(), memberType, role);
     }
 
     // Getters
@@ -55,4 +69,5 @@ public final class Invitation {
     public Instant createdAt() { return createdAt; }
     public Instant acceptedAt() { return acceptedAt; }
     public MemberType memberType() { return memberType; }
+    public String role() { return role; }
 }

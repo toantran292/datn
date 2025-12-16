@@ -1,41 +1,149 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import sgMail from '@sendgrid/mail';
 import * as nodemailer from 'nodemailer';
 import { Transporter } from 'nodemailer';
 import { EmailPayload } from '../types/notification.types';
+import { EmailProvider } from '../config/email.config';
 
 @Injectable()
-export class EmailService {
+export class EmailService implements OnModuleInit {
   private readonly logger = new Logger(EmailService.name);
-  private transporter: Transporter;
+  private provider: EmailProvider;
+  private smtpTransporter: Transporter | null = null;
+  private sgMailClient: typeof sgMail | null = null;
 
-  constructor(private configService: ConfigService) {
-    this.initializeTransporter();
+  constructor(private configService: ConfigService) {}
+
+  onModuleInit() {
+    this.initializeProvider();
   }
 
-  private initializeTransporter() {
-    const host = this.configService.get<string>('email.host');
-    const port = this.configService.get<number>('email.port');
-    const secure = this.configService.get<boolean>('email.secure');
-    const auth = this.configService.get<any>('email.auth');
+  private initializeProvider() {
+    this.provider = this.configService.get<EmailProvider>('email.provider') || 'sendgrid';
 
-    this.transporter = nodemailer.createTransport({
+    if (this.provider === 'sendgrid') {
+      this.initializeSendGrid();
+    } else {
+      this.initializeSmtp();
+    }
+  }
+
+  private initializeSendGrid() {
+    const apiKey = this.configService.get<string>('email.sendgrid.apiKey');
+
+    if (!apiKey) {
+      this.logger.warn('SendGrid API key not configured. Email sending will fail.');
+      return;
+    }
+
+    sgMail.setApiKey(apiKey);
+    this.sgMailClient = sgMail;
+    this.logger.log('SendGrid email provider initialized');
+  }
+
+  private initializeSmtp() {
+    const host = this.configService.get<string>('email.smtp.host');
+    const port = this.configService.get<number>('email.smtp.port');
+    const secure = this.configService.get<boolean>('email.smtp.secure');
+    const auth = this.configService.get<any>('email.smtp.auth');
+
+    this.smtpTransporter = nodemailer.createTransport({
       host,
       port,
       secure,
       auth,
-      // For Mailhog, we don't need authentication
       tls: {
         rejectUnauthorized: false,
       },
     });
 
     this.logger.log(
-      `Email transporter initialized: ${host}:${port} (secure: ${secure})`,
+      `SMTP email transporter initialized: ${host}:${port} (secure: ${secure})`,
     );
   }
 
   async sendEmail(payload: EmailPayload): Promise<void> {
+    if (this.provider === 'sendgrid') {
+      await this.sendWithSendGrid(payload);
+    } else {
+      await this.sendWithSmtp(payload);
+    }
+  }
+
+  private async sendWithSendGrid(payload: EmailPayload): Promise<void> {
+    if (!this.sgMailClient) {
+      throw new Error('SendGrid client not initialized');
+    }
+
+    try {
+      const defaultFrom = this.configService.get<string>('email.from');
+      const fromName = this.configService.get<string>('email.fromName');
+
+      // Ensure we have content - SendGrid requires at least 1 character
+      const htmlContent = payload.html || payload.text;
+      const textContent = payload.text || payload.html;
+
+      if (!htmlContent && !textContent) {
+        throw new Error('Email must have either text or html content');
+      }
+
+      const msg: Parameters<typeof sgMail.send>[0] = {
+        to: payload.to,
+        from: {
+          email: payload.from || defaultFrom || 'noreply@uts.local',
+          name: fromName || 'UTS Notification',
+        },
+        subject: payload.subject,
+        ...(textContent && { text: textContent }),
+        ...(htmlContent && { html: htmlContent }),
+      };
+
+      // Add CC if provided
+      if (payload.cc) {
+        msg.cc = payload.cc;
+      }
+
+      // Add BCC if provided
+      if (payload.bcc) {
+        msg.bcc = payload.bcc;
+      }
+
+      // Add attachments if provided
+      if (payload.attachments && payload.attachments.length > 0) {
+        msg.attachments = payload.attachments.map((att) => ({
+          content: typeof att.content === 'string' ? att.content : att.content?.toString('base64') || '',
+          filename: att.filename || 'attachment',
+          type: att.contentType,
+          disposition: 'attachment' as const,
+        }));
+      }
+
+      const [response] = await this.sgMailClient.send(msg);
+
+      this.logger.log(
+        `Email sent via SendGrid to ${Array.isArray(payload.to) ? payload.to.join(', ') : payload.to}. Status: ${response.statusCode}`,
+      );
+    } catch (error: any) {
+      // Log detailed SendGrid error
+      if (error.response) {
+        this.logger.error(
+          `SendGrid error details: ${JSON.stringify(error.response.body)}`,
+        );
+      }
+      this.logger.error(
+        `Failed to send email via SendGrid: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  private async sendWithSmtp(payload: EmailPayload): Promise<void> {
+    if (!this.smtpTransporter) {
+      throw new Error('SMTP transporter not initialized');
+    }
+
     try {
       const defaultFrom = this.configService.get<string>('email.from');
 
@@ -58,28 +166,49 @@ export class EmailService {
         attachments: payload.attachments,
       };
 
-      const info = await this.transporter.sendMail(mailOptions);
+      const info = await this.smtpTransporter.sendMail(mailOptions);
 
       this.logger.log(
-        `Email sent successfully to ${mailOptions.to}. MessageId: ${info.messageId}`,
+        `Email sent via SMTP to ${mailOptions.to}. MessageId: ${info.messageId}`,
       );
-    } catch (error) {
-      this.logger.error(`Failed to send email: ${error.message}`, error.stack);
+    } catch (error: any) {
+      this.logger.error(`Failed to send email via SMTP: ${error.message}`, error.stack);
       throw error;
     }
   }
 
   async verifyConnection(): Promise<boolean> {
+    if (this.provider === 'sendgrid') {
+      // SendGrid doesn't have a direct verify method
+      // We'll just check if API key is configured
+      const apiKey = this.configService.get<string>('email.sendgrid.apiKey');
+      if (apiKey) {
+        this.logger.log('SendGrid API key is configured');
+        return true;
+      }
+      this.logger.warn('SendGrid API key is not configured');
+      return false;
+    }
+
+    if (!this.smtpTransporter) {
+      this.logger.error('SMTP transporter not initialized');
+      return false;
+    }
+
     try {
-      await this.transporter.verify();
-      this.logger.log('Email transporter connection verified');
+      await this.smtpTransporter.verify();
+      this.logger.log('SMTP transporter connection verified');
       return true;
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(
-        `Email transporter connection failed: ${error.message}`,
+        `SMTP transporter connection failed: ${error.message}`,
         error.stack,
       );
       return false;
     }
+  }
+
+  getProvider(): EmailProvider {
+    return this.provider;
   }
 }

@@ -93,10 +93,35 @@ export async function apiGet<T>(path: string, init?: any): Promise<T> {
   console.log('[API] Response status:', response.status);
 
   if (!response.ok) {
-    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    // Try to parse error response
+    const text = await response.text();
+    let errorData: any = { message: `API Error: ${response.status} ${response.statusText}` };
+    if (text) {
+      try {
+        errorData = JSON.parse(text);
+      } catch {
+        errorData.message = text;
+      }
+    }
+    throw errorData;
   }
 
-  return response.json();
+  // Handle empty response body
+  const contentLength = response.headers.get('content-length');
+  if (response.status === 204 || contentLength === '0') {
+    return {} as T;
+  }
+
+  const text = await response.text();
+  if (!text) {
+    return {} as T;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return {} as T;
+  }
 }
 
 export async function apiPost<T>(path: string, body?: unknown, init?: any): Promise<T> {
@@ -117,10 +142,38 @@ export async function apiPost<T>(path: string, body?: unknown, init?: any): Prom
   console.log('[API] Response status:', response.status);
 
   if (!response.ok) {
-    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    // Try to parse error response
+    const text = await response.text();
+    let errorMessage = `API Error: ${response.status} ${response.statusText}`;
+    if (text) {
+      try {
+        const errorData = JSON.parse(text);
+        errorMessage = errorData.message || errorData.error || errorMessage;
+      } catch {
+        // Not JSON, use text as message
+        if (text) errorMessage = text;
+      }
+    }
+    throw new Error(errorMessage);
   }
 
-  return response.json();
+  // Handle empty response body (e.g., 202 Accepted, 204 No Content)
+  const contentLength = response.headers.get('content-length');
+  if (response.status === 204 || contentLength === '0') {
+    return {} as T;
+  }
+
+  // Try to parse JSON, fallback to empty object
+  const text = await response.text();
+  if (!text) {
+    return {} as T;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    return {} as T;
+  }
 }
 
 export async function apiPatch<T>(path: string, body?: unknown, init?: any): Promise<T> {
@@ -129,6 +182,30 @@ export async function apiPatch<T>(path: string, body?: unknown, init?: any): Pro
 
   const response = await fetchWithTokenRefresh(fullUrl, {
     method: 'PATCH',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...init?.headers,
+    },
+    body: body ? JSON.stringify(body) : undefined,
+    ...init,
+  });
+
+  console.log('[API] Response status:', response.status);
+
+  if (!response.ok) {
+    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+export async function apiPut<T>(path: string, body?: unknown, init?: any): Promise<T> {
+  const fullUrl = `${API_BASE}${path}`;
+  console.log('[API] PUT request to:', fullUrl);
+
+  const response = await fetchWithTokenRefresh(fullUrl, {
+    method: 'PUT',
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',

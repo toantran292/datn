@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button, Badge, Card } from "@uts/design-system/ui";
 import { routes } from "@/lib/routes";
 import { useTenants, useAcceptInvite } from "@/hooks/use-tenants";
+import { useLogout } from "@/hooks/use-auth";
 import { ProtectedRoute } from "@/components/auth/route-guard";
 import type { Org, Invite } from "@/types/identity";
 
@@ -12,6 +13,7 @@ function WorkspacesPageContent() {
   const router = useRouter();
   const { data, isLoading: loading, error } = useTenants();
   const acceptInviteMutation = useAcceptInvite();
+  const logoutMutation = useLogout();
   const [logoErrors, setLogoErrors] = useState<Set<string>>(new Set());
 
   // Check for pending invitation and redirect back to accept page
@@ -146,6 +148,45 @@ function WorkspacesPageContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F9FAFB] via-[#FFF4E6] to-[#E6FFFB]">
+      {/* Top Navigation Bar */}
+      <nav className="bg-white/80 backdrop-blur-sm border-b border-[#E2E8F0] sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-14">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-[#FF8800] to-[#00C4AB] rounded-lg flex items-center justify-center shadow">
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                </svg>
+              </div>
+              <span className="font-semibold text-[#0F172A]">Unified TeamSpace</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => router.push(routes.accountProfile())}
+                className="flex items-center space-x-2 px-3 py-2 rounded-xl text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-all duration-200"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span className="font-medium text-sm">Account Settings</span>
+              </button>
+              <button
+                onClick={() => logoutMutation.mutate()}
+                disabled={logoutMutation.isPending}
+                className="flex items-center space-x-2 px-3 py-2 rounded-xl text-[#64748B] hover:text-red-600 hover:bg-red-50 transition-all duration-200 disabled:opacity-50"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+                <span className="font-medium text-sm">
+                  {logoutMutation.isPending ? "Logging out..." : "Logout"}
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
       <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Header - Compact when workspaces exist */}
         <header className={`text-center ${hasWorkspaces || hasInvitations ? "mb-8" : "mb-16"}`}>

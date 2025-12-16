@@ -19,8 +19,9 @@ enum SprintStatus {
 model Project {
   id              String   @id @default(uuid()) @db.Uuid
   orgId           String   @map("org_id") @db.VarChar(255)
-  identifier      String   @unique @db.VarChar(50)
+  identifier      String   @db.VarChar(5)
   name            String   @db.VarChar(255)
+  description     String?  @db.Text
   projectLead     String?  @map("project_lead") @db.Uuid
   defaultAssignee String?  @map("default_assignee") @db.Uuid
   createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
@@ -32,8 +33,27 @@ model Project {
   issueStatuses IssueStatus[]
   comments      IssueComment[]
   activities    IssueActivity[]
+  members       ProjectMember[]
 
+  @@unique([orgId, identifier], name: "unique_org_identifier")
+  @@index([orgId])
   @@map("project")
+}
+
+model ProjectMember {
+  id        String   @id @default(uuid()) @db.Uuid
+  projectId String   @map("project_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  role      String   @default("member") @db.VarChar(32) // member, lead, viewer
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId], name: "unique_project_user")
+  @@index([userId])
+  @@index([projectId])
+  @@map("project_member")
 }
 
 model Sprint {

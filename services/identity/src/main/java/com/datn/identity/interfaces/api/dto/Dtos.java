@@ -44,6 +44,42 @@ public class Dtos {
     // Me
     public record MeRes(UUID userId, String email) {}
 
+    // Profile (UC05)
+    public record UpdateProfileReq(
+        String first_name,
+        String last_name,
+        String displayName,
+        String phone,
+        String bio,
+        String avatarAssetId
+    ) {}
+
+    public record ProfileRes(
+        String userId,
+        String email,
+        String first_name,
+        String last_name,
+        String displayName,
+        String phone,
+        String bio,
+        String avatarAssetId,
+        String avatarUrl,
+        boolean emailVerified,
+        String provider
+    ) {}
+
+    // Change Password
+    public record ChangePasswordReq(
+        @NotBlank String current_password,
+        @NotBlank String new_password
+    ) {}
+
+    public record AvatarPresignedUrlReq(
+        @NotBlank String originalName,
+        @NotBlank String mimeType,
+        Long size
+    ) {}
+
     // Logo
     public record LogoPresignedUrlReq(
             @NotBlank String originalName,
@@ -51,4 +87,140 @@ public class Dtos {
             Long size
     ) {}
     public record UpdateLogoReq(@NotBlank String assetId) {}
+
+    // Organization Settings (UC07)
+    public record UpdateOrgReq(
+        String displayName,
+        String description,
+        String llmProvider  // OPENAI, ANTHROPIC, GOOGLE
+    ) {}
+
+    public record UpdateOrgSettingsReq(
+        Integer maxFileSizeMb,
+        Integer storageLimitGb,
+        List<String> allowedFileTypes,
+        OrgFeatureFlagsReq features
+    ) {}
+
+    public record OrgFeatureFlagsReq(
+        Boolean aiReportsEnabled,
+        Boolean fileUploadEnabled,
+        Boolean memberInviteEnabled
+    ) {}
+
+    public record OrgDetailRes(
+        String orgId,
+        String slug,
+        String displayName,
+        String logoAssetId,
+        String description,
+        String llmProvider,
+        OrgSettingsRes settings,
+        String status,
+        String lockReason
+    ) {}
+
+    public record OrgSettingsRes(
+        Integer maxFileSizeMb,
+        Integer storageLimitGb,
+        List<String> allowedFileTypes,
+        OrgFeatureFlagsRes features
+    ) {}
+
+    public record OrgFeatureFlagsRes(
+        Boolean aiReportsEnabled,
+        Boolean fileUploadEnabled,
+        Boolean memberInviteEnabled
+    ) {}
+
+    // Audit Log (UC10)
+    public record AuditLogRes(
+        String id,
+        String orgId,
+        String userId,
+        String action,
+        String category,
+        String description,
+        java.util.Map<String, Object> metadata,
+        String ipAddress,
+        String userAgent,
+        String createdAt
+    ) {}
+
+    public record AuditActionInfo(
+        String action,
+        String category
+    ) {}
+
+    // Organization Status (UC08)
+    public record LockOrgReq(
+        @NotBlank String reason
+    ) {}
+
+    public record OrgStatusRes(
+        String orgId,
+        String slug,
+        String displayName,
+        String status,
+        String lockReason,
+        String lockedAt,
+        String lockedBy
+    ) {}
+
+    public record AdminOrgListRes(
+        String orgId,
+        String slug,
+        String displayName,
+        String status,
+        long memberCount,
+        String createdAt
+    ) {}
+
+    // Dashboard (UC09)
+    public record DashboardStatsRes(
+        String orgId,
+        String orgName,
+        String status,
+        MemberStats members,
+        ActivityStats activities
+    ) {}
+
+    public record MemberStats(
+        long total,
+        long owners,
+        long admins,
+        long staff,
+        long guests
+    ) {}
+
+    public record ActivityStats(
+        long totalActions,
+        long todayActions,
+        long thisWeekActions,
+        List<RecentActivityRes> recentActivities
+    ) {}
+
+    public record RecentActivityRes(
+        String id,
+        String userId,
+        String userEmail,
+        String action,
+        String description,
+        String createdAt
+    ) {}
+
+    // Transfer Ownership (UC12)
+    public record TransferOwnershipReq(
+        @NotBlank String newOwnerId,
+        @NotBlank String password,
+        @NotBlank String confirmation  // must be "TRANSFER"
+    ) {}
+
+    public record TransferOwnershipRes(
+        String orgId,
+        String previousOwnerId,
+        String newOwnerId,
+        String transferredAt
+    ) {}
+
 }
