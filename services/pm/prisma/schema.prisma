@@ -103,6 +103,10 @@ model Issue {
   createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
+  // RAG - Vector embeddings for semantic search
+  embedding          String?   @db.Text // JSON string of vector(1536)
+  embeddingUpdatedAt DateTime? @map("embedding_updated_at") @db.Timestamptz
+
   // Relations
   project      Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
   sprint       Sprint?        @relation(fields: [sprintId], references: [id], onDelete: SetNull)

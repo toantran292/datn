@@ -25,9 +25,11 @@ import {
 import dynamic from "next/dynamic";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 import { observer } from "mobx-react";
 import { Avatar, Badge, Button, Checkbox, Input, Loader } from "@uts/design-system/ui";
 import { cn } from "@uts/fe-utils";
+import { createPortal } from "react-dom";
 
 import { IIssue, IReorderIssuePayload } from "@/core/types/issue";
 import {
@@ -111,6 +113,7 @@ const BacklogViewComponent: React.FC<BacklogViewProps> = (props) => {
 
   const [isSprintSubmitting, setIsSprintSubmitting] = useState(false);
   const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
+  const [selectedIssueIds, setSelectedIssueIds] = useState<Set<string>>(new Set());
   const [detailWidth, setDetailWidth] = useState<number>(DETAIL_PANEL_DEFAULT_WIDTH);
   const [isResizingDetail, setIsResizingDetail] = useState(false);
   const detailResizeStateRef = useRef<{ startX: number; startWidth: number } | null>(null);
@@ -233,6 +236,22 @@ const BacklogViewComponent: React.FC<BacklogViewProps> = (props) => {
     setSelectedIssueId(null);
   }, []);
 
+  const handleToggleIssueSelection = useCallback((issueId: string, isChecked: boolean) => {
+    setSelectedIssueIds((prev) => {
+      const next = new Set(prev);
+      if (isChecked) {
+        next.add(issueId);
+      } else {
+        next.delete(issueId);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleClearSelection = useCallback(() => {
+    setSelectedIssueIds(new Set());
+  }, []);
+
   const handleDetailResizeStart = useCallback(
     (event: React.MouseEvent<HTMLDivElement>) => {
       event.preventDefault();
@@ -333,6 +352,9 @@ const BacklogViewComponent: React.FC<BacklogViewProps> = (props) => {
         onStartSprint={onStartSprint}
         onIssueSelect={handleSelectIssue}
         selectedIssueId={selectedIssueId}
+        selectedIssueIds={selectedIssueIds}
+        onToggleIssueSelection={handleToggleIssueSelection}
+        onClearSelection={handleClearSelection}
         memberMap={memberMap}
         statusMap={statusMap}
       />
@@ -400,6 +422,9 @@ interface BacklogSectionProps {
   onStartSprint?: (sprintId: string, issueCount: number) => void;
   onIssueSelect?: (issueId: string) => void;
   selectedIssueId: string | null;
+  selectedIssueIds: Set<string>;
+  onToggleIssueSelection?: (issueId: string, isChecked: boolean) => void;
+  onClearSelection?: () => void;
   memberMap: Map<string, { id: string; name: string; email?: string }>;
   statusMap: Map<string, { id: string; name: string; color?: string }>;
 }
@@ -424,6 +449,9 @@ const BacklogSection: React.FC<BacklogSectionProps> = (props) => {
   onStartSprint,
   onIssueSelect,
   selectedIssueId,
+  selectedIssueIds,
+  onToggleIssueSelection,
+  onClearSelection,
   memberMap,
   statusMap,
 } = props;
@@ -550,6 +578,10 @@ const BacklogSection: React.FC<BacklogSectionProps> = (props) => {
                   onDropIssue={onIssueDrop}
                   onSelectIssue={onIssueSelect}
                   isSelected={selectedIssueId === issue.id}
+                  isChecked={selectedIssueIds.has(issue.id)}
+                  onToggleCheckbox={onToggleIssueSelection}
+                  selectedIssueIds={selectedIssueIds}
+                  onClearSelection={onClearSelection}
                   memberMap={memberMap}
                   statusMap={statusMap}
                 />
@@ -637,9 +669,26 @@ const BacklogIssueRow: React.FC<{
   onDropIssue?: (payload: BacklogIssueDropPayload) => void;
   onSelectIssue?: (issueId: string) => void;
   isSelected?: boolean;
+  isChecked?: boolean;
+  onToggleCheckbox?: (issueId: string, isChecked: boolean) => void;
+  selectedIssueIds?: Set<string>;
+  onClearSelection?: () => void;
   memberMap: Map<string, { id: string; name: string; email?: string }>;
   statusMap: Map<string, { id: string; name: string; color?: string }>;
-}> = ({ issue, projectIdentifier, sectionId, onDropIssue, onSelectIssue, isSelected, memberMap, statusMap }) => {
+}> = ({
+  issue,
+  projectIdentifier,
+  sectionId,
+  onDropIssue,
+  onSelectIssue,
+  isSelected,
+  isChecked = false,
+  onToggleCheckbox,
+  selectedIssueIds = new Set(),
+  onClearSelection,
+  memberMap,
+  statusMap
+}) => {
   const rowRef = useRef<HTMLDivElement | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dropPosition, setDropPosition] = useState<"before" | "after" | null>(null);
@@ -651,13 +700,125 @@ const BacklogIssueRow: React.FC<{
     return combine(
       draggable({
         element,
-        getInitialData: () => ({
-          type: "ISSUE_ROW",
-          issueId: issue.id,
-          sectionId,
-        }),
+        getInitialData: () => {
+          // If this issue is checked and there are multiple selected, drag all
+          const draggedIssues = isChecked && selectedIssueIds.size > 0
+            ? Array.from(selectedIssueIds)
+            : [issue.id];
+
+          return {
+            type: "ISSUE_ROW",
+            issueId: issue.id,
+            issueIds: draggedIssues, // Multiple issues for batch drag
+            sectionId,
+          };
+        },
+        onGenerateDragPreview: ({ nativeSetDragImage }) => {
+          const draggedIssues = isChecked && selectedIssueIds.size > 0
+            ? Array.from(selectedIssueIds)
+            : [issue.id];
+
+          setCustomNativeDragPreview({
+            nativeSetDragImage,
+            getOffset: () => ({ x: 16, y: 16 }),
+            render: ({ container }) => {
+              const previewRoot = document.createElement('div');
+              previewRoot.style.position = 'absolute';
+              previewRoot.style.pointerEvents = 'none';
+
+              container.appendChild(previewRoot);
+
+              // Render stacked preview of dragged items
+              const preview = document.createElement('div');
+              preview.style.display = 'flex';
+              preview.style.flexDirection = 'column';
+              preview.style.gap = '2px';
+              preview.style.maxHeight = '300px';
+              preview.style.overflow = 'hidden';
+
+              const maxVisible = Math.min(draggedIssues.length, 5);
+
+              // Find all issue rows to clone
+              const allIssueRows = document.querySelectorAll('[role="button"]');
+              const issueRowsMap = new Map<string, Element>();
+
+              allIssueRows.forEach((row) => {
+                const checkbox = row.querySelector('input[type="checkbox"]');
+                if (checkbox && checkbox.id) {
+                  const id = checkbox.id.replace('-checkbox', '');
+                  issueRowsMap.set(id, row);
+                }
+              });
+
+              for (let i = 0; i < maxVisible; i++) {
+                const issueId = draggedIssues[i];
+                const issueRow = issueRowsMap.get(issueId);
+
+                if (issueRow) {
+                  // Clone the entire issue row
+                  const clonedRow = issueRow.cloneNode(true) as HTMLElement;
+
+                  // Style the cloned row for drag preview
+                  clonedRow.style.transform = `translateY(${i * 6}px)`;
+                  clonedRow.style.opacity = i === 0 ? '1' : String(Math.max(0.4, 1 - i * 0.15));
+                  clonedRow.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';
+                  clonedRow.style.borderRadius = '6px';
+                  clonedRow.style.minWidth = '800px';
+                  clonedRow.style.backgroundColor = 'white';
+                  clonedRow.style.border = '1px solid #e2e8f0';
+
+                  // Remove hover effects
+                  clonedRow.style.pointerEvents = 'none';
+
+                  preview.appendChild(clonedRow);
+                } else {
+                  // Fallback if row not found
+                  const card = document.createElement('div');
+                  card.style.backgroundColor = 'white';
+                  card.style.border = '1px solid #e2e8f0';
+                  card.style.borderRadius = '6px';
+                  card.style.padding = '12px';
+                  card.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                  card.style.minWidth = '400px';
+                  card.style.transform = `translateY(${i * 6}px)`;
+                  card.style.opacity = i === 0 ? '1' : String(Math.max(0.4, 1 - i * 0.15));
+                  card.textContent = `Issue ${i + 1}`;
+                  preview.appendChild(card);
+                }
+              }
+
+              // Add count badge if there are more items
+              if (draggedIssues.length > maxVisible) {
+                const badge = document.createElement('div');
+                badge.style.backgroundColor = '#3b82f6';
+                badge.style.color = 'white';
+                badge.style.borderRadius = '9999px';
+                badge.style.padding = '6px 14px';
+                badge.style.fontSize = '13px';
+                badge.style.fontWeight = '600';
+                badge.style.textAlign = 'center';
+                badge.style.marginTop = '8px';
+                badge.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
+                badge.textContent = `+${draggedIssues.length - maxVisible} more`;
+                preview.appendChild(badge);
+              }
+
+              previewRoot.appendChild(preview);
+
+              return () => {
+                previewRoot.remove();
+              };
+            },
+          });
+        },
         onDragStart: () => setIsDragging(true),
-        onDrop: () => setIsDragging(false),
+        onDrop: () => {
+          setIsDragging(false);
+          // Clear selection after successful drop
+          if (isChecked && selectedIssueIds.size > 0) {
+            onClearSelection?.();
+          }
+        },
       }),
       dropTargetForElements({
         element,
@@ -679,24 +840,35 @@ const BacklogIssueRow: React.FC<{
         },
         onDrop: ({ source, self }) => {
           setDropPosition(null);
-          const sourceData = source?.data as { type?: string; issueId?: string; sectionId?: string | null } | undefined;
+          const sourceData = source?.data as {
+            type?: string;
+            issueId?: string;
+            issueIds?: string[];
+            sectionId?: string | null;
+          } | undefined;
           const targetData = self?.data as
             | { issueId?: string; sectionId?: string | null; position?: "before" | "after" }
             | undefined;
 
           if (!sourceData || sourceData.type !== "ISSUE_ROW" || !targetData) return;
 
-          onDropIssue?.({
-            issueId: sourceData.issueId ?? "",
-            fromSectionId: sourceData.sectionId ?? null,
-            toSectionId: targetData.sectionId ?? null,
-            destinationIssueId: targetData.issueId ?? null,
-            position: targetData.position ?? "after",
+          // Handle multiple issues drag
+          const draggedIssues = sourceData.issueIds ?? [sourceData.issueId ?? ""];
+
+          // Drop all issues sequentially
+          draggedIssues.forEach((draggedIssueId, index) => {
+            onDropIssue?.({
+              issueId: draggedIssueId,
+              fromSectionId: sourceData.sectionId ?? null,
+              toSectionId: targetData.sectionId ?? null,
+              destinationIssueId: index === 0 ? (targetData.issueId ?? null) : null,
+              position: index === 0 ? (targetData.position ?? "after") : "end",
+            });
           });
         },
       })
     );
-  }, [issue.id, sectionId, onDropIssue]);
+  }, [issue.id, sectionId, onDropIssue, isChecked, selectedIssueIds, onClearSelection]);
 
   const issueKey = formatIssueKey(projectIdentifier, issue.sequenceId);
 
@@ -744,6 +916,17 @@ const BacklogIssueRow: React.FC<{
     }
   };
 
+  const handleCheckboxChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    event.stopPropagation();
+    onToggleCheckbox?.(issue.id, event.target.checked);
+  };
+
+  const handleCheckboxClick = (event: React.MouseEvent) => {
+    event.stopPropagation();
+  };
+
+  const draggedCount = isChecked && selectedIssueIds.size > 0 ? selectedIssueIds.size : 1;
+
   return (
     <div className="relative">
       {dropPosition === "before" && (
@@ -762,20 +945,30 @@ const BacklogIssueRow: React.FC<{
         className={cn(
           "group flex items-center gap-3 px-5 py-3 transition-all hover:bg-custom-background-90 cursor-grab active:cursor-grabbing outline-none",
           {
-            "opacity-50": isDragging,
-            "bg-custom-background-90": isDragging,
-            "bg-custom-primary-100/10 ring-1 ring-custom-primary-100": isSelected && !isDragging,
+            "opacity-50": isDragging && !draggedCount,
+            "bg-custom-background-90": isDragging || isChecked,
+            "bg-custom-primary-100/10 ring-1 ring-custom-primary-100": (isSelected || isChecked) && !isDragging,
           }
         )}
       >
         <GripVertical className="size-4 text-custom-text-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
         <div
           role="presentation"
-          onClick={(event) => event.stopPropagation()}
+          onClick={handleCheckboxClick}
           onKeyDown={(event) => event.stopPropagation()}
         >
-          <Checkbox id={`${issue.id}-checkbox`} containerClassName="shrink-0" />
+          <Checkbox
+            id={`${issue.id}-checkbox`}
+            checked={isChecked}
+            onChange={handleCheckboxChange}
+            containerClassName="shrink-0"
+          />
         </div>
+        {draggedCount > 1 && isChecked && (
+          <Badge variant="primary" size="sm" className="shrink-0">
+            {draggedCount} items
+          </Badge>
+        )}
 
         <div className="flex min-w-0 flex-1 items-center gap-4">
           <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -870,14 +1063,24 @@ const EmptySectionDropArea: React.FC<{
       getData: () => ({ type: "SECTION_EMPTY", sectionId }),
       onDrop: ({ source }) => {
         setIsActive(false);
-        const sourceData = source?.data as { type?: string; issueId?: string; sectionId?: string | null } | undefined;
+        const sourceData = source?.data as {
+          type?: string;
+          issueId?: string;
+          issueIds?: string[];
+          sectionId?: string | null;
+        } | undefined;
         if (!sourceData || sourceData.type !== "ISSUE_ROW") return;
-        onDropIssue?.({
-          issueId: sourceData.issueId ?? "",
-          fromSectionId: sourceData.sectionId ?? null,
-          toSectionId: sectionId,
-          destinationIssueId: null,
-          position: "end",
+
+        // Handle multiple issues
+        const draggedIssues = sourceData.issueIds ?? [sourceData.issueId ?? ""];
+        draggedIssues.forEach((draggedIssueId) => {
+          onDropIssue?.({
+            issueId: draggedIssueId,
+            fromSectionId: sourceData.sectionId ?? null,
+            toSectionId: sectionId,
+            destinationIssueId: null,
+            position: "end",
+          });
         });
       },
     });
@@ -914,14 +1117,24 @@ const SectionDropZone: React.FC<{
       onDragLeave: () => setIsActive(false),
       onDrop: ({ source }) => {
         setIsActive(false);
-        const sourceData = source?.data as { type?: string; issueId?: string; sectionId?: string | null } | undefined;
+        const sourceData = source?.data as {
+          type?: string;
+          issueId?: string;
+          issueIds?: string[];
+          sectionId?: string | null;
+        } | undefined;
         if (!sourceData || sourceData.type !== "ISSUE_ROW") return;
-        onDropIssue?.({
-          issueId: sourceData.issueId ?? "",
-          fromSectionId: sourceData.sectionId ?? null,
-          toSectionId: sectionId,
-          destinationIssueId: null,
-          position: "end",
+
+        // Handle multiple issues
+        const draggedIssues = sourceData.issueIds ?? [sourceData.issueId ?? ""];
+        draggedIssues.forEach((draggedIssueId) => {
+          onDropIssue?.({
+            issueId: draggedIssueId,
+            fromSectionId: sourceData.sectionId ?? null,
+            toSectionId: sectionId,
+            destinationIssueId: null,
+            position: "end",
+          });
         });
       },
     });

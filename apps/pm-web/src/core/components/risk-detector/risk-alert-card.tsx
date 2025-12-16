@@ -44,6 +44,19 @@ export const RiskAlertCard: React.FC<RiskAlertCardProps> = ({
   const isResolved = risk.status === "RESOLVED";
   const isDismissed = risk.status === "DISMISSED";
 
+  // Mapping cho metadata keys sang tiếng Việt
+  const metadataLabels: Record<string, string> = {
+    avgVelocity: "Velocity trung bình",
+    excessPoints: "Điểm vượt quá",
+    committedPoints: "Điểm đã cam kết",
+    recommendedPoints: "Điểm khuyến nghị",
+    overcommitmentRatio: "Tỷ lệ quá tải",
+    overcommitmentPercentage: "Phần trăm quá tải",
+    blockedIssuesCount: "Số công việc bị chặn",
+    totalIssuesCount: "Tổng số công việc",
+    blockagePercentage: "Phần trăm bị chặn",
+  };
+
   const getBorderColor = () => {
     switch (severityColor) {
       case "red":
@@ -147,7 +160,7 @@ export const RiskAlertCard: React.FC<RiskAlertCardProps> = ({
             {risk.impactScore && (
               <div className="mt-1">
                 <span className="text-xs text-custom-text-300">
-                  Impact Score: <span className="font-medium">{risk.impactScore}/10</span>
+                  Điểm tác động: <span className="font-medium">{risk.impactScore}/10</span>
                 </span>
               </div>
             )}
@@ -181,7 +194,7 @@ export const RiskAlertCard: React.FC<RiskAlertCardProps> = ({
               <div className="grid grid-cols-2 gap-2">
                 {Object.entries(risk.metadata).map(([key, value]) => (
                   <div key={key} className="text-xs">
-                    <span className="text-custom-text-400">{key}: </span>
+                    <span className="text-custom-text-400">{metadataLabels[key] || key}: </span>
                     <span className="text-custom-text-200 font-medium">
                       {typeof value === "number" ? value.toFixed(2) : String(value)}
                     </span>

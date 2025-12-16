@@ -5,6 +5,8 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { RagService } from '../rag/rag.service';
+import { SimilarIssueDto } from '../rag/dto/rag.dto';
 import { OvercommitmentRule, BlockedIssuesRule } from './rules';
 import {
   IRiskRule,
@@ -28,6 +30,7 @@ export class RiskDetectorService {
 
   constructor(
     private readonly prisma: PrismaService,
+    private readonly ragService: RagService,
     private readonly overcommitmentRule: OvercommitmentRule,
     private readonly blockedIssuesRule: BlockedIssuesRule,
     // TODO: Inject other rules when implemented
@@ -411,11 +414,31 @@ export class RiskDetectorService {
       take: 6, // Last 6 sprints for trend analysis
     });
 
+    // RAG: Find similar past issues for AI context
+    let similarPastIssues: SimilarIssueDto[] = [];
+    try {
+      const totalPoints = issues.reduce((sum, i) => sum + (Number(i.point) || 0), 0);
+      const queryText = `Sprint planning with ${totalPoints} story points, ${issues.length} tasks in sprint. Project: ${sprint.name}`;
+
+      similarPastIssues = await this.ragService.findSimilarIssues({
+        query: queryText,
+        limit: 10,
+        projectId: sprint.projectId,
+        threshold: 0.75,
+      });
+
+      this.logger.log(`Found ${similarPastIssues.length} similar issues for context`);
+    } catch (error) {
+      this.logger.warn(`RAG search failed: ${error.message}`);
+      // Continue without RAG context
+    }
+
     // Map to interface types
     const context: SprintContext = {
       sprint: this.mapSprintToData(sprint),
       issues: issues.map((i) => this.mapIssueToData(i)),
       sprintHistory: sprintHistory.map((h) => this.mapHistoryToData(h)),
+      similarPastIssues, // RAG context
       // TODO: Get team capacity from project settings
       teamCapacity: undefined,
     };

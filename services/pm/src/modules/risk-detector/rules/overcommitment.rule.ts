@@ -32,7 +32,7 @@ export class OvercommitmentRule implements IRiskRule {
   constructor(private readonly openAIService: OpenAIService) {}
 
   async check(context: SprintContext): Promise<RiskResult | null> {
-    const { sprint, issues, sprintHistory, teamCapacity } = context;
+    const { sprint, issues, sprintHistory, teamCapacity, similarPastIssues } = context;
 
     // Only check for active sprints
     if (sprint.status !== 'ACTIVE') {
@@ -109,6 +109,7 @@ export class OvercommitmentRule implements IRiskRule {
       excessPoints,
       lowPriorityIssues,
       suggestedIssues,
+      similarPastIssues: similarPastIssues || [],
     });
 
     return {
@@ -192,6 +193,7 @@ export class OvercommitmentRule implements IRiskRule {
     excessPoints: number;
     lowPriorityIssues: IssueData[];
     suggestedIssues: string[];
+    similarPastIssues?: any[]; // RAG: Similar issues from past sprints
   }): Promise<RiskRecommendation[]> {
     const {
       sprint,
@@ -204,6 +206,7 @@ export class OvercommitmentRule implements IRiskRule {
       excessPoints,
       lowPriorityIssues,
       suggestedIssues,
+      similarPastIssues = [],
     } = params;
 
     try {
@@ -241,12 +244,16 @@ ${sprintIssues.length > 10 ? `... and ${sprintIssues.length - 10} more issues` :
 **Low-Priority Issues Available to Remove:**
 ${lowPriorityIssues.length > 0 ? lowPriorityIssues.map((i) => `- ID: ${i.id} | ${i.name} (${i.point} points)`).join('\n') : 'None found'}
 
+**Historical Context (Similar Past Issues from RAG):**
+${similarPastIssues.length > 0 ? similarPastIssues.slice(0, 5).map((i, idx) => `${idx + 1}. [${i.type}/${i.priority}] ${i.name} - ${i.point || 'N/A'} points (Similarity: ${(i.similarity * 100).toFixed(1)}%)`).join('\n') : 'No similar past issues found'}
+
 **Task:**
 Generate exactly 3 recommendations in JSON format. Each recommendation should be:
 1. Specific and actionable (not generic advice)
-2. Consider the actual issues and team capacity
+2. Consider the actual issues, team capacity, AND historical context from similar past issues
 3. Include realistic effort estimates
 4. Provide measurable expected impact
+5. Use patterns from historical context to inform recommendations
 
 IMPORTANT RULES for "suggestedIssues" field:
 - For priority 1 recommendation: Include the ACTUAL UUID strings from the low-priority issues list

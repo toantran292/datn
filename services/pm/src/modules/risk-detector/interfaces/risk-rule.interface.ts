@@ -8,6 +8,17 @@ export interface SprintContext {
   issues: IssueData[];
   sprintHistory: SprintHistoryData[];
   teamCapacity?: number;
+  similarPastIssues?: SimilarIssueData[]; // RAG: Similar issues from past sprints
+}
+
+export interface SimilarIssueData {
+  id: string;
+  name: string;
+  description: string | null;
+  type: string;
+  priority: string;
+  point: number | null;
+  similarity: number; // Cosine similarity score (0-1)
 }
 
 export interface SprintData {
