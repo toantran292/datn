@@ -3,11 +3,11 @@ import { useState } from "react";
 export type TranslateLanguage = "en" | "ko" | "ja" | "zh" | "vi";
 
 export const LANGUAGE_LABELS: Record<TranslateLanguage, string> = {
-  en: "English",
-  ko: "한국어 (Korean)",
-  ja: "日本語 (Japanese)",
-  zh: "中文 (Chinese)",
-  vi: "Tiếng Việt (Vietnamese)",
+  en: "🇬🇧  English",
+  ko: "🇰🇷  한국어 (Korean)",
+  ja: "🇯🇵  日本語 (Japanese)",
+  zh: "🇨🇳  中文 (Chinese)",
+  vi: "🇻🇳  Tiếng Việt (Vietnamese)",
 };
 
 export interface TranslateRequest {
