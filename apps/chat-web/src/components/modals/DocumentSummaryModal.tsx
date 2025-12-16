@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, FileText, Loader2, AlertCircle } from 'lucide-react';
+import { X, FileText, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { api } from '../../services/api';
 import { MarkdownContent } from '../common/MarkdownContent';
 
@@ -23,11 +23,12 @@ export function DocumentSummaryModal({
   const [summary, setSummary] = useState('');
   const [documentType, setDocumentType] = useState<string>('');
   const [isComplete, setIsComplete] = useState(false);
+  const [isCached, setIsCached] = useState(false);
   const abortRef = useRef<{ abort: () => void } | null>(null);
 
   useEffect(() => {
     if (isOpen && roomId && attachmentId) {
-      startStreaming();
+      startStreaming(false);
     }
     return () => {
       // Cleanup on unmount or when modal closes
@@ -36,30 +37,48 @@ export function DocumentSummaryModal({
       setError(null);
       setDocumentType('');
       setIsComplete(false);
+      setIsCached(false);
     };
   }, [isOpen, roomId, attachmentId]);
 
-  const startStreaming = () => {
+  const startStreaming = (regenerate: boolean = false) => {
     setLoading(true);
     setError(null);
     setSummary('');
     setIsComplete(false);
+    setIsCached(false);
 
-    abortRef.current = api.streamDocumentSummary(roomId, attachmentId, {
-      onChunk: (chunk) => {
-        setSummary((prev) => prev + chunk);
-        setLoading(false); // Stop showing loader once first chunk arrives
+    abortRef.current = api.streamDocumentSummary(
+      roomId,
+      attachmentId,
+      {
+        onCached: (cachedSummary, _documentName, docType) => {
+          setSummary(cachedSummary);
+          setDocumentType(docType);
+          setIsComplete(true);
+          setIsCached(true);
+          setLoading(false);
+        },
+        onChunk: (chunk) => {
+          setSummary((prev) => prev + chunk);
+          setLoading(false); // Stop showing loader once first chunk arrives
+        },
+        onDone: (_documentName, docType) => {
+          setDocumentType(docType);
+          setIsComplete(true);
+          setLoading(false);
+        },
+        onError: (err) => {
+          setError(err);
+          setLoading(false);
+        },
       },
-      onDone: (_documentName, docType) => {
-        setDocumentType(docType);
-        setIsComplete(true);
-        setLoading(false);
-      },
-      onError: (err) => {
-        setError(err);
-        setLoading(false);
-      },
-    });
+      regenerate,
+    );
+  };
+
+  const handleRegenerate = () => {
+    startStreaming(true);
   };
 
   const handleClose = () => {
@@ -104,7 +123,7 @@ export function DocumentSummaryModal({
               <AlertCircle className="w-8 h-8 text-red-500" />
               <p className="mt-4 text-sm text-red-500">{error}</p>
               <button
-                onClick={startStreaming}
+                onClick={() => startStreaming(false)}
                 className="mt-4 px-4 py-2 text-sm font-medium bg-custom-primary-100 text-white rounded-lg hover:bg-custom-primary-200 transition-colors"
               >
                 Try Again
@@ -114,11 +133,18 @@ export function DocumentSummaryModal({
 
           {summary && !error && (
             <div className="space-y-4">
-              {documentType && (
+              <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm text-custom-text-300">
-                  <span className="px-2 py-0.5 bg-custom-background-80 rounded text-xs">
-                    {documentType}
-                  </span>
+                  {documentType && (
+                    <span className="px-2 py-0.5 bg-custom-background-80 rounded text-xs">
+                      {documentType}
+                    </span>
+                  )}
+                  {isCached && (
+                    <span className="px-2 py-0.5 bg-green-500/20 text-green-600 rounded text-xs">
+                      Cached
+                    </span>
+                  )}
                   {!isComplete && (
                     <span className="flex items-center gap-1 text-custom-primary-100">
                       <Loader2 className="w-3 h-3 animate-spin" />
@@ -126,7 +152,18 @@ export function DocumentSummaryModal({
                     </span>
                   )}
                 </div>
-              )}
+                {isComplete && (
+                  <button
+                    onClick={handleRegenerate}
+                    disabled={loading}
+                    className="flex items-center gap-1.5 px-2 py-1 text-xs font-medium text-custom-text-300 hover:text-custom-text-100 hover:bg-custom-background-80 rounded transition-colors disabled:opacity-50"
+                    title="Regenerate summary"
+                  >
+                    <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
+                    Regenerate
+                  </button>
+                )}
+              </div>
               <MarkdownContent content={summary} />
               {!isComplete && !documentType && (
                 <div className="flex items-center gap-2 text-custom-primary-100">

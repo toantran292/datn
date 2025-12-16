@@ -293,12 +293,14 @@ export class AIController {
     @Ctx() ctx: RequestContext,
     @Param('roomId') roomId: string,
     @Query('attachmentId') attachmentId: string,
+    @Query('regenerate') regenerate?: string,
   ): Observable<SSEMessage> {
     return new Observable(subscriber => {
       const generator = this.aiService.streamSummarizeDocument(
         roomId,
         ctx.userId,
         attachmentId,
+        regenerate === 'true',
       );
 
       (async () => {

@@ -10,6 +10,7 @@ import { ChannelNotificationSetting } from './entities/channel-notification-sett
 import { MessageAttachment } from './entities/message-attachment.entity';
 import { ChannelAIConfig } from './entities/channel-ai-config.entity';
 import { DocumentEmbedding } from './entities/document-embedding.entity';
+import { DocumentSummary } from './entities/document-summary.entity';
 
 @Global()
 @Module({
@@ -34,9 +35,10 @@ import { DocumentEmbedding } from './entities/document-embedding.entity';
           MessageAttachment,
           ChannelAIConfig,
           DocumentEmbedding,
+          DocumentSummary,
         ],
         synchronize: configService.get<string>('NODE_ENV') !== 'production',
-        logging: configService.get<string>('NODE_ENV') === 'development',
+        // logging: configService.get<string>('NODE_ENV') === 'development',
       }),
     }),
     TypeOrmModule.forFeature([

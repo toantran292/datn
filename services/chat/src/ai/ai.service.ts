@@ -1,6 +1,7 @@
 import { Injectable, ForbiddenException, BadRequestException, NotFoundException, Logger } from '@nestjs/common';
 import { LLMService, ConversationMessage, ActionItem, QAResult } from './llm.service';
 import { ChannelAIConfigRepository } from './repositories/channel-ai-config.repository';
+import { DocumentSummaryRepository } from './repositories/document-summary.repository';
 import { MessagesRepository, PersistedMessage } from '../chat/repositories/messages.repository';
 import { RoomMembersRepository } from '../rooms/repositories/room-members.repository';
 import { AttachmentsRepository } from '../chat/repositories/attachments.repository';
@@ -10,6 +11,7 @@ import { EmbeddingService } from './rag/embedding.service';
 import { EmbeddingSourceType } from '../database/entities/document-embedding.entity';
 import { AIFeature } from '../database/entities/channel-ai-config.entity';
 import { AudioProcessor } from './rag/processors/audio.processor';
+import { VideoProcessor } from './rag/processors/video.processor';
 
 @Injectable()
 export class AIService {
@@ -18,6 +20,7 @@ export class AIService {
   constructor(
     private readonly llmService: LLMService,
     private readonly aiConfigRepo: ChannelAIConfigRepository,
+    private readonly documentSummaryRepo: DocumentSummaryRepository,
     private readonly messagesRepo: MessagesRepository,
     private readonly roomMembersRepo: RoomMembersRepository,
     private readonly attachmentsRepo: AttachmentsRepository,
@@ -25,6 +28,7 @@ export class AIService {
     private readonly identityService: IdentityService,
     private readonly embeddingService: EmbeddingService,
     private readonly audioProcessor: AudioProcessor,
+    private readonly videoProcessor: VideoProcessor,
   ) {}
 
   // ============== UC03: Channel AI Config ==============
@@ -298,8 +302,8 @@ export class AIService {
 
     const content = await response.text();
 
-    if (content.length > 50000) {
-      throw new BadRequestException('Document is too large to summarize (max 50KB)');
+    if (content.length > 5 * 1024 * 1024) {
+      throw new BadRequestException('Document is too large to summarize (max 5MB)');
     }
 
     const summary = await this.llmService.summarizeDocument(
@@ -321,16 +325,53 @@ export class AIService {
     };
   }
 
+  // ============== UC14: Document Summary with Cache ==============
+
+  /**
+   * Get cached document summary if available
+   */
+  async getDocumentSummary(
+    roomId: string,
+    userId: string,
+    attachmentId: string,
+  ): Promise<{
+    cached: boolean;
+    summary?: string;
+    transcription?: string;
+    documentName?: string;
+    documentType?: string;
+    generatedAt?: string;
+  }> {
+    await this.checkMembership(roomId, userId);
+
+    const cached = await this.documentSummaryRepo.findByAttachmentId(attachmentId);
+
+    if (cached) {
+      return {
+        cached: true,
+        summary: cached.summary,
+        transcription: cached.transcription || undefined,
+        documentName: cached.fileName,
+        documentType: cached.mimeType,
+        generatedAt: cached.updatedAt.toISOString(),
+      };
+    }
+
+    return { cached: false };
+  }
+
   // ============== Streaming Methods ==============
 
   /**
    * UC14: Stream summarize document (supports text documents and audio files)
+   * @param regenerate - Force regenerate even if cached
    */
   async *streamSummarizeDocument(
     roomId: string,
     userId: string,
     attachmentId: string,
-  ): AsyncGenerator<{ type: 'chunk' | 'done' | 'error'; data: string; documentName?: string; documentType?: string }> {
+    regenerate: boolean = false,
+  ): AsyncGenerator<{ type: 'chunk' | 'done' | 'error' | 'cached'; data: string; documentName?: string; documentType?: string; transcription?: string }> {
     await this.checkMembership(roomId, userId);
     await this.checkFeatureEnabled(roomId, 'document_summary');
 
@@ -344,9 +385,27 @@ export class AIService {
       return;
     }
 
+    // Check cache first (unless regenerate is requested)
+    if (!regenerate) {
+      const cached = await this.documentSummaryRepo.findByAttachmentId(attachmentId);
+      if (cached) {
+        this.logger.log(`Using cached summary for attachment: ${attachmentId}`);
+        yield {
+          type: 'cached',
+          data: cached.summary,
+          documentName: cached.fileName,
+          documentType: cached.mimeType,
+          transcription: cached.transcription || undefined,
+        };
+        return;
+      }
+    }
+
     // Check if it's an audio file
     const isAudio = this.audioProcessor.canProcess(attachment.mimeType);
-    this.logger.log(`Attachment mimeType: ${attachment.mimeType}, isAudio: ${isAudio}`);
+    // Check if it's a video file
+    const isVideo = this.videoProcessor.canProcess(attachment.mimeType);
+    this.logger.log(`Attachment mimeType: ${attachment.mimeType}, isAudio: ${isAudio}, isVideo: ${isVideo}`);
 
     // Check if it's a text-based file
     const textMimeTypes = [
@@ -359,8 +418,8 @@ export class AIService {
     ];
     const isText = textMimeTypes.some(type => attachment.mimeType.startsWith(type.split('/')[0]));
 
-    if (!isAudio && !isText) {
-      yield { type: 'error', data: 'Only text-based documents and audio files can be summarized' };
+    if (!isAudio && !isVideo && !isText) {
+      yield { type: 'error', data: 'Only text-based documents, audio, and video files can be summarized' };
       return;
     }
 
@@ -373,36 +432,41 @@ export class AIService {
       return;
     }
 
-    try {
-      if (isAudio) {
-        // Handle audio file - transcribe first then summarize
-        const audioBuffer = Buffer.from(await response.arrayBuffer());
+    let fullSummary = '';
+    let transcription: string | undefined;
 
-        // Check file size (max 25MB for Whisper API)
-        if (audioBuffer.length > 25 * 1024 * 1024) {
-          yield { type: 'error', data: 'Audio file is too large (max 25MB)' };
+    try {
+      if (isAudio || isVideo) {
+        // Handle audio/video file - transcribe first then summarize
+        const mediaBuffer = Buffer.from(await response.arrayBuffer());
+
+        // Check file size (max 25MB for Whisper API - audio extracted from video)
+        const maxSize = isVideo ? 100 * 1024 * 1024 : 25 * 1024 * 1024; // 100MB for video, 25MB for audio
+        if (mediaBuffer.length > maxSize) {
+          yield { type: 'error', data: `File is too large (max ${isVideo ? '100MB' : '25MB'})` };
           return;
         }
 
-        this.logger.log(`Transcribing audio file: ${attachment.fileName}`);
+        this.logger.log(`Transcribing ${isVideo ? 'video' : 'audio'} file: ${attachment.fileName}`);
 
-        // Transcribe using AudioProcessor
-        const chunks = await this.audioProcessor.process(audioBuffer, {
+        // Transcribe using appropriate processor
+        const processor = isVideo ? this.videoProcessor : this.audioProcessor;
+        const chunks = await processor.process(mediaBuffer, {
           fileName: attachment.fileName,
           mimeType: attachment.mimeType,
           sourceId: attachment.id,
-          size: audioBuffer.length,
+          size: mediaBuffer.length,
           roomId: roomId,
           orgId: '', // Not needed for transcription only
         });
 
         if (chunks.length === 0) {
-          yield { type: 'error', data: 'Could not transcribe audio file' };
+          yield { type: 'error', data: `Could not transcribe ${isVideo ? 'video' : 'audio'} file` };
           return;
         }
 
         // Combine all transcription chunks
-        const transcription = chunks.map(c => c.content).join('\n');
+        transcription = chunks.map(c => c.content).join('\n');
 
         this.logger.log(`Transcription complete: ${transcription.length} characters`);
 
@@ -420,14 +484,15 @@ export class AIService {
         );
 
         for await (const chunk of stream) {
+          fullSummary += chunk;
           yield { type: 'chunk', data: chunk };
         }
       } else {
         // Handle text-based document
         const content = await response.text();
 
-        if (content.length > 50000) {
-          yield { type: 'error', data: 'Document is too large to summarize (max 50KB)' };
+        if (content.length > 5 * 1024 * 1024) {
+          yield { type: 'error', data: 'Document is too large to summarize (max 5MB)' };
           return;
         }
 
@@ -444,15 +509,30 @@ export class AIService {
         );
 
         for await (const chunk of stream) {
+          fullSummary += chunk;
           yield { type: 'chunk', data: chunk };
         }
       }
+
+      // Save to cache
+      await this.documentSummaryRepo.upsert({
+        attachmentId,
+        roomId,
+        fileName: attachment.fileName,
+        mimeType: attachment.mimeType,
+        summary: fullSummary,
+        transcription,
+        generatedBy: userId,
+      });
+
+      this.logger.log(`Summary cached for attachment: ${attachmentId}`);
 
       yield {
         type: 'done',
         data: '',
         documentName: attachment.fileName,
         documentType: attachment.mimeType,
+        transcription,
       };
     } catch (error) {
       this.logger.error(`Error processing file: ${error}`);

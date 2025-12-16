@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Download, X, ZoomIn, FileText, Maximize2, Sparkles, Music, Play, Pause } from 'lucide-react';
+import { Download, X, ZoomIn, FileText, Maximize2, Sparkles, Music, Play, Pause, Video } from 'lucide-react';
 import type { Attachment } from '../../types';
 import { formatFileSize, getFileIcon, isImageFile } from '../../services/files';
 import { DocumentSummaryModal } from '../modals/DocumentSummaryModal';
@@ -13,6 +13,11 @@ function isPdfFile(mimeType: string): boolean {
 // Check if file is audio
 function isAudioFile(mimeType: string): boolean {
   return mimeType.startsWith('audio/');
+}
+
+// Check if file is video
+function isVideoFile(mimeType: string): boolean {
+  return mimeType.startsWith('video/');
 }
 
 // Check if file can be summarized (documents that AI can read)
@@ -30,6 +35,10 @@ function canSummarize(mimeType: string): boolean {
   ];
   // Audio files can be transcribed
   if (mimeType.startsWith('audio/')) {
+    return true;
+  }
+  // Video files can be transcribed (audio extracted)
+  if (mimeType.startsWith('video/')) {
     return true;
   }
   return summarizableTypes.includes(mimeType);
@@ -149,6 +158,18 @@ function PdfPreviewModal({
   );
 }
 
+// Format time helper (shared between Audio and Video players)
+function formatTime(time: number) {
+  if (isNaN(time)) return '0:00';
+  const hours = Math.floor(time / 3600);
+  const minutes = Math.floor((time % 3600) / 60);
+  const seconds = Math.floor(time % 60);
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+}
+
 // Audio Player component
 function AudioPlayer({
   src,
@@ -172,13 +193,6 @@ function AudioPlayer({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const canTranscribe = !!roomId && !!attachmentId;
-
-  const formatTime = (time: number) => {
-    if (isNaN(time)) return '0:00';
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
 
   const togglePlay = () => {
     if (audioRef.current) {
@@ -306,6 +320,231 @@ function AudioPlayer({
   );
 }
 
+// Video Player component
+function VideoPlayer({
+  src,
+  fileName,
+  fileSize,
+  compact,
+  roomId,
+  attachmentId,
+  onSummarize,
+}: {
+  src: string;
+  fileName: string;
+  fileSize: number;
+  compact?: boolean;
+  roomId?: string;
+  attachmentId?: string;
+  onSummarize?: () => void;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [showControls, setShowControls] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const canTranscribe = !!roomId && !!attachmentId;
+  const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const handleTimeUpdate = () => {
+    if (videoRef.current) {
+      setCurrentTime(videoRef.current.currentTime);
+    }
+  };
+
+  const handleLoadedMetadata = () => {
+    if (videoRef.current) {
+      setDuration(videoRef.current.duration);
+    }
+  };
+
+  const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const time = parseFloat(e.target.value);
+    if (videoRef.current) {
+      videoRef.current.currentTime = time;
+      setCurrentTime(time);
+    }
+  };
+
+  const handleEnded = () => {
+    setIsPlaying(false);
+    setCurrentTime(0);
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+    }
+  };
+
+  const toggleFullscreen = () => {
+    if (!containerRef.current) return;
+
+    if (!isFullscreen) {
+      if (containerRef.current.requestFullscreen) {
+        containerRef.current.requestFullscreen();
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  };
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  const handleMouseMove = () => {
+    setShowControls(true);
+    if (controlsTimeoutRef.current) {
+      clearTimeout(controlsTimeoutRef.current);
+    }
+    if (isPlaying) {
+      controlsTimeoutRef.current = setTimeout(() => {
+        setShowControls(false);
+      }, 3000);
+    }
+  };
+
+  const handleMouseLeave = () => {
+    if (isPlaying) {
+      controlsTimeoutRef.current = setTimeout(() => {
+        setShowControls(false);
+      }, 1000);
+    }
+  };
+
+  const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+  return (
+    <div
+      ref={containerRef}
+      className={`bg-custom-background-90 border border-custom-border-200 rounded-lg overflow-hidden ${compact ? 'w-[240px]' : 'w-[360px]'} ${isFullscreen ? '!w-full !h-full !border-0 !rounded-none' : ''}`}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+    >
+      {/* Video element */}
+      <div className={`relative ${isFullscreen ? 'h-full' : compact ? 'h-[135px]' : 'h-[200px]'} bg-black`}>
+        <video
+          ref={videoRef}
+          src={src}
+          onTimeUpdate={handleTimeUpdate}
+          onLoadedMetadata={handleLoadedMetadata}
+          onEnded={handleEnded}
+          onClick={togglePlay}
+          className="w-full h-full object-contain cursor-pointer"
+          preload="metadata"
+        />
+
+        {/* Play/Pause overlay */}
+        {!isPlaying && (
+          <button
+            onClick={togglePlay}
+            className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/40 transition-colors"
+          >
+            <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center">
+              <Play className="text-gray-800 ml-1" size={24} />
+            </div>
+          </button>
+        )}
+
+        {/* Controls overlay - visible on hover */}
+        <div
+          className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2 transition-opacity ${showControls || !isPlaying ? 'opacity-100' : 'opacity-0'}`}
+        >
+          {/* Progress bar */}
+          <div className="relative h-1 bg-white/30 rounded-full overflow-hidden mb-2">
+            <div
+              className="absolute top-0 left-0 h-full bg-white rounded-full transition-all"
+              style={{ width: `${progress}%` }}
+            />
+            <input
+              type="range"
+              min="0"
+              max={duration || 0}
+              value={currentTime}
+              onChange={handleSeek}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            />
+          </div>
+
+          {/* Controls row */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={togglePlay}
+              className="p-1 rounded hover:bg-white/20 text-white transition-colors"
+            >
+              {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+            </button>
+
+            <span className="text-[10px] text-white/80">
+              {formatTime(currentTime)} / {formatTime(duration)}
+            </span>
+
+            <div className="flex-1" />
+
+            <button
+              onClick={toggleFullscreen}
+              className="p-1 rounded hover:bg-white/20 text-white transition-colors"
+              title="Fullscreen"
+            >
+              <Maximize2 size={14} />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      {!isFullscreen && (
+        <div className="flex items-center gap-2 px-2 py-1.5 bg-custom-background-90">
+          <Video className="text-blue-500 flex-shrink-0" size={16} />
+          <div className="flex-1 min-w-0">
+            <p className="text-[11px] font-medium text-custom-text-100 truncate" title={fileName}>
+              {fileName}
+            </p>
+            <p className="text-[9px] text-custom-text-400">{formatFileSize(fileSize)}</p>
+          </div>
+          {canTranscribe && (
+            <button
+              onClick={onSummarize}
+              className="p-1 rounded hover:bg-custom-background-80 text-custom-text-400 hover:text-custom-primary-100 transition-colors flex-shrink-0"
+              title="Transcribe with AI"
+            >
+              <Sparkles size={14} />
+            </button>
+          )}
+          <a
+            href={src}
+            download={fileName}
+            className="p-1 rounded hover:bg-custom-background-80 text-custom-text-400 hover:text-custom-text-100 transition-colors flex-shrink-0"
+            title="Download"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Download size={14} />
+          </a>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export interface FileAttachmentProps {
   attachment: Attachment;
   compact?: boolean; // Use compact layout when multiple files
@@ -320,8 +559,35 @@ export function FileAttachment({ attachment, compact, roomId }: FileAttachmentPr
   const isImage = isImageFile(attachment.mimeType);
   const isPdf = isPdfFile(attachment.mimeType);
   const isAudio = isAudioFile(attachment.mimeType);
+  const isVideo = isVideoFile(attachment.mimeType);
   const downloadUrl = attachment.downloadUrl;
   const showSummarize = roomId && canSummarize(attachment.mimeType);
+
+  // Video attachment - inline player
+  if (isVideo && downloadUrl) {
+    return (
+      <>
+        <VideoPlayer
+          src={downloadUrl}
+          fileName={attachment.fileName}
+          fileSize={attachment.fileSize}
+          compact={compact}
+          roomId={roomId}
+          attachmentId={attachment.id}
+          onSummarize={() => setShowSummaryModal(true)}
+        />
+        {showSummaryModal && roomId && (
+          <DocumentSummaryModal
+            isOpen={showSummaryModal}
+            roomId={roomId}
+            attachmentId={attachment.id}
+            fileName={attachment.fileName}
+            onClose={() => setShowSummaryModal(false)}
+          />
+        )}
+      </>
+    );
+  }
 
   // Audio attachment - inline player
   if (isAudio && downloadUrl) {

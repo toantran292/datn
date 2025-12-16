@@ -908,17 +908,23 @@ class ApiService {
 
   /**
    * Stream document summary using Server-Sent Events
+   * @param regenerate - Force regenerate even if cached
    */
   streamDocumentSummary(
     roomId: string,
     attachmentId: string,
     callbacks?: {
       onChunk?: (chunk: string) => void;
-      onDone?: (documentName: string, documentType: string) => void;
+      onCached?: (summary: string, documentName: string, documentType: string, transcription?: string) => void;
+      onDone?: (documentName: string, documentType: string, transcription?: string) => void;
       onError?: (error: string) => void;
     },
+    regenerate: boolean = false,
   ): { abort: () => void } {
     const params = new URLSearchParams({ attachmentId });
+    if (regenerate) {
+      params.append('regenerate', 'true');
+    }
 
     const url = `${this.baseURL}/ai/stream/document-summary/${encodeURIComponent(roomId)}?${params}`;
     const eventSource = new EventSource(url, { withCredentials: true });
@@ -926,10 +932,13 @@ class ApiService {
     eventSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (data.type === 'chunk') {
+        if (data.type === 'cached') {
+          callbacks?.onCached?.(data.data, data.documentName || '', data.documentType || '', data.transcription);
+          eventSource.close();
+        } else if (data.type === 'chunk') {
           callbacks?.onChunk?.(data.data);
         } else if (data.type === 'done') {
-          callbacks?.onDone?.(data.documentName || '', data.documentType || '');
+          callbacks?.onDone?.(data.documentName || '', data.documentType || '', data.transcription);
           eventSource.close();
         } else if (data.type === 'error') {
           callbacks?.onError?.(data.data);

@@ -153,12 +153,15 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             assetId,
             client.userId
           );
+          console.log(`[WS] Confirmed attachment: ${attachment.fileName}, mimeType: ${attachment.mimeType}, downloadUrl: ${attachment.downloadUrl ? 'present' : 'MISSING'}`);
           attachments.push(attachment);
         } catch (err) {
           console.error(`Failed to confirm attachment ${assetId}:`, err.message);
         }
       }
     }
+
+    console.log(`[WS] Emitting message:new with ${attachments.length} attachments`);
 
     // Include attachments in the emitted message
     const messageWithAttachments = {

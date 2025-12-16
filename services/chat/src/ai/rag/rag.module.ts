@@ -41,6 +41,6 @@ import { RoomsModule } from '../../rooms/rooms.module';
       useExisting: RagService,
     },
   ],
-  exports: [EmbeddingService, DocumentProcessorService, RagService, 'RagService', LLMService, AudioProcessor],
+  exports: [EmbeddingService, DocumentProcessorService, RagService, 'RagService', LLMService, AudioProcessor, VideoProcessor],
 })
 export class RagModule {}
