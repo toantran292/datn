@@ -44,6 +44,7 @@ export class FileStorageService {
       modelType: request.modelType,
       subjectId: request.subjectId,
       uploadedBy: request.uploadedBy,
+      orgId: request.orgId,
       tags: request.tags,
       metadata: request.metadata,
       uploadStatus: 'pending',
@@ -151,6 +152,7 @@ export class FileStorageService {
       modelType: request.modelType,
       subjectId: request.subjectId,
       uploadedBy: request.uploadedBy,
+      orgId: request.orgId,
       tags: request.tags,
       metadata: request.metadata,
       uploadStatus: 'completed',
@@ -350,5 +352,19 @@ export class FileStorageService {
     const uuid = uuidv4();
     const ext = originalName.split('.').pop();
     return `${timestamp}-${uuid}.${ext}`;
+  }
+
+  /**
+   * Get storage usage for an organization
+   */
+  async getStorageUsage(orgId: string): Promise<{ usedBytes: number; fileCount: number }> {
+    return this.metadataService.getStorageUsage(orgId);
+  }
+
+  /**
+   * Get recent files for an organization
+   */
+  async getRecentFiles(orgId: string, limit: number = 5): Promise<FileMetadata[]> {
+    return this.metadataService.getRecentFiles(orgId, limit);
   }
 }

@@ -56,4 +56,16 @@ public class MembershipRepositoryImpl implements MembershipRepository {
     @Override public List<Membership> listByUser(UUID userId){
         return repo.findById_UserId(userId).stream().map(MembershipRepositoryImpl::toDomain).collect(Collectors.toList());
     }
+
+    @Override public long countByRole(UUID orgId, String role) {
+        return repo.findById_OrgId(orgId).stream()
+            .filter(e -> e.getRoles() != null && Arrays.asList(e.getRoles()).contains(role))
+            .count();
+    }
+
+    @Override public long countByMemberType(UUID orgId, MemberType memberType) {
+        return repo.findById_OrgId(orgId).stream()
+            .filter(e -> e.getMemberType() == memberType)
+            .count();
+    }
 }

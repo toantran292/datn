@@ -11,6 +11,9 @@ import {
   Res,
   HttpStatus,
   Patch,
+  Headers,
+  ParseIntPipe,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
@@ -133,6 +136,51 @@ export class FileStorageController {
       status: 'ok',
       service: 'file-storage-api',
       timestamp: new Date(),
+    };
+  }
+
+  /**
+   * Get storage usage for an organization
+   * Called by tenant-bff for dashboard stats
+   */
+  @Get('storage/usage')
+  async getStorageUsage(@Headers('x-org-id') orgId: string) {
+    if (!orgId) {
+      return {
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'X-Org-Id header is required',
+      };
+    }
+
+    const result = await this.fileStorageService.getStorageUsage(orgId);
+
+    return {
+      statusCode: HttpStatus.OK,
+      data: result,
+    };
+  }
+
+  /**
+   * Get recent files for an organization
+   * Called by tenant-bff for dashboard
+   */
+  @Get('recent')
+  async getRecentFiles(
+    @Headers('x-org-id') orgId: string,
+    @Query('limit', new DefaultValuePipe(5), ParseIntPipe) limit: number,
+  ) {
+    if (!orgId) {
+      return {
+        statusCode: HttpStatus.BAD_REQUEST,
+        message: 'X-Org-Id header is required',
+      };
+    }
+
+    const files = await this.fileStorageService.getRecentFiles(orgId, limit);
+
+    return {
+      statusCode: HttpStatus.OK,
+      data: { files },
     };
   }
 

@@ -5,5 +5,6 @@ export { ProductSwitcher } from './product-switcher';
 export { ThemeToggle } from './theme-toggle';
 export { UserMenu } from './user-menu';
 export { CreateProjectModal } from './create-project-modal';
+export { NotificationBell } from './notification-bell';
 export * from './types';
 export * from './hooks';

@@ -13,4 +13,6 @@ public interface MembershipRepository {
     long countByOrg(UUID orgId);
     List<Membership> listByUser(UUID userId);
     long countOwners(UUID orgId);
+    long countByRole(UUID orgId, String role);
+    long countByMemberType(UUID orgId, MemberType memberType);
 }

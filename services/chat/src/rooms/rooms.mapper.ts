@@ -6,12 +6,12 @@ export function toRoomResponseDto(row: RoomEntity) {
   return plainToInstance(
     RoomResponseDto,
     {
-      id: row.id?.toString(),
-      orgId: row.orgId?.toString(),
+      id: row.id,
+      orgId: row.orgId,
       isPrivate: row.isPrivate,
       name: row.name,
       type: row.type || 'channel', // Default to 'channel' for backward compatibility
-      projectId: row.projectId?.toString() || null,
+      projectId: row.projectId || null,
     },
     { excludeExtraneousValues: true },
   );

@@ -1,4 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:8080';
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080';
 
 export class ApiError extends Error {
   constructor(
@@ -182,6 +182,161 @@ export async function apiDelete<T>(path: string, init?: RequestInit): Promise<T>
   return handleResponse<T>(response);
 }
 
+export async function apiPatch<T>(
+  path: string,
+  body?: any,
+  init?: RequestInit
+): Promise<T> {
+  const fullUrl = path.startsWith('http') ? path : `${API_BASE}${path}`;
+
+  const response = await fetchWithTokenRefresh(fullUrl, {
+    method: 'PATCH',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...init?.headers,
+    },
+    body: body ? JSON.stringify(body) : undefined,
+    ...init,
+  });
+
+  return handleResponse<T>(response);
+}
+
+// Dashboard types (matching tenant-bff response)
+export interface RecentActivity {
+  id: string;
+  userId: string | null;
+  userEmail: string | null;
+  action: string;
+  description: string;
+  createdAt: string;
+}
+
+export interface MemberStats {
+  total: number;
+  owners: number;
+  admins: number;
+  staff: number;
+  guests: number;
+}
+
+export interface ActivityStats {
+  totalActions: number;
+  todayActions: number;
+  thisWeekActions: number;
+  recentActivities: RecentActivity[];
+}
+
+export interface ProjectLite {
+  id: string;
+  identifier: string;
+  name: string;
+  projectLead: string | null;
+}
+
+export interface StorageStats {
+  usedBytes: number;
+  limitBytes: number;
+  usedPercent: number;
+}
+
+export interface DashboardResponse {
+  orgId: string;
+  orgName: string;
+  status: string;
+  members: MemberStats;
+  activities: ActivityStats;
+  projects: {
+    total: number;
+    items: ProjectLite[];
+  };
+  storage: StorageStats;
+}
+
+// Legacy types for backward compatibility
+export interface Activity {
+  id: string;
+  type: 'FILE_UPLOADED' | 'REPORT_CREATED' | 'MEMBER_JOINED' | 'MEMBER_LEFT' | 'SETTINGS_UPDATED';
+  user: { id: string; name: string; avatar?: string };
+  description: string;
+  metadata: Record<string, any>;
+  createdAt: string;
+}
+
+export interface ActivitiesResponse {
+  activities: Activity[];
+  hasMore: boolean;
+}
+
+export interface StatsResponse {
+  memberCount: number;
+  fileCount: number;
+  reportCount: number;
+  storage: {
+    usedGb: number;
+    limitGb: number;
+  };
+  trend: {
+    files: { thisWeek: number; lastWeek: number; change: number };
+    reports: { thisWeek: number; lastWeek: number; change: number };
+  };
+}
+
+// Dashboard API function
+export async function getDashboard(): Promise<DashboardResponse> {
+  return apiGet<DashboardResponse>('/tenant/dashboard');
+}
+
+// Legacy functions - transform dashboard data to old format
+export async function getStats(): Promise<StatsResponse> {
+  const dashboard = await getDashboard();
+  return {
+    memberCount: dashboard.members.total,
+    fileCount: 0,
+    reportCount: 0,
+    storage: { usedGb: 0, limitGb: 100 },
+    trend: {
+      files: { thisWeek: 0, lastWeek: 0, change: 0 },
+      reports: { thisWeek: 0, lastWeek: 0, change: 0 },
+    },
+  };
+}
+
+export async function getActivities(limit: number = 10): Promise<ActivitiesResponse> {
+  const dashboard = await getDashboard();
+  const activities: Activity[] = dashboard.activities.recentActivities.slice(0, limit).map(a => ({
+    id: a.id,
+    type: mapActionToType(a.action),
+    user: { id: a.userId || '', name: a.userEmail || 'Unknown' },
+    description: a.description,
+    metadata: {},
+    createdAt: a.createdAt,
+  }));
+  return {
+    activities,
+    hasMore: dashboard.activities.recentActivities.length > limit,
+  };
+}
+
+function mapActionToType(action: string): Activity['type'] {
+  switch (action) {
+    case 'FILE_UPLOAD':
+    case 'UPLOAD':
+      return 'FILE_UPLOADED';
+    case 'REPORT_CREATE':
+      return 'REPORT_CREATED';
+    case 'MEMBER_JOIN':
+    case 'JOIN':
+      return 'MEMBER_JOINED';
+    case 'MEMBER_LEAVE':
+    case 'LEAVE':
+      return 'MEMBER_LEFT';
+    default:
+      return 'SETTINGS_UPDATED';
+  }
+}
+
 // Member types
 export interface Member {
   id: string;
@@ -236,4 +391,47 @@ export async function updateMember(memberId: string, data: UpdateMemberRequest):
 
 export async function removeMember(memberId: string): Promise<void> {
   return apiDelete<void>(`/tenant/members/${memberId}`);
+}
+
+export async function updateMemberRole(memberId: string, roles: string[]): Promise<void> {
+  return apiPatch<void>(`/tenant/members/${memberId}/role`, { roles });
+}
+
+// Invitation types
+export interface Invitation {
+  id: string;
+  email: string;
+  memberType: string;
+  createdAt: string;
+}
+
+export interface InvitationsResponse {
+  invitations: Invitation[];
+}
+
+// Invitation API functions
+export async function getInvitations(): Promise<InvitationsResponse> {
+  return apiGet<InvitationsResponse>('/tenant/members/invitations');
+}
+
+export async function cancelInvitation(invitationId: string): Promise<void> {
+  return apiDelete<void>(`/tenant/members/invitations/${invitationId}`);
+}
+
+// Project types for member assignment
+export interface Project {
+  id: string;
+  identifier: string;
+  name: string;
+  description?: string;
+}
+
+export interface ProjectsResponse {
+  items: Project[];
+  total: number;
+}
+
+// Projects API
+export async function getProjects(): Promise<ProjectsResponse> {
+  return apiGet<ProjectsResponse>('/tenant/projects');
 }

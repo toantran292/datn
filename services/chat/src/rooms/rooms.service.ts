@@ -1,5 +1,4 @@
-import { Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
-import { types } from 'cassandra-driver';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException, Inject, forwardRef } from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { RoomEntity, RoomsRepository } from './repositories/room.repository';
 import { RoomMembersRepository } from './repositories/room-members.repository';
@@ -18,7 +17,7 @@ export class RoomsService {
     private readonly presenceService: PresenceService,
   ) { }
 
-  async createRoom(dto: CreateRoomDto, orgId: types.Uuid, userId: types.Uuid) {
+  async createRoom(dto: CreateRoomDto, orgId: string, userId: string) {
     const roomType = dto.type || 'channel';
     const room = await this.roomsRepo.create(
       orgId,
@@ -34,11 +33,11 @@ export class RoomsService {
       projectId: room.projectId,
     });
 
-    this.chatsGateway.notifyRoomCreated(orgId.toString(), {
-      id: room.id.toString(),
+    this.chatsGateway.notifyRoomCreated(orgId, {
+      id: room.id,
       name: room.name,
       isPrivate: room.isPrivate,
-      orgId: room.orgId.toString(),
+      orgId: room.orgId,
     });
 
     return room;
@@ -50,9 +49,9 @@ export class RoomsService {
    * - DMs are always private
    * - DM name is generated from member names
    */
-  async createDm(userIds: string[], orgId: types.Uuid, currentUserId: types.Uuid) {
+  async createDm(userIds: string[], orgId: string, currentUserId: string) {
     // Include current user in the member list
-    const allUserIds = [...new Set([currentUserId.toString(), ...userIds])];
+    const allUserIds = [...new Set([currentUserId, ...userIds])];
 
     // Validate: need at least 2 users for a DM
     if (allUserIds.length < 2) {
@@ -66,11 +65,11 @@ export class RoomsService {
     }
 
     // Fetch user info to generate DM name
-    const usersInfo = await this.identityService.getUsersFromOrg(orgId.toString(), allUserIds);
+    const usersInfo = await this.identityService.getUsersFromOrg(orgId, allUserIds);
 
     // Generate DM name from member names (excluding current user for display)
     const otherUserNames = allUserIds
-      .filter(id => id !== currentUserId.toString())
+      .filter(id => id !== currentUserId)
       .map(id => {
         const userInfo = usersInfo.get(id);
         return userInfo?.display_name || userInfo?.email?.split('@')[0] || `User ${id.slice(0, 8)}`;
@@ -88,7 +87,7 @@ export class RoomsService {
 
     // Add all members with room data for denormalized tables
     for (const userId of allUserIds) {
-      await this.roomMembersRepo.addMember(room.id, types.Uuid.fromString(userId), orgId, {
+      await this.roomMembersRepo.addMember(room.id, userId, orgId, {
         roomType: 'dm',
         roomName: room.name,
         isPrivate: true,
@@ -98,11 +97,11 @@ export class RoomsService {
 
     // Notify all members about the new DM
     for (const userId of allUserIds) {
-      this.chatsGateway.notifyRoomJoined(orgId.toString(), {
-        id: room.id.toString(),
+      this.chatsGateway.notifyRoomJoined(orgId, {
+        id: room.id,
         name: room.name,
         isPrivate: room.isPrivate,
-        orgId: room.orgId.toString(),
+        orgId: room.orgId,
       }, userId);
     }
 
@@ -118,9 +117,9 @@ export class RoomsService {
   async createChannel(
     name: string,
     isPrivate: boolean,
-    orgId: types.Uuid,
-    userId: types.Uuid,
-    projectId?: types.Uuid | null
+    orgId: string,
+    userId: string,
+    projectId?: string | null
   ) {
     const room = await this.roomsRepo.create(
       orgId,
@@ -139,21 +138,21 @@ export class RoomsService {
     });
 
     // Notify creator that they joined the room (for WebSocket subscription)
-    this.chatsGateway.notifyRoomJoined(orgId.toString(), {
-      id: room.id.toString(),
+    this.chatsGateway.notifyRoomJoined(orgId, {
+      id: room.id,
       name: room.name,
       isPrivate: room.isPrivate,
-      orgId: room.orgId.toString(),
-      projectId: room.projectId?.toString() || null,
-    }, userId.toString());
+      orgId: room.orgId,
+      projectId: room.projectId || null,
+    }, userId);
 
     // Also notify org about new room creation (for other users to see in browse)
-    this.chatsGateway.notifyRoomCreated(orgId.toString(), {
-      id: room.id.toString(),
+    this.chatsGateway.notifyRoomCreated(orgId, {
+      id: room.id,
       name: room.name,
       isPrivate: room.isPrivate,
-      orgId: room.orgId.toString(),
-      projectId: room.projectId?.toString() || null,
+      orgId: room.orgId,
+      projectId: room.projectId || null,
     });
 
     return room;
@@ -162,9 +161,9 @@ export class RoomsService {
   /**
    * Find existing DM with exact same members
    */
-  private async findExistingDm(userIds: string[], orgId: types.Uuid): Promise<RoomEntity | null> {
+  private async findExistingDm(userIds: string[], orgId: string): Promise<RoomEntity | null> {
     // Get all rooms for the first user
-    const firstUserId = types.Uuid.fromString(userIds[0]);
+    const firstUserId = userIds[0];
     const { items: joinedRooms } = await this.listJoinedRooms(firstUserId, orgId, { limit: 1000 });
 
     // Filter DMs only
@@ -173,7 +172,7 @@ export class RoomsService {
     // Check each DM to see if it has the exact same members
     for (const dm of dms) {
       const { items: members } = await this.roomMembersRepo.findMembersByRoom(dm.id, { limit: 1000 });
-      const dmMemberIds = new Set(members.map(m => m.userId.toString()));
+      const dmMemberIds = new Set(members.map(m => m.userId));
 
       // Check if member sets are identical
       if (dmMemberIds.size === userIds.length && userIds.every(id => dmMemberIds.has(id))) {
@@ -191,14 +190,13 @@ export class RoomsService {
    * - Uses optimized denormalized table for fast lookup
    */
   async listJoinedRooms(
-    userId: types.Uuid,
-    orgId: types.Uuid,
+    userId: string,
+    orgId: string,
     opts: { limit?: number; pagingState?: string; projectId?: string } = {},
   ) {
     // If projectId is specified, use project-specific query
     if (opts.projectId) {
-      const projectUuid = types.Uuid.fromString(opts.projectId);
-      const result = await this.roomsRepo.listJoinedRoomsByUserAndProject(userId, orgId, projectUuid, {
+      const result = await this.roomsRepo.listJoinedRoomsByUserAndProject(userId, orgId, opts.projectId, {
         limit: opts.limit,
         pagingState: opts.pagingState,
       });
@@ -245,8 +243,8 @@ export class RoomsService {
    * - Uses optimized user_dms table
    */
   async listDms(
-    userId: types.Uuid,
-    orgId: types.Uuid,
+    userId: string,
+    orgId: string,
     opts: { limit?: number; pagingState?: string } = {},
   ) {
     const result = await this.roomsRepo.listDmsByUser(userId, orgId, {
@@ -273,8 +271,8 @@ export class RoomsService {
    * - Uses user_rooms table and filters for projectId = null
    */
   async listOrgChannels(
-    userId: types.Uuid,
-    orgId: types.Uuid,
+    userId: string,
+    orgId: string,
     opts: { limit?: number; pagingState?: string } = {},
   ) {
     const result = await this.roomsRepo.listJoinedRoomsByUser(userId, orgId, {
@@ -305,13 +303,12 @@ export class RoomsService {
    * - Uses user_project_rooms table for fast lookup
    */
   async listProjectChannels(
-    userId: types.Uuid,
-    orgId: types.Uuid,
+    userId: string,
+    orgId: string,
     projectId: string,
     opts: { limit?: number; pagingState?: string } = {},
   ) {
-    const projectUuid = types.Uuid.fromString(projectId);
-    const result = await this.roomsRepo.listJoinedRoomsByUserAndProject(userId, orgId, projectUuid, {
+    const result = await this.roomsRepo.listJoinedRoomsByUserAndProject(userId, orgId, projectId, {
       limit: opts.limit,
       pagingState: opts.pagingState,
     });
@@ -333,7 +330,7 @@ export class RoomsService {
    * Browse PUBLIC org-level channels (channels not in any project)
    */
   async browseOrgPublicRooms(
-    orgId: types.Uuid,
+    orgId: string,
     opts: { limit?: number; pagingState?: string } = {},
   ) {
     const pageSize = opts.limit ?? 100;
@@ -368,11 +365,10 @@ export class RoomsService {
    * Browse PUBLIC project-specific channels
    */
   async browseProjectPublicRooms(
-    orgId: types.Uuid,
+    orgId: string,
     projectId: string,
     opts: { limit?: number; pagingState?: string } = {},
   ) {
-    const projectUuid = types.Uuid.fromString(projectId);
     const pageSize = opts.limit ?? 100;
 
     let cursor = opts.pagingState;
@@ -384,7 +380,7 @@ export class RoomsService {
 
       for (const room of items) {
         // Only include PUBLIC channels in the specified project
-        if (!room.isPrivate && room.type === 'channel' && room.projectId?.toString() === projectUuid.toString()) {
+        if (!room.isPrivate && room.type === 'channel' && room.projectId === projectId) {
           picked.push(room);
         }
 
@@ -408,7 +404,7 @@ export class RoomsService {
    * - Does NOT include private rooms
    */
   async listPublicRooms(
-    orgId: types.Uuid,
+    orgId: string,
     opts: { limit?: number; pagingState?: string } = {},
   ) {
     const pageSize = opts.limit ?? 100;
@@ -444,67 +440,65 @@ export class RoomsService {
    * @deprecated Use listJoinedRooms instead
    */
   async listRoomsForUser(
-    userId: types.Uuid,
-    orgId: types.Uuid,
+    userId: string,
+    orgId: string,
     opts: { limit?: number; pagingState?: string } = {},
   ) {
     return this.listJoinedRooms(userId, orgId, opts);
   }
 
-  async joinRoom(roomId: string, orgId: types.Uuid, userId: types.Uuid) {
-    const roomTid = types.TimeUuid.fromString(roomId);
-    const room = await this.roomsRepo.findByOrgAndId(orgId, roomTid);
+  async joinRoom(roomId: string, orgId: string, userId: string) {
+    const room = await this.roomsRepo.findByOrgAndId(orgId, roomId);
     if (!room) throw new NotFoundException('Room not found');
-    const isMember = await this.roomMembersRepo.isMember(roomTid, userId);
+    const isMember = await this.roomMembersRepo.isMember(roomId, userId);
     if (!isMember) {
-      await this.roomMembersRepo.addMember(roomTid, userId, orgId, {
+      await this.roomMembersRepo.addMember(roomId, userId, orgId, {
         roomType: room.type,
         roomName: room.name,
         isPrivate: room.isPrivate,
         projectId: room.projectId,
       });
-      this.chatsGateway.notifyRoomJoined(orgId.toString(), {
-        id: room.id.toString(),
+      this.chatsGateway.notifyRoomJoined(orgId, {
+        id: room.id,
         name: room.name,
         isPrivate: room.isPrivate,
-        orgId: room.orgId.toString(),
-      }, userId.toString());
+        orgId: room.orgId,
+      }, userId);
     }
     return { joined: true };
   }
 
-  async listRoomMembers(roomId: string, orgId: types.Uuid, userId: types.Uuid) {
-    const roomTid = types.TimeUuid.fromString(roomId);
-
+  async listRoomMembers(roomId: string, orgId: string, userId: string) {
     // Verify room exists
-    const room = await this.roomsRepo.findByOrgAndId(orgId, roomTid);
+    const room = await this.roomsRepo.findByOrgAndId(orgId, roomId);
     if (!room) throw new NotFoundException('Room not found');
 
     // Verify user is a member (only members can see member list)
-    const isMember = await this.roomMembersRepo.isMember(roomTid, userId);
+    const isMember = await this.roomMembersRepo.isMember(roomId, userId);
     if (!isMember) throw new NotFoundException('You must be a member to view members');
 
     // Get all members
-    const { items } = await this.roomMembersRepo.findMembersByRoom(roomTid, { limit: 1000 });
+    const { items } = await this.roomMembersRepo.findMembersByRoom(roomId, { limit: 1000 });
 
     // Get user IDs
-    const userIds = items.map(m => m.userId.toString());
+    const userIds = items.map(m => m.userId);
 
     // Fetch user info from Identity service
-    const usersInfo = await this.identityService.getUsersFromOrg(orgId.toString(), userIds);
+    const usersInfo = await this.identityService.getUsersFromOrg(orgId, userIds);
 
     // Get online status for all users
     const onlineStatus = this.presenceService.getOnlineStatus(userIds);
 
     // Combine all data
     return items.map(member => {
-      const memberUserId = member.userId.toString();
+      const memberUserId = member.userId;
       const userInfo = usersInfo.get(memberUserId);
 
       return {
         userId: memberUserId,
-        orgId: member.orgId.toString(),
-        lastSeenMessageId: member.lastSeenMessageId?.toString() ?? null,
+        orgId: member.orgId,
+        role: member.role,
+        lastSeenMessageId: member.lastSeenMessageId ?? null,
         // User info from Identity
         email: userInfo?.email ?? null,
         displayName: userInfo?.display_name ?? `User ${memberUserId.slice(0, 8)}`,
@@ -513,5 +507,207 @@ export class RoomsService {
         isOnline: onlineStatus.get(memberUserId) ?? false,
       };
     });
+  }
+
+  // ============== UC01: Room Management ==============
+
+  /**
+   * UC01: Update room info (name, description, isPrivate)
+   * - Only ADMIN can update
+   */
+  async updateRoom(
+    roomId: string,
+    orgId: string,
+    userId: string,
+    data: { name?: string; description?: string; isPrivate?: boolean }
+  ) {
+    const room = await this.roomsRepo.findByOrgAndId(orgId, roomId);
+    if (!room) throw new NotFoundException('Room not found');
+
+    // Check if user is admin
+    const member = await this.roomMembersRepo.get(roomId, userId);
+    if (!member) throw new ForbiddenException('You are not a member of this room');
+    if (member.role !== 'ADMIN') throw new ForbiddenException('Only admins can update room');
+
+    await this.roomsRepo.update(roomId, data);
+
+    // Notify room updated
+    this.chatsGateway.notifyRoomUpdated(orgId, {
+      id: roomId,
+      ...data,
+    });
+
+    return { updated: true };
+  }
+
+  /**
+   * UC01: Archive room
+   * - Only ADMIN can archive
+   */
+  async archiveRoom(roomId: string, orgId: string, userId: string) {
+    const room = await this.roomsRepo.findByOrgAndId(orgId, roomId);
+    if (!room) throw new NotFoundException('Room not found');
+
+    const member = await this.roomMembersRepo.get(roomId, userId);
+    if (!member) throw new ForbiddenException('You are not a member of this room');
+    if (member.role !== 'ADMIN') throw new ForbiddenException('Only admins can archive room');
+
+    await this.roomsRepo.archive(roomId);
+
+    this.chatsGateway.notifyRoomArchived(orgId, roomId);
+
+    return { archived: true };
+  }
+
+  /**
+   * UC01: Delete room (soft delete)
+   * - Only ADMIN can delete
+   */
+  async deleteRoom(roomId: string, orgId: string, userId: string) {
+    const room = await this.roomsRepo.findByOrgAndId(orgId, roomId);
+    if (!room) throw new NotFoundException('Room not found');
+
+    const member = await this.roomMembersRepo.get(roomId, userId);
+    if (!member) throw new ForbiddenException('You are not a member of this room');
+    if (member.role !== 'ADMIN') throw new ForbiddenException('Only admins can delete room');
+
+    await this.roomsRepo.softDelete(roomId);
+
+    this.chatsGateway.notifyRoomDeleted(orgId, roomId);
+
+    return { deleted: true };
+  }
+
+  // ============== UC02: Member Management ==============
+
+  /**
+   * UC02: Invite member to room
+   * - Only ADMIN can invite to private rooms
+   * - Anyone can invite to public rooms (or set to admin only)
+   */
+  async inviteMember(roomId: string, orgId: string, inviterId: string, targetUserId: string) {
+    const room = await this.roomsRepo.findByOrgAndId(orgId, roomId);
+    if (!room) throw new NotFoundException('Room not found');
+
+    // Check if inviter is member
+    const inviterMember = await this.roomMembersRepo.get(roomId, inviterId);
+    if (!inviterMember) throw new ForbiddenException('You are not a member of this room');
+
+    // For private rooms, only admin can invite
+    if (room.isPrivate && inviterMember.role !== 'ADMIN') {
+      throw new ForbiddenException('Only admins can invite to private rooms');
+    }
+
+    // Check if target is already a member
+    const existingMember = await this.roomMembersRepo.isMember(roomId, targetUserId);
+    if (existingMember) throw new BadRequestException('User is already a member');
+
+    // Add member
+    await this.roomMembersRepo.addMember(roomId, targetUserId, orgId, {
+      roomType: room.type,
+      roomName: room.name,
+      isPrivate: room.isPrivate,
+      projectId: room.projectId,
+    });
+
+    // Notify
+    this.chatsGateway.notifyRoomJoined(orgId, {
+      id: room.id,
+      name: room.name,
+      isPrivate: room.isPrivate,
+      orgId: room.orgId,
+      projectId: room.projectId,
+    }, targetUserId);
+
+    return { invited: true };
+  }
+
+  /**
+   * UC02: Remove member from room
+   * - Admin can remove anyone (except last admin)
+   * - Users can remove themselves (leave)
+   */
+  async removeMember(roomId: string, orgId: string, requesterId: string, targetUserId: string) {
+    const room = await this.roomsRepo.findByOrgAndId(orgId, roomId);
+    if (!room) throw new NotFoundException('Room not found');
+
+    const requesterMember = await this.roomMembersRepo.get(roomId, requesterId);
+    if (!requesterMember) throw new ForbiddenException('You are not a member of this room');
+
+    // Self removal (leave) is always allowed
+    const isSelfRemoval = requesterId === targetUserId;
+
+    if (!isSelfRemoval) {
+      // Only admin can remove others
+      if (requesterMember.role !== 'ADMIN') {
+        throw new ForbiddenException('Only admins can remove members');
+      }
+    }
+
+    // Check target is member
+    const targetMember = await this.roomMembersRepo.get(roomId, targetUserId);
+    if (!targetMember) throw new NotFoundException('Target user is not a member');
+
+    // Prevent removing the last admin
+    if (targetMember.role === 'ADMIN') {
+      const adminCount = await this.roomMembersRepo.countAdmins(roomId);
+      if (adminCount <= 1) {
+        throw new BadRequestException('Cannot remove the last admin. Transfer ownership first.');
+      }
+    }
+
+    await this.roomMembersRepo.removeMember(roomId, targetUserId);
+
+    this.chatsGateway.notifyMemberRemoved(orgId, roomId, targetUserId);
+
+    return { removed: true };
+  }
+
+  /**
+   * UC02: Update member role
+   * - Only ADMIN can change roles
+   * - Cannot demote the last admin
+   */
+  async updateMemberRole(
+    roomId: string,
+    orgId: string,
+    requesterId: string,
+    targetUserId: string,
+    newRole: 'ADMIN' | 'MEMBER'
+  ) {
+    const room = await this.roomsRepo.findByOrgAndId(orgId, roomId);
+    if (!room) throw new NotFoundException('Room not found');
+
+    const requesterMember = await this.roomMembersRepo.get(roomId, requesterId);
+    if (!requesterMember) throw new ForbiddenException('You are not a member of this room');
+    if (requesterMember.role !== 'ADMIN') throw new ForbiddenException('Only admins can change roles');
+
+    const targetMember = await this.roomMembersRepo.get(roomId, targetUserId);
+    if (!targetMember) throw new NotFoundException('Target user is not a member');
+
+    // Prevent demoting the last admin
+    if (targetMember.role === 'ADMIN' && newRole === 'MEMBER') {
+      const adminCount = await this.roomMembersRepo.countAdmins(roomId);
+      if (adminCount <= 1) {
+        throw new BadRequestException('Cannot demote the last admin');
+      }
+    }
+
+    await this.roomMembersRepo.updateRole(roomId, targetUserId, newRole);
+
+    this.chatsGateway.notifyMemberRoleChanged(orgId, roomId, targetUserId, newRole);
+
+    return { updated: true, role: newRole };
+  }
+
+  // ============== UC04: Leave Room ==============
+
+  /**
+   * UC04: Leave room
+   * - User removes themselves from room
+   * - Cannot leave if you're the last admin
+   */
+  async leaveRoom(roomId: string, orgId: string, userId: string) {
+    return this.removeMember(roomId, orgId, userId, userId);
   }
 }

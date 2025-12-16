@@ -24,6 +24,10 @@ export class CreatePresignedUrlDto {
   uploadedBy?: string;
 
   @IsOptional()
+  @IsString()
+  orgId?: string;
+
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   tags?: string[];

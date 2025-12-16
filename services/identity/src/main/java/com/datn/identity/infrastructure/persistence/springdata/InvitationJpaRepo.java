@@ -14,4 +14,6 @@ public interface InvitationJpaRepo extends JpaRepository<InvitationEntity, UUID>
     boolean existsByOrgIdAndEmailAndAcceptedAtIsNull(UUID orgId, String email);
     // Find all pending invitations for a user by email
     List<InvitationEntity> findByEmailAndAcceptedAtIsNull(String email);
+    // Find all pending invitations for an organization
+    List<InvitationEntity> findByOrgIdAndAcceptedAtIsNullOrderByCreatedAtDesc(UUID orgId);
 }

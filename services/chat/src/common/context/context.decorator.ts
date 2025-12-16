@@ -1,10 +1,9 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { types as CassandraTypes } from 'cassandra-driver';
 
-export type RequestContext = {
-  userId: CassandraTypes.Uuid;
-  orgId: CassandraTypes.Uuid;
-};
+export interface RequestContext {
+  userId: string;
+  orgId: string;
+}
 
 export const Ctx = createParamDecorator(
   (_data: unknown, ctx: ExecutionContext): RequestContext => {

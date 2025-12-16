@@ -11,10 +11,49 @@ export class ProjectService {
     private issueStatusService: IssueStatusService
   ) {}
 
+  private generateIdentifierFromName(name: string): string {
+    return name
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, "")
+      .slice(0, 5);
+  }
+
+  private async generateUniqueIdentifier(baseName: string, orgId: string): Promise<string> {
+    const base = this.generateIdentifierFromName(baseName);
+    if (!base) {
+      // Fallback to random if name has no valid chars
+      return Math.random().toString(36).substring(2, 7).toUpperCase();
+    }
+
+    // Try base identifier first
+    if (await this.checkIdentifierAvailability(base, orgId)) {
+      return base;
+    }
+
+    // Try with numeric suffix
+    for (let i = 1; i <= 99; i++) {
+      const suffix = i.toString();
+      const candidate = (base.slice(0, 5 - suffix.length) + suffix).slice(0, 5);
+      if (await this.checkIdentifierAvailability(candidate, orgId)) {
+        return candidate;
+      }
+    }
+
+    // Fallback: random suffix
+    const random = Math.random().toString(36).substring(2, 4).toUpperCase();
+    return (base.slice(0, 3) + random).slice(0, 5);
+  }
+
   async create(createDto: CreateProjectDto, orgId: string) {
-    // Sanitize inputs
-    const identifier = createDto.identifier.trim().toUpperCase();
     const name = createDto.name.trim();
+
+    // Generate or use provided identifier
+    let identifier: string;
+    if (createDto.identifier) {
+      identifier = createDto.identifier.trim().toUpperCase();
+    } else {
+      identifier = await this.generateUniqueIdentifier(name, orgId);
+    }
 
     // Check unique identifier within organization (case-insensitive)
     const existingByIdentifier = await this.prisma.project.findFirst({
@@ -56,6 +95,7 @@ export class ProjectService {
         orgId,
         identifier,
         name,
+        description: createDto.description,
         projectLead: createDto.projectLead,
         defaultAssignee: createDto.defaultAssignee,
       },
@@ -68,14 +108,29 @@ export class ProjectService {
   }
 
   async findAll(orgId: string) {
-    return this.prisma.project.findMany({
+    const projects = await this.prisma.project.findMany({
       where: {
         orgId,
       },
       orderBy: {
         createdAt: "desc",
       },
+      include: {
+        _count: {
+          select: {
+            issues: true,
+            sprints: true,
+          },
+        },
+      },
     });
+
+    return projects.map((project) => ({
+      ...project,
+      issueCount: project._count.issues,
+      sprintCount: project._count.sprints,
+      _count: undefined,
+    }));
   }
 
   async findOne(id: string, orgId: string) {

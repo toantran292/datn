@@ -28,6 +28,10 @@ public class UserRepositoryImpl implements UserRepository {
         e.setDisabled(u.disabled());
         e.setMustChangePassword(u.mustChangePassword());
         e.setDisplayName(u.displayName());
+        e.setEmailVerifiedAt(u.emailVerifiedAt());
+        e.setPhone(u.phone());
+        e.setBio(u.bio());
+        e.setAvatarAssetId(u.avatarAssetId());
         return e;
     }
 
@@ -38,7 +42,11 @@ public class UserRepositoryImpl implements UserRepository {
             e.getPasswordHash(),
             e.isDisabled(),
             e.isMustChangePassword(),
-            e.getDisplayName()
+            e.getDisplayName(),
+            e.getEmailVerifiedAt(),
+            e.getPhone(),
+            e.getBio(),
+            e.getAvatarAssetId()
         );
     }
 

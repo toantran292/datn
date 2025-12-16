@@ -10,6 +10,7 @@ import { ProtectedRoute } from "@/components/auth/route-guard";
 import { apiGet, apiPost, apiPatch } from "@/lib/api";
 import type { CreateOrgRequest } from "@/types/identity";
 import { ImageCropper } from "@/components/ImageCropper";
+import { toast } from "@/lib/toast";
 
 function CreateWorkspacePageContent() {
   const router = useRouter();
@@ -126,12 +127,12 @@ function CreateWorkspacePageContent() {
     if (file) {
       // Validate file type
       if (!file.type.startsWith('image/')) {
-        alert('Please select an image file');
+        toast.error('Please select an image file');
         return;
       }
       // Validate file size (2MB)
       if (file.size > 2 * 1024 * 1024) {
-        alert('File size must be less than 2MB');
+        toast.error('File size must be less than 2MB');
         return;
       }
       setLogoFile(file);
@@ -259,7 +260,7 @@ function CreateWorkspacePageContent() {
         } catch (error) {
           console.error('[Create Workspace] Failed to upload logo:', error);
           // Continue even if logo upload fails, but log the error
-          alert('Workspace created successfully, but logo upload failed. You can update the logo later.');
+          toast.error('Workspace created successfully, but logo upload failed. You can update the logo later.');
         }
       } else {
         console.log('[Create Workspace] No logo to upload');
@@ -281,7 +282,7 @@ function CreateWorkspacePageContent() {
           errorMessage.includes("slug_exists") || errorMessage.includes("slug_invalid")) {
         setErrors({ slug: "This slug is already taken or invalid" });
       } else {
-        alert(errorMessage);
+        toast.error(errorMessage);
       }
     }
   };
@@ -320,6 +321,83 @@ function CreateWorkspacePageContent() {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Logo Upload - At top */}
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">
+                  Workspace Logo (Optional)
+                </label>
+                {logoPreview ? (
+                  <div className="flex items-center space-x-4">
+                    <div className="relative group">
+                      <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-gray-300 shadow-lg">
+                        <img
+                          src={logoPreview}
+                          alt="Logo preview"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      {/* Hover overlay to change logo */}
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploading || createOrgMutation.isPending}
+                        className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+                      >
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      </button>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Logo preview</p>
+                      <button
+                        type="button"
+                        onClick={handleRemoveLogo}
+                        className="text-sm text-red-600 hover:text-red-700"
+                        disabled={isUploading || createOrgMutation.isPending}
+                      >
+                        Remove logo
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-4">
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileSelect}
+                      className="hidden"
+                      disabled={isUploading || createOrgMutation.isPending}
+                    />
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-20 h-20 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors cursor-pointer bg-gray-50"
+                    >
+                      <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">Upload logo</p>
+                      <p className="text-xs text-gray-500">PNG, JPG up to 2MB</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Image Cropper Modal */}
+              {showCropper && logoFile && (
+                <ImageCropper
+                  image={logoFile}
+                  onCropComplete={handleCropComplete}
+                  onCancel={handleCropCancel}
+                  aspect={1}
+                />
+              )}
+
               {/* Workspace Name */}
               <div>
                 <label htmlFor="display_name" className="block text-sm font-medium text-gray-900 mb-2">
@@ -432,63 +510,6 @@ function CreateWorkspacePageContent() {
                   </div>
                 )}
               </div>
-
-              {/* Logo Upload */}
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Workspace Logo (Optional)
-                </label>
-                {logoPreview ? (
-                  <div className="relative">
-                    <div className="w-32 h-32 rounded-lg overflow-hidden border-2 border-gray-300">
-                      <img
-                        src={logoPreview}
-                        alt="Logo preview"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleRemoveLogo}
-                      className="mt-2 text-sm text-red-600 hover:text-red-700"
-                      disabled={isUploading || createOrgMutation.isPending}
-                    >
-                      Remove logo
-                    </button>
-                  </div>
-                ) : (
-                  <div>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileSelect}
-                      className="hidden"
-                      disabled={isUploading || createOrgMutation.isPending}
-                    />
-                    <div
-                      onClick={() => fileInputRef.current?.click()}
-                      className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors cursor-pointer"
-                    >
-                      <svg className="mx-auto h-12 w-12 text-gray-400 mb-3" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                        <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                      <p className="text-gray-600 font-medium mb-1">Click to upload or drag and drop</p>
-                      <p className="text-sm text-gray-500">PNG, JPG up to 2MB (1:1 ratio)</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Image Cropper Modal */}
-              {showCropper && logoFile && (
-                <ImageCropper
-                  image={logoFile}
-                  onCropComplete={handleCropComplete}
-                  onCancel={handleCropCancel}
-                  aspect={1}
-                />
-              )}
 
               {/* Form Actions */}
               <div className="flex space-x-4 pt-4">

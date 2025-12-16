@@ -13,8 +13,7 @@ function SignUpPageContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState("");
   const emailSignUpMutation = useEmailSignUp();
 
@@ -33,7 +32,7 @@ function SignUpPageContent() {
 
   const handleEmailSignUp = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password || !confirmPassword || !firstName || !lastName) return;
+    if (!email || !password || !confirmPassword) return;
 
     if (password !== confirmPassword) {
       setError("Passwords do not match");
@@ -50,8 +49,7 @@ function SignUpPageContent() {
     const signUpData: EmailSignUpRequest = {
       email,
       password,
-      firstName,
-      lastName
+      displayName: displayName || undefined,
     };
     emailSignUpMutation.mutate(signUpData);
   };
@@ -100,25 +98,15 @@ function SignUpPageContent() {
           {/* Auth Form */}
           {!emailSignUpMutation.isPending && (
             <form onSubmit={handleEmailSignUp} className="space-y-6">
-              {/* Name Fields */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* Display Name */}
+              <div>
                 <Input
-                  id="firstName"
+                  id="displayName"
                   type="text"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  placeholder="First name"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Display name (optional)"
                   className="w-full px-5 py-4 border-2 border-[#E5E7EB] rounded-2xl focus:ring-4 focus:ring-[#00C4AB]/25 focus:border-[#00C4AB] transition-all duration-200 bg-white/80 backdrop-blur-sm font-medium text-lg"
-                  required
-                />
-                <Input
-                  id="lastName"
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  placeholder="Last name"
-                  className="w-full px-5 py-4 border-2 border-[#E5E7EB] rounded-2xl focus:ring-4 focus:ring-[#00C4AB]/25 focus:border-[#00C4AB] transition-all duration-200 bg-white/80 backdrop-blur-sm font-medium text-lg"
-                  required
                 />
               </div>
 
@@ -162,7 +150,7 @@ function SignUpPageContent() {
               <Button
                 type="submit"
                 className="w-full bg-[#0F172A] hover:bg-[#1E293B] text-white font-bold py-5 px-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-[#0F172A]/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none text-lg"
-                disabled={!email || !password || !confirmPassword || !firstName || !lastName || password !== confirmPassword || password.length < 8 || emailSignUpMutation.isPending}
+                disabled={!email || !password || !confirmPassword || password !== confirmPassword || password.length < 8 || emailSignUpMutation.isPending}
               >
                 Continue
               </Button>

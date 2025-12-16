@@ -46,6 +46,7 @@ public class OutboxRepositoryImpl implements OutboxRepository {
 
     @Override
     public void markPublished(long id, Instant when) {
-        jdbc.update("update outbox set published_at=? where id=?", when, id);
+        jdbc.update("update outbox set published_at=? where id=?",
+                java.sql.Timestamp.from(when), id);
     }
 }

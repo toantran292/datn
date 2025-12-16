@@ -11,11 +11,17 @@ import { Inject, forwardRef } from "@nestjs/common";
 import { Namespace, Server } from "socket.io";
 import { ChatsService } from "./chat.service";
 import type { AuthenticatedSocket } from "../common/types/socket.types";
-import { types } from "cassandra-driver";
 import { RoomMembersRepository } from "../rooms/repositories/room-members.repository";
 import { RoomsService } from "../rooms/rooms.service";
 import { PresenceService } from "../common/presence/presence.service";
 import { WsException } from '@nestjs/websockets';
+
+// Simple UUID validation regex
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isValidUuid(str: string): boolean {
+  return UUID_REGEX.test(str);
+}
 
 type RoomSummaryPayload = {
   id: string;
@@ -38,9 +44,7 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) { }
 
   async handleConnection(client: AuthenticatedSocket) {
-    const userUuid = types.Uuid.fromString(client.userId);
-    const orgUuid = types.Uuid.fromString(client.orgId);
-    const orgIds = await this.roomMembersRepo.findOrgIdStringsByUser(userUuid);
+    const orgIds = await this.roomMembersRepo.findOrgIdStringsByUser(client.userId);
     await Promise.all(orgIds.map(oid => client.join(`org:${oid}`)));
     console.log(`[WS] Connected: ${client.id} userId:${client.userId}`);
 
@@ -57,14 +61,14 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     // Only send rooms that user has JOINED (not all public rooms)
-    const { items } = await this.roomsService.listJoinedRooms(userUuid, orgUuid, { limit: 100 });
+    const { items } = await this.roomsService.listJoinedRooms(client.userId, client.orgId, { limit: 100 });
     const rooms = items.map(room => ({
-      id: room.id.toString(),
-      orgId: room.orgId.toString(),
+      id: room.id,
+      orgId: room.orgId,
       name: room.name ?? null,
       isPrivate: room.isPrivate,
       type: room.type || 'channel', // Include type field
-      projectId: room.projectId?.toString() || null, // Include projectId
+      projectId: room.projectId || null, // Include projectId
     }));
 
     client.emit('rooms:bootstrap', rooms);
@@ -79,8 +83,7 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const isNowOffline = this.presenceService.userDisconnected(client.userId, client.id);
     if (isNowOffline) {
       // User is fully offline (no more sockets), notify others
-      const userUuid = types.Uuid.fromString(client.userId);
-      const orgIds = await this.roomMembersRepo.findOrgIdStringsByUser(userUuid);
+      const orgIds = await this.roomMembersRepo.findOrgIdStringsByUser(client.userId);
 
       orgIds.forEach(orgId => {
         this.io.to(`org:${orgId}`).emit('user:offline', {
@@ -107,45 +110,44 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     if (!client.userId || !client.orgId) throw new WsException('Unauthenticated');
 
-    let roomUuid: types.TimeUuid;
-    try {
-      roomUuid = types.TimeUuid.fromString(data.roomId);
-    } catch {
+    if (!isValidUuid(data.roomId)) {
       throw new WsException('Invalid roomId');
     }
 
-    // Parse threadId if provided
-    let threadUuid: types.TimeUuid | undefined;
-    if (data.threadId) {
-      try {
-        threadUuid = types.TimeUuid.fromString(data.threadId);
-      } catch {
-        throw new WsException('Invalid threadId');
-      }
+    // Validate threadId if provided
+    if (data.threadId && !isValidUuid(data.threadId)) {
+      throw new WsException('Invalid threadId');
     }
 
-    const userUuid = types.Uuid.fromString(client.userId);
-    const orgUuid = types.Uuid.fromString(client.orgId);
-
     // Check if user is a member of the room
-    const isMember = await this.roomMembersRepo.isMember(roomUuid, userUuid);
+    const isMember = await this.roomMembersRepo.isMember(data.roomId, client.userId);
     if (!isMember) {
       throw new WsException('You must join this room before sending messages');
     }
 
     const message = await this.chatsService.createMessage({
-      roomId: roomUuid,
-      userId: userUuid,
-      orgId: orgUuid,
+      roomId: data.roomId,
+      userId: client.userId,
+      orgId: client.orgId,
       content: data.content,
-      threadId: threadUuid,
+      threadId: data.threadId,
     });
 
     const roomChannel = `room:${message.roomId}`;
     this.io.to(roomChannel).emit('message:new', message);
 
-    // Only emit room:updated for main messages (not thread replies)
-    if (!threadUuid) {
+    // Handle thread replies vs main messages differently
+    if (data.threadId) {
+      // Thread reply: emit thread:new-reply with updated reply count
+      const replyCount = await this.chatsService.getThreadReplyCount(data.roomId, data.threadId);
+      this.io.to(roomChannel).emit('thread:new-reply', {
+        threadId: data.threadId,
+        roomId: message.roomId,
+        message,
+        replyCount,
+      });
+    } else {
+      // Main message: emit room:updated
       this.io.to(`org:${message.orgId}`).emit('room:updated', {
         roomId: message.roomId,
         lastMessage: message,
@@ -153,7 +155,7 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       });
     }
 
-    await this.roomMembersRepo.updateLastSeen(roomUuid, userUuid, types.TimeUuid.fromString(message.id), orgUuid);
+    await this.roomMembersRepo.updateLastSeen(data.roomId, client.userId, message.id, client.orgId);
   }
 
   @SubscribeMessage('join_room')
@@ -166,25 +168,22 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       throw new WsException('Unauthenticated');
     }
 
-    let roomTid: types.TimeUuid;
-    try {
-      roomTid = types.TimeUuid.fromString(payload?.roomId ?? '');
-    } catch {
+    const roomId = payload?.roomId ?? '';
+    if (!isValidUuid(roomId)) {
       throw new WsException('Invalid roomId');
     }
 
-    const userUuid = types.Uuid.fromString(client.userId);
-    const isMember = await this.roomMembersRepo.isMember(roomTid, userUuid);
+    const isMember = await this.roomMembersRepo.isMember(roomId, client.userId);
     if (!isMember) {
       throw new WsException('FORBIDDEN_NOT_A_MEMBER');
     }
 
-    const roomName = `room:${roomTid.toString()}`;
+    const roomName = `room:${roomId}`;
     await client.join(roomName);
     client.emit('joined_room', {
-      roomId: roomTid.toString(),
+      roomId: roomId,
       joinedAt: Date.now(),
-      userId: userUuid.toString(),
+      userId: client.userId,
     });
   }
 
@@ -197,5 +196,25 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       ...room,
       userId, // Include userId so frontend knows who joined
     });
+  }
+
+  notifyRoomUpdated(orgId: string, data: { id: string; name?: string; description?: string; isPrivate?: boolean }) {
+    this.io.to(`org:${orgId}`).emit('room:updated', data);
+  }
+
+  notifyRoomArchived(orgId: string, roomId: string) {
+    this.io.to(`org:${orgId}`).emit('room:archived', { roomId });
+  }
+
+  notifyRoomDeleted(orgId: string, roomId: string) {
+    this.io.to(`org:${orgId}`).emit('room:deleted', { roomId });
+  }
+
+  notifyMemberRemoved(orgId: string, roomId: string, userId: string) {
+    this.io.to(`org:${orgId}`).emit('room:member_removed', { roomId, userId });
+  }
+
+  notifyMemberRoleChanged(orgId: string, roomId: string, userId: string, newRole: string) {
+    this.io.to(`org:${orgId}`).emit('room:member_role_changed', { roomId, userId, role: newRole });
   }
 }
