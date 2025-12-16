@@ -6,7 +6,14 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    router.push('/join');
+    // Check if user has userId stored, redirect to meetings list
+    // Otherwise redirect to join page
+    const userId = localStorage.getItem('userId');
+    if (userId) {
+      router.push('/meetings');
+    } else {
+      router.push('/join');
+    }
   }, [router]);
 
   return null;

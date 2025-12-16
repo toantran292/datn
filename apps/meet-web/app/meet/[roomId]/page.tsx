@@ -9,8 +9,14 @@ import { WaitingState } from '@/components/WaitingState';
 import { ControlsToolbar } from '@/components/ControlsToolbar';
 import { MeetingGrid } from '@/components/MeetingGrid';
 import { ScreenShareView } from '@/components/ScreenShareView';
+import { ReactionDisplay, FloatingReaction } from '@/components/ReactionDisplay';
+import { CaptionDisplay, useSpeechRecognition } from '@/components/CaptionDisplay';
+import { RecordingIndicator } from '@/components/RecordingIndicator';
+import { useRecording } from '@/hooks/useRecording';
+import { HuddleWidget } from '@/components/HuddleWidget';
 import type { JitsiTrack } from '@/types/jitsi';
 import { Video } from 'lucide-react';
+import { useCallback } from 'react';
 
 export default function MeetingPage() {
   const params = useParams();
@@ -20,6 +26,8 @@ export default function MeetingPage() {
   const [jwtToken, setJwtToken] = useState<string | null>(null);
   const [websocketUrl, setWebsocketUrl] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState<string>('User');
+  const [userId, setUserId] = useState<string | null>(null);
+  const [meetingId, setMeetingId] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Initialize Jitsi and load meeting data from localStorage
@@ -34,6 +42,8 @@ export default function MeetingPage() {
     const token = localStorage.getItem('jwtToken');
     const wsUrl = localStorage.getItem('websocketUrl');
     const name = localStorage.getItem('name') || 'User';
+    const uId = localStorage.getItem('userId');
+    const mId = localStorage.getItem('meetingId');
 
     if (!token || !wsUrl) {
       console.error('[Meeting] Missing token or websocket URL');
@@ -44,6 +54,8 @@ export default function MeetingPage() {
     setJwtToken(token);
     setWebsocketUrl(wsUrl);
     setDisplayName(name);
+    setUserId(uId);
+    setMeetingId(mId);
     setIsInitialized(true);
   }, [router]);
 
@@ -64,10 +76,17 @@ export default function MeetingPage() {
     screenShareTrack,
     isLocalSpeaking,
     speakingParticipants,
+    reactions,
+    captions,
+    isCaptionsEnabled,
     toggleAudio,
     toggleVideo,
     toggleScreenShare,
     leaveConference,
+    sendReaction,
+    removeReaction,
+    toggleCaptions,
+    sendCaption,
   } = useJitsiConference(
     connection,
     isConnected ? roomId : null,
@@ -79,6 +98,26 @@ export default function MeetingPage() {
     await leaveConference();
     router.push('/join');
   };
+
+  // Speech recognition callback
+  const handleSpeechResult = useCallback((text: string, isFinal: boolean) => {
+    sendCaption(text, isFinal);
+  }, [sendCaption]);
+
+  // Use speech recognition when captions are enabled and mic is on
+  useSpeechRecognition(isCaptionsEnabled && !isAudioMuted, handleSpeechResult);
+
+  // Recording hook
+  const {
+    isRecording,
+    duration: recordingDuration,
+    status: recordingStatus,
+    toggleRecording,
+  } = useRecording({
+    meetingId,
+    userId,
+    isJoined,
+  });
 
   // Loading state
   if (!isInitialized) {
@@ -179,41 +218,86 @@ export default function MeetingPage() {
       )}
 
       {/* Video Grid or Screen Share View */}
-      <div className="flex-1 overflow-hidden">
-        {isScreenSharing && screenShareTrack ? (
-          <ScreenShareView
-            participants={participantsArray}
-            localParticipant={{
-              name: displayName,
-              tracks: filteredLocalTracks,
-            }}
-            sharerName={screenSharerName}
-            screenShareTrack={screenShareTrack}
-            roomId={roomId}
-            isLocalSpeaking={isLocalSpeaking}
-            speakingParticipants={speakingParticipants}
-          />
-        ) : (
-          <MeetingGrid
-            participants={participantsArray}
-            localParticipant={{
-              name: displayName,
-              tracks: filteredLocalTracks,
-            }}
-            isLocalSpeaking={isLocalSpeaking}
-            speakingParticipants={speakingParticipants}
-          />
-        )}
+      <div className="flex-1 overflow-hidden flex flex-col">
+        <div className="flex-1 overflow-hidden">
+          {screenShareTrack ? (
+            <ScreenShareView
+              participants={participantsArray}
+              localParticipant={{
+                name: displayName,
+                tracks: filteredLocalTracks,
+              }}
+              sharerName={screenSharerName}
+              screenShareTrack={screenShareTrack}
+              roomId={roomId}
+              isLocalSpeaking={isLocalSpeaking}
+              speakingParticipants={speakingParticipants}
+            />
+          ) : (
+            <MeetingGrid
+              participants={participantsArray}
+              localParticipant={{
+                name: displayName,
+                tracks: filteredLocalTracks,
+              }}
+              isLocalSpeaking={isLocalSpeaking}
+              speakingParticipants={speakingParticipants}
+            />
+          )}
+        </div>
+
+        {/* Captions Display - Above controls */}
+        <CaptionDisplay
+          captions={captions}
+          isEnabled={isCaptionsEnabled}
+        />
       </div>
+
+      {/* Reactions Display */}
+      <ReactionDisplay
+        reactions={reactions.map(r => ({
+          id: r.id,
+          emoji: r.emoji,
+          userName: r.participantName,
+          timestamp: r.timestamp,
+        } as FloatingReaction))}
+        onReactionExpired={removeReaction}
+      />
+
+      {/* Recording Indicator */}
+      <RecordingIndicator
+        isRecording={isRecording}
+        duration={recordingDuration}
+        status={recordingStatus}
+      />
 
       {/* Controls */}
       <ControlsToolbar
         isMicOn={!isAudioMuted}
         isVideoOn={!isVideoMuted}
         isScreenSharing={isScreenSharing}
+        isRecording={isRecording}
+        isCaptionsOn={isCaptionsEnabled}
         onToggleMic={toggleAudio}
         onToggleVideo={toggleVideo}
         onToggleScreenShare={toggleScreenShare}
+        onToggleRecording={toggleRecording}
+        onToggleCaptions={toggleCaptions}
+        onSendReaction={sendReaction}
+        onLeave={handleLeave}
+      />
+
+      {/* Huddle Widget - Popup with controls */}
+      <HuddleWidget
+        participants={participantsArray}
+        localParticipant={{
+          name: displayName,
+          tracks: filteredLocalTracks,
+        }}
+        isLocalSpeaking={isLocalSpeaking}
+        speakingParticipants={speakingParticipants}
+        isAudioMuted={isAudioMuted}
+        onToggleMic={toggleAudio}
         onLeave={handleLeave}
       />
     </div>

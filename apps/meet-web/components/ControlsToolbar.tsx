@@ -1,21 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Mic, MicOff, Video, VideoOff, Monitor, Users, Settings, PhoneOff, MessageSquare } from 'lucide-react';
+import { Mic, MicOff, Video, VideoOff, Monitor, Users, Settings, PhoneOff, MessageSquare, Captions, CaptionsOff, Circle, Square } from 'lucide-react';
+import { ReactionPicker } from './ReactionPicker';
 
 interface ControlsToolbarProps {
   isMicOn: boolean;
   isVideoOn: boolean;
   isCaptionsOn?: boolean;
   isScreenSharing?: boolean;
+  isRecording?: boolean;
   isChatOpen?: boolean;
   unreadCount?: number;
   onToggleMic: () => void;
   onToggleVideo: () => void;
   onToggleCaptions?: () => void;
   onToggleScreenShare?: () => void;
+  onToggleRecording?: () => void;
   onToggleChat?: () => void;
   onShowParticipants?: () => void;
   onShowSettings?: () => void;
+  onSendReaction?: (emoji: string) => void;
   onLeave: () => void;
 }
 
@@ -24,24 +28,25 @@ export function ControlsToolbar({
   isVideoOn,
   isCaptionsOn = false,
   isScreenSharing = false,
+  isRecording = false,
   isChatOpen = false,
   unreadCount = 0,
   onToggleMic,
   onToggleVideo,
   onToggleCaptions,
   onToggleScreenShare,
+  onToggleRecording,
   onToggleChat,
   onShowParticipants,
   onShowSettings,
+  onSendReaction,
   onLeave,
 }: ControlsToolbarProps) {
   const [isVisible, setIsVisible] = useState(true);
-  const [mouseY, setMouseY] = useState(0);
   const [hideTimeout, setHideTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      setMouseY(e.clientY);
       const windowHeight = window.innerHeight;
       const bottomThreshold = windowHeight - 150; // Show when mouse is within 150px of bottom
 
@@ -81,7 +86,11 @@ export function ControlsToolbar({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 100, opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50"
+            className="fixed bottom-8 z-50"
+            style={{
+              left: '40%',
+              transform: 'translateX(-50%)',
+            }}
           >
             <div
               className="flex items-center gap-3 px-4 py-3 rounded-2xl backdrop-blur-xl border"
@@ -112,7 +121,7 @@ export function ControlsToolbar({
               {/* Captions toggle */}
               {onToggleCaptions && (
                 <ControlButton
-                  icon={<MessageSquare className="w-5 h-5" />}
+                  icon={isCaptionsOn ? <Captions className="w-5 h-5" /> : <CaptionsOff className="w-5 h-5" />}
                   active={isCaptionsOn}
                   onClick={onToggleCaptions}
                   activeColor="teal"
@@ -129,6 +138,22 @@ export function ControlsToolbar({
                   activeColor="orange"
                   label="Share"
                 />
+              )}
+
+              {/* Recording */}
+              {/* {onToggleRecording && (
+                <ControlButton
+                  icon={isRecording ? <Square className="w-4 h-4 fill-current" /> : <Circle className="w-5 h-5 fill-current" />}
+                  active={isRecording}
+                  onClick={onToggleRecording}
+                  activeColor="recording"
+                  label={isRecording ? "Stop" : "Record"}
+                />
+              )} */}
+
+              {/* Reactions */}
+              {onSendReaction && (
+                <ReactionPicker onSelectReaction={onSendReaction} />
               )}
 
               {/* Divider */}
@@ -200,35 +225,6 @@ export function ControlsToolbar({
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Leave button - Always visible in corner */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.3 }}
-        className="fixed bottom-6 right-6 z-40"
-      >
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onLeave}
-          className="p-4 rounded-full hover:bg-[#DC2626] transition-colors shadow-lg group"
-          style={{
-            backgroundColor: '#EF4444',
-            boxShadow: '0 4px 16px rgba(239, 68, 68, 0.4)',
-          }}
-        >
-          <PhoneOff className="w-6 h-6 text-white" />
-          <span className="absolute -top-10 right-0 px-3 py-1.5 rounded-lg text-sm text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border"
-            style={{
-              backgroundColor: 'var(--ts-card-surface)',
-              borderColor: 'var(--ts-border)',
-            }}
-          >
-            Leave Meeting
-          </span>
-        </motion.button>
-      </motion.div>
     </>
   );
 }
@@ -237,7 +233,7 @@ interface ControlButtonProps {
   icon: React.ReactElement;
   active?: boolean;
   onClick: () => void;
-  activeColor?: 'orange' | 'teal';
+  activeColor?: 'orange' | 'teal' | 'recording';
   label?: string;
 }
 
@@ -252,6 +248,10 @@ function ControlButton({ icon, active, onClick, activeColor = 'orange', label }:
     teal: {
       background: 'var(--ts-teal)',
       boxShadow: '0 0 20px rgba(0, 196, 171, 0.4)',
+    },
+    recording: {
+      background: '#EF4444',
+      boxShadow: '0 0 20px rgba(239, 68, 68, 0.5)',
     },
   };
 

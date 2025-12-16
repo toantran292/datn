@@ -172,7 +172,7 @@ export function ScreenShareView({
         initial={{ y: 50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="px-8 pb-32 z-50 relative"
+        className="px-8 pb-32 z-50 relative flex-shrink-0"
       >
         <div className="w-full max-w-[1100px] mx-auto relative">
           {/* Scrollable container with navigation */}

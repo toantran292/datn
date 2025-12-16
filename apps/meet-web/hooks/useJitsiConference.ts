@@ -14,6 +14,23 @@ export interface Participant {
   isSpeaking?: boolean;
 }
 
+export interface ReactionEvent {
+  id: string;
+  emoji: string;
+  participantId: string;
+  participantName: string;
+  timestamp: number;
+}
+
+export interface CaptionEvent {
+  id: string;
+  participantId: string;
+  participantName: string;
+  text: string;
+  timestamp: number;
+  isFinal: boolean;
+}
+
 /**
  * Simplified Jitsi Conference hook following official example.
  * Key principle: Keep it simple, let Jitsi handle the complexity.
@@ -35,9 +52,18 @@ export function useJitsiConference(
   const [dominantSpeakerId, setDominantSpeakerId] = useState<string | null>(null);
   const [isLocalSpeaking, setIsLocalSpeaking] = useState(false);
   const [speakingParticipants, setSpeakingParticipants] = useState<Set<string>>(new Set());
+  const [reactions, setReactions] = useState<ReactionEvent[]>([]);
+  const [captions, setCaptions] = useState<CaptionEvent[]>([]);
+  const [isCaptionsEnabled, setIsCaptionsEnabled] = useState(false);
 
   const conferenceRef = useRef<JitsiConference | null>(null);
   const initializedRef = useRef(false);
+  const displayNameRef = useRef(displayName);
+
+  // Keep displayNameRef in sync
+  useEffect(() => {
+    displayNameRef.current = displayName;
+  }, [displayName]);
 
   // Simple ID normalization
   const normalizeId = (jid: string): string => {
@@ -131,24 +157,151 @@ export function useJitsiConference(
     }
   }, [isScreenSharing, screenShareTrack]);
 
+  // Send reaction
+  const sendReaction = useCallback((emoji: string) => {
+    if (!conferenceRef.current || !isJoined) return;
+
+    try {
+      // Use Jitsi's command/property system to broadcast reaction
+      // We'll use setLocalParticipantProperty to broadcast to all participants
+      const reactionData = JSON.stringify({
+        emoji,
+        timestamp: Date.now(),
+      });
+
+      try {
+        conferenceRef.current.setLocalParticipantProperty('reaction', reactionData);
+      } catch (e) {
+        console.log('[Conference] Could not send reaction - may not be connected');
+        return;
+      }
+
+      // Add local reaction to display
+      const reactionEvent: ReactionEvent = {
+        id: `${Date.now()}-local`,
+        emoji,
+        participantId: 'local',
+        participantName: displayNameRef.current,
+        timestamp: Date.now(),
+      };
+
+      setReactions(prev => [...prev, reactionEvent]);
+
+      // Clear the property after a short delay to allow re-sending same reaction
+      setTimeout(() => {
+        try {
+          conferenceRef.current?.setLocalParticipantProperty('reaction', '');
+        } catch (e) {
+          // Ignore
+        }
+      }, 100);
+
+      console.log('[Conference] Sent reaction:', emoji);
+    } catch (err) {
+      console.error('[Conference] Error sending reaction:', err);
+    }
+  }, [isJoined]);
+
+  // Remove expired reaction
+  const removeReaction = useCallback((reactionId: string) => {
+    setReactions(prev => prev.filter(r => r.id !== reactionId));
+  }, []);
+
+  // Toggle captions
+  const toggleCaptions = useCallback(() => {
+    setIsCaptionsEnabled(prev => !prev);
+  }, []);
+
+  // Send caption (local speech-to-text result)
+  const sendCaption = useCallback((text: string, isFinal: boolean) => {
+    if (!conferenceRef.current || !text.trim() || !isJoined) return;
+
+    try {
+      const captionData = JSON.stringify({
+        text: text.trim(),
+        isFinal,
+        timestamp: Date.now(),
+      });
+
+      // Only send if still connected
+      try {
+        conferenceRef.current.setLocalParticipantProperty('caption', captionData);
+      } catch (e) {
+        // Ignore errors when not connected
+        console.log('[Conference] Could not send caption - may not be connected');
+        return;
+      }
+
+      // Add local caption to display
+      const captionEvent: CaptionEvent = {
+        id: `${Date.now()}-local-${isFinal ? 'final' : 'interim'}`,
+        participantId: 'local',
+        participantName: displayNameRef.current,
+        text: text.trim(),
+        timestamp: Date.now(),
+        isFinal,
+      };
+
+      // If interim, replace previous interim caption from self
+      setCaptions(prev => {
+        if (!isFinal) {
+          // Remove previous interim captions from local
+          const filtered = prev.filter(c =>
+            !(c.participantId === 'local' && !c.isFinal)
+          );
+          return [...filtered, captionEvent];
+        }
+        // For final captions, just add
+        return [...prev.slice(-10), captionEvent]; // Keep last 10 captions
+      });
+
+      console.log('[Conference] Sent caption:', text, isFinal ? '(final)' : '(interim)');
+    } catch (err) {
+      console.error('[Conference] Error sending caption:', err);
+    }
+  }, [isJoined]);
+
+  // Clear old captions periodically
+  useEffect(() => {
+    if (!isCaptionsEnabled) return;
+
+    const interval = setInterval(() => {
+      const now = Date.now();
+      setCaptions(prev => prev.filter(c => now - c.timestamp < 10000)); // Keep captions for 10 seconds
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [isCaptionsEnabled]);
+
   // Leave conference
   const leaveConference = useCallback(async () => {
     if (!conferenceRef.current) return;
 
+    const conf = conferenceRef.current;
+
     try {
       // Dispose screen share track
       if (screenShareTrack) {
-        await conferenceRef.current.removeTrack(screenShareTrack);
-        screenShareTrack.dispose();
+        try {
+          screenShareTrack.dispose();
+        } catch {}
       }
 
       // Dispose local tracks
       for (const track of localTracks) {
-        await conferenceRef.current.removeTrack(track);
-        track.dispose();
+        try {
+          track.dispose();
+        } catch {}
       }
 
-      await conferenceRef.current.leave();
+      // Only leave if still connected
+      try {
+        const room = conf as any;
+        if (room.room && room.room.joined) {
+          await conf.leave();
+        }
+      } catch {}
+
       setIsJoined(false);
       setLocalTracks([]);
       setIsScreenSharing(false);
@@ -354,7 +507,8 @@ export function useJitsiConference(
             if (isDesktop) {
               console.log('[Conference] Remote screen share detected from participant:', pid);
               setScreenShareTrack(track);
-              setIsScreenSharing(true);
+              // Don't set isScreenSharing to true - that's only for local user
+              // isScreenSharing controls the button highlight, screenShareTrack controls the view
               setScreenShareParticipantId(pid);
 
               // Listen for track ended/stopped events on the underlying stream
@@ -366,7 +520,6 @@ export function useJitsiConference(
                     videoTracks[0].addEventListener('ended', () => {
                       console.log('[Conference] Remote screen share track ended via stream event');
                       setScreenShareTrack(null);
-                      setIsScreenSharing(false);
                       setScreenShareParticipantId(null);
                     });
                   }
@@ -376,7 +529,6 @@ export function useJitsiConference(
                 track.addEventListener('track.stopped', () => {
                   console.log('[Conference] Remote screen share - track.stopped event');
                   setScreenShareTrack(null);
-                  setIsScreenSharing(false);
                   setScreenShareParticipantId(null);
                 });
               } catch (e) {
@@ -500,6 +652,69 @@ export function useJitsiConference(
             }
             return next;
           });
+        });
+
+        // Participant property changed - used for reactions
+        conf.on(JitsiMeetJS.events.conference.PARTICIPANT_PROPERTY_CHANGED, (
+          participant: JitsiParticipant,
+          propertyName: string,
+          _oldValue: string,
+          newValue: string
+        ) => {
+          if (propertyName === 'reaction' && newValue) {
+            try {
+              const reactionData = JSON.parse(newValue);
+              const pid = normalizeId(participant.getId());
+              const participantName = participant.getDisplayName() || 'Unknown';
+
+              console.log('[Conference] Received reaction from', participantName, ':', reactionData.emoji);
+
+              const reactionEvent: ReactionEvent = {
+                id: `${reactionData.timestamp}-${pid}`,
+                emoji: reactionData.emoji,
+                participantId: pid,
+                participantName,
+                timestamp: reactionData.timestamp,
+              };
+
+              setReactions(prev => [...prev, reactionEvent]);
+            } catch (err) {
+              // Ignore invalid JSON or empty value
+            }
+          }
+
+          // Handle captions from remote participants
+          if (propertyName === 'caption' && newValue) {
+            try {
+              const captionData = JSON.parse(newValue);
+              const pid = normalizeId(participant.getId());
+              const participantName = participant.getDisplayName() || 'Unknown';
+
+              console.log('[Conference] Received caption from', participantName, ':', captionData.text);
+
+              const captionEvent: CaptionEvent = {
+                id: `${captionData.timestamp}-${pid}-${captionData.isFinal ? 'final' : 'interim'}`,
+                participantId: pid,
+                participantName,
+                text: captionData.text,
+                timestamp: captionData.timestamp,
+                isFinal: captionData.isFinal,
+              };
+
+              setCaptions(prev => {
+                if (!captionData.isFinal) {
+                  // Remove previous interim captions from this participant
+                  const filtered = prev.filter(c =>
+                    !(c.participantId === pid && !c.isFinal)
+                  );
+                  return [...filtered, captionEvent];
+                }
+                return [...prev.slice(-10), captionEvent];
+              });
+            } catch (err) {
+              // Ignore invalid JSON or empty value
+            }
+          }
         });
 
         // Dominant speaker changed - track who is speaking
@@ -671,13 +886,20 @@ export function useJitsiConference(
           (conf as any)._audioContext.close().catch(() => {});
         }
 
+        // Dispose tracks without removing from conference (may already be disconnected)
         for (const track of tracks) {
           try {
-            conf.removeTrack(track);
             track.dispose();
           } catch {}
         }
-        conf.leave().catch(() => {});
+
+        // Only leave if still connected
+        try {
+          const room = conf as any;
+          if (room.room && room.room.joined) {
+            conf.leave().catch(() => {});
+          }
+        } catch {}
       }
     };
   }, [connection, roomName, displayName]);
@@ -694,9 +916,16 @@ export function useJitsiConference(
     isLocalSpeaking,
     dominantSpeakerId,
     speakingParticipants,
+    reactions,
+    captions,
+    isCaptionsEnabled,
     toggleAudio,
     toggleVideo,
     toggleScreenShare,
     leaveConference,
+    sendReaction,
+    removeReaction,
+    toggleCaptions,
+    sendCaption,
   };
 }

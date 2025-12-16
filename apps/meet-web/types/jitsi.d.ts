@@ -24,6 +24,7 @@ export interface JitsiMeetJS {
       DISPLAY_NAME_CHANGED: string;
       DOMINANT_SPEAKER_CHANGED: string;
       TRACK_AUDIO_LEVEL_CHANGED: string;
+      PARTICIPANT_PROPERTY_CHANGED: string;
     };
     track: {
       LOCAL_TRACK_STOPPED: string;

@@ -65,7 +65,15 @@ export async function initializeJitsi() {
         fullMessage.includes('ClearedQueueError') ||
         fullMessage.includes('removeRemoteStreamsOnLeave') ||
         fullMessage.includes('JingleSessionPC') ||
-        fullMessage.includes('interrupted by a new load request')
+        fullMessage.includes('interrupted by a new load request') ||
+        fullMessage.includes('BridgeChannel') ||
+        fullMessage.includes('Channel error') ||
+        fullMessage.includes('XmppConnection') ||
+        fullMessage.includes('Trying to send stanza while not connected') ||
+        fullMessage.includes('location.onerror') ||
+        fullMessage.includes('P2P Jingle session') ||
+        fullMessage.includes('location.onerror') ||
+        fullMessage.includes('JitsiConference')
       ) {
         return; // Suppress these errors
       }

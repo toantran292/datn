@@ -19,7 +19,6 @@ interface ParticipantTileProps {
  * Renders video and audio for a participant.
  */
 export function ParticipantTile({
-  id,
   name,
   tracks,
   isLocal = false,
@@ -28,7 +27,10 @@ export function ParticipantTile({
 }: ParticipantTileProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [showVideo, setShowVideo] = useState(false);
-  const [isVideoMuted, setIsVideoMuted] = useState(false);
+
+  // Store track IDs for stable comparison
+  const videoTrackIdRef = useRef<string | null>(null);
+  const audioTrackIdRef = useRef<string | null>(null);
 
   // Find video track (camera only, not desktop)
   const videoTrack = useMemo(() => {
@@ -38,49 +40,31 @@ export function ParticipantTile({
       const isDesktop = tAny.getVideoType?.() === 'desktop' || tAny.videoType === 'desktop';
       return !isDesktop;
     });
+    // Update ref for stable ID comparison
+    const newId = vTrack?.getId?.() || null;
+    if (newId !== videoTrackIdRef.current) {
+      videoTrackIdRef.current = newId;
+    }
     return vTrack;
   }, [tracks]);
 
   // Find audio track
   const audioTrack = useMemo(() => {
-    return tracks.find(t => t.getType() === 'audio');
+    const aTrack = tracks.find(t => t.getType() === 'audio');
+    // Update ref for stable ID comparison
+    const newId = aTrack?.getId?.() || null;
+    if (newId !== audioTrackIdRef.current) {
+      audioTrackIdRef.current = newId;
+    }
+    return aTrack;
   }, [tracks]);
+
+  // Get stable track ID for useEffect dependency
+  const videoTrackId = videoTrack?.getId?.() || null;
 
   // Check mute states
   const isAudioMuted = !audioTrack || audioTrack.isMuted();
 
-  // Check video mute state - for local use isMuted(), for remote check actual stream
-  useEffect(() => {
-    if (!videoTrack) {
-      setIsVideoMuted(true);
-      return;
-    }
-
-    const isLocalTrack = videoTrack.isLocal();
-
-    if (isLocalTrack) {
-      // For local tracks, isMuted() is reliable
-      setIsVideoMuted(videoTrack.isMuted());
-    } else {
-      // For remote tracks, check if MediaStreamTrack is enabled
-      try {
-        const stream = (videoTrack as any).getOriginalStream?.();
-        if (stream) {
-          const videoTracks = stream.getVideoTracks();
-          if (videoTracks.length > 0) {
-            const mediaTrack = videoTracks[0];
-            // Remote is muted if track is not enabled or not live
-            const isMuted = !mediaTrack.enabled || mediaTrack.readyState !== 'live';
-            setIsVideoMuted(isMuted);
-            return;
-          }
-        }
-      } catch (e) {
-        // Fallback to isMuted()
-      }
-      setIsVideoMuted(videoTrack.isMuted());
-    }
-  }, [videoTrack, tracks]); // tracks dependency to re-check on mute change
 
   // Attach video track directly - following official Jitsi example
   useEffect(() => {
@@ -113,20 +97,36 @@ export function ParticipantTile({
       }
     }
 
-    // Check video - if we have dimensions AND video is playing, show video
+    // Check video - if we have dimensions AND video is not muted, show video
     const checkVideo = () => {
       const width = videoEl.videoWidth;
       const height = videoEl.videoHeight;
+      let isMuted = videoTrack.isMuted();
 
-      if (width > 0 && height > 0) {
-        // Also check if local track is muted
-        if (isLocalTrack && videoTrack.isMuted()) {
-          setShowVideo(false);
-          return false;
-        }
+      // For remote tracks, also check MediaStreamTrack state
+      if (!isLocalTrack) {
+        try {
+          const stream = (videoTrack as any).getOriginalStream?.();
+          if (stream) {
+            const mediaTrack = stream.getVideoTracks()[0];
+            if (mediaTrack) {
+              // Track is effectively muted if: muted flag is true, or not enabled, or not live
+              const mediaTrackMuted = mediaTrack.muted || !mediaTrack.enabled || mediaTrack.readyState !== 'live';
+              if (mediaTrackMuted) {
+                isMuted = true;
+              }
+            }
+          }
+        } catch (e) {}
+      }
+
+      console.log(`[ParticipantTile] ${name} checkVideo: ${width}x${height}, isMuted=${isMuted}, isLocal=${isLocalTrack}`);
+
+      if (width > 0 && height > 0 && !isMuted) {
         setShowVideo(true);
         return true;
       }
+
       setShowVideo(false);
       return false;
     };
@@ -215,6 +215,31 @@ export function ParticipantTile({
       // Ignore if not available
     }
 
+    // For remote tracks, also listen to MediaStreamTrack mute/unmute events
+    let mediaTrack: MediaStreamTrack | null = null;
+    if (!isLocalTrack) {
+      try {
+        const stream = (videoTrack as any).getOriginalStream?.();
+        if (stream) {
+          mediaTrack = stream.getVideoTracks()[0];
+          if (mediaTrack) {
+            mediaTrack.addEventListener('mute', () => {
+              console.log(`[ParticipantTile] ${name} - MediaStreamTrack mute event`);
+              setShowVideo(false);
+            });
+            mediaTrack.addEventListener('unmute', () => {
+              console.log(`[ParticipantTile] ${name} - MediaStreamTrack unmute event`);
+              checkVideo();
+            });
+            mediaTrack.addEventListener('ended', () => {
+              console.log(`[ParticipantTile] ${name} - MediaStreamTrack ended event`);
+              setShowVideo(false);
+            });
+          }
+        }
+      } catch (e) {}
+    }
+
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
@@ -234,7 +259,7 @@ export function ParticipantTile({
       videoTrack.detach(videoEl);
       setShowVideo(false);
     };
-  }, [videoTrack, name, tracks]); // tracks dependency to re-run when mute state changes
+  }, [videoTrack, videoTrackId, name]); // Use videoTrackId for stable dependency
 
   // Get initials for avatar fallback
   const initials = name
