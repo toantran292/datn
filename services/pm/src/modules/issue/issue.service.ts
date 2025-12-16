@@ -92,6 +92,10 @@ export class IssueService {
         : IssueService.DEFAULT_SORT_INCREMENT;
     }
 
+    // Default start and target dates to today if not provided
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to start of day
+
     const issue = await this.prisma.issue.create({
       data: {
         projectId: dto.projectId,
@@ -106,8 +110,8 @@ export class IssueService {
         point: dto.point ? new Prisma.Decimal(dto.point) : null,
         sequenceId,
         sortOrder: new Prisma.Decimal(sortOrder),
-        startDate: dto.startDate ? new Date(dto.startDate) : null,
-        targetDate: dto.targetDate ? new Date(dto.targetDate) : null,
+        startDate: dto.startDate ? new Date(dto.startDate) : today,
+        targetDate: dto.targetDate ? new Date(dto.targetDate) : today,
         assigneesJson: dto.assignees || [],
         createdBy: userId,
       },
