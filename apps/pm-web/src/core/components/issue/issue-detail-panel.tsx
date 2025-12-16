@@ -349,10 +349,14 @@ export const IssueDetailPanel: React.FC<IssueDetailPanelProps> = (props) => {
                         Sử dụng AI để tự động breakdown thành các sub-tasks có cấu trúc
                       </p>
                     </div>
-                    <Button variant="primary" size="sm" onClick={handleBreakdown} disabled={disabled || isBreakingDown}>
-                      <Sparkles className="size-3.5" />
-                      {isBreakingDown ? "Đang phân tích..." : "AI Breakdown"}
-                    </Button>
+                    {isBreakingDown ? (
+                      <AIGeneratingButton disabled />
+                    ) : (
+                      <Button variant="primary" size="sm" onClick={handleBreakdown} disabled={disabled}>
+                        <Sparkles className="size-3.5" />
+                        AI Breakdown
+                      </Button>
+                    )}
                   </div>
                 )}
 
