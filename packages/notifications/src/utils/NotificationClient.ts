@@ -7,6 +7,8 @@ import type {
   BroadcastEventHandler,
   ConnectionEventHandler,
   ErrorEventHandler,
+  PresenceEvent,
+  PresenceEventHandler,
 } from '../types';
 
 /**
@@ -21,6 +23,7 @@ export class NotificationClient {
     debug: boolean;
   };
   private userId: string | null = null;
+  private orgId: string | null = null;
 
   // Event handlers
   private onNotificationHandlers: Set<NotificationEventHandler> = new Set();
@@ -28,6 +31,8 @@ export class NotificationClient {
   private onConnectHandlers: Set<ConnectionEventHandler> = new Set();
   private onDisconnectHandlers: Set<ConnectionEventHandler> = new Set();
   private onErrorHandlers: Set<ErrorEventHandler> = new Set();
+  private onUserOnlineHandlers: Set<PresenceEventHandler> = new Set();
+  private onUserOfflineHandlers: Set<PresenceEventHandler> = new Set();
 
   constructor(config: NotificationConfig) {
     this.config = {
@@ -42,13 +47,14 @@ export class NotificationClient {
   /**
    * Connect to notification service
    */
-  connect(userId: string): void {
+  connect(userId: string, orgId?: string): void {
     if (this.socket?.connected) {
       this.log('Already connected');
       return;
     }
 
     this.userId = userId;
+    this.orgId = orgId || null;
 
     const socketOptions: any = {
       path: '/notifications/socket.io',
@@ -86,6 +92,7 @@ export class NotificationClient {
     this.socket.close();
     this.socket = null;
     this.userId = null;
+    this.orgId = null;
   }
 
   /**
@@ -124,6 +131,91 @@ export class NotificationClient {
   }
 
   /**
+   * Register handler for user online events
+   */
+  onUserOnline(handler: PresenceEventHandler): () => void {
+    this.onUserOnlineHandlers.add(handler);
+    return () => this.onUserOnlineHandlers.delete(handler);
+  }
+
+  /**
+   * Register handler for user offline events
+   */
+  onUserOffline(handler: PresenceEventHandler): () => void {
+    this.onUserOfflineHandlers.add(handler);
+    return () => this.onUserOfflineHandlers.delete(handler);
+  }
+
+  /**
+   * Get online users in the current org
+   * Uses event-based response since NestJS acknowledgement may have issues
+   */
+  getOnlineUsers(): Promise<string[]> {
+    return new Promise((resolve, reject) => {
+      if (!this.socket || !this.orgId) {
+        reject(new Error('Not connected or no orgId'));
+        return;
+      }
+
+      this.log('Requesting online users for org:', this.orgId);
+
+      // Set up one-time listener for response
+      const responseHandler = (response: any) => {
+        clearTimeout(timeout);
+        this.log('Got online_users_response:', response);
+        const users = response?.users || [];
+        resolve(users);
+      };
+
+      // Timeout after 5 seconds
+      const timeout = setTimeout(() => {
+        this.socket?.off('online_users_response', responseHandler);
+        this.log('getOnlineUsers timeout - no response received');
+        resolve([]); // Resolve with empty array on timeout
+      }, 5000);
+
+      // Listen for response event
+      this.socket.once('online_users_response', responseHandler);
+
+      // Also try callback style (in case NestJS supports it)
+      this.socket.emit('get_online_users', { orgId: this.orgId }, (response: any) => {
+        if (response) {
+          clearTimeout(timeout);
+          this.socket?.off('online_users_response', responseHandler);
+          this.log('Got online users via callback:', response);
+          if (response?.event === 'error') {
+            reject(new Error(response.data?.message || 'Unknown error'));
+          } else {
+            const users = response?.data?.users || [];
+            this.log('Parsed online users:', users);
+            resolve(users);
+          }
+        }
+      });
+    });
+  }
+
+  /**
+   * Get online status for specific users
+   */
+  getUsersStatus(userIds: string[]): Promise<Record<string, boolean>> {
+    return new Promise((resolve, reject) => {
+      if (!this.socket) {
+        reject(new Error('Not connected'));
+        return;
+      }
+
+      this.socket.emit('get_users_status', { userIds }, (response: any) => {
+        if (response.event === 'error') {
+          reject(new Error(response.data.message));
+        } else {
+          resolve(response.data.statuses || {});
+        }
+      });
+    });
+  }
+
+  /**
    * Setup Socket.IO event listeners
    */
   private setupEventListeners(): void {
@@ -132,9 +224,9 @@ export class NotificationClient {
     this.socket.on('connect', () => {
       this.log('Connected to notification service');
 
-      // Register user
+      // Register user with orgId for presence tracking
       if (this.userId) {
-        this.socket!.emit('register', { userId: this.userId });
+        this.socket!.emit('register', { userId: this.userId, orgId: this.orgId });
       }
 
       this.onConnectHandlers.forEach((handler) => handler());
@@ -168,6 +260,17 @@ export class NotificationClient {
     this.socket.on('connect_error', (error: Error) => {
       this.log('Connection error:', error);
       this.onErrorHandlers.forEach((handler) => handler(error));
+    });
+
+    // Presence events
+    this.socket.on('user:online', (event: PresenceEvent) => {
+      this.log('User online:', event);
+      this.onUserOnlineHandlers.forEach((handler) => handler(event));
+    });
+
+    this.socket.on('user:offline', (event: PresenceEvent) => {
+      this.log('User offline:', event);
+      this.onUserOfflineHandlers.forEach((handler) => handler(event));
     });
   }
 

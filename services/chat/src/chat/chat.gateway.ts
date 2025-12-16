@@ -105,6 +105,8 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       roomId: string;
       content: string;
       threadId?: string; // Optional: message ID to reply to
+      attachmentIds?: string[];
+      mentionedUserIds?: string[]; // User IDs mentioned in the message
     },
     @ConnectedSocket() client: AuthenticatedSocket
   ) {
@@ -133,8 +135,42 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       threadId: data.threadId,
     });
 
+    // Confirm attachments if any
+    const attachments: Array<{
+      id: string;
+      fileId: string;
+      fileName: string;
+      fileSize: number;
+      mimeType: string;
+      downloadUrl?: string;
+    }> = [];
+
+    if (data.attachmentIds?.length) {
+      for (const assetId of data.attachmentIds) {
+        try {
+          const attachment = await this.chatsService.confirmAttachmentUpload(
+            message.id,
+            assetId,
+            client.userId
+          );
+          console.log(`[WS] Confirmed attachment: ${attachment.fileName}, mimeType: ${attachment.mimeType}, downloadUrl: ${attachment.downloadUrl ? 'present' : 'MISSING'}`);
+          attachments.push(attachment);
+        } catch (err) {
+          console.error(`Failed to confirm attachment ${assetId}:`, err.message);
+        }
+      }
+    }
+
+    console.log(`[WS] Emitting message:new with ${attachments.length} attachments`);
+
+    // Include attachments in the emitted message
+    const messageWithAttachments = {
+      ...message,
+      attachments,
+    };
+
     const roomChannel = `room:${message.roomId}`;
-    this.io.to(roomChannel).emit('message:new', message);
+    this.io.to(roomChannel).emit('message:new', messageWithAttachments);
 
     // Handle thread replies vs main messages differently
     if (data.threadId) {
@@ -143,19 +179,31 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.io.to(roomChannel).emit('thread:new-reply', {
         threadId: data.threadId,
         roomId: message.roomId,
-        message,
+        message: messageWithAttachments,
         replyCount,
       });
     } else {
       // Main message: emit room:updated
       this.io.to(`org:${message.orgId}`).emit('room:updated', {
         roomId: message.roomId,
-        lastMessage: message,
+        lastMessage: messageWithAttachments,
         updatedAt: message.sentAt,
       });
     }
 
     await this.roomMembersRepo.updateLastSeen(data.roomId, client.userId, message.id, client.orgId);
+
+    // Send mention notifications if there are mentioned users
+    if (data.mentionedUserIds?.length) {
+      await this.chatsService.sendMentionNotifications({
+        messageId: message.id,
+        roomId: data.roomId,
+        senderId: client.userId,
+        mentionedUserIds: data.mentionedUserIds,
+        messagePreview: data.content.substring(0, 200),
+        orgId: client.orgId,
+      });
+    }
   }
 
   @SubscribeMessage('join_room')

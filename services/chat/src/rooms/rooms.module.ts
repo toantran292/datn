@@ -15,6 +15,6 @@ import { PresenceModule } from '../common/presence/presence.module';
   ],
   controllers: [RoomsController],
   providers: [RoomsService, RoomsRepository, RoomMembersRepository],
-  exports: [RoomsService, RoomMembersRepository],
+  exports: [RoomsService, RoomMembersRepository, RoomsRepository],
 })
 export class RoomsModule { }

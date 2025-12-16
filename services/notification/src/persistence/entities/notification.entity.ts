@@ -34,6 +34,9 @@ export enum StoredNotificationType {
   // Reports
   REPORT_COMPLETED = 'REPORT_COMPLETED',
   REPORT_FAILED = 'REPORT_FAILED',
+
+  // Chat
+  CHAT_MENTION = 'CHAT_MENTION',
 }
 
 @Entity('notifications')
@@ -85,6 +88,7 @@ export class NotificationEntity {
       type.startsWith('PROFILE_')
     )
       return NotificationCategory.USER;
+    if (type.startsWith('CHAT_')) return NotificationCategory.USER;
     if (type.startsWith('SYSTEM_') || type.startsWith('REPORT_'))
       return NotificationCategory.SYSTEM;
     return NotificationCategory.SYSTEM;

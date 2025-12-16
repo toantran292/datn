@@ -18,7 +18,7 @@ export class MessageAttachment {
   @Column({ name: 'message_id', type: 'uuid' })
   messageId: string;
 
-  @Column({ name: 'file_id', type: 'uuid' })
+  @Column({ name: 'file_id', type: 'varchar', length: 100 })
   fileId: string;
 
   @Column({ name: 'file_name', type: 'varchar', length: 255 })

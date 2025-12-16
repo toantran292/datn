@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, IsNull } from 'typeorm';
+import { Repository, IsNull, In } from 'typeorm';
 import { Message } from '../../database/entities/message.entity';
 
 export interface MessageEntity {
@@ -246,5 +246,28 @@ export class MessagesRepository {
       content: message.content,
       createdAt: message.createdAt,
     };
+  }
+
+  async findByIds(ids: string[]): Promise<Map<string, PersistedMessage>> {
+    if (ids.length === 0) return new Map();
+
+    const messages = await this.messageRepo.find({
+      where: { id: In(ids), deletedAt: IsNull() },
+    });
+
+    const result = new Map<string, PersistedMessage>();
+    for (const msg of messages) {
+      result.set(msg.id, {
+        id: msg.id,
+        roomId: msg.roomId,
+        userId: msg.userId,
+        orgId: msg.orgId,
+        threadId: msg.threadId,
+        type: msg.type,
+        content: msg.content,
+        createdAt: msg.createdAt,
+      });
+    }
+    return result;
   }
 }

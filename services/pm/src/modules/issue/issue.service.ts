@@ -482,6 +482,55 @@ export class IssueService {
     };
   }
 
+  /**
+   * Find all issues assigned to a specific user across all their projects
+   */
+  async findAssignedToUser(userId: string, orgId: string, projectIds?: string[]): Promise<IssueResponseDto[]> {
+    // If userId is empty, return empty array
+    if (!userId || userId.trim() === "") {
+      return [];
+    }
+
+    // Build project filter - either specific projects or all projects in org
+    const projectFilter = projectIds && projectIds.length > 0
+      ? { id: { in: projectIds }, orgId }
+      : { orgId };
+
+    const issues = await this.prisma.issue.findMany({
+      where: {
+        project: projectFilter,
+        // Filter by assigneesJson containing userId
+        assigneesJson: {
+          array_contains: [userId],
+        },
+      },
+      include: {
+        status: true,
+        project: {
+          select: {
+            id: true,
+            name: true,
+            identifier: true,
+          },
+        },
+      },
+      orderBy: [
+        { targetDate: { sort: 'asc', nulls: 'last' } },
+        { priority: 'desc' },
+        { createdAt: 'desc' },
+      ],
+    });
+
+    return issues.map((issue) => ({
+      ...this.mapToResponse(issue),
+      project: issue.project ? {
+        id: issue.project.id,
+        name: issue.project.name,
+        identifier: issue.project.identifier,
+      } : undefined,
+    }));
+  }
+
   async getProjectAnalytics(projectId: string, orgId: string) {
     const normalizeStatus = (name?: string | null) => (name || "").trim().toUpperCase();
 

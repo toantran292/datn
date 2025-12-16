@@ -54,7 +54,8 @@ export class DashboardService {
   }
 
   private async fetchIdentityDashboard(orgId: string) {
-    const url = `${this.identityBaseUrl}/orgs/${orgId}/dashboard`;
+    // Use internal endpoint to bypass authentication (service-to-service call)
+    const url = `${this.identityBaseUrl}/internal/orgs/${orgId}/dashboard`;
 
     try {
       const res = await firstValueFrom(
@@ -77,7 +78,8 @@ export class DashboardService {
   }
 
   private async fetchProjects(orgId: string) {
-    const url = `${this.pmBaseUrl}/api/projects`;
+    // Use /api/projects/all endpoint to get all projects (bypasses user-based filtering)
+    const url = `${this.pmBaseUrl}/api/projects/all`;
 
     try {
       const res = await firstValueFrom(
@@ -131,6 +133,26 @@ export class DashboardService {
       return res.data?.data || [];
     } catch (err) {
       this.logger.error(`Failed to fetch recent files: ${err.message}`);
+      return [];
+    }
+  }
+
+  async getMyTasks(orgId: string, userId: string) {
+    const url = `${this.pmBaseUrl}/api/issues/assigned`;
+
+    try {
+      const res = await firstValueFrom(
+        this.http.get(url, {
+          headers: {
+            'X-Internal-Call': 'bff',
+            'X-Org-Id': orgId,
+            'X-User-Id': userId,
+          },
+        }),
+      );
+      return res.data || [];
+    } catch (err) {
+      this.logger.error(`Failed to fetch my tasks: ${err.message}`);
       return [];
     }
   }

@@ -1,5 +1,7 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException, Inject, forwardRef, Optional } from "@nestjs/common";
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException, Inject, forwardRef, Optional, Logger } from "@nestjs/common";
+import { HttpService } from "@nestjs/axios";
 import { Namespace } from "socket.io";
+import { firstValueFrom } from "rxjs";
 import { MessagesRepository } from "./repositories/messages.repository";
 import { ReactionsRepository } from "./repositories/reactions.repository";
 import { PinnedMessagesRepository } from "./repositories/pinned-messages.repository";
@@ -11,6 +13,8 @@ import { RoomMembersRepository } from "../rooms/repositories/room-members.reposi
 import { FileStorageClient } from "../common/file-storage/file-storage.client";
 import { NotificationLevel } from "../database/entities/channel-notification-setting.entity";
 import type { RagService } from "../ai/rag/rag.service";
+
+const NOTIFICATION_SERVICE_URL = process.env.NOTIFICATION_URL || 'http://notification-api:3000';
 
 export type CreatedMessage = {
   id: string;
@@ -33,6 +37,8 @@ function isValidUuid(str: string): boolean {
 
 @Injectable()
 export class ChatsService {
+  private readonly logger = new Logger(ChatsService.name);
+
   constructor(
     private readonly messagesRepo: MessagesRepository,
     private readonly reactionsRepo: ReactionsRepository,
@@ -43,6 +49,7 @@ export class ChatsService {
     private readonly roomsRepo: RoomsRepository,
     private readonly roomMembersRepo: RoomMembersRepository,
     private readonly fileStorageClient: FileStorageClient,
+    private readonly httpService: HttpService,
     @Optional() @Inject(forwardRef(() => 'RagService'))
     private readonly ragService?: RagService,
   ) { }
@@ -117,6 +124,90 @@ export class ChatsService {
       ? await this.messagesRepo.getReplyCountsForMessages(roomId, mainMessageIds)
       : new Map<string, number>();
 
+    // Fetch reactions for all messages in parallel
+    const allMessageIds = rs.items.map(m => m.id);
+    const reactionsMap = new Map<string, { emoji: string; count: number; users: string[] }[]>();
+
+    if (allMessageIds.length > 0) {
+      const reactionsPromises = allMessageIds.map(async (messageId) => {
+        const reactions = await this.reactionsRepo.getReactionsByMessage(messageId);
+        const counts = await this.reactionsRepo.getReactionCounts(messageId);
+
+        // Group by emoji
+        const grouped: Record<string, { emoji: string; count: number; users: string[] }> = {};
+        reactions.forEach(r => {
+          if (!grouped[r.emoji]) {
+            grouped[r.emoji] = { emoji: r.emoji, count: 0, users: [] };
+          }
+          grouped[r.emoji].users.push(r.userId);
+        });
+
+        // Set counts
+        counts.forEach((count, emoji) => {
+          if (grouped[emoji]) {
+            grouped[emoji].count = count;
+          }
+        });
+
+        return { messageId, reactions: Object.values(grouped) };
+      });
+
+      const reactionsResults = await Promise.all(reactionsPromises);
+      reactionsResults.forEach(({ messageId, reactions }) => {
+        reactionsMap.set(messageId, reactions);
+      });
+    }
+
+    // Fetch attachments for all messages
+    const attachmentsMap = allMessageIds.length > 0
+      ? await this.attachmentsRepo.findByMessageIds(allMessageIds)
+      : new Map();
+
+    // Generate download URLs for attachments
+    const attachmentsWithUrls = new Map<string, Array<{
+      id: string;
+      fileId: string;
+      fileName: string;
+      fileSize: number;
+      mimeType: string;
+      downloadUrl?: string;
+      thumbnailUrl?: string;
+    }>>();
+
+    // Collect all fileIds to fetch presigned URLs in batch
+    const allFileIds: string[] = [];
+    for (const attachments of attachmentsMap.values()) {
+      for (const att of attachments) {
+        allFileIds.push(att.fileId);
+      }
+    }
+
+    // Get presigned URLs for all files in batch
+    const urlsMap = new Map<string, string>();
+    if (allFileIds.length > 0) {
+      try {
+        const urlResults = await this.fileStorageClient.getPresignedGetUrls(allFileIds);
+        for (const urlResult of urlResults) {
+          urlsMap.set(urlResult.id, urlResult.presignedUrl);
+        }
+      } catch (err) {
+        this.logger.warn(`Failed to get download URLs: ${err.message}`);
+      }
+    }
+
+    for (const [messageId, attachments] of attachmentsMap.entries()) {
+      const withUrls = attachments.map((att) => ({
+        id: att.id,
+        fileId: att.fileId,
+        fileName: att.fileName,
+        fileSize: att.fileSize,
+        mimeType: att.mimeType,
+        downloadUrl: urlsMap.get(att.fileId),
+        thumbnailUrl: att.thumbnailUrl,
+      }));
+      attachmentsWithUrls.set(messageId, withUrls);
+    }
+
     return {
       items: rs.items.map(m => ({
         id: m.id,
@@ -128,6 +219,8 @@ export class ChatsService {
         content: m.content,
         sentAt: m.createdAt.toISOString(),
         replyCount: m.threadId ? undefined : (replyCountMap.get(m.id) || 0),
+        reactions: reactionsMap.get(m.id) || [],
+        attachments: attachmentsWithUrls.get(m.id) || [],
       })),
       pageState: rs.pageState,
     };
@@ -464,6 +557,15 @@ export class ChatsService {
       mimeType: fileMetadata.mimeType,
     });
 
+    // Get presigned download URL for immediate display
+    let downloadUrl: string | undefined;
+    try {
+      const urlResult = await this.fileStorageClient.getPresignedGetUrl(fileMetadata.id);
+      downloadUrl = urlResult.presignedUrl;
+    } catch (err) {
+      console.error('Failed to get presigned URL for attachment:', err.message);
+    }
+
     return {
       id: attachment.id,
       messageId,
@@ -471,6 +573,7 @@ export class ChatsService {
       fileName: attachment.fileName,
       fileSize: attachment.fileSize,
       mimeType: attachment.mimeType,
+      downloadUrl,
       createdAt: attachment.createdAt.toISOString(),
     };
   }
@@ -850,5 +953,82 @@ export class ChatsService {
       lastSeenMessageId: latestMessage.id,
       markedAt: new Date().toISOString(),
     };
+  }
+
+  // ============== Mention Notifications ==============
+
+  /**
+   * Send notifications to mentioned users
+   * - Filters out self-mentions (sender mentioning themselves)
+   * - Only notifies users who are members of the room
+   */
+  async sendMentionNotifications(data: {
+    messageId: string;
+    roomId: string;
+    senderId: string;
+    mentionedUserIds: string[];
+    messagePreview: string;
+    orgId: string;
+  }) {
+    // Filter out self-mentions
+    const userIdsToNotify = data.mentionedUserIds.filter(id => id !== data.senderId);
+
+    if (userIdsToNotify.length === 0) return;
+
+    try {
+      // Get room info for notification context
+      const room = await this.roomsRepo.findById(data.roomId);
+      const roomName = room?.name || 'a conversation';
+
+      // Only notify users who are actually members of the room
+      const validUserIds: string[] = [];
+      for (const userId of userIdsToNotify) {
+        const isMember = await this.roomMembersRepo.isMember(data.roomId, userId);
+        if (isMember) {
+          validUserIds.push(userId);
+        }
+      }
+
+      if (validUserIds.length === 0) return;
+
+      // Strip HTML from preview
+      const textPreview = this.stripHtml(data.messagePreview);
+      const truncatedPreview = textPreview.length > 100
+        ? textPreview.substring(0, 100) + '...'
+        : textPreview;
+
+      this.logger.log(`Sending mention notifications to ${validUserIds.length} users for message ${data.messageId}`);
+
+      // Send notifications to each mentioned user via notification service
+      await Promise.all(validUserIds.map(async (userId) => {
+        try {
+          await firstValueFrom(
+            this.httpService.post(`${NOTIFICATION_SERVICE_URL}/notifications/internal`, {
+              userId,
+              orgId: data.orgId,
+              type: 'CHAT_MENTION',
+              title: 'You were mentioned',
+              content: `in ${roomName}: "${truncatedPreview}"`,
+              metadata: {
+                messageId: data.messageId,
+                roomId: data.roomId,
+                roomName,
+                senderId: data.senderId,
+              },
+            })
+          );
+        } catch (err) {
+          this.logger.warn(`Failed to send mention notification to user ${userId}: ${err.message}`);
+        }
+      }));
+
+    } catch (error) {
+      // Don't throw - notification failure shouldn't fail message sending
+      this.logger.error('Failed to send mention notifications:', error);
+    }
+  }
+
+  private stripHtml(html: string): string {
+    return html.replace(/<[^>]*>/g, '').trim();
   }
 }

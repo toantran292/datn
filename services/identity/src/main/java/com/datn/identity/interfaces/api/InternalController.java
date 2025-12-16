@@ -1,5 +1,6 @@
 package com.datn.identity.interfaces.api;
 
+import com.datn.identity.application.DashboardService;
 import com.datn.identity.application.InvitationApplicationService;
 import com.datn.identity.application.OrganizationApplicationService;
 import com.datn.identity.interfaces.api.dto.Dtos;
@@ -19,10 +20,29 @@ import java.util.UUID;
 public class InternalController {
     private final OrganizationApplicationService orgs;
     private final InvitationApplicationService invites;
+    private final DashboardService dashboard;
 
-    public InternalController(OrganizationApplicationService orgs, InvitationApplicationService invites) {
+    public InternalController(OrganizationApplicationService orgs, InvitationApplicationService invites, DashboardService dashboard) {
         this.orgs = orgs;
         this.invites = invites;
+        this.dashboard = dashboard;
+    }
+
+    /**
+     * Get dashboard statistics for an organization (internal use).
+     * GET /internal/orgs/{orgId}/dashboard
+     */
+    @GetMapping("/orgs/{orgId}/dashboard")
+    public ResponseEntity<?> getDashboard(@PathVariable String orgId) {
+        try {
+            var stats = dashboard.getDashboardStats(UUID.fromString(orgId));
+            return ResponseEntity.ok(stats);
+        } catch (IllegalStateException e) {
+            if ("org_not_found".equals(e.getMessage())) {
+                return ResponseEntity.status(404).body(Map.of("error", "org_not_found"));
+            }
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+        }
     }
 
     /**

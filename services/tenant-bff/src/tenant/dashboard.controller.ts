@@ -22,4 +22,11 @@ export class DashboardController {
     const orgId = req.orgId;
     return this.dashboardService.getRecentFiles(orgId, parseInt(limit || '5', 10));
   }
+
+  @Get('my-tasks')
+  async getMyTasks(@Req() req) {
+    const orgId = req.orgId;
+    const userId = req.userId;
+    return this.dashboardService.getMyTasks(orgId, userId);
+  }
 }

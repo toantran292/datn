@@ -107,10 +107,64 @@ export class ProjectService {
     return project;
   }
 
+  /**
+   * Find all projects in org (for admin/owner users)
+   */
   async findAll(orgId: string) {
     const projects = await this.prisma.project.findMany({
       where: {
         orgId,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        _count: {
+          select: {
+            issues: true,
+            sprints: true,
+          },
+        },
+      },
+    });
+
+    return projects.map((project) => ({
+      ...project,
+      issueCount: project._count.issues,
+      sprintCount: project._count.sprints,
+      _count: undefined,
+    }));
+  }
+
+  /**
+   * Find projects for a specific user based on their role
+   * - Admin/Owner: see all projects
+   * - Member: only see projects they are a member of
+   */
+  async findAllForUser(orgId: string, userId: string, roles: string[]) {
+    const isAdminOrOwner = roles.some((role) =>
+      ["ADMIN", "OWNER"].includes(role.toUpperCase())
+    );
+
+    if (isAdminOrOwner) {
+      // Admin/Owner sees all projects
+      return this.findAll(orgId);
+    }
+
+    // If userId is empty, member can't see any projects
+    if (!userId || userId.trim() === "") {
+      return [];
+    }
+
+    // Member only sees projects they belong to
+    const projects = await this.prisma.project.findMany({
+      where: {
+        orgId,
+        members: {
+          some: {
+            userId,
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",
