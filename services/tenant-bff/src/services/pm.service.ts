@@ -108,4 +108,27 @@ export class PmService {
       return {};
     }
   }
+
+  /**
+   * Get issues assigned to current user
+   */
+  async getAssignedIssues(orgId: string, userId: string) {
+    const url = `${this.baseUrl}/api/issues/assigned`;
+
+    try {
+      const res = await firstValueFrom(
+        this.http.get(url, {
+          headers: {
+            'X-Internal-Call': 'bff',
+            'X-Org-Id': orgId,
+            'X-User-Id': userId,
+          },
+        }),
+      );
+      return res.data;
+    } catch (err) {
+      this.logger.error(`Failed to get assigned issues: ${err.message}`);
+      throw err.response?.data ?? err;
+    }
+  }
 }

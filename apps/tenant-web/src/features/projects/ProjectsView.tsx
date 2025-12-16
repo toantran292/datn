@@ -11,6 +11,7 @@ import { useProjects, type ProjectLite, type CreateProjectData } from "./hooks/u
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
+import { useAppHeaderContext } from "@uts/design-system/ui";
 
 function ProjectsLoadingSkeleton() {
   return (
@@ -42,6 +43,7 @@ export function ProjectsView() {
   const [createOpen, setCreateOpen] = useState(false);
   const [deleteProject, setDeleteProject] = useState<ProjectLite | null>(null);
 
+  const { auth } = useAppHeaderContext();
   const {
     projects,
     isLoading,
@@ -49,6 +51,11 @@ export function ProjectsView() {
     createProject,
     deleteProject: deleteProjectFn,
   } = useProjects();
+
+  // Check if user is admin or owner
+  const isAdminOrOwner = auth?.roles?.some((role) =>
+    ["ADMIN", "OWNER"].includes(role.toUpperCase())
+  ) ?? false;
 
   const filteredProjects = projects.filter((project) => {
     if (!searchQuery) return true;
@@ -116,13 +123,15 @@ export function ProjectsView() {
             />
           </div>
 
-          <Button
-            onClick={() => setCreateOpen(true)}
-            className="bg-secondary hover:bg-secondary/90 text-white rounded-xl shadow-sm h-11 lg:w-auto"
-          >
-            <Plus size={18} className="mr-2" />
-            New Project
-          </Button>
+          {isAdminOrOwner && (
+            <Button
+              onClick={() => setCreateOpen(true)}
+              className="bg-secondary hover:bg-secondary/90 text-white rounded-xl shadow-sm h-11 lg:w-auto"
+            >
+              <Plus size={18} className="mr-2" />
+              New Project
+            </Button>
+          )}
         </div>
 
         {/* Projects Count */}
@@ -153,6 +162,7 @@ export function ProjectsView() {
                 project={project}
                 onEdit={handleEditProject}
                 onDelete={setDeleteProject}
+                showActions={isAdminOrOwner}
               />
             ))}
           </div>
@@ -169,7 +179,7 @@ export function ProjectsView() {
                 ? "Try adjusting your search query"
                 : "Create your first project to get started"}
             </p>
-            {!searchQuery && (
+            {!searchQuery && isAdminOrOwner && (
               <Button
                 onClick={() => setCreateOpen(true)}
                 className="rounded-xl"

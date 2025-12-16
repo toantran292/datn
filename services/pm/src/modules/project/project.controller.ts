@@ -11,6 +11,7 @@ import {
   HttpStatus,
   ParseUUIDPipe,
   Req,
+  ForbiddenException,
 } from "@nestjs/common";
 import type { RequestWithOrg } from "../../common/interfaces";
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from "@nestjs/swagger";
@@ -33,17 +34,44 @@ type ProjectWithSprints = Project & {
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
 
+  /**
+   * Check if user has admin/owner role
+   */
+  private isAdminOrOwner(roles: string[]): boolean {
+    return roles.some((role) => ["ADMIN", "OWNER"].includes(role.toUpperCase()));
+  }
+
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(@Body() createDto: CreateProjectDto, @Req() request: RequestWithOrg): Promise<ProjectResponseDto> {
-    const orgId = request.orgId;
+    const { orgId, roles } = request;
+
+    // Only Admin/Owner can create projects
+    if (!this.isAdminOrOwner(roles)) {
+      throw new ForbiddenException("Only administrators can create projects");
+    }
+
     const project = await this.projectService.create(createDto, orgId);
     return this.toResponseDto(project);
   }
 
   @Get()
   async findAll(@Req() request: RequestWithOrg): Promise<ProjectLiteResponseDto[]> {
-    const orgId = request.orgId;
+    const { orgId, userId, roles } = request;
+    // Use findAllForUser to filter projects based on user role
+    // Admin/Owner sees all, Member only sees projects they belong to
+    const projects = await this.projectService.findAllForUser(orgId, userId, roles);
+    return projects.map((p) => this.toLiteDto(p));
+  }
+
+  /**
+   * Internal endpoint: Get all projects for an organization (for BFF/internal calls)
+   * This bypasses user-based filtering
+   */
+  @Get("all")
+  @ApiOperation({ summary: "Get all projects (internal)" })
+  async findAllInternal(@Req() request: RequestWithOrg): Promise<ProjectLiteResponseDto[]> {
+    const { orgId } = request;
     const projects = await this.projectService.findAll(orgId);
     return projects.map((p) => this.toLiteDto(p));
   }
@@ -71,7 +99,13 @@ export class ProjectController {
     @Body() updateDto: UpdateProjectDto,
     @Req() request: RequestWithOrg
   ): Promise<ProjectResponseDto> {
-    const orgId = request.orgId;
+    const { orgId, roles } = request;
+
+    // Only Admin/Owner can update projects
+    if (!this.isAdminOrOwner(roles)) {
+      throw new ForbiddenException("Only administrators can update projects");
+    }
+
     const project = await this.projectService.update(id, updateDto, orgId);
     return this.toResponseDto(project);
   }
@@ -79,7 +113,13 @@ export class ProjectController {
   @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param("id", ParseUUIDPipe) id: string, @Req() request: RequestWithOrg): Promise<void> {
-    const orgId = request.orgId;
+    const { orgId, roles } = request;
+
+    // Only Admin/Owner can delete projects
+    if (!this.isAdminOrOwner(roles)) {
+      throw new ForbiddenException("Only administrators can delete projects");
+    }
+
     await this.projectService.remove(id, orgId);
   }
 

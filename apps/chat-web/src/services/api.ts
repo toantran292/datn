@@ -75,8 +75,8 @@ class ApiService {
     displayName: string;
     disabled: boolean;
   }>> {
-    // This will call Identity service through backend
-    const response = await fetch(`${this.baseURL}/internal/orgs/${this.orgId}/users`, {
+    // orgId is taken from context (X-Org-ID header set by Edge from JWT)
+    const response = await fetch(`${this.baseURL}/internal/users`, {
       method: 'GET',
       credentials: 'include',
       headers: {

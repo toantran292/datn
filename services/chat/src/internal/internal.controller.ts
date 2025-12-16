@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { Ctx, type RequestContext } from '../common/context/context.decorator';
 import { IdentityService } from '../common/identity/identity.service';
 
@@ -6,15 +6,19 @@ import { IdentityService } from '../common/identity/identity.service';
 export class InternalController {
   constructor(private readonly identityService: IdentityService) {}
 
-  @Get('orgs/:orgId/users')
+  /**
+   * List users in the organization
+   * orgId is taken from context (X-Org-ID header set by Edge)
+   */
+  @Get('users')
   async listOrgUsers(
     @Ctx() ctx: RequestContext,
-    @Param('orgId') orgId: string,
     @Query('page') page?: number,
     @Query('size') size?: number,
   ) {
     // Get all users/members from the organization via Identity service
-    const members = await this.identityService.getOrgMembers(orgId, page || 0, size || 100);
+    // orgId comes from context (set by Edge from JWT)
+    const members = await this.identityService.getOrgMembers(ctx.orgId, page || 0, size || 100);
 
     if (!members) {
       return [];
