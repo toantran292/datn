@@ -66,3 +66,39 @@ export type NotificationEventHandler = (notification: Notification) => void;
 export type BroadcastEventHandler = (notification: BroadcastNotification) => void;
 export type ConnectionEventHandler = () => void;
 export type ErrorEventHandler = (error: Error) => void;
+
+// Presence types
+export interface PresenceEvent {
+  userId: string;
+  orgId: string;
+  timestamp: Date | string;
+}
+
+export type PresenceEventHandler = (event: PresenceEvent) => void;
+
+export interface PresenceState {
+  onlineUsers: Set<string>;
+  isLoading: boolean;
+}
+
+export interface UsePresenceOptions {
+  /**
+   * API Gateway URL
+   */
+  gatewayUrl: string;
+
+  /**
+   * User ID
+   */
+  userId: string;
+
+  /**
+   * Organization ID for presence tracking
+   */
+  orgId: string;
+
+  /**
+   * Enable debug logging
+   */
+  debug?: boolean;
+}

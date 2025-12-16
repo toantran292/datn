@@ -1,16 +1,13 @@
 'use client';
 
-import { RoomsList } from './left-sidebar/RoomsList';
-import { ChatWindow } from './main/ChatWindow';
-import { RightSidebar } from './right-sidebar/RightSidebar';
-import { ThreadView } from './right-sidebar/ThreadView';
-import { MembersTab } from './right-sidebar/MembersTab';
-import { FilesTab } from './right-sidebar/FilesTab';
-import { BrowseChannelsModal } from './left-sidebar/components/BrowseChannelsModal';
-import { CreateChannelModal } from './left-sidebar/components/CreateChannelModal';
-import { CreateDMModal } from './left-sidebar/components/CreateDMModal';
+import { useState, useEffect } from 'react';
+import { Sidebar } from './sidebar';
+import { ChatWindow } from './chat';
+import { DetailsPanel, ThreadView, MembersTab, FilesTab, AISettingsTab } from './details';
+import { BrowseChannelsModal, CreateChannelModal, CreateDMModal, EditMessageModal, ConfirmDeleteModal, SearchModal } from './modals';
+import { ChatLayout } from './layout';
 import { api } from '../services/api';
-import type { Room } from '../types';
+import type { Room, Message } from '../types';
 import {
   useChatRooms,
   useChatMessages,
@@ -31,6 +28,11 @@ export function ChatApp() {
   const sidebar = useChatSidebar();
   const modals = useChatModals();
 
+  // Message action modals state
+  const [editingMessage, setEditingMessage] = useState<Message | null>(null);
+  const [deletingMessage, setDeletingMessage] = useState<Message | null>(null);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
   // Helper to get DM name
   const getDMName = (room: Room) => room.name || 'Direct Message';
 
@@ -41,6 +43,7 @@ export function ChatApp() {
       return members.map(m => ({
         userId: m.userId,
         displayName: m.displayName,
+        avatarUrl: m.avatarUrl,
         status: m.isOnline ? 'online' as const : 'offline' as const,
       }));
     } catch (error) {
@@ -52,102 +55,235 @@ export function ChatApp() {
   // Helper to load files
   const loadFiles = async () => [];
 
+  // Message action handlers
+  const handleEditMessage = (message: Message) => {
+    setEditingMessage(message);
+  };
+
+  const handleDeleteMessage = (message: Message) => {
+    setDeletingMessage(message);
+  };
+
+  const handlePinMessage = async (message: Message) => {
+    try {
+      await messages.pinMessage(message.id);
+    } catch (error) {
+      console.error('Failed to pin message:', error);
+    }
+  };
+
+  const handleUnpinMessage = async (message: Message) => {
+    try {
+      await messages.unpinMessage(message.id);
+    } catch (error) {
+      console.error('Failed to unpin message:', error);
+    }
+  };
+
+  // Search handlers
+  const handleOpenSearch = () => setIsSearchOpen(true);
+  const handleCloseSearch = () => setIsSearchOpen(false);
+  const handleNavigateToMessage = (roomId: string, messageId: string) => {
+    // Navigate to the room containing the message
+    rooms.selectRoom(roomId);
+    // Scroll to the message after a short delay to allow room to load
+    setTimeout(() => {
+      scrollToMessage(messageId);
+    }, 300);
+  };
+
+  // Scroll to a specific message
+  const scrollToMessage = (messageId: string) => {
+    const messageElement = document.getElementById(`message-${messageId}`);
+    if (messageElement) {
+      messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Highlight the message briefly
+      messageElement.classList.add('bg-custom-primary-100/20');
+      setTimeout(() => {
+        messageElement.classList.remove('bg-custom-primary-100/20');
+      }, 2000);
+    }
+  };
+
+  // Keyboard shortcut for search (Ctrl+K / Cmd+K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   return (
     <>
-      <div className="flex h-full w-full overflow-hidden">
-        {/* Left Sidebar - Rooms List */}
-        <RoomsList
-          rooms={rooms.rooms}
-          orgLevelRooms={rooms.orgLevelRooms}
-          projectRooms={rooms.projectRooms}
-          currentProjectId={rooms.currentProjectId}
-          selectedRoomId={rooms.selectedRoomId}
-          onSelectRoom={rooms.selectRoom}
-          onCreateOrgChannel={modals.createChannel.openOrg}
-          onCreateProjectChannel={modals.createChannel.openProject}
-          onCreateDM={modals.createDM.open}
-          onBrowseOrgChannels={modals.browse.openOrg}
-          onBrowseProjectChannels={modals.browse.openProject}
-          getDMName={getDMName}
-        />
-
-        {/* Center - Chat Window */}
-        <ChatWindow
-          room={rooms.selectedRoom}
-          messages={messages.messages}
-          currentUserId={messages.currentUserId}
-          onSendMessage={messages.sendMessage}
-          onLoadMessages={messages.loadMessages}
-          onOpenThread={threads.openThread}
-          onToggleSidebar={sidebar.toggle}
-          sidebarOpen={sidebar.isOpen}
-        />
-
-        {/* Right Sidebar - Channel Detail with Tabs */}
-        {sidebar.isOpen && rooms.selectedRoom && (
-          <RightSidebar
-            room={rooms.selectedRoom}
-            activeTab={sidebar.activeTab}
-            onTabChange={sidebar.setTab}
-            onClose={sidebar.close}
-            threadContent={
-              threads.activeThread ? (
-                <ThreadView
-                  parentMessage={threads.activeThread}
-                  threadMessages={threads.threadMessages}
-                  currentUserId={messages.currentUserId}
-                  onSendReply={threads.sendReply}
-                  onClose={sidebar.close}
-                  onLoadThread={threads.loadThread}
-                />
-              ) : (
-                <div style={{ padding: '32px', textAlign: 'center', color: '#999' }}>
-                  Click &quot;Reply&quot; on a message to start a thread
-                </div>
-              )
-            }
-            membersContent={
-              <MembersTab
-                roomId={rooms.selectedRoom.id}
-                onLoadMembers={() => loadMembers(rooms.selectedRoom!.id)}
-              />
-            }
-            filesContent={
-              <FilesTab
-                roomId={rooms.selectedRoom.id}
-                onLoadFiles={loadFiles}
-              />
-            }
+      <ChatLayout
+        sidebar={
+          <Sidebar
+            rooms={rooms.rooms}
+            orgLevelRooms={rooms.orgLevelRooms}
+            projectRooms={rooms.projectRooms}
+            currentProjectId={rooms.currentProjectId}
+            selectedRoomId={rooms.selectedRoomId}
+            isComposingDM={rooms.isComposingDM}
+            currentUserId={rooms.currentUserId}
+            isOrgOwner={rooms.isOrgOwner}
+            onSelectRoom={(roomId) => {
+              // Cancel compose mode when selecting a room
+              if (rooms.isComposingDM) {
+                rooms.cancelCompose();
+              }
+              rooms.selectRoom(roomId);
+            }}
+            onCreateOrgChannel={modals.createChannel.openOrg}
+            onCreateProjectChannel={modals.createChannel.openProject}
+            onCreateDM={modals.createDM.open}
+            onStartComposeDM={rooms.startComposingDM}
+            onBrowseOrgChannels={modals.browse.openOrg}
+            onBrowseProjectChannels={modals.browse.openProject}
+            getDMName={getDMName}
+            getUnreadCount={rooms.getUnreadCount}
+            onRoomUpdated={rooms.updateRoom}
+            onRoomDeleted={rooms.deleteRoom}
+            onRoomArchived={rooms.archiveRoom}
+            onLeftRoom={rooms.leaveRoom}
           />
-        )}
-      </div>
+        }
+        main={
+          <ChatWindow
+            room={rooms.isComposingDM ? rooms.composeDMRoom : rooms.selectedRoom}
+            messages={messages.messages}
+            currentUserId={messages.currentUserId}
+            onSendMessage={messages.sendMessage}
+            onLoadMessages={messages.loadMessages}
+            onOpenThread={threads.openThread}
+            onToggleSidebar={sidebar.toggle}
+            sidebarOpen={sidebar.isOpen}
+            usersCache={messages.usersCache}
+            // Compose mode props
+            isComposing={rooms.isComposingDM}
+            composeUsers={rooms.composeUsers}
+            onComposeUserSelect={rooms.addComposeUser}
+            onComposeUserRemove={rooms.removeComposeUser}
+            onComposeSendMessage={rooms.sendComposeMessage}
+            // Message actions
+            onEditMessage={handleEditMessage}
+            onDeleteMessage={handleDeleteMessage}
+            onPinMessage={handlePinMessage}
+            onUnpinMessage={handleUnpinMessage}
+            onToggleReaction={messages.toggleReaction}
+            // File upload
+            pendingFiles={messages.pendingFiles}
+            onFilesSelect={messages.selectFiles}
+            onFileRemove={messages.removeFile}
+            onOpenSearch={handleOpenSearch}
+          />
+        }
+        details={
+          sidebar.isOpen && rooms.selectedRoom && (
+            <DetailsPanel
+              room={rooms.selectedRoom}
+              activeTab={sidebar.activeTab}
+              onTabChange={sidebar.setTab}
+              onClose={sidebar.close}
+              threadContent={
+                threads.activeThread ? (
+                  <ThreadView
+                    parentMessage={threads.activeThread}
+                    threadMessages={threads.threadMessages}
+                    currentUserId={messages.currentUserId}
+                    onSendReply={threads.sendReply}
+                    onClose={sidebar.close}
+                    onLoadThread={threads.loadThread}
+                    usersCache={messages.usersCache}
+                    onEditMessage={handleEditMessage}
+                    onDeleteMessage={handleDeleteMessage}
+                    onPinMessage={handlePinMessage}
+                    onUnpinMessage={handleUnpinMessage}
+                    onToggleReaction={messages.toggleReaction}
+                    roomId={rooms.selectedRoom?.id}
+                  />
+                ) : (
+                  <div style={{ padding: '32px', textAlign: 'center', color: '#999' }}>
+                    Click &quot;Reply&quot; on a message to start a thread
+                  </div>
+                )
+              }
+              membersContent={
+                <MembersTab
+                  roomId={rooms.selectedRoom.id}
+                  onLoadMembers={() => loadMembers(rooms.selectedRoom!.id)}
+                />
+              }
+              filesContent={
+                <FilesTab
+                  roomId={rooms.selectedRoom.id}
+                  onLoadFiles={loadFiles}
+                />
+              }
+              aiContent={
+                <AISettingsTab
+                  roomId={rooms.selectedRoom.id}
+                  canConfigure={rooms.isOrgOwner}
+                  onNavigateToMessage={scrollToMessage}
+                />
+              }
+            />
+          )
+        }
+      />
 
       {/* Browse Channels Modal */}
-      {modals.browse.isOpen && (
-        <BrowseChannelsModal
-          onClose={modals.browse.close}
-          onJoinRoom={rooms.joinRoom}
-          onLoadPublicRooms={rooms.browsePublicRooms}
-          joinedRoomIds={new Set(rooms.rooms.map(r => r.id))}
-        />
-      )}
+      <BrowseChannelsModal
+        isOpen={modals.browse.isOpen}
+        onClose={modals.browse.close}
+        onJoinRoom={rooms.joinRoom}
+        onLoadPublicRooms={rooms.browsePublicRooms}
+        joinedRoomIds={new Set(rooms.rooms.map(r => r.id))}
+      />
 
       {/* Create Channel Modal */}
-      {modals.createChannel.isOpen && (
-        <CreateChannelModal
-          onClose={modals.createChannel.close}
-          onCreate={rooms.createChannel}
-        />
-      )}
+      <CreateChannelModal
+        isOpen={modals.createChannel.isOpen}
+        onClose={modals.createChannel.close}
+        onCreate={rooms.createChannel}
+      />
 
       {/* Create DM Modal */}
-      {modals.createDM.isOpen && (
-        <CreateDMModal
-          onClose={modals.createDM.close}
-          onCreate={rooms.createDM}
-          currentUserId={messages.currentUserId}
-        />
-      )}
+      <CreateDMModal
+        isOpen={modals.createDM.isOpen}
+        onClose={modals.createDM.close}
+        onCreate={rooms.createDM}
+        currentUserId={messages.currentUserId}
+      />
+
+      {/* Edit Message Modal */}
+      <EditMessageModal
+        isOpen={!!editingMessage}
+        message={editingMessage}
+        onClose={() => setEditingMessage(null)}
+        onSave={messages.editMessage}
+      />
+
+      {/* Confirm Delete Modal */}
+      <ConfirmDeleteModal
+        isOpen={!!deletingMessage}
+        message={deletingMessage}
+        onClose={() => setDeletingMessage(null)}
+        onConfirm={messages.deleteMessage}
+      />
+
+      {/* Search Modal */}
+      <SearchModal
+        isOpen={isSearchOpen}
+        onClose={handleCloseSearch}
+        rooms={rooms.rooms}
+        onNavigateToMessage={handleNavigateToMessage}
+        usersCache={messages.usersCache}
+      />
     </>
   );
 }

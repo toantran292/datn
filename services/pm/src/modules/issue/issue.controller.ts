@@ -18,6 +18,12 @@ export class IssueController {
     return this.issueService.create(dto, orgId, userId);
   }
 
+  @Get("issues/assigned")
+  async findAssignedToUser(@Req() request: RequestWithOrg): Promise<IssueResponseDto[]> {
+    const { orgId, userId } = request;
+    return this.issueService.findAssignedToUser(userId, orgId);
+  }
+
   @Get("issues/:id")
   async findById(@Param("id") id: string, @Req() request: RequestWithOrg): Promise<IssueResponseDto> {
     const orgId = request.orgId;

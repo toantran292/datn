@@ -19,6 +19,25 @@ export function useChatRooms() {
     handleJoinRoomFromBrowse,
     handleCreateChannel,
     handleCreateDM,
+    // Room management
+    handleUpdateRoom,
+    handleDeleteRoom,
+    handleArchiveRoom,
+    handleLeaveRoom,
+    // Compose DM
+    isComposingDM,
+    composeUsers,
+    composeDMRoom,
+    startComposingDM,
+    addComposeUser,
+    removeComposeUser,
+    cancelCompose,
+    handleSendComposeMessage,
+    // Unread
+    getUnreadCount,
+    // User
+    currentUserId,
+    isOrgOwner,
   } = useChatContext();
 
   return {
@@ -41,5 +60,28 @@ export function useChatRooms() {
     joinRoom: handleJoinRoomFromBrowse,
     createChannel: handleCreateChannel,
     createDM: handleCreateDM,
+
+    // Room management
+    updateRoom: handleUpdateRoom,
+    deleteRoom: handleDeleteRoom,
+    archiveRoom: handleArchiveRoom,
+    leaveRoom: handleLeaveRoom,
+
+    // User
+    currentUserId,
+    isOrgOwner,
+
+    // Compose DM
+    isComposingDM,
+    composeUsers,
+    composeDMRoom,
+    startComposingDM,
+    addComposeUser,
+    removeComposeUser,
+    cancelCompose,
+    sendComposeMessage: handleSendComposeMessage,
+
+    // Unread
+    getUnreadCount,
   };
 }

@@ -48,12 +48,12 @@ export const MentionsListDropdown = forwardRef((props: MentionsListDropdownProps
 
   useImperativeHandle(ref, () => ({
     onKeyDown: ({ event }: { event: KeyboardEvent }) => {
-      if (!DROPDOWN_NAVIGATION_KEYS.includes(event.key)) return;
+      if (!DROPDOWN_NAVIGATION_KEYS.includes(event.key)) return false;
       event.preventDefault();
 
       if (event.key === "Enter") {
         selectItem(selectedIndex.section, selectedIndex.item);
-        return;
+        return true;
       }
 
       const newIndex = getNextValidIndex({
@@ -64,6 +64,7 @@ export const MentionsListDropdown = forwardRef((props: MentionsListDropdownProps
       if (newIndex) {
         setSelectedIndex(newIndex);
       }
+      return true;
     },
   }));
 
@@ -114,7 +115,7 @@ export const MentionsListDropdown = forwardRef((props: MentionsListDropdownProps
   return (
     <div
       ref={commandListContainer}
-      className="z-10 max-h-[90vh] w-[14rem] overflow-y-auto rounded-md border-[0.5px] border-custom-border-300 bg-custom-background-100 px-2 py-2.5 shadow-custom-shadow-rg space-y-2"
+      className="z-10 max-h-[300px] w-[280px] overflow-y-auto rounded-lg border border-custom-border-200 bg-custom-background-100 py-2 shadow-lg space-y-1"
     >
       {isLoading ? (
         <div className="text-center text-sm text-custom-text-400">Loading...</div>
@@ -131,7 +132,7 @@ export const MentionsListDropdown = forwardRef((props: MentionsListDropdownProps
                   id={`mention-item-${sectionIndex}-${itemIndex}`}
                   type="button"
                   className={cn(
-                    "flex items-center gap-2 w-full rounded px-1 py-1.5 text-xs text-left truncate text-custom-text-200",
+                    "flex items-center gap-2 w-full rounded px-2 py-1.5 text-sm text-left text-custom-text-200",
                     {
                       "bg-custom-background-80": isSelected,
                     }
@@ -147,11 +148,23 @@ export const MentionsListDropdown = forwardRef((props: MentionsListDropdownProps
                     })
                   }
                 >
-                  <span className="size-5 grid place-items-center flex-shrink-0">{item.icon}</span>
-                  {item.subTitle && (
-                    <h5 className="whitespace-nowrap text-xs text-custom-text-300 flex-shrink-0">{item.subTitle}</h5>
+                  {/* Avatar/Icon */}
+                  <span className="size-6 grid place-items-center flex-shrink-0">{item.icon}</span>
+                  {/* Name */}
+                  <span className="font-medium truncate">{item.title}</span>
+                  {/* Online status indicator */}
+                  {item.isOnline !== undefined && (
+                    <span
+                      className={cn(
+                        "w-2 h-2 rounded-full flex-shrink-0",
+                        item.isOnline ? "bg-green-500" : "bg-custom-text-400"
+                      )}
+                    />
                   )}
-                  <p className="flex-grow truncate">{item.title}</p>
+                  {/* Subtitle (e.g., "(you)") */}
+                  {item.subTitle && (
+                    <span className="text-xs text-custom-text-400 flex-shrink-0">{item.subTitle}</span>
+                  )}
                 </button>
               );
             })}

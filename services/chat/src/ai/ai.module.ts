@@ -9,6 +9,7 @@ import { ChannelAIConfig } from '../database/entities/channel-ai-config.entity';
 import { ChatModule } from '../chat/chat.module';
 import { RoomsModule } from '../rooms/rooms.module';
 import { FileStorageModule } from '../common/file-storage/file-storage.module';
+import { IdentityModule } from '../common/identity/identity.module';
 import { RagModule } from './rag/rag.module';
 
 @Module({
@@ -18,6 +19,7 @@ import { RagModule } from './rag/rag.module';
     forwardRef(() => ChatModule),
     forwardRef(() => RoomsModule),
     FileStorageModule,
+    IdentityModule,
     RagModule,
   ],
   controllers: [AIController],

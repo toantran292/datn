@@ -8,6 +8,7 @@ export type TMentionSuggestion = {
   id: string;
   subTitle?: string;
   title: string;
+  isOnline?: boolean;
 };
 
 export type TMentionSection = {

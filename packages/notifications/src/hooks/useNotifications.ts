@@ -14,6 +14,11 @@ export interface UseNotificationsOptions extends NotificationConfig {
   userId: string;
 
   /**
+   * Organization ID for presence tracking (optional)
+   */
+  orgId?: string;
+
+  /**
    * Maximum number of notifications to keep in state
    * @default 50
    */
@@ -95,6 +100,7 @@ export function useNotifications(
 ): UseNotificationsReturn {
   const {
     userId,
+    orgId,
     maxNotifications = 50,
     autoConnect = true,
     ...clientConfig
@@ -123,24 +129,26 @@ export function useNotifications(
     if (!clientRef.current || !userId) return;
 
     setState((prev) => ({ ...prev, isConnecting: true, error: null }));
-    clientRef.current.connect(userId);
-  }, [userId]);
+    clientRef.current.connect(userId, orgId);
+  }, [userId, orgId]);
 
   const disconnect = useCallback(() => {
     if (!clientRef.current) return;
     clientRef.current.disconnect();
   }, []);
 
-  // Auto-connect on mount
+  // Auto-connect on mount and reconnect when userId or orgId changes
   useEffect(() => {
     if (autoConnect && userId) {
+      // Disconnect first to ensure clean state before reconnecting with new orgId
+      clientRef.current?.disconnect();
       connect();
     }
 
     return () => {
       disconnect();
     };
-  }, [autoConnect, userId, connect, disconnect]);
+  }, [autoConnect, userId, orgId, connect, disconnect]);
 
   // Setup event listeners
   useEffect(() => {

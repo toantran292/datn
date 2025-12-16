@@ -1,8 +1,13 @@
-import { Controller, Get, Post, Put, Delete, Param, Body } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Param, Body, Sse, Query } from '@nestjs/common';
+import { Observable } from 'rxjs';
 import { AIService } from './ai.service';
 import { RagService } from './rag/rag.service';
 import { Ctx, type RequestContext } from '../common/context/context.decorator';
 import type { AIFeature } from '../database/entities/channel-ai-config.entity';
+
+interface SSEMessage {
+  data: string;
+}
 
 @Controller('ai')
 export class AIController {
@@ -34,7 +39,7 @@ export class AIController {
       customSystemPrompt?: string | null;
     },
   ) {
-    return this.aiService.updateAIConfig(roomId, ctx.userId, body);
+    return this.aiService.updateAIConfig(roomId, ctx.userId, ctx.orgId, body);
   }
 
   @Put('config/:roomId/features/:feature')
@@ -44,7 +49,7 @@ export class AIController {
     @Param('feature') feature: AIFeature,
     @Body('enabled') enabled: boolean,
   ) {
-    return this.aiService.toggleAIFeature(roomId, ctx.userId, feature, enabled);
+    return this.aiService.toggleAIFeature(roomId, ctx.userId, ctx.orgId, feature, enabled);
   }
 
   // ============== UC11: Conversation Summary ==============
@@ -132,6 +137,11 @@ export class AIController {
     return this.ragService.indexRoom(roomId, ctx.orgId);
   }
 
+  @Post('rag/index-all-rooms')
+  async indexAllRooms(@Ctx() ctx: RequestContext) {
+    return this.ragService.indexAllRooms(ctx.orgId);
+  }
+
   @Post('rag/index-attachment/:roomId')
   async indexAttachment(
     @Ctx() ctx: RequestContext,
@@ -164,5 +174,149 @@ export class AIController {
     @Param('roomId') roomId: string,
   ) {
     return this.ragService.getRoomStats(roomId);
+  }
+
+  // ============== Streaming Endpoints ==============
+
+  @Sse('stream/summary/:roomId')
+  streamSummarize(
+    @Ctx() ctx: RequestContext,
+    @Param('roomId') roomId: string,
+    @Query('messageCount') messageCount?: string,
+    @Query('threadId') threadId?: string,
+  ): Observable<SSEMessage> {
+    return new Observable(subscriber => {
+      const generator = this.aiService.streamSummarizeConversation(
+        roomId,
+        ctx.userId,
+        {
+          messageCount: messageCount ? parseInt(messageCount, 10) : undefined,
+          threadId,
+        },
+      );
+
+      (async () => {
+        try {
+          for await (const event of generator) {
+            subscriber.next({ data: JSON.stringify(event) });
+          }
+          subscriber.complete();
+        } catch (error) {
+          subscriber.next({
+            data: JSON.stringify({
+              type: 'error',
+              data: error instanceof Error ? error.message : 'Unknown error',
+            }),
+          });
+          subscriber.complete();
+        }
+      })();
+    });
+  }
+
+  @Sse('stream/action-items/:roomId')
+  streamActionItems(
+    @Ctx() ctx: RequestContext,
+    @Param('roomId') roomId: string,
+    @Query('messageCount') messageCount?: string,
+    @Query('threadId') threadId?: string,
+  ): Observable<SSEMessage> {
+    return new Observable(subscriber => {
+      const generator = this.aiService.streamExtractActionItems(
+        roomId,
+        ctx.userId,
+        {
+          messageCount: messageCount ? parseInt(messageCount, 10) : undefined,
+          threadId,
+        },
+      );
+
+      (async () => {
+        try {
+          for await (const event of generator) {
+            subscriber.next({ data: JSON.stringify(event) });
+          }
+          subscriber.complete();
+        } catch (error) {
+          subscriber.next({
+            data: JSON.stringify({
+              type: 'error',
+              data: error instanceof Error ? error.message : 'Unknown error',
+            }),
+          });
+          subscriber.complete();
+        }
+      })();
+    });
+  }
+
+  @Sse('stream/ask/:roomId')
+  streamAsk(
+    @Ctx() ctx: RequestContext,
+    @Param('roomId') roomId: string,
+    @Query('question') question: string,
+    @Query('contextMessageCount') contextMessageCount?: string,
+    @Query('threadId') threadId?: string,
+  ): Observable<SSEMessage> {
+    return new Observable(subscriber => {
+      const generator = this.aiService.streamAskQuestion(
+        roomId,
+        ctx.userId,
+        question,
+        {
+          contextMessageCount: contextMessageCount ? parseInt(contextMessageCount, 10) : undefined,
+          threadId,
+        },
+      );
+
+      (async () => {
+        try {
+          for await (const event of generator) {
+            subscriber.next({ data: JSON.stringify(event) });
+          }
+          subscriber.complete();
+        } catch (error) {
+          subscriber.next({
+            data: JSON.stringify({
+              type: 'error',
+              data: error instanceof Error ? error.message : 'Unknown error',
+            }),
+          });
+          subscriber.complete();
+        }
+      })();
+    });
+  }
+
+  @Sse('stream/document-summary/:roomId')
+  streamDocumentSummary(
+    @Ctx() ctx: RequestContext,
+    @Param('roomId') roomId: string,
+    @Query('attachmentId') attachmentId: string,
+  ): Observable<SSEMessage> {
+    return new Observable(subscriber => {
+      const generator = this.aiService.streamSummarizeDocument(
+        roomId,
+        ctx.userId,
+        attachmentId,
+      );
+
+      (async () => {
+        try {
+          for await (const event of generator) {
+            subscriber.next({ data: JSON.stringify(event) });
+          }
+          subscriber.complete();
+        } catch (error) {
+          subscriber.next({
+            data: JSON.stringify({
+              type: 'error',
+              data: error instanceof Error ? error.message : 'Unknown error',
+            }),
+          });
+          subscriber.complete();
+        }
+      })();
+    });
   }
 }

@@ -14,10 +14,15 @@ export class AudioProcessor implements DocumentProcessor {
   private readonly supportedTypes = [
     'audio/mpeg', // .mp3
     'audio/mp4', // .m4a
+    'audio/x-m4a', // .m4a (alternative)
+    'audio/m4a', // .m4a (alternative)
     'audio/wav', // .wav
+    'audio/x-wav', // .wav (alternative)
     'audio/webm', // .webm
     'audio/ogg', // .ogg
     'audio/flac', // .flac
+    'audio/x-flac', // .flac (alternative)
+    'audio/aac', // .aac
   ];
 
   private readonly chunkSize = 1000;
@@ -27,6 +32,10 @@ export class AudioProcessor implements DocumentProcessor {
   constructor(private readonly configService: ConfigService) {}
 
   canProcess(mimeType: string): boolean {
+    // Accept any audio/* mime type since Whisper API supports most formats
+    if (mimeType.startsWith('audio/')) {
+      return true;
+    }
     return this.supportedTypes.some(
       type => mimeType === type || mimeType.startsWith(type),
     );

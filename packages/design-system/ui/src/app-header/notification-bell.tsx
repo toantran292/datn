@@ -55,7 +55,7 @@ function toNotification(stored: StoredNotification): Notification {
 }
 
 export const NotificationBell: React.FC<NotificationBellProps> = ({ className }) => {
-  const { apiBaseUrl, auth } = useAppHeaderContext();
+  const { apiBaseUrl, auth, currentWorkspaceId } = useAppHeaderContext();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [storedNotifications, setStoredNotifications] = useState<Notification[]>([]);
@@ -64,8 +64,9 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className })
   const hasFetchedRef = useRef(false);
 
   const userId = auth?.user_id;
+  const orgId = currentWorkspaceId;
 
-  // WebSocket for real-time notifications
+  // WebSocket for real-time notifications and presence
   const {
     notifications: realtimeNotifications,
     unreadCount: realtimeUnreadCount,
@@ -77,6 +78,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ className })
   } = useNotifications({
     gatewayUrl: apiBaseUrl,
     userId: userId || "",
+    orgId: orgId, // Pass orgId for presence tracking
     maxNotifications: 20,
     autoConnect: !!userId,
     debug: process.env.NODE_ENV === "development",

@@ -15,12 +15,14 @@ import { LLMService } from '../llm.service';
 import { ChannelAIConfigRepository } from '../repositories/channel-ai-config.repository';
 import { ChatModule } from '../../chat/chat.module';
 import { FileStorageModule } from '../../common/file-storage/file-storage.module';
+import { RoomsModule } from '../../rooms/rooms.module';
 
 @Module({
   imports: [
     ConfigModule,
     TypeOrmModule.forFeature([DocumentEmbedding, ChannelAIConfig]),
     forwardRef(() => ChatModule),
+    forwardRef(() => RoomsModule),
     FileStorageModule,
   ],
   providers: [
@@ -39,6 +41,6 @@ import { FileStorageModule } from '../../common/file-storage/file-storage.module
       useExisting: RagService,
     },
   ],
-  exports: [EmbeddingService, DocumentProcessorService, RagService, 'RagService', LLMService],
+  exports: [EmbeddingService, DocumentProcessorService, RagService, 'RagService', LLMService, AudioProcessor],
 })
 export class RagModule {}
