@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useRef, ReactNode } from "react";
 import type { Room, Message } from "../types";
-import type { SidebarTab } from "../components/right-sidebar/RightSidebar";
+import type { DetailsTab } from "../components/details";
 import { api } from "../services/api";
 import { socketService } from "../services/socket";
 import { useAppHeaderContext } from "@uts/design-system/ui";
@@ -23,7 +23,7 @@ interface ChatContextValue {
 
   // Right Sidebar
   sidebarOpen: boolean;
-  sidebarTab: SidebarTab;
+  sidebarTab: DetailsTab;
   activeThread: Message | null;
   threadMessages: Message[];
 
@@ -58,7 +58,7 @@ interface ChatContextValue {
   // Actions - Sidebar
   handleToggleSidebar: () => void;
   handleCloseSidebar: () => void;
-  setSidebarTab: (tab: SidebarTab) => void;
+  setSidebarTab: (tab: DetailsTab) => void;
 
   // Actions - Modals
   setShowBrowseModal: (show: boolean) => void;
@@ -85,7 +85,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   // Right Sidebar state
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarTab, setSidebarTab] = useState<SidebarTab>("thread");
+  const [sidebarTab, setSidebarTab] = useState<DetailsTab>("thread");
   const [activeThread, setActiveThread] = useState<Message | null>(null);
   const [threadMessages, setThreadMessages] = useState<Message[]>([]);
 

@@ -89,17 +89,17 @@ export class IdentityService {
 
   /**
    * Get members of an organization from Identity service
+   * Uses internal endpoint that doesn't require authentication
    */
   async getOrgMembers(orgId: string, page = 0, size = 100): Promise<PagedMembers | null> {
     try {
-      const url = `${this.identityUrl}/orgs/${orgId}/members?page=${page}&size=${size}`;
+      // Use internal endpoint for service-to-service communication (no auth required)
+      const url = `${this.identityUrl}/internal/orgs/${orgId}/members?page=${page}&size=${size}`;
 
-      // Note: In production, you'd need to pass authentication headers
       const response = await fetch(url, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          // TODO: Add authentication header (service-to-service token)
         },
       });
 

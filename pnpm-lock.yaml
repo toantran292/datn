@@ -120,6 +120,9 @@ importers:
       '@uts/types':
         specifier: workspace:*
         version: link:../../packages/types
+      lucide-react:
+        specifier: ^0.469.0
+        version: 0.469.0(react@18.3.1)
       next:
         specifier: 14.2.30
         version: 14.2.30(@playwright/test@1.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
