@@ -6,12 +6,7 @@ import {ValidationPipe} from "@nestjs/common";
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.enableCors({
-    origin: "http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003",
-    credentials: true,
-    methods: ["GET","POST","PUT","PATCH","DELETE","OPTIONS"],
-    allowedHeaders: ["Content-Type", "x-user-id", "x-org-id"],
-  });
+  // CORS is handled by Edge (nginx), disabled here
 
   app.useGlobalPipes(new ValidationPipe({
     transform: true,

@@ -1,10 +1,9 @@
-import { Body, Controller, Get, Post, Query, Param } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put, Delete, Query, Param } from '@nestjs/common';
 import { RoomsService } from './rooms.service';
 import { Ctx, type RequestContext } from '../common/context/context.decorator';
 import { CreateRoomDto } from './dto/create-room.dto';
 import { CreateDmDto } from './dto/create-dm.dto';
 import { toRoomResponseDto } from './rooms.mapper';
-import { types } from 'cassandra-driver';
 
 @Controller('rooms')
 export class RoomsController {
@@ -69,8 +68,8 @@ export class RoomsController {
   ) {
     const room = await this.roomsService.createDm(dto.userIds, ctx.orgId, ctx.userId);
     return {
-      id: room.id.toString(),
-      orgId: room.orgId.toString(),
+      id: room.id,
+      orgId: room.orgId,
       isPrivate: room.isPrivate,
       name: room.name,
       type: room.type,
@@ -84,34 +83,97 @@ export class RoomsController {
     @Body('is_private') isPrivate: boolean = false,
     @Body('project_id') projectId?: string | null,
   ) {
-    // Convert projectId string to UUID if provided
-    const projectUuid = projectId ? types.Uuid.fromString(projectId) : null;
-
     const room = await this.roomsService.createChannel(
       name,
       isPrivate,
       ctx.orgId,
       ctx.userId,
-      projectUuid
+      projectId
     );
 
     return {
-      id: room.id.toString(),
-      orgId: room.orgId.toString(),
+      id: room.id,
+      orgId: room.orgId,
       isPrivate: room.isPrivate,
       name: room.name,
       type: room.type,
-      projectId: room.projectId?.toString() || null, // Return projectId to frontend
+      projectId: room.projectId || null,
     };
   }
 
-  // Dynamic routes with params SECOND
+  // ============== UC01: Room Management ==============
+
+  @Put(':roomId')
+  async updateRoom(
+    @Ctx() ctx: RequestContext,
+    @Param('roomId') roomId: string,
+    @Body() body: { name?: string; description?: string; isPrivate?: boolean },
+  ) {
+    return this.roomsService.updateRoom(roomId, ctx.orgId, ctx.userId, body);
+  }
+
+  @Delete(':roomId')
+  async deleteRoom(
+    @Ctx() ctx: RequestContext,
+    @Param('roomId') roomId: string,
+  ) {
+    return this.roomsService.deleteRoom(roomId, ctx.orgId, ctx.userId);
+  }
+
+  @Post(':roomId/archive')
+  async archiveRoom(
+    @Ctx() ctx: RequestContext,
+    @Param('roomId') roomId: string,
+  ) {
+    return this.roomsService.archiveRoom(roomId, ctx.orgId, ctx.userId);
+  }
+
+  // ============== UC02: Member Management ==============
+
   @Get(':roomId/members')
   async listRoomMembers(
     @Ctx() ctx: RequestContext,
     @Param('roomId') roomId: string,
   ) {
     return this.roomsService.listRoomMembers(roomId, ctx.orgId, ctx.userId);
+  }
+
+  @Post(':roomId/members')
+  async inviteMember(
+    @Ctx() ctx: RequestContext,
+    @Param('roomId') roomId: string,
+    @Body('userId') targetUserId: string,
+  ) {
+    return this.roomsService.inviteMember(roomId, ctx.orgId, ctx.userId, targetUserId);
+  }
+
+  @Delete(':roomId/members/:userId')
+  async removeMember(
+    @Ctx() ctx: RequestContext,
+    @Param('roomId') roomId: string,
+    @Param('userId') targetUserId: string,
+  ) {
+    return this.roomsService.removeMember(roomId, ctx.orgId, ctx.userId, targetUserId);
+  }
+
+  @Put(':roomId/members/:userId/role')
+  async updateMemberRole(
+    @Ctx() ctx: RequestContext,
+    @Param('roomId') roomId: string,
+    @Param('userId') targetUserId: string,
+    @Body('role') role: 'ADMIN' | 'MEMBER',
+  ) {
+    return this.roomsService.updateMemberRole(roomId, ctx.orgId, ctx.userId, targetUserId, role);
+  }
+
+  // ============== UC04: Leave Room ==============
+
+  @Post(':roomId/leave')
+  async leaveRoom(
+    @Ctx() ctx: RequestContext,
+    @Param('roomId') roomId: string,
+  ) {
+    return this.roomsService.leaveRoom(roomId, ctx.orgId, ctx.userId);
   }
 
   @Get('dms')

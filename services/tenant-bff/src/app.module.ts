@@ -8,6 +8,8 @@ import { EnvSchema } from './config/env.validation';
 import { HealthModule } from './health/health.module';
 import { TenantModule } from './tenant/tenant.module';
 import { PublicModule } from './public/public.module';
+import { ReportsModule } from './reports/reports.module';
+import { LlmModule } from './llm/llm.module';
 
 @Module({
   imports: [
@@ -40,6 +42,8 @@ import { PublicModule } from './public/public.module';
     HealthModule,
     TenantModule,
     PublicModule,
+    ReportsModule,
+    LlmModule,
   ],
   providers: [
     {

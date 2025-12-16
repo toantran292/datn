@@ -73,7 +73,10 @@ export class HmacGuard implements CanActivate {
       throw new UnauthorizedException('invalid_signature');
     }
 
-    const replayKey = `sig:${sigB64}:${ts}`;
+    // Include request method and path in replay key to allow concurrent requests to different endpoints
+    const method = req.method || 'GET';
+    const path = req.url || req.path || '';
+    const replayKey = `sig:${sigB64}:${ts}:${method}:${path}`;
     const seen = await this.cache.get(replayKey);
     if (seen) {
       throw new ForbiddenException('replay_detected');

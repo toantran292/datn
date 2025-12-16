@@ -8,9 +8,15 @@ import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
 import { HeadersContextDto } from './headers-context.dto';
 import { Reflector } from '@nestjs/core';
-import { types } from 'cassandra-driver';
 
 export const SKIP_CONTEXT_KEY = 'skipContext';
+
+// Simple UUID validation regex
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isValidUuid(str: string): boolean {
+  return UUID_REGEX.test(str);
+}
 
 @Injectable()
 export class RequestContextGuard implements CanActivate {
@@ -39,13 +45,11 @@ export class RequestContextGuard implements CanActivate {
       throw new BadRequestException('Missing/invalid x-user-id or x-org-id headers');
     }
 
-    try {
-      const userId = types.Uuid.fromString(dto.userId);
-      const orgId = types.Uuid.fromString(dto.orgId);
-      req.context = { userId, orgId };
-      return true;
-    } catch {
+    if (!isValidUuid(dto.userId) || !isValidUuid(dto.orgId)) {
       throw new BadRequestException('Invalid UUID in headers');
     }
+
+    req.context = { userId: dto.userId, orgId: dto.orgId };
+    return true;
   }
 }

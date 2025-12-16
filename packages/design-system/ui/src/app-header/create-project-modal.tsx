@@ -102,13 +102,8 @@ const ProjectCommonAttributes: React.FC<{
           control={control}
           name="identifier"
           rules={{
-            required: "Project ID is required",
             validate: (value: string) =>
-              /^[ÇŞĞIİÖÜA-Z0-9]+$/.test(value.toUpperCase()) || "Only alphanumeric non-latin characters allowed",
-            minLength: {
-              value: 1,
-              message: "Project ID must be at least 1 character",
-            },
+              !value || /^[ÇŞĞIİÖÜA-Z0-9]+$/.test(value.toUpperCase()) || "Only alphanumeric characters allowed",
             maxLength: {
               value: 5,
               message: "Project ID must be at most 5 characters",
@@ -126,13 +121,13 @@ const ProjectCommonAttributes: React.FC<{
               value={value}
               onChange={handleIdentifierChange(onChange)}
               hasError={Boolean(errors.identifier)}
-              placeholder="Project ID"
+              placeholder="Auto-generated"
               className={`w-full text-xs focus:border-blue-400 pr-7 ${value ? "uppercase" : ""}`}
             />
           )}
         />
         <Tooltip
-          tooltipContent="Helps you identify work items in the project uniquely. Max 5 characters."
+          tooltipContent="Optional. Auto-generated from project name if empty. Max 5 characters."
           className="text-sm"
           position="right"
         >
@@ -201,11 +196,20 @@ const CreateProjectForm: React.FC<{
   const apiBase = `${apiBaseUrl}/pm`;
 
   const onSubmit = async (formData: ProjectFormData) => {
-    const payload = {
+    const payload: Record<string, string | undefined> = {
       name: formData.name,
-      identifier: formData.identifier.toUpperCase(),
       orgId: workspaceId,
     };
+
+    // Only include identifier if provided
+    if (formData.identifier?.trim()) {
+      payload.identifier = formData.identifier.toUpperCase();
+    }
+
+    // Include description if provided
+    if (formData.description?.trim()) {
+      payload.description = formData.description.trim();
+    }
 
     try {
       const res = await fetch(`${apiBase}/api/projects`, {

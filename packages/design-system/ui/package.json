@@ -40,6 +40,7 @@
     "@uts/constants": "workspace:*",
     "@uts/fe-utils": "workspace:*",
     "@uts/hooks": "workspace:*",
+    "@uts/notifications": "workspace:*",
     "@uts/types": "workspace:*",
     "clsx": "^2.0.0",
     "emoji-picker-react": "^4.5.16",

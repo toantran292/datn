@@ -39,6 +39,9 @@ export class FileMetadata {
   @Prop({ index: true })
   uploadedBy?: string;
 
+  @Prop({ index: true })
+  orgId?: string;
+
   @Prop({ type: [String], default: [] })
   tags?: string[];
 
@@ -60,3 +63,5 @@ export const FileMetadataSchema = SchemaFactory.createForClass(FileMetadata);
 FileMetadataSchema.index({ service: 1, modelType: 1, subjectId: 1 });
 FileMetadataSchema.index({ uploadedBy: 1, createdAt: -1 });
 FileMetadataSchema.index({ tags: 1 });
+FileMetadataSchema.index({ orgId: 1, createdAt: -1 });
+FileMetadataSchema.index({ orgId: 1, uploadStatus: 1 });
