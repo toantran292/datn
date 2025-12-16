@@ -12,11 +12,11 @@ interface ProjectTabsProps {
 }
 
 const TABS: Array<{ key: TProjectTabKey; label: string; path: string }> = [
-  { key: "backlog", label: "Backlog", path: "backlog" },
-  { key: "board", label: "Board", path: "board" },
-  { key: "calendar", label: "Calendar", path: "calendar" },
-  { key: "timeline", label: "Timeline", path: "timeline" },
-  { key: "summary", label: "Summary", path: "summary" },
+  { key: "backlog", label: "Danh sách công việc", path: "backlog" },
+  { key: "board", label: "Bảng", path: "board" },
+  { key: "calendar", label: "Lịch", path: "calendar" },
+  { key: "timeline", label: "Thời gian", path: "timeline" },
+  { key: "summary", label: "Tổng quan", path: "summary" },
   { key: "auto-create", label: "Tự động tạo", path: "auto-create" },
 ];
 
