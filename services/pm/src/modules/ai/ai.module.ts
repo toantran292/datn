@@ -18,6 +18,6 @@ import { PromptService } from './prompt.service';
   ],
   controllers: [AIController],
   providers: [AIService, OpenAIService, PromptService],
-  exports: [AIService],
+  exports: [AIService, OpenAIService],
 })
 export class AIModule {}
