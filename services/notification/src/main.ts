@@ -6,7 +6,11 @@ import { IoAdapter } from '@nestjs/platform-socket.io';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // CORS is handled by Edge (nginx), disabled here
+  // Enable CORS for development (Edge also handles CORS)
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({

@@ -38,6 +38,7 @@ interface UseMembersUnifiedReturn extends UseMembersUnifiedState {
   cancelInvitation: (invitationId: string) => Promise<boolean>;
   resendInvitation: (invitationId: string) => Promise<boolean>;
   updateMemberRole: (memberId: string, role: string) => Promise<boolean>;
+  updateMemberProjects: (memberId: string, projectIds: string[]) => Promise<boolean>;
 }
 
 export function useMembersUnified(): UseMembersUnifiedReturn {
@@ -170,6 +171,22 @@ export function useMembersUnified(): UseMembersUnifiedReturn {
     }
   }, []);
 
+  const updateMemberProjects = useCallback(async (memberId: string, projectIds: string[]): Promise<boolean> => {
+    try {
+      await apiPatch(`/tenant/members/${memberId}/projects`, { projectIds });
+      // Refetch to get updated project roles
+      await fetchData();
+      return true;
+    } catch (error: any) {
+      console.error('Failed to update member projects:', error);
+      setState(prev => ({
+        ...prev,
+        error: error.message || 'Failed to update member projects',
+      }));
+      return false;
+    }
+  }, [fetchData]);
+
   return {
     ...state,
     refetch: fetchData,
@@ -178,5 +195,6 @@ export function useMembersUnified(): UseMembersUnifiedReturn {
     cancelInvitation,
     resendInvitation,
     updateMemberRole,
+    updateMemberProjects,
   };
 }

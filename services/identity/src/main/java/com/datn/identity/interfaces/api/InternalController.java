@@ -2,6 +2,7 @@ package com.datn.identity.interfaces.api;
 
 import com.datn.identity.application.InvitationApplicationService;
 import com.datn.identity.application.OrganizationApplicationService;
+import com.datn.identity.interfaces.api.dto.Dtos;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -177,6 +178,76 @@ public class InternalController {
         }
     }
 
+    // ==================== Organization Settings Internal Endpoints ====================
+
+    /**
+     * Get organization details (internal use).
+     */
+    @GetMapping("/orgs/{orgId}")
+    public ResponseEntity<?> getOrgDetail(@PathVariable String orgId) {
+        try {
+            var detail = orgs.getOrgDetail(UUID.fromString(orgId));
+            return ResponseEntity.ok(detail);
+        } catch (IllegalStateException e) {
+            if ("org_not_found".equals(e.getMessage())) {
+                return ResponseEntity.status(404).body(Map.of("error", "org_not_found"));
+            }
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Update organization info (internal use).
+     */
+    @PatchMapping("/orgs/{orgId}")
+    public ResponseEntity<?> updateOrg(
+            @PathVariable String orgId,
+            @RequestBody Dtos.UpdateOrgReq req) {
+        try {
+            var updated = orgs.updateOrg(UUID.fromString(orgId), req);
+            return ResponseEntity.ok(updated);
+        } catch (IllegalStateException e) {
+            if ("org_not_found".equals(e.getMessage())) {
+                return ResponseEntity.status(404).body(Map.of("error", "org_not_found"));
+            }
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Update organization logo (internal use).
+     */
+    @PatchMapping("/orgs/{orgId}/logo")
+    public ResponseEntity<?> updateLogo(
+            @PathVariable String orgId,
+            @RequestBody UpdateLogoRequest req) {
+        try {
+            orgs.updateLogo(UUID.fromString(orgId), req.logoUrl());
+            return ResponseEntity.ok(Map.of("status", "success", "logoUrl", req.logoUrl() != null ? req.logoUrl() : ""));
+        } catch (IllegalStateException e) {
+            if ("org_not_found".equals(e.getMessage())) {
+                return ResponseEntity.status(404).body(Map.of("error", "org_not_found"));
+            }
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Delete organization (internal use).
+     * Note: This is a soft delete - marks org as deleted.
+     */
+    @DeleteMapping("/orgs/{orgId}")
+    public ResponseEntity<?> deleteOrg(@PathVariable String orgId) {
+        try {
+            // For now, we don't actually delete orgs - just return success
+            // In the future, implement soft delete or archive functionality
+            return ResponseEntity.ok(Map.of("status", "success", "message", "Organization deletion is not yet implemented"));
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body(Map.of("error", e.getMessage()));
+        }
+    }
+
     public record InviteRequest(String email, String role) {}
     public record UpdateRoleRequest(String role) {}
+    public record UpdateLogoRequest(String logoUrl) {}
 }

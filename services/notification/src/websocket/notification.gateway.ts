@@ -16,7 +16,8 @@ import { InAppNotificationPayload } from '../types/notification.types';
     origin: '*',
     credentials: true,
   },
-  // namespace: '',
+  path: '/notifications/socket.io',
+  namespace: '/',
 })
 export class NotificationGateway
   implements OnGatewayConnection, OnGatewayDisconnect

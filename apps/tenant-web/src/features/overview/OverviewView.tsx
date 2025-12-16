@@ -10,48 +10,9 @@ import { InviteMemberModal } from "@/features/members/components/InviteMemberMod
 import { Users, FolderKanban, HardDrive } from "lucide-react";
 import { toast } from "sonner";
 import { useDashboard } from "./hooks/useDashboard";
+import { useRecentFiles } from "./hooks/useRecentFiles";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
-
-// Mock data for recent files
-const mockRecentFiles = [
-  {
-    id: "1",
-    name: "Q4-Report-Final.pdf",
-    projectId: "p1",
-    projectName: "Marketing",
-    uploadedBy: { id: "u1", name: "Toan Tran" },
-    uploadedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    size: 2.5 * 1024 * 1024,
-  },
-  {
-    id: "2",
-    name: "meeting-notes.md",
-    projectId: "p2",
-    projectName: "Product Dev",
-    uploadedBy: { id: "u2", name: "Mai Nguyen" },
-    uploadedAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-    size: 45 * 1024,
-  },
-  {
-    id: "3",
-    name: "budget-2025.xlsx",
-    projectId: "p1",
-    projectName: "Marketing",
-    uploadedBy: { id: "u3", name: "Huy Le" },
-    uploadedAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-    size: 1.2 * 1024 * 1024,
-  },
-  {
-    id: "4",
-    name: "logo-redesign.png",
-    projectId: "p3",
-    projectName: "Design",
-    uploadedBy: { id: "u1", name: "Toan Tran" },
-    uploadedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-    size: 850 * 1024,
-  },
-];
 
 function mapActionToType(action: string): Activity['type'] {
   switch (action) {
@@ -75,6 +36,7 @@ export function OverviewView() {
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
 
   const { data: dashboard, isLoading } = useDashboard();
+  const { files: recentFiles, isLoading: isLoadingFiles } = useRecentFiles(5);
 
   const activities: Activity[] = dashboard?.activities.recentActivities.slice(0, 5).map(a => ({
     id: a.id,
@@ -207,8 +169,8 @@ export function OverviewView() {
 
             {/* Recent Files */}
             <RecentFiles
-              files={mockRecentFiles}
-              isLoading={false}
+              files={recentFiles}
+              isLoading={isLoadingFiles}
               onViewAll={handleViewAllFiles}
             />
 

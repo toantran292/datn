@@ -41,6 +41,7 @@ import {
 } from "lucide-react";
 import { InviteMemberModal } from "./components/InviteMemberModal";
 import { ChangeRoleModal } from "./components/ChangeRoleModal";
+import { ManageProjectsModal } from "./components/ManageProjectsModal";
 import { toast } from "sonner";
 import { useMembersUnified } from "./hooks/useMembersUnified";
 
@@ -49,7 +50,9 @@ type FilterStatus = "all" | "active" | "pending";
 export function MembersView() {
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [changeRoleModalOpen, setChangeRoleModalOpen] = useState(false);
+  const [manageProjectsModalOpen, setManageProjectsModalOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<{ id: string; name: string; currentRole: string } | null>(null);
+  const [selectedMemberForProjects, setSelectedMemberForProjects] = useState<{ id: string; name: string; currentProjectIds: string[] } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState<FilterStatus>("all");
@@ -66,6 +69,7 @@ export function MembersView() {
     cancelInvitation,
     resendInvitation,
     updateMemberRole,
+    updateMemberProjects,
   } = useMembersUnified();
 
   // Filter logic
@@ -144,6 +148,12 @@ export function MembersView() {
   const handleChangeRole = (id: string, name: string, currentRole: string) => {
     setSelectedMember({ id, name, currentRole });
     setChangeRoleModalOpen(true);
+  };
+
+  const handleManageProjects = (id: string, name: string, projectRoles?: { projectId: string }[]) => {
+    const currentProjectIds = projectRoles?.map(pr => pr.projectId) || [];
+    setSelectedMemberForProjects({ id, name, currentProjectIds });
+    setManageProjectsModalOpen(true);
   };
 
   const handleRemoveMember = async (id: string, name: string) => {
@@ -522,6 +532,15 @@ export function MembersView() {
                                   <Shield size={16} />
                                   Change Role
                                 </button>
+                                {item.role === "member" && (
+                                  <button
+                                    onClick={() => handleManageProjects(item.id, item.displayName, item.projectRoles)}
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted rounded-md transition-colors"
+                                  >
+                                    <FolderKanban size={16} />
+                                    Manage Projects
+                                  </button>
+                                )}
                                 <div className="my-1 h-px bg-border" />
                                 <button
                                   disabled={item.role === "owner"}
@@ -609,6 +628,27 @@ export function MembersView() {
             setSelectedMember(null);
           } else {
             toast.error(`Failed to change role`);
+          }
+        }}
+      />
+
+      {/* Manage Projects Modal */}
+      <ManageProjectsModal
+        open={manageProjectsModalOpen}
+        onOpenChange={(open) => {
+          setManageProjectsModalOpen(open);
+          if (!open) setSelectedMemberForProjects(null);
+        }}
+        member={selectedMemberForProjects}
+        onConfirm={async (projectIds) => {
+          if (!selectedMemberForProjects) return;
+          const success = await updateMemberProjects(selectedMemberForProjects.id, projectIds);
+          if (success) {
+            toast.success(`Projects updated for ${selectedMemberForProjects.name}`);
+            setManageProjectsModalOpen(false);
+            setSelectedMemberForProjects(null);
+          } else {
+            toast.error(`Failed to update projects`);
           }
         }}
       />

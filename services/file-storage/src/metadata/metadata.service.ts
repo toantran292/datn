@@ -127,8 +127,12 @@ export class MetadataService {
     return result.deletedCount;
   }
 
+  // Tags that should be excluded from quota calculation
+  private readonly EXCLUDED_QUOTA_TAGS = ['logo', 'avatar', 'profile_picture', 'thumbnail'];
+
   /**
    * Get total storage usage for an organization
+   * Excludes system files like logos, avatars, etc. from quota
    */
   async getStorageUsage(orgId: string): Promise<{ usedBytes: number; fileCount: number }> {
     const result = await this.fileMetadataModel.aggregate([
@@ -136,6 +140,8 @@ export class MetadataService {
         $match: {
           orgId,
           uploadStatus: 'completed',
+          // Exclude files with system tags (logo, avatar, etc.)
+          tags: { $nin: this.EXCLUDED_QUOTA_TAGS },
         },
       },
       {
@@ -159,6 +165,7 @@ export class MetadataService {
 
   /**
    * Get recent files for an organization
+   * Excludes system files like logos, avatars, etc.
    */
   async getRecentFiles(
     orgId: string,
@@ -168,6 +175,8 @@ export class MetadataService {
       .find({
         orgId,
         uploadStatus: 'completed',
+        // Exclude system files (logo, avatar, etc.)
+        tags: { $nin: this.EXCLUDED_QUOTA_TAGS },
       })
       .sort({ createdAt: -1 })
       .limit(limit)

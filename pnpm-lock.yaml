@@ -740,6 +740,9 @@ importers:
       '@uts/hooks':
         specifier: workspace:*
         version: link:../../hooks
+      '@uts/notifications':
+        specifier: workspace:*
+        version: link:../../notifications
       '@uts/types':
         specifier: workspace:*
         version: link:../../types
@@ -1588,6 +1591,9 @@ importers:
       class-validator:
         specifier: ^0.14.1
         version: 0.14.2
+      form-data:
+        specifier: ^4.0.0
+        version: 4.0.4
       nestjs-pino:
         specifier: ^4.0.0
         version: 4.4.1(@nestjs/common@11.1.6(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(pino-http@10.5.0)(pino@9.9.5)(rxjs@7.8.2)
@@ -1631,6 +1637,9 @@ importers:
       '@types/jest':
         specifier: ^30.0.0
         version: 30.0.0
+      '@types/multer':
+        specifier: ^1.4.12
+        version: 1.4.13
       '@types/node':
         specifier: ^22.10.7
         version: 22.18.6

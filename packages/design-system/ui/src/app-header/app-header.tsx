@@ -8,6 +8,7 @@ import { WorkspaceSelector } from "./workspace-selector";
 import { ProjectSelector } from "./project-selector";
 import { ProductSwitcher } from "./product-switcher";
 import { CreateProjectModal } from "./create-project-modal";
+import { NotificationBell } from "./notification-bell";
 import { projectKeys } from "./hooks/use-projects";
 import type { AppHeaderProps } from "./types";
 import { cn } from "../utils";
@@ -74,6 +75,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ className }) => {
 
         <Header.RightItem className="flex items-center gap-2">
           <ProductSwitcher currentApp={currentApp} workspaceSlug={workspaceSlug} />
+
+          <NotificationBell />
 
           <UserMenu apiBaseUrl={apiBaseUrl} authWebUrl={authWebUrl} />
         </Header.RightItem>

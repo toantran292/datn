@@ -1,11 +1,15 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, Req, UseGuards } from '@nestjs/common';
 import { HmacGuard } from '../common/guards/hmac.guard';
 import { IdentityService } from 'src/services/identity.service';
+import { PmService } from 'src/services/pm.service';
 
 @Controller('members')
 @UseGuards(HmacGuard)
 export class MemberController {
-  constructor(private readonly identityService: IdentityService) {}
+  constructor(
+    private readonly identityService: IdentityService,
+    private readonly pmService: PmService,
+  ) {}
 
   /**
    * GET /members - Get unified list of members and invitations
@@ -28,6 +32,16 @@ export class MemberController {
     @Body() body: { role: string }
   ) {
     return this.identityService.updateMemberRole(req.orgId, userId, body.role);
+  }
+
+  @Patch(':userId/projects')
+  updateProjects(
+    @Req() req,
+    @Param('userId') userId: string,
+    @Body() body: { projectIds: string[] }
+  ) {
+    // Use PM service for project membership management
+    return this.pmService.updateUserProjects(req.orgId, userId, body.projectIds);
   }
 
   @Delete(':userId')

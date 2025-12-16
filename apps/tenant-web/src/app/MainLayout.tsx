@@ -8,6 +8,8 @@ import {
   Users,
   LayoutDashboard,
   FolderOpen,
+  FolderKanban,
+  Settings,
   LucideIcon
 } from "lucide-react";
 import {
@@ -35,8 +37,10 @@ interface MenuItem {
 
 const allMenuItems: MenuItem[] = [
   { title: "Overview", icon: LayoutDashboard, href: "/" },
+  { title: "Projects", icon: FolderKanban, href: "/projects" },
   { title: "Members", icon: Users, href: "/members", requiredAccess: "admin" },
   { title: "Files", icon: FolderOpen, href: "/files" },
+  { title: "Settings", icon: Settings, href: "/settings", requiredAccess: "admin" },
 ];
 
 export function MainLayout({ children }: MainLayoutProps) {

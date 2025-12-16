@@ -114,4 +114,24 @@ export class DashboardService {
       return 0;
     }
   }
+
+  async getRecentFiles(orgId: string, limit: number = 5) {
+    const url = `${this.fileStorageBaseUrl}/files/recent`;
+
+    try {
+      const res = await firstValueFrom(
+        this.http.get(url, {
+          headers: {
+            'X-Internal-Call': 'bff',
+            'X-Org-Id': orgId,
+          },
+          params: { limit },
+        }),
+      );
+      return res.data?.data || [];
+    } catch (err) {
+      this.logger.error(`Failed to fetch recent files: ${err.message}`);
+      return [];
+    }
+  }
 }
