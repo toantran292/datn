@@ -7,6 +7,10 @@ import { resolveGeneralTheme } from "@uts/fe-utils";
 import { AppHeaderProvider, Toast } from "@uts/design-system/ui";
 import { ChatProvider } from "../contexts/ChatContext";
 
+// Environment variables
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
+const AUTH_WEB_URL = process.env.NEXT_PUBLIC_AUTH_WEB_URL || "http://localhost:3000";
+const TENANT_WEB_URL = process.env.NEXT_PUBLIC_TENANT_WEB_URL || "http://localhost:3001";
 
 export interface IAppProvider {
   children: ReactNode;
@@ -23,7 +27,13 @@ export const AppProvider: FC<IAppProvider> = (props) => {
 
   return (
     <>
-      <AppHeaderProvider currentApp="chat" navigateTo={(path: string) => router.push(path)}>
+      <AppHeaderProvider
+        currentApp="chat"
+        apiBaseUrl={API_BASE_URL}
+        authWebUrl={AUTH_WEB_URL}
+        tenantWebUrl={TENANT_WEB_URL}
+        navigateTo={(path: string) => router.push(path)}
+      >
         <ChatProvider>
           <ToastWithTheme />
           {children}

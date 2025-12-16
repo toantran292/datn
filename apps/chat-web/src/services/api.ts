@@ -761,6 +761,268 @@ class ApiService {
     }
     return response.json();
   }
+
+  // ===== AI STREAMING APIs =====
+
+  /**
+   * Stream summarize conversation using Server-Sent Events
+   */
+  streamSummarizeConversation(
+    roomId: string,
+    options?: { messageCount?: number; threadId?: string },
+    callbacks?: {
+      onChunk?: (chunk: string) => void;
+      onDone?: (messageCount: number) => void;
+      onError?: (error: string) => void;
+    },
+  ): { abort: () => void } {
+    const params = new URLSearchParams();
+    if (options?.messageCount) params.append('messageCount', options.messageCount.toString());
+    if (options?.threadId) params.append('threadId', options.threadId);
+
+    const url = `${this.baseURL}/ai/stream/summary/${encodeURIComponent(roomId)}?${params}`;
+    const eventSource = new EventSource(url, { withCredentials: true });
+
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'chunk') {
+          callbacks?.onChunk?.(data.data);
+        } else if (data.type === 'done') {
+          callbacks?.onDone?.(data.messageCount || 0);
+          eventSource.close();
+        } else if (data.type === 'error') {
+          callbacks?.onError?.(data.data);
+          eventSource.close();
+        }
+      } catch {
+        // Ignore parsing errors
+      }
+    };
+
+    eventSource.onerror = () => {
+      callbacks?.onError?.('Connection error');
+      eventSource.close();
+    };
+
+    return {
+      abort: () => eventSource.close(),
+    };
+  }
+
+  /**
+   * Stream extract action items using Server-Sent Events
+   */
+  streamExtractActionItems(
+    roomId: string,
+    options?: { messageCount?: number; threadId?: string },
+    callbacks?: {
+      onChunk?: (chunk: string) => void;
+      onDone?: (messageCount: number) => void;
+      onError?: (error: string) => void;
+    },
+  ): { abort: () => void } {
+    const params = new URLSearchParams();
+    if (options?.messageCount) params.append('messageCount', options.messageCount.toString());
+    if (options?.threadId) params.append('threadId', options.threadId);
+
+    const url = `${this.baseURL}/ai/stream/action-items/${encodeURIComponent(roomId)}?${params}`;
+    const eventSource = new EventSource(url, { withCredentials: true });
+
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'chunk') {
+          callbacks?.onChunk?.(data.data);
+        } else if (data.type === 'done') {
+          callbacks?.onDone?.(data.messageCount || 0);
+          eventSource.close();
+        } else if (data.type === 'error') {
+          callbacks?.onError?.(data.data);
+          eventSource.close();
+        }
+      } catch {
+        // Ignore parsing errors
+      }
+    };
+
+    eventSource.onerror = () => {
+      callbacks?.onError?.('Connection error');
+      eventSource.close();
+    };
+
+    return {
+      abort: () => eventSource.close(),
+    };
+  }
+
+  /**
+   * Stream Q&A using Server-Sent Events
+   */
+  streamAskQuestion(
+    roomId: string,
+    question: string,
+    options?: { contextMessageCount?: number; threadId?: string },
+    callbacks?: {
+      onSources?: (sources: Array<{ messageId: string; content: string; userId: string; createdAt: string }>) => void;
+      onChunk?: (chunk: string) => void;
+      onDone?: () => void;
+      onError?: (error: string) => void;
+    },
+  ): { abort: () => void } {
+    const params = new URLSearchParams({ question });
+    if (options?.contextMessageCount) params.append('contextMessageCount', options.contextMessageCount.toString());
+    if (options?.threadId) params.append('threadId', options.threadId);
+
+    const url = `${this.baseURL}/ai/stream/ask/${encodeURIComponent(roomId)}?${params}`;
+    const eventSource = new EventSource(url, { withCredentials: true });
+
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'sources') {
+          callbacks?.onSources?.(data.sources || []);
+        } else if (data.type === 'chunk') {
+          callbacks?.onChunk?.(data.data);
+        } else if (data.type === 'done') {
+          callbacks?.onDone?.();
+          eventSource.close();
+        } else if (data.type === 'error') {
+          callbacks?.onError?.(data.data);
+          eventSource.close();
+        }
+      } catch {
+        // Ignore parsing errors
+      }
+    };
+
+    eventSource.onerror = () => {
+      callbacks?.onError?.('Connection error');
+      eventSource.close();
+    };
+
+    return {
+      abort: () => eventSource.close(),
+    };
+  }
+
+  /**
+   * Stream document summary using Server-Sent Events
+   */
+  streamDocumentSummary(
+    roomId: string,
+    attachmentId: string,
+    callbacks?: {
+      onChunk?: (chunk: string) => void;
+      onDone?: (documentName: string, documentType: string) => void;
+      onError?: (error: string) => void;
+    },
+  ): { abort: () => void } {
+    const params = new URLSearchParams({ attachmentId });
+
+    const url = `${this.baseURL}/ai/stream/document-summary/${encodeURIComponent(roomId)}?${params}`;
+    const eventSource = new EventSource(url, { withCredentials: true });
+
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'chunk') {
+          callbacks?.onChunk?.(data.data);
+        } else if (data.type === 'done') {
+          callbacks?.onDone?.(data.documentName || '', data.documentType || '');
+          eventSource.close();
+        } else if (data.type === 'error') {
+          callbacks?.onError?.(data.data);
+          eventSource.close();
+        }
+      } catch {
+        // Ignore parsing errors
+      }
+    };
+
+    eventSource.onerror = () => {
+      callbacks?.onError?.('Connection error');
+      eventSource.close();
+    };
+
+    return {
+      abort: () => eventSource.close(),
+    };
+  }
+
+  // ===== RAG Indexing APIs =====
+
+  /**
+   * Index all messages in a specific room for RAG
+   */
+  async indexRoom(roomId: string): Promise<{ indexed: number; skipped: number; errors: string[] }> {
+    const response = await fetch(`${this.baseURL}/ai/rag/index-room/${encodeURIComponent(roomId)}`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(error || 'Failed to index room');
+    }
+    return response.json();
+  }
+
+  /**
+   * Index all rooms in the organization for RAG
+   */
+  async indexAllRooms(): Promise<{
+    totalRooms: number;
+    successfulRooms: number;
+    totalIndexed: number;
+    totalSkipped: number;
+    errors: string[];
+  }> {
+    const response = await fetch(`${this.baseURL}/ai/rag/index-all-rooms`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(error || 'Failed to index all rooms');
+    }
+    return response.json();
+  }
+
+  /**
+   * Get RAG indexing stats for a room
+   */
+  async getRoomRAGStats(roomId: string): Promise<{ totalEmbeddings: number }> {
+    const response = await fetch(`${this.baseURL}/ai/rag/stats/${encodeURIComponent(roomId)}`, {
+      method: 'GET',
+      credentials: 'include',
+    });
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(error || 'Failed to get RAG stats');
+    }
+    return response.json();
+  }
+
+  /**
+   * Clear all embeddings for a room
+   */
+  async clearRoomEmbeddings(roomId: string): Promise<{ deleted: number }> {
+    const response = await fetch(`${this.baseURL}/ai/rag/embeddings/${encodeURIComponent(roomId)}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(error || 'Failed to clear embeddings');
+    }
+    return response.json();
+  }
 }
 
 // AI Config types

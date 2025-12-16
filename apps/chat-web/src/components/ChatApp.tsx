@@ -204,6 +204,7 @@ export function ChatApp() {
                     onPinMessage={handlePinMessage}
                     onUnpinMessage={handleUnpinMessage}
                     onToggleReaction={messages.toggleReaction}
+                    roomId={rooms.selectedRoom?.id}
                   />
                 ) : (
                   <div style={{ padding: '32px', textAlign: 'center', color: '#999' }}>

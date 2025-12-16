@@ -37,6 +37,7 @@ export interface MessageItemProps {
   hideThreadAction?: boolean; // Hide "Reply in thread" button (e.g., when in thread view)
   hideReplyCount?: boolean; // Hide reply count (e.g., when in thread view)
   usersCache?: Map<string, UserInfo>; // For rendering @mentions with display names
+  roomId?: string; // For AI features like document summary
 }
 
 // Generate avatar color based on name
@@ -65,6 +66,7 @@ export function MessageItem({
   hideThreadAction,
   hideReplyCount,
   usersCache,
+  roomId,
 }: MessageItemProps) {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -167,7 +169,7 @@ export function MessageItem({
 
         {/* Attachments */}
         {message.attachments && message.attachments.length > 0 && (
-          <AttachmentList attachments={message.attachments} />
+          <AttachmentList attachments={message.attachments} roomId={roomId} />
         )}
 
         {/* Reactions */}

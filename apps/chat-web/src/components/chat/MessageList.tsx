@@ -81,6 +81,7 @@ export function MessageList({
               onAddReaction={onAddReaction}
               onToggleReaction={onToggleReaction}
               usersCache={usersCache}
+              roomId={room?.id}
             />
           );
         })}

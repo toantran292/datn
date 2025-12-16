@@ -1,12 +1,29 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Download, X, ZoomIn, FileText, Maximize2 } from 'lucide-react';
+import { Download, X, ZoomIn, FileText, Maximize2, Sparkles } from 'lucide-react';
 import type { Attachment } from '../../types';
 import { formatFileSize, getFileIcon, isImageFile } from '../../services/files';
+import { DocumentSummaryModal } from '../modals/DocumentSummaryModal';
 
 // Check if file is a PDF
 function isPdfFile(mimeType: string): boolean {
   return mimeType === 'application/pdf';
+}
+
+// Check if file can be summarized (documents that AI can read)
+function canSummarize(mimeType: string): boolean {
+  const summarizableTypes = [
+    'application/pdf',
+    'text/plain',
+    'text/markdown',
+    'text/csv',
+    'application/json',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  ];
+  return summarizableTypes.includes(mimeType);
 }
 
 // Image Preview Modal - renders via Portal to ensure proper z-index
@@ -126,15 +143,18 @@ function PdfPreviewModal({
 export interface FileAttachmentProps {
   attachment: Attachment;
   compact?: boolean; // Use compact layout when multiple files
+  roomId?: string; // Required for AI features like summarize
 }
 
-export function FileAttachment({ attachment, compact }: FileAttachmentProps) {
+export function FileAttachment({ attachment, compact, roomId }: FileAttachmentProps) {
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [showPdfPreview, setShowPdfPreview] = useState(false);
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
 
   const isImage = isImageFile(attachment.mimeType);
   const isPdf = isPdfFile(attachment.mimeType);
   const downloadUrl = attachment.downloadUrl;
+  const showSummarize = roomId && canSummarize(attachment.mimeType);
 
   // Image attachment - inline preview with click to expand
   if (isImage && (attachment.thumbnailUrl || attachment.downloadUrl)) {
@@ -210,6 +230,15 @@ export function FileAttachment({ attachment, compact }: FileAttachmentProps) {
               <span className="text-[11px] text-custom-text-200 truncate flex-1" title={attachment.fileName}>
                 {attachment.fileName}
               </span>
+              {showSummarize && (
+                <button
+                  onClick={() => setShowSummaryModal(true)}
+                  className="p-1 rounded hover:bg-custom-background-80 text-custom-text-400 hover:text-custom-primary-100 transition-colors flex-shrink-0"
+                  title="Summarize with AI"
+                >
+                  <Sparkles size={14} />
+                </button>
+              )}
               <a
                 href={downloadUrl}
                 target="_blank"
@@ -230,38 +259,70 @@ export function FileAttachment({ attachment, compact }: FileAttachmentProps) {
             onClose={() => setShowPdfPreview(false)}
           />
         )}
+
+        {showSummaryModal && roomId && (
+          <DocumentSummaryModal
+            isOpen={showSummaryModal}
+            roomId={roomId}
+            attachmentId={attachment.id}
+            fileName={attachment.fileName}
+            onClose={() => setShowSummaryModal(false)}
+          />
+        )}
       </>
     );
   }
 
   // Other file types - compact card
   return (
-    <div className={`inline-flex items-center gap-2 px-3 py-2 bg-custom-background-90 border border-custom-border-200 rounded-lg hover:bg-custom-background-80 transition-colors ${compact ? "w-[200px]" : "max-w-[280px]"}`}>
-      <span className="flex-shrink-0">{getFileIcon(attachment.mimeType)}</span>
-      <div className="flex-1 min-w-0">
-        <p className="text-xs font-medium text-custom-text-100 truncate">{attachment.fileName}</p>
-        <p className="text-[10px] text-custom-text-400">{formatFileSize(attachment.fileSize)}</p>
+    <>
+      <div className={`inline-flex items-center gap-2 px-3 py-2 bg-custom-background-90 border border-custom-border-200 rounded-lg hover:bg-custom-background-80 transition-colors ${compact ? "w-[200px]" : "max-w-[280px]"}`}>
+        <span className="flex-shrink-0">{getFileIcon(attachment.mimeType)}</span>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-medium text-custom-text-100 truncate">{attachment.fileName}</p>
+          <p className="text-[10px] text-custom-text-400">{formatFileSize(attachment.fileSize)}</p>
+        </div>
+        {showSummarize && (
+          <button
+            onClick={() => setShowSummaryModal(true)}
+            className="p-1.5 rounded hover:bg-custom-background-80 text-custom-text-300 hover:text-custom-primary-100 transition-colors flex-shrink-0"
+            title="Summarize with AI"
+          >
+            <Sparkles size={14} />
+          </button>
+        )}
+        {downloadUrl && (
+          <a
+            href={downloadUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-1.5 rounded hover:bg-custom-background-80 text-custom-text-300 hover:text-custom-text-100 transition-colors flex-shrink-0"
+            title="Download"
+          >
+            <Download size={14} />
+          </a>
+        )}
       </div>
-      {downloadUrl && (
-        <a
-          href={downloadUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="p-1.5 rounded hover:bg-custom-background-80 text-custom-text-300 hover:text-custom-text-100 transition-colors flex-shrink-0"
-          title="Download"
-        >
-          <Download size={14} />
-        </a>
+
+      {showSummaryModal && roomId && (
+        <DocumentSummaryModal
+          isOpen={showSummaryModal}
+          roomId={roomId}
+          attachmentId={attachment.id}
+          fileName={attachment.fileName}
+          onClose={() => setShowSummaryModal(false)}
+        />
       )}
-    </div>
+    </>
   );
 }
 
 export interface AttachmentListProps {
   attachments: Attachment[];
+  roomId?: string; // Required for AI features like summarize
 }
 
-export function AttachmentList({ attachments }: AttachmentListProps) {
+export function AttachmentList({ attachments, roomId }: AttachmentListProps) {
   if (!attachments || attachments.length === 0) return null;
 
   const isMultiple = attachments.length > 1;
@@ -271,7 +332,7 @@ export function AttachmentList({ attachments }: AttachmentListProps) {
     return (
       <div className="mt-2 flex flex-wrap gap-2">
         {attachments.map((attachment) => (
-          <FileAttachment key={attachment.id} attachment={attachment} compact />
+          <FileAttachment key={attachment.id} attachment={attachment} compact roomId={roomId} />
         ))}
       </div>
     );
@@ -280,7 +341,7 @@ export function AttachmentList({ attachments }: AttachmentListProps) {
   // Single attachment - full size
   return (
     <div className="mt-2">
-      <FileAttachment attachment={attachments[0]} />
+      <FileAttachment attachment={attachments[0]} roomId={roomId} />
     </div>
   );
 }

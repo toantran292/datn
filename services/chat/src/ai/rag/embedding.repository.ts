@@ -87,64 +87,63 @@ export class EmbeddingRepository {
     const limit = options.limit ?? 10;
     const minSimilarity = options.minSimilarity ?? 0.7;
 
-    // Build query with cosine similarity calculation
-    // Using native SQL for vector operations
-    let query = this.embeddingRepo
-      .createQueryBuilder('e')
-      .select([
-        'e.id',
-        'e.source_type as "sourceType"',
-        'e.source_id as "sourceId"',
-        'e.room_id as "roomId"',
-        'e.content',
-        'e.chunk_index as "chunkIndex"',
-        'e.metadata',
-        'e.created_at as "createdAt"',
-      ])
-      // Cosine similarity: 1 - (a <=> b) where <=> is cosine distance
-      // For array comparison without pgvector, we use a custom calculation
-      .addSelect(
-        `(
-          SELECT SUM(a * b) / (SQRT(SUM(a * a)) * SQRT(SUM(b * b)))
-          FROM unnest(e.embedding) WITH ORDINALITY AS t1(a, ord)
-          JOIN unnest(ARRAY[${queryEmbedding.join(',')}]::float[]) WITH ORDINALITY AS t2(b, ord2)
-          ON t1.ord = t2.ord2
-        )`,
-        'similarity',
-      )
-      .where('e.embedding IS NOT NULL');
+    // Build WHERE conditions dynamically
+    const conditions: string[] = ['embedding IS NOT NULL'];
+    const queryParams: any[] = [];
+    let paramIndex = 1;
 
     if (options.roomId) {
-      query = query.andWhere('e.room_id = :roomId', { roomId: options.roomId });
+      conditions.push(`room_id = $${paramIndex++}`);
+      queryParams.push(options.roomId);
     }
 
     if (options.orgId) {
-      query = query.andWhere('e.org_id = :orgId', { orgId: options.orgId });
+      conditions.push(`org_id = $${paramIndex++}`);
+      queryParams.push(options.orgId);
     }
 
     if (options.sourceTypes && options.sourceTypes.length > 0) {
-      query = query.andWhere('e.source_type IN (:...sourceTypes)', {
-        sourceTypes: options.sourceTypes,
-      });
+      conditions.push(`source_type = ANY($${paramIndex++})`);
+      queryParams.push(options.sourceTypes);
     }
 
-    // Filter by minimum similarity and order by similarity descending
-    query = query
-      .having(
-        `(
-          SELECT SUM(a * b) / (SQRT(SUM(a * a)) * SQRT(SUM(b * b)))
-          FROM unnest(e.embedding) WITH ORDINALITY AS t1(a, ord)
-          JOIN unnest(ARRAY[${queryEmbedding.join(',')}]::float[]) WITH ORDINALITY AS t2(b, ord2)
-          ON t1.ord = t2.ord2
-        ) >= :minSimilarity`,
-        { minSimilarity },
-      )
-      .orderBy('similarity', 'DESC')
-      .limit(limit);
+    const whereClause = conditions.join(' AND ');
+    const embeddingArray = `ARRAY[${queryEmbedding.join(',')}]::float[]`;
 
-    const results = await query.getRawMany();
+    // Add minSimilarity and limit params
+    const minSimParamIdx = paramIndex++;
+    const limitParamIdx = paramIndex++;
+    queryParams.push(minSimilarity, limit);
 
-    return results.map(row => ({
+    // Use raw query with subquery to filter by similarity
+    const sql = `
+      SELECT * FROM (
+        SELECT
+          id,
+          source_type as "sourceType",
+          source_id as "sourceId",
+          room_id as "roomId",
+          content,
+          chunk_index as "chunkIndex",
+          metadata,
+          created_at as "createdAt",
+          (
+            SELECT COALESCE(SUM(a * b) / NULLIF(SQRT(SUM(a * a)) * SQRT(SUM(b * b)), 0), 0)
+            FROM unnest(embedding) WITH ORDINALITY AS t1(a, ord)
+            JOIN unnest(${embeddingArray}) WITH ORDINALITY AS t2(b, ord2)
+            ON t1.ord = t2.ord2
+          ) as similarity
+        FROM document_embeddings
+        WHERE ${whereClause}
+      ) sub
+      WHERE similarity >= $${minSimParamIdx}
+      ORDER BY similarity DESC
+      LIMIT $${limitParamIdx}
+    `;
+
+    const results = await this.embeddingRepo.query(sql, queryParams);
+
+    return results.map((row: any) => ({
       id: row.id,
       sourceType: row.sourceType,
       sourceId: row.sourceId,

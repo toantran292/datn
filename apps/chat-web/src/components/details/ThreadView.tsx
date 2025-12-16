@@ -19,6 +19,7 @@ interface ThreadViewProps {
   onPinMessage?: (message: Message) => void;
   onUnpinMessage?: (message: Message) => void;
   onToggleReaction?: (messageId: string, emoji: string) => void;
+  roomId?: string; // For AI features like document summary
 }
 
 export function ThreadView({
@@ -33,6 +34,7 @@ export function ThreadView({
   onPinMessage,
   onUnpinMessage,
   onToggleReaction,
+  roomId,
 }: ThreadViewProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -78,6 +80,7 @@ export function ThreadView({
             hideThreadAction // Hide "Reply in thread" - already in thread
             hideReplyCount // Hide reply count - already in thread
             usersCache={usersCache}
+            roomId={roomId}
           />
         </div>
 
@@ -106,6 +109,7 @@ export function ThreadView({
                   hideThreadAction // Hide "Reply in thread" - already in thread
                   hideReplyCount // Hide reply count - replies don't have nested threads
                   usersCache={usersCache}
+                  roomId={roomId}
                 />
               );
             })
