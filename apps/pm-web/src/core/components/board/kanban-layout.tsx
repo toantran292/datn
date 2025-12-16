@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 
 import { setToast, TOAST_TYPE } from "@uts/design-system/ui";
 import { useIssue } from "@/core/hooks/store/use-issue";
+import { useIssueStatus } from "@/core/hooks/store/use-issue-status";
 import { useSprint } from "@/core/hooks/store/use-sprint";
 import { useProject } from "@/core/hooks/store/use-project";
 import { BoardView } from "./board-view";
@@ -13,10 +14,13 @@ import { BoardView } from "./board-view";
 export const KanbanLayout = observer(() => {
   const params = useParams<{ workspaceSlug?: string | string[]; projectId?: string | string[] }>();
   const projectIdParam = params?.projectId;
+  const workspaceSlugParam = params?.workspaceSlug;
 
   const projectId = Array.isArray(projectIdParam) ? (projectIdParam[0] ?? "") : (projectIdParam ?? "");
+  const workspaceSlug = Array.isArray(workspaceSlugParam) ? (workspaceSlugParam[0] ?? "") : (workspaceSlugParam ?? "");
 
   const issueStore = useIssue();
+  const issueStatusStore = useIssueStatus();
   const sprintStore = useSprint();
   const projectStore = useProject();
 
@@ -29,10 +33,13 @@ export const KanbanLayout = observer(() => {
     sprintStore
       .fetchSprintsByProject(projectId)
       .catch(() => setToast({ type: TOAST_TYPE.ERROR, title: "Lỗi", message: "Không thể tải danh sách sprint" }));
-  }, [issueStore, sprintStore, projectId]);
+    issueStatusStore
+      .fetchIssueStatusesByProject(projectId)
+      .catch(() => setToast({ type: TOAST_TYPE.ERROR, title: "Lỗi", message: "Không thể tải danh sách trạng thái" }));
+  }, [issueStore, issueStatusStore, sprintStore, projectId]);
 
   // Removed useMemo to allow MobX observer to properly track changes
-  const sprints = sprintStore.getSprintsForProject(projectId);
+  const sprints = sprintStore.getSprintsForProject(projectId).filter((sprint) => sprint.status !== "CLOSED");
   const activeSprints = sprints.filter((sprint) => sprint.status === "ACTIVE");
 
   // Removed useMemo to allow MobX observer to properly track changes
@@ -42,6 +49,7 @@ export const KanbanLayout = observer(() => {
     .filter((issue) => issue.sprintId && activeSprintIds.has(issue.sprintId));
 
   const project = projectId ? projectStore.getPartialProjectById(projectId) : undefined;
+  const issueStatuses = issueStatusStore.getIssueStatusesForProject(projectId);
 
   return (
     <BoardView
@@ -49,7 +57,9 @@ export const KanbanLayout = observer(() => {
       issues={issues}
       activeSprints={activeSprints}
       issueStore={issueStore}
+      issueStatuses={issueStatuses}
       projectIdentifier={project?.identifier ?? null}
+      workspaceSlug={workspaceSlug}
     />
   );
 });

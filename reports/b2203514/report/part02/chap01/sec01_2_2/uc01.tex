@@ -1,0 +1,72 @@
+\paragraph{UC01: Quản lý kênh trò chuyện}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\textwidth]{images/UC01.png}
+    \caption{Sơ đồ use case UC01 - Quản lý kênh trò chuyện}
+    \label{fig:uc01}
+\end{figure}
+
+\begin{adjustwidth}{-2cm}{-1cm}
+\begin{longtblr}[
+    caption = {Đặc tả use case UC01 - Quản lý kênh trò chuyện},
+    label = {tab:uc01}
+]{
+    width=1\linewidth, rowhead=1, hlines,
+    colspec={|l|p{.7\linewidth}|}
+}
+
+\textbf{Tên chức năng} & \textbf{Quản lý kênh trò chuyện} \\
+ID & UC01 \\
+Người sử dụng & Workspace Owner, Channel Admin \\
+Mức độ cần thiết & Bắt buộc \\
+Phân loại & Phức tạp \\
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{Workspace Owner/Channel Admin:} Muốn tạo, cập nhật, xóa hoặc lưu trữ các kênh trò chuyện để tổ chức giao tiếp trong workspace theo dự án hoặc chủ đề.
+    \vskip 1pt
+\end{minipage}
+\\
+Mô tả tóm tắt & Cho phép Channel Admin tạo mới các kênh trò chuyện (kênh công khai, kênh riêng tư, kênh theo dự án), cập nhật thông tin kênh (tên, mô tả, ảnh đại diện), xóa hoặc lưu trữ kênh không còn hoạt động. \\
+Trigger & Channel Admin chọn chức năng "Tạo kênh mới" hoặc chọn một kênh để quản lý. \\
+Kiểu sự kiện & External. \\
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item Channel Admin truy cập vào trang quản lý kênh trong workspace.
+        \item Channel Admin chọn "Tạo kênh mới".
+        \item Hệ thống hiển thị form tạo kênh với các trường: tên kênh, mô tả, loại kênh (công khai/riêng tư), dự án liên kết (nếu có).
+        \item Channel Admin nhập thông tin và nhấn "Tạo".
+        \item Hệ thống kiểm tra tính hợp lệ của dữ liệu.
+        \item Hệ thống tạo kênh mới và thông báo thành công.
+        \item Kênh mới xuất hiện trong danh sách kênh của workspace.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\
+Các luồng sự kiện con &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{S1 - Cập nhật thông tin kênh:} Channel Admin chọn kênh → Chọn "Chỉnh sửa" → Cập nhật thông tin → Lưu thay đổi.
+
+    + \textbf{S2 - Xóa kênh:} Channel Admin chọn kênh → Chọn "Xóa" → Xác nhận xóa → Hệ thống xóa kênh và toàn bộ tin nhắn.
+
+    + \textbf{S3 - Lưu trữ kênh:} Channel Admin chọn kênh → Chọn "Lưu trữ" → Kênh được chuyển sang trạng thái archived, chỉ đọc.
+    \vskip 1pt
+\end{minipage}
+\\
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- Tên kênh đã tồn tại: Hiển thị thông báo "Tên kênh đã tồn tại trong workspace".
+
+    \textbf{\textcolor{red}{E2}} -- Dữ liệu không hợp lệ: Hệ thống hiển thị thông báo lỗi chi tiết cho từng trường.
+    \vskip 1pt
+\end{minipage}
+\\
+Kết quả & Kênh trò chuyện được tạo mới/cập nhật/xóa/lưu trữ thành công trong workspace. \\
+\end{longtblr}
+\end{adjustwidth}

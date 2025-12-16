@@ -3,6 +3,7 @@ import { apiGet } from '../lib/api';
 
 export interface User {
   user_id: string;
+  org_id?: string;
   email: string;
   display_name?: string;
   avatar_url?: string;

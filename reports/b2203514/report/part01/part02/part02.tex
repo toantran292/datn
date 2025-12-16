@@ -1,0 +1,75 @@
+\phantomsection
+\subsection*{2. Lịch sử giải quyết vấn đề}
+\addcontentsline{toc}{subsection}{2. Lịch sử giải quyết vấn đề}
+\setcounter{subsection}{2}
+\setcounter{subsubsection}{0}
+\setcounter{figure}{0}
+
+Nhằm đáp ứng nhu cầu quản lý dự án Agile và cộng tác trực tuyến ngày càng tăng trong các doanh nghiệp, nhiều nền tảng SaaS trên thế giới và tại Việt Nam đã được phát triển, cung cấp các chức năng quản lý công việc, chia sẻ thông tin và hỗ trợ giao tiếp nội bộ. Tuy nhiên, các hệ thống này thường tập trung giải quyết một nhóm chức năng riêng lẻ (quản lý dự án, ghi chú tài liệu, nhắn tin, họp trực tuyến, v.v.) mà chưa thực sự tạo ra một lớp nền tảng thống nhất để kết nối và tổng hợp dữ liệu cho việc phân tích và khai thác AI một cách toàn diện. Để hiểu rõ hơn bức tranh hiện tại về các giải pháp quản lý dự án và cộng tác hiện đại, có thể phân tích một số đại diện tiêu biểu ở cả thị trường quốc tế lẫn trong nước như sau:
+
+\subsubsection{Ngoài nước}
+
+\textbf{Jira Software} (\url{https://www.atlassian.com/software/jira}): Công cụ quản lý dự án và theo dõi issue rất phổ biến, hỗ trợ đầy đủ các phương pháp Agile như Scrum, Kanban. Jira cho phép quản lý backlog, sprint, board và báo cáo, đồng thời tích hợp với nhiều công cụ DevOps khác (CI/CD, quản lý mã nguồn, theo dõi lỗi, v.v.), nên thường được sử dụng như "trung tâm" quản lý công việc kỹ thuật trong các đội phát triển phần mềm~\cite{jira_software}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/jira-board.png}
+    \caption{Giao diện Scrum board của Jira Software}
+    \label{fig:jira_board}
+\end{figure}
+
+\textbf{Notion -- AI Workspace} (\url{https://www.notion.com/}): Nền tảng workspace "tất cả trong một" dùng để tổ chức tài liệu, wiki, cơ sở dữ liệu và quản lý dự án. Notion tích hợp Notion AI để tóm tắt nội dung, sinh văn bản và tìm kiếm thông minh trên toàn bộ workspace, giúp gom nhiều loại dữ liệu (tài liệu, task, note họp) vào một hệ thống thống nhất, đồng thời hỗ trợ kết nối với một số ứng dụng bên ngoài~\cite{notion_ai}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/notion-workspace.png}
+    \caption{Giao diện workspace và Notion AI}
+    \label{fig:notion_workspace}
+\end{figure}
+
+\textbf{Slack} (\url{https://slack.com/}): Nền tảng nhắn tin theo kênh dành cho doanh nghiệp, hỗ trợ trao đổi thời gian thực, chia sẻ file, tạo nhóm theo dự án và tích hợp bot/ứng dụng bên thứ ba. Slack gần đây bổ sung Slack AI với khả năng tóm tắt kênh, tìm kiếm thông tin và trả lời câu hỏi dựa trên lịch sử hội thoại, qua đó trở thành lớp truyền thông trung tâm của nhiều nhóm phát triển phần mềm~\cite{slack_ai}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/slack-channels.png}
+    \caption{Giao diện kênh làm việc của Slack}
+    \label{fig:slack_channels}
+\end{figure}
+
+\textbf{Microsoft Teams} (\url{https://www.microsoft.com/microsoft-teams}): Nền tảng cộng tác thuộc hệ sinh thái Microsoft 365, kết hợp chat, họp video, chia sẻ file và tích hợp chặt chẽ với SharePoint, OneDrive, Outlook. Teams được tích hợp Copilot để tóm tắt cuộc họp, trích xuất việc cần làm và trả lời câu hỏi dựa trên dữ liệu doanh nghiệp, trở thành "hub" làm việc nhóm trong nhiều tổ chức lớn~\cite{teams_copilot}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/teams-meeting.png}
+    \caption{Giao diện họp và Copilot trong Microsoft Teams}
+    \label{fig:teams_meeting}
+\end{figure}
+
+\subsubsection{Trong nước}
+
+\textbf{Base.vn} (\url{https://base.vn/}): Nền tảng quản trị doanh nghiệp SaaS với hệ sinh thái nhiều ứng dụng như Base Workflow (tự động hóa quy trình), Base WeWork (quản lý công việc, dự án), Base Info+ (quản trị thông tin, báo cáo). Base.vn định hướng trở thành "hệ điều hành doanh nghiệp", giúp kết nối dữ liệu từ nhiều bộ phận và xây dựng báo cáo quản trị tập trung, phù hợp với đặc thù doanh nghiệp Việt Nam~\cite{base_vn}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/base-dashboard.png}
+    \caption{Giao diện tổng quan Base.vn}
+    \label{fig:base_dashboard}
+\end{figure}
+
+\textbf{FastWork Project} (\url{https://fastwork.vn/phan-mem-quan-ly-du-an-2/}): Phần mềm quản lý dự án trực tuyến, hỗ trợ lập kế hoạch, giao việc, theo dõi tiến độ và tổng hợp báo cáo. FastWork hướng tới nhiều loại hình doanh nghiệp (đặc biệt là xây dựng, thi công) với chức năng quản lý đa dự án, nguồn lực và thời gian trên nền tảng web và mobile~\cite{fastwork_project}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/fastwork-project.png}
+    \caption{Giao diện quản lý dự án FastWork}
+    \label{fig:fastwork_project}
+\end{figure}
+
+\textbf{MISA AMIS Công Việc} (\url{https://amis.misa.vn/amis-cong-viec/}): Phần mềm quản lý công việc online của MISA, cho phép lập danh sách công việc, giao việc, theo dõi tiến độ và đánh giá kết quả hoàn thành trong doanh nghiệp. AMIS Công Việc thường được triển khai cùng các module AMIS khác (nhân sự, tài chính, CRM) để tạo thành một hệ sinh thái quản trị nội bộ thống nhất cho doanh nghiệp Việt~\cite{misa_amis}.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/amis-workflow.png}
+    \caption{Giao diện quản lý công việc MISA AMIS}
+    \label{fig:amis_workflow}
+\end{figure}

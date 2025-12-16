@@ -1,0 +1,276 @@
+### Notification Service API Examples
+### Use with REST Client extension in VS Code or similar tools
+
+@baseUrl = http://localhost:8080
+@notificationUrl = {{baseUrl}}/notifications
+
+### 1. Health Check
+GET {{notificationUrl}}/health
+
+###
+
+### 2. Get Connection Stats
+GET {{notificationUrl}}/stats
+
+###
+
+### 3. Check if User is Online
+GET {{notificationUrl}}/user/user-123/online
+
+###
+
+### 4. Send Email Notification
+POST {{notificationUrl}}/send
+Content-Type: application/json
+
+{
+  "type": "email",
+  "priority": "medium",
+  "email": {
+    "to": "test@example.com",
+    "subject": "Test Email from Notification Service",
+    "text": "This is a plain text email",
+    "html": "<h1>Hello!</h1><p>This is an HTML email with <strong>formatting</strong>.</p>"
+  }
+}
+
+###
+
+### 5. Send In-App Notification
+POST {{notificationUrl}}/send
+Content-Type: application/json
+
+{
+  "type": "in_app",
+  "priority": "high",
+  "inApp": {
+    "userId": "user-123",
+    "title": "New Message",
+    "message": "You have received a new message from John Doe",
+    "metadata": {
+      "senderId": "user-456",
+      "messageId": "msg-789"
+    },
+    "actionUrl": "https://app.example.com/messages/msg-789"
+  }
+}
+
+###
+
+### 6. Send Both Email and In-App Notification
+POST {{notificationUrl}}/send
+Content-Type: application/json
+
+{
+  "type": "both",
+  "priority": "high",
+  "email": {
+    "to": "user@example.com",
+    "subject": "Order Confirmation #12345",
+    "html": "<h1>Thank you for your order!</h1><p>Your order #12345 has been confirmed.</p><p><a href='https://app.example.com/orders/12345'>View Order</a></p>"
+  },
+  "inApp": {
+    "userId": "user-123",
+    "title": "Order Confirmed",
+    "message": "Your order #12345 has been confirmed and is being processed",
+    "metadata": {
+      "orderId": "12345",
+      "amount": 99.99,
+      "currency": "USD"
+    },
+    "actionUrl": "https://app.example.com/orders/12345"
+  }
+}
+
+###
+
+### 7. Send Email with CC and BCC
+POST {{notificationUrl}}/send
+Content-Type: application/json
+
+{
+  "type": "email",
+  "email": {
+    "to": "primary@example.com",
+    "cc": ["manager@example.com", "supervisor@example.com"],
+    "bcc": "admin@example.com",
+    "subject": "Important Team Update",
+    "text": "This email has CC and BCC recipients"
+  }
+}
+
+###
+
+### 8. Send Email to Multiple Recipients
+POST {{notificationUrl}}/send
+Content-Type: application/json
+
+{
+  "type": "email",
+  "email": {
+    "to": ["user1@example.com", "user2@example.com", "user3@example.com"],
+    "subject": "Team Announcement",
+    "html": "<h2>Team Meeting Tomorrow</h2><p>Don't forget our team meeting at 10 AM.</p>"
+  }
+}
+
+###
+
+### 9. Send Bulk Notifications
+POST {{notificationUrl}}/send-bulk
+Content-Type: application/json
+
+[
+  {
+    "type": "email",
+    "email": {
+      "to": "user1@example.com",
+      "subject": "Welcome User 1",
+      "text": "Welcome to our platform!"
+    }
+  },
+  {
+    "type": "email",
+    "email": {
+      "to": "user2@example.com",
+      "subject": "Welcome User 2",
+      "text": "Welcome to our platform!"
+    }
+  },
+  {
+    "type": "in_app",
+    "inApp": {
+      "userId": "user-123",
+      "title": "Bulk Notification",
+      "message": "This is part of a bulk send"
+    }
+  }
+]
+
+###
+
+### 10. Broadcast Message
+POST {{notificationUrl}}/broadcast
+Content-Type: application/json
+
+{
+  "title": "System Maintenance",
+  "message": "The system will undergo maintenance from 2 AM to 4 AM tomorrow",
+  "metadata": {
+    "scheduledAt": "2024-01-01T02:00:00Z",
+    "duration": "2 hours",
+    "affectedServices": ["api", "database"]
+  }
+}
+
+###
+
+### 11. High Priority Urgent Notification
+POST {{notificationUrl}}/send
+Content-Type: application/json
+
+{
+  "type": "both",
+  "priority": "urgent",
+  "email": {
+    "to": "admin@example.com",
+    "subject": "[URGENT] Security Alert",
+    "html": "<h1 style='color: red;'>Security Alert</h1><p>Multiple failed login attempts detected for your account.</p>"
+  },
+  "inApp": {
+    "userId": "admin-user",
+    "title": "Security Alert",
+    "message": "Multiple failed login attempts detected",
+    "metadata": {
+      "attempts": 5,
+      "lastAttemptAt": "2024-01-01T12:00:00Z",
+      "ipAddress": "192.168.1.100"
+    },
+    "actionUrl": "https://app.example.com/security/logs"
+  }
+}
+
+###
+
+### 12. Welcome Email Example
+POST {{notificationUrl}}/send
+Content-Type: application/json
+
+{
+  "type": "email",
+  "priority": "medium",
+  "email": {
+    "to": "newuser@example.com",
+    "subject": "Welcome to UTS Platform!",
+    "html": "<!DOCTYPE html><html><head><style>body{font-family:Arial,sans-serif;line-height:1.6;color:#333}.container{max-width:600px;margin:0 auto;padding:20px}.header{background:#007bff;color:white;padding:20px;text-align:center}.content{padding:20px;background:#f9f9f9}.button{display:inline-block;padding:10px 20px;background:#007bff;color:white;text-decoration:none;border-radius:5px;margin:20px 0}</style></head><body><div class='container'><div class='header'><h1>Welcome to UTS!</h1></div><div class='content'><h2>Hi there!</h2><p>Thank you for joining UTS Platform. We're excited to have you on board!</p><p>Here are some things you can do to get started:</p><ul><li>Complete your profile</li><li>Explore our features</li><li>Connect with other users</li></ul><a href='https://app.example.com/onboarding' class='button'>Get Started</a><p>If you have any questions, feel free to reach out to our support team.</p></div></div></body></html>"
+  }
+}
+
+###
+
+### 13. Password Reset Email
+POST {{notificationUrl}}/send
+Content-Type: application/json
+
+{
+  "type": "email",
+  "priority": "high",
+  "email": {
+    "to": "user@example.com",
+    "subject": "Password Reset Request",
+    "html": "<h2>Password Reset</h2><p>You requested to reset your password. Click the link below to continue:</p><p><a href='https://app.example.com/reset-password?token=abc123'>Reset Password</a></p><p>This link will expire in 1 hour.</p><p>If you didn't request this, please ignore this email.</p>"
+  }
+}
+
+###
+
+### 14. Order Status Update
+POST {{notificationUrl}}/send
+Content-Type: application/json
+
+{
+  "type": "both",
+  "priority": "medium",
+  "email": {
+    "to": "customer@example.com",
+    "subject": "Your Order #ORD-12345 Has Been Shipped",
+    "html": "<h1>Order Shipped!</h1><p>Your order #ORD-12345 has been shipped and is on its way.</p><p><strong>Tracking Number:</strong> TRK123456789</p><p><strong>Estimated Delivery:</strong> January 5, 2024</p><p><a href='https://app.example.com/orders/ORD-12345'>Track Your Order</a></p>"
+  },
+  "inApp": {
+    "userId": "customer-123",
+    "title": "Order Shipped",
+    "message": "Your order #ORD-12345 has been shipped",
+    "metadata": {
+      "orderId": "ORD-12345",
+      "trackingNumber": "TRK123456789",
+      "carrier": "UPS",
+      "estimatedDelivery": "2024-01-05"
+    },
+    "actionUrl": "https://app.example.com/orders/ORD-12345"
+  }
+}
+
+###
+
+### 15. Comment Notification
+POST {{notificationUrl}}/send
+Content-Type: application/json
+
+{
+  "type": "in_app",
+  "priority": "low",
+  "inApp": {
+    "userId": "user-456",
+    "title": "New Comment on Your Post",
+    "message": "John Doe commented on your post: 'Great article!'",
+    "metadata": {
+      "postId": "post-789",
+      "commentId": "comment-101",
+      "commenterId": "user-123",
+      "commenterName": "John Doe"
+    },
+    "actionUrl": "https://app.example.com/posts/post-789#comment-101"
+  }
+}
+
+###

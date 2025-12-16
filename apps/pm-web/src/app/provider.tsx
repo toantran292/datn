@@ -2,16 +2,14 @@
 
 import { FC, ReactNode } from "react";
 import { AppProgressProvider as ProgressProvider } from "@bprogress/next";
-import dynamic from "next/dynamic";
-import { useTheme, ThemeProvider } from "next-themes";
+import { useTheme } from "next-themes";
 import { SWRConfig } from "swr";
-// Plane Imports
 import { WEB_SWR_CONFIG } from "@uts/constants";
-import { Toast } from "@uts/design-system/ui";
-//helpers
+import { AppHeaderProvider, Toast } from "@uts/design-system/ui";
+
 import { resolveGeneralTheme } from "@uts/fe-utils";
-// polyfills
-// import "@/lib/polyfills";
+import { useRouter } from "next/navigation";
+
 
 export interface IAppProvider {
   children: ReactNode;
@@ -24,20 +22,21 @@ const ToastWithTheme = () => {
 
 export const AppProvider: FC<IAppProvider> = (props) => {
   const { children } = props;
-  // themes
+  const router = useRouter();
+
   return (
     <>
-      <ProgressProvider
-        height="4px"
-        color="rgb(var(--color-primary-100))"
-        options={{ showSpinner: false }}
-        shallowRouting
-      >
-        <ThemeProvider themes={["light", "dark", "light-contrast", "dark-contrast", "custom"]} defaultTheme="light">
+      <AppHeaderProvider currentApp="pm" navigateTo={(path: string) => router.push(path)}>
+        <ProgressProvider
+          height="4px"
+          color="rgb(var(--color-primary-100))"
+          options={{ showSpinner: false }}
+          shallowRouting
+        >
           <ToastWithTheme />
           <SWRConfig value={WEB_SWR_CONFIG}>{children}</SWRConfig>
-        </ThemeProvider>
-      </ProgressProvider>
+        </ProgressProvider>
+      </AppHeaderProvider>
     </>
   );
 };

@@ -1,0 +1,44 @@
+% UC03: Đăng xuất
+\paragraph{Chức năng đăng xuất}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/uc03_logout.png}
+    \caption{Sơ đồ use case chức năng đăng xuất}
+    \label{fig:uc03_logout}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Bảng đặc tả chức năng đăng xuất},
+    label = {tab:uc03}
+]{
+    colspec = {|l|X|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+Tên chức năng & Đăng xuất \\
+ID & UC03 \\
+Mức độ cần thiết & Bắt buộc \\
+Người sử dụng & Người dùng đã đăng nhập vào hệ thống \\
+Phân loại & Đơn giản \\
+Các thành phần tham gia và mối quan tâm & \textbf{Người dùng:} Muốn kết thúc phiên làm việc an toàn. \\
+Mô tả tóm tắt & Chức năng cho phép người dùng đăng xuất khỏi hệ thống, hủy phiên làm việc hiện tại. \\
+Trigger & Người dùng nhấn nút "Đăng xuất" trong menu. \\
+Kiểu sự kiện & External \\
+Luồng xử lý bình thường &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{enumerate}[nosep, leftmargin=*]
+    \item Người dùng nhấn nút "Đăng xuất" trong menu người dùng.
+    \item Hệ thống hủy phiên làm việc hiện tại.
+    \item Hệ thống ghi audit log.
+    \item Hệ thống chuyển hướng đến trang đăng nhập.
+\end{enumerate}
+\vspace{2pt}
+\end{minipage} \\
+Các luồng sự kiện con & N/A \\
+Luồng luân phiên/đặc biệt & N/A \\
+Kết quả & Người dùng đăng xuất thành công và được chuyển về trang đăng nhập. \\
+\end{longtblr}

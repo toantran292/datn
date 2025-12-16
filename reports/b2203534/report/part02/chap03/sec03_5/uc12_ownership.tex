@@ -1,0 +1,60 @@
+% UC12: Chuyển quyền sở hữu
+\subsubsection{Chức năng chuyển quyền sở hữu Work\-space (UC12)}
+
+\begin{itemize}
+    \item \textbf{Mục đích:} Cho phép Owner chuyển quyền sở hữu work\-space cho thành viên khác.
+\end{itemize}
+
+\begin{itemize}
+    \item \textbf{Giao diện:}
+\end{itemize}
+
+Chức năng được tích hợp trong giao diện quản lý thành viên (UC11), thông qua menu Actions của từng thành viên.
+
+\begin{itemize}
+    \item \textbf{Các thành phần trong giao diện:}
+\end{itemize}
+
+\begin{longtblr}[
+    caption = {Các thành phần trong giao diện chuyển quyền sở hữu},
+    label = {tab:ui_uc12}
+]{
+    colspec = {|c|l|l|X|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+STT & Loại & Tên thành phần & Nội dung thực hiện \\
+1 & Button & Transfer Ownership & Mở dialog xác nhận chuyển quyền \\
+2 & Dialog & Confirmation & Xác nhận hành động chuyển quyền sở hữu \\
+3 & Button & Confirm & Xác nhận và thực hiện chuyển quyền \\
+\end{longtblr}
+
+\begin{itemize}
+    \item \textbf{Dữ liệu được dùng:}
+\end{itemize}
+
+\begin{longtblr}[
+    caption = {Dữ liệu cho chức năng chuyển quyền sở hữu},
+    label = {tab:data_uc12}
+]{
+    colspec = {|c|X|c|c|c|c|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+STT & Tên bảng & Thêm & Sửa & Xóa & Truy vấn \\
+1 & Work\-space\-Member & & X & & X \\
+2 & AuditLog & X & & & \\
+\end{longtblr}
+
+\begin{itemize}
+    \item \textbf{Xử lý:}
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\textwidth]{part02/chap03/sec03_5/uc12_ownership_activity.png}
+    \caption{Sơ đồ hoạt động chức năng chuyển quyền sở hữu}
+    \label{fig:act_uc12_ownership}
+\end{figure}

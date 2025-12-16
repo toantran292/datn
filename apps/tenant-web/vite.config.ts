@@ -5,6 +5,12 @@
 
   export default defineConfig({
     plugins: [react()],
+    define: {
+      'process.env.NEXT_PUBLIC_API_BASE_URL': JSON.stringify(process.env.VITE_API_BASE_URL || ''),
+      'process.env.NEXT_PUBLIC_API_BASE_PATH': JSON.stringify(process.env.VITE_API_BASE_PATH || ''),
+      'process.env.NEXT_PUBLIC_WEB_BASE_URL': JSON.stringify(process.env.VITE_WEB_BASE_URL || ''),
+      'process.env.NEXT_PUBLIC_WEB_BASE_PATH': JSON.stringify(process.env.VITE_WEB_BASE_PATH || ''),
+    },
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
       alias: {
@@ -46,6 +52,8 @@
         '@radix-ui/react-aspect-ratio@1.1.2': '@radix-ui/react-aspect-ratio',
         '@radix-ui/react-alert-dialog@1.1.6': '@radix-ui/react-alert-dialog',
         '@radix-ui/react-accordion@1.2.3': '@radix-ui/react-accordion',
+        '@uts/design-system/ui': path.resolve(__dirname, '../../packages/design-system/ui'),
+        '@uts/types': path.resolve(__dirname, '../../packages/types'),
         '@': path.resolve(__dirname, './src'),
       },
     },

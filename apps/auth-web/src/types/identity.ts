@@ -6,6 +6,7 @@ export type Org = {
   display_name: string;
   slug: string;
   role: "OWNER" | "ADMIN" | "MEMBER";
+  logo_url?: string;
 };
 
 export type Invite = {

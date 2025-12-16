@@ -1,0 +1,65 @@
+% UC11: Quản lý thành viên
+\paragraph{Chức năng quản lý thành viên}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/uc11_members.png}
+    \caption{Sơ đồ use case chức năng quản lý thành viên}
+    \label{fig:uc11_members}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Bảng đặc tả chức năng quản lý thành viên},
+    label = {tab:uc11}
+]{
+    colspec = {|l|X|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+Tên chức năng & Quản lý thành viên \\
+ID & UC11 \\
+Mức độ cần thiết & Bắt buộc \\
+Người sử dụng & Owner hoặc Admin của Work\-space \\
+Phân loại & Phức tạp \\
+Các thành phần tham gia và mối quan tâm & \textbf{Owner/Admin:} Muốn mời, xóa, phân quyền và xem danh sách thành viên trong work\-space. \\
+Mô tả tóm tắt & Chức năng cho phép quản lý toàn bộ thành viên trong work\-space bao gồm mời, xóa, phân quyền và xem danh sách. \\
+Trigger & Owner/Admin truy cập trang quản lý thành viên. \\
+Kiểu sự kiện & External \\
+Luồng xử lý bình thường &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{enumerate}[nosep, leftmargin=*]
+    \item Owner/Admin truy cập trang quản lý thành viên.
+    \item Hệ thống hiển thị danh sách thành viên hiện tại.
+    \item Owner/Admin chọn thao tác: mời, xóa hoặc phân quyền.
+    \item Hệ thống thực hiện thao tác được chọn.
+    \item Hệ thống gửi thông báo/email cho người liên quan.
+    \item Hệ thống ghi audit log và cập nhật danh sách.
+\end{enumerate}
+\vspace{2pt}
+\end{minipage} \\
+Các luồng sự kiện con &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item Mời thành viên: Nhập email, chọn vai trò, gửi email mời.
+    \item Xóa thành viên: Xác nhận và xóa khỏi work\-space.
+    \item Phân quyền: Thay đổi vai trò của thành viên.
+    \item Xem danh sách: Hiển thị tất cả thành viên với thông tin vai trò.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Luồng luân phiên/đặc biệt &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item 3a. Email không hợp lệ: Thông báo lỗi định dạng email.
+    \item 3b. Không thể xóa Owner: Yêu cầu chuyển quyền trước.
+    \item 3c. Admin không thể phân quyền Admin khác: Thông báo không đủ quyền.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Kết quả & Thao tác quản lý thành viên được thực hiện thành công. \\
+\end{longtblr}

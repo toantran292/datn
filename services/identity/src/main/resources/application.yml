@@ -54,7 +54,7 @@ logging:
     console: '%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr(${PID:- }){magenta} %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx'
 
 cors:
-  allowed-origins: http://localhost:3000,http://localhost:3001
+  allowed-origins: http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003
   allowed-methods: GET,POST,PUT,DELETE,OPTIONS,PATCH
   allowed-headers: "*"
   allow-credentials: true
@@ -65,6 +65,9 @@ uts:
   cookie:
     domain: localhost         # prod: .unifiedteamspace.com
     secure: false             # prod: true
-    access-ttl-seconds: 900   # 15 minutes
-    refresh-enabled: true     # Enable refresh tokens
-    refresh-ttl-seconds: 2592000  # 30 days
+    access-ttl-seconds: 15552000   # 180 days
+    refresh-enabled: false     # Enable refresh tokens
+    refresh-ttl-seconds: 15552000  # 180 days
+
+file-storage:
+  base-url: ${FILE_STORAGE_BASE_URL:http://file-storage-api:3000}  # For Docker: http://file-storage-api:3000

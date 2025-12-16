@@ -1,0 +1,57 @@
+\subsection{Phân tích đánh giá các giải pháp}
+
+Để xây dựng ứng dụng SaaS Platform tích hợp AI cho quản lý workspace, em đã lựa chọn giải pháp dựa trên các tiêu chí: hiệu suất, khả năng mở rộng, tính tương thích và trải nghiệm người dùng. Cụ thể:
+
+\begin{itemize}
+    \item \textbf{Ngôn ngữ và nền tảng phát triển}
+    \begin{itemize}
+        \item \textbf{Java 17+:} Cho Account Service với Spring Boot, đảm bảo bảo mật cao cho authen\-tication.
+        \item \textbf{TypeScript:} Cho Frontend (Next.js) và Backend services khác (NestJS).
+    \end{itemize}
+
+    \item \textbf{Frontend Framework}
+    \begin{itemize}
+        \item \textbf{React.js/Next.js:} Xây dựng giao diện hiện đại, tái sử dụng component. Next.js hỗ trợ SSR và SSG để tối ưu SEO và tốc độ tải trang.
+    \end{itemize}
+
+    \item \textbf{Backend Framework}
+    \begin{itemize}
+        \item \textbf{Spring Boot 3.x (Account Service):} Framework Java enter\-prise-grade cho authen\-tication và user management. Spring Security cung cấp JWT authen\-tication và OAuth 2.0 integration với Google.
+        \item \textbf{NestJS (Other Services):} Framework Node.js cho Workspace, Member, File, Noti\-fication, Report services. NestJS cung cấp kiến trúc module hóa, dependency injection và TypeScript native support.
+    \end{itemize}
+
+    \item \textbf{Web Server và Reverse Proxy}
+    \begin{itemize}
+        \item \textbf{Nginx:} Web server hiệu suất cao làm reverse proxy, load balancer và SSL termi\-nation. Nginx routing requests đến các micro\-services tương ứng.
+    \end{itemize}
+
+    \item \textbf{Quản lý và lưu trữ dữ liệu}
+    \begin{itemize}
+        \item \textbf{PostgreSQL:} CSDL quan hệ mạnh mẽ, hỗ trợ JSONB cho dữ liệu bán cấu trúc, full-text search. Mỗi service có database schema riêng.
+        \item \textbf{Redis:} Caching layer tăng tốc truy vấn và lưu session, giảm tải cho database chính.
+    \end{itemize}
+
+    \item \textbf{Object Storage (File Storage)}
+    \begin{itemize}
+        \item \textbf{MinIO (Development):} S3-compatible object storage chạy local trong Docker, cho phép development và testing offline.
+        \item \textbf{AWS S3 (Production):} Object storage với high durability và availability cho production environment.
+    \end{itemize}
+
+    \item \textbf{Tích hợp AI/LLM}
+    \begin{itemize}
+        \item \textbf{OpenAI API (GPT-4):} Xử lý ngôn ngữ tự nhiên mạnh mẽ, phù hợp tạo báo cáo tổng hợp, trích xuất insights.
+        \item \textbf{Anthropic Claude API:} Alternative cho OpenAI với khả năng xử lý context dài, phù hợp phân tích tài liệu lớn.
+    \end{itemize}
+
+    \item \textbf{Authentication và Authorization}
+    \begin{itemize}
+        \item \textbf{JWT + OAuth 2.0:} JWT cho xác thực stateless, OAuth 2.0 cho tích hợp Google OAuth. Kết hợp RBAC (Role-Based Access Control) quản lý phân quyền.
+    \end{itemize}
+
+    \item \textbf{Real-time Communication}
+    \begin{itemize}
+        \item \textbf{WebSocket (NestJS):} Cho phép cập nhật real-time cho noti\-fications, dashboard metrics và colla\-borative features.
+    \end{itemize}
+\end{itemize}
+
+\textbf{Đánh giá tổng quan:} Kết hợp các công nghệ trên đáp ứng tốt mục tiêu về hiệu năng, trải nghiệm người dùng và khả năng mở rộng của hệ thống. Giải pháp đáp ứng đầy đủ yêu cầu đề tài, đảm bảo tích hợp AI mượt mà, hỗ trợ tối ưu trải nghiệm người dùng, dễ mở rộng chức năng trong tương lai, đồng thời phù hợp xu hướng phát triển web và AI hiện đại.

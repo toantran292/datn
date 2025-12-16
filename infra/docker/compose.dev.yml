@@ -1,7 +1,9 @@
 name: uts-dev
 services:
   postgres:
-    image: postgres:16-alpine
+    build:
+      context: ./postgres
+    image: uts-dev-postgres
     container_name: uts_pg
     restart: unless-stopped
     env_file:
@@ -40,7 +42,7 @@ services:
   minio:
     image: minio/minio:latest
     container_name: uts_minio
-    command: ["server", "/data", "--console-address", ":9001"]
+    command: ["server", "/data", "--address", ":41200", "--console-address", ":41201"]
     restart: unless-stopped
     env_file:
       - .env.dev
@@ -50,10 +52,10 @@ services:
     volumes:
       - minio_data:/data
     ports:
-      - "${MINIO_API_PORT}:9000"
-      - "${MINIO_CONSOLE_PORT}:9001"
+      - "${MINIO_API_PORT}:41200"
+      - "${MINIO_CONSOLE_PORT}:41201"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      test: ["CMD", "curl", "-f", "http://localhost:41200/minio/health/live"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -70,14 +72,15 @@ services:
       - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m
     ulimits:
       memlock: { soft: -1, hard: -1 }
-      nofile:  { soft: 65536, hard: 65536 }
+      nofile: { soft: 65536, hard: 65536 }
     volumes:
       - os_data:/usr/share/opensearch/data
     ports:
       - "${OPENSEARCH_PORT}:9200"
       - "${OS_NODE_PORT}:9600"
     healthcheck:
-      test: ["CMD-SHELL", "curl --silent --fail http://localhost:9200 >/dev/null"]
+      test:
+        ["CMD-SHELL", "curl --silent --fail http://localhost:9200 >/dev/null"]
       interval: 10s
       timeout: 10s
       retries: 30
@@ -96,7 +99,8 @@ services:
     ports:
       - "${OS_DASHBOARDS_PORT}:5601"
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:5601/api/status >/dev/null"]
+      test:
+        ["CMD-SHELL", "curl -sf http://localhost:5601/api/status >/dev/null"]
       interval: 10s
       timeout: 10s
       retries: 30
@@ -123,7 +127,11 @@ services:
       - "${KAFKA_PORT}:19092"
       - "${PANDAPROXY_PORT}:8082"
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:9644/v1/status/ready >/dev/null || exit 1"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:9644/v1/status/ready >/dev/null || exit 1",
+        ]
       interval: 10s
       timeout: 5s
       retries: 30
@@ -143,6 +151,66 @@ services:
       retries: 10
     networks: [uts_net]
 
+  mongodb:
+    image: mongo:7-jammy
+    container_name: uts_mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: file_storage
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    ports:
+      - "${MONGO_PORT}:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [uts_net]
+
+  cassandra:
+    image: cassandra:latest
+    container_name: uts_cassandra
+    restart: unless-stopped
+    environment:
+      CASSANDRA_CLUSTER_NAME: uts-dev
+      CASSANDRA_DC: dc1
+      CASSANDRA_RACK: rack1
+      CASSANDRA_PASSWORD_SEEDER: "yes"     # tạo user/password lần đầu
+      CASSANDRA_USER: cassandra
+      CASSANDRA_PASSWORD: cassandra
+      CASSANDRA_NUM_TOKENS: "256"
+      CASSANDRA_ENDPOINT_SNITCH: GossipingPropertyFileSnitch
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+    ports:
+      - "41600:9042"
+    healthcheck:
+      test: [ "CMD-SHELL", "cqlsh -e 'DESCRIBE KEYSPACES' 127.0.0.1 9042 >/dev/null 2>&1 || exit 1" ]
+      interval: 15s
+      timeout: 10s
+      retries: 30
+    networks: [ uts_net ]
+
+  cass_init:
+    image: cassandra:latest
+    container_name: uts_cassandra_init
+    depends_on:
+      cassandra:
+        condition: service_healthy
+    entrypoint: [ "/bin/bash","-lc" ]
+    command:
+      - |
+        cqlsh cassandra 9042 -e "
+        CREATE KEYSPACE IF NOT EXISTS chat
+        WITH replication = {'class': 'SimpleStrategy','replication_factor': 1}
+        AND durable_writes = true;"
+    networks: [ uts_net ]
+    restart: "no"
+
   tenant-bff:
     build:
       context: ../../services/tenant-bff
@@ -151,20 +219,161 @@ services:
     restart: unless-stopped
     volumes:
       - ../../services/tenant-bff:/app
-      - /app/node_modules
+      - tenant_bff_node_modules:/app/node_modules
     environment:
       NODE_ENV: development
       PORT: 3000
       BFF_HMAC_SECRET: ${BFF_HMAC_SECRET:-please-change}
       CLOCK_SKEW_SEC: 300
       REPLAY_TTL_SEC: 60
-      IDENTITY_BASE_URL: http://identity:40000
+      IDENTITY_BASE_URL: http://identity:3000
       SERVICE_TIMEOUT_MS: 3500
       CACHE_TTL_SEC: 60
     expose:
       - "3000"
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:3000/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 15s
+    networks: [uts_net]
+
+  pm:
+    build:
+      context: ../../services/pm
+      dockerfile: Dockerfile.dev
+    container_name: uts_pm
+    restart: unless-stopped
+    volumes:
+      - ../../services/pm:/app
+      - pm_node_modules:/app/node_modules
+    environment:
+      NODE_ENV: development
+      PORT: ${PM_PORT}
+      DATABASE_HOST: ${PM_DATABASE_HOST}
+      DATABASE_PORT: ${PM_DATABASE_PORT}
+      DATABASE_USER: ${PM_DATABASE_USER}
+      DATABASE_PASSWORD: ${PM_DATABASE_PASSWORD}
+      DATABASE_NAME: ${PM_DATABASE_NAME}
+      DATABASE_URL: ${PM_DATABASE_URL}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:${PM_PORT}/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 15s
+    networks: [uts_net]
+
+  chat-api:
+    build:
+      context: ../../services/chat
+      dockerfile: Dockerfile.dev
+    container_name: uts_chat_api
+    restart: unless-stopped
+    volumes:
+      - ../../services/chat/src:/app/src
+      - ../../services/chat/db:/app/db
+      - ../../services/chat/test:/app/test
+      - chat_node_modules:/app/node_modules
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      CASSANDRA_CONTACT_POINTS: cassandra
+      CASSANDRA_LOCAL_DATA_CENTER: dc1
+      CASSANDRA_KEYSPACE: chat
+      CASSANDRA_PORT: 9042
+      CASSANDRA_USER: cassandra
+      CASSANDRA_PASSWORD: cassandra
+    depends_on:
+      cassandra: { condition: service_healthy }
+      cass_init: { condition: service_completed_successfully }
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:3000/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 15s
+    networks: [uts_net]
+
+  notification-api:
+    build:
+      context: ../../services/notification
+      dockerfile: Dockerfile.dev
+    container_name: uts_notification_api
+    restart: unless-stopped
+    volumes:
+      - ../../services/notification/src:/app/src
+      - notification_node_modules:/app/node_modules
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      SMTP_HOST: mailhog
+      SMTP_PORT: 1025
+      SMTP_SECURE: "false"
+      EMAIL_FROM: noreply@uts.local
+    depends_on:
+      mailhog: { condition: service_healthy }
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/notifications/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 15s
+    networks: [uts_net]
+
+  file-storage-api:
+    build:
+      context: ../../services/file-storage
+      dockerfile: Dockerfile.dev
+    container_name: uts_file_storage_api
+    restart: unless-stopped
+    volumes:
+      - ../../services/file-storage/src:/app/src
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: ${MINIO_PORT}
+      MINIO_USE_SSL: "false"
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      MINIO_DEFAULT_BUCKET: files
+      MINIO_REGION: us-east-1
+      MONGODB_URI: mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongodb:27017/file_storage?authSource=admin
+    depends_on:
+      minio: { condition: service_healthy }
+      mongodb: { condition: service_healthy }
+    ports:
+      - "${FILE_STORAGE_PORT}:3000"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/files/health"]
       interval: 30s
       timeout: 10s
       retries: 10
@@ -185,6 +394,9 @@ services:
     depends_on:
       identity: { condition: service_started }
       tenant-bff: { condition: service_started }
+      chat-api: { condition: service_started }
+      notification-api: { condition: service_started }
+      file-storage-api: { condition: service_started }
     ports: [ "8080:80" ]
     networks: [uts_net]
 
@@ -208,18 +420,25 @@ services:
       - GOOGLE_CLIENT_ID=${IDENTITY_GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${IDENTITY_GOOGLE_CLIENT_SECRET}
       - SPRING_OUTPUT_ANSI_ENABLED=ALWAYS
+      - FILE_STORAGE_BASE_URL=${FILE_STORAGE_BASE_URL:-http://file-storage-api:3000}
     volumes:
       - ../../services/identity/src:/app/src:ro
       - ../../services/identity/build.gradle.kts:/app/build.gradle.kts:ro
       - gradle_cache:/home/gradle/.gradle
-    ports:
-      - "${IDENTITY_PORT}:40000"
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
       redpanda: { condition: service_healthy }
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:40000/actuator/health"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8080/actuator/health",
+        ]
       interval: 30s
       timeout: 10s
       retries: 10
@@ -230,8 +449,16 @@ networks:
   uts_net: {}
 
 volumes:
+  file_storage_node_modules:
+  notification_node_modules:
+  tenant_bff_node_modules:
+  chat_node_modules:
   pg_data:
   redis_data:
   minio_data:
+  mongodb_data:
+  mongodb_config:
   os_data:
   gradle_cache:
+  cassandra_data:
+  pm_node_modules:

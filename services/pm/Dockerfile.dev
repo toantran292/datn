@@ -1,0 +1,32 @@
+# syntax=docker/dockerfile:1
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Cài đặt dependencies cần thiết cho Prisma và wget cho healthcheck
+RUN apk add --no-cache openssl libc6-compat wget
+
+# Bật corepack để dùng pnpm
+RUN corepack enable
+
+# Set environment
+ENV NODE_ENV=development
+
+# Expose port
+EXPOSE 3000
+
+# Script để install dependencies và start app
+# Kiểm tra xem có package trong node_modules chưa
+CMD sh -c "\
+  if [ ! -f 'node_modules/.pnpm/lock.yaml' ]; then \
+    echo 'Installing dependencies...' && \
+    pnpm install; \
+  fi && \
+  if [ -f 'prisma/schema.prisma' ]; then \
+    echo 'Generating Prisma Client...' && \
+    pnpm prisma generate; \
+  fi && \
+  echo 'Migrating database...' && \
+  pnpm prisma migrate deploy && \
+  echo 'Starting application...' && \
+  pnpm run start:dev"

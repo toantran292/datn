@@ -1,0 +1,363 @@
+% Biến kiểm soát
+\newif\iflandscapepage
+\landscapepagefalse
+
+\setlength{\TPHorizModule}{1cm}
+\setlength{\TPVertModule}{1cm}
+
+\fancypagestyle{lscape}{%
+    \fancyhf{}
+    \renewcommand{\headrulewidth}{0pt}
+    \renewcommand{\footrulewidth}{0pt}
+    \fancyhead[C]{%
+        % Header bên trái trang (trên của landscape) - xoay 90 độ
+        \begin{textblock}{1}(1,1)
+            \rotatebox{90}{%
+                \parbox{27.5cm}{%
+                    \fontsize{10pt}{12pt}\selectfont\itshape
+                    Xây dựng Nền tảng SaaS tích hợp AI nhằm Thống nhất Quản lý Dự án Agile - Phân hệ nền tảng và thông tin
+                    \vspace{2pt}
+                    \hrule
+                }%
+            }
+        \end{textblock}
+        % Footer bên phải trang (dưới của landscape) - xoay 90 độ
+        \begin{textblock}{1}(20,1)
+            \rotatebox{90}{%
+                \parbox{27.5cm}{%
+                    \hrule
+                    \vspace{2pt}
+                    Trần Thái Toàn - B2203534 \hfill Trang \thepage
+                }%
+            }
+        \end{textblock}
+    }
+}
+
+\begin{landscape}
+\pagestyle{lscape}
+
+\phantomsection
+\setsection{Phụ lục B. Từ điển dữ liệu}
+\setcounter{section}{6}
+\setcounter{table}{0}
+\renewcommand{\thetable}{6.\arabic{table}}
+
+Phần này trình bày chi tiết mô tả dữ liệu cho các bảng của sơ đồ lớp của ứng dụng SaaS Platform được trình bày ở Phần II - Chương III - Thiết kế cơ sở dữ liệu - Từ điển dữ liệu.
+
+\phantomsection
+\begin{longtblr}[
+  caption = {Bảng users - Lưu trữ thông tin người dùng},
+  label = {tab:dict_users}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[1,l]X[0.7,c]X[0.7,c]X[0.7,c]X[0.7,c]X[1.2,l]X[2,l]},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Tên trường & Kiểu dữ liệu & Khóa chính & Khóa ngoại & Duy nhất & Bắt buộc & Bảng tham chiếu & Mô tả \\
+user\_id & UUID & X & & X & X & & Mã tài khoản người dùng \\
+name & String & & & & X & & Họ và tên người dùng \\
+email & String & & & X & X & & Email đăng ký \\
+password\_hash & String & & & & & & Mật khẩu đã mã hóa \\
+avatar\_url & String & & & & & & URL ảnh đại diện \\
+oauth\_provider & String & & & & & & Nhà cung cấp OAuth \\
+oauth\_id & String & & & & & & ID từ OAuth provider \\
+email\_verified & Boolean & & & & & & Trạng thái xác thực email \\
+is\_active & Boolean & & & & & & Trạng thái tài khoản \\
+last\_login\_at & Timestamp & & & & & & Thời điểm đăng nhập cuối \\
+created\_at & Timestamp & & & & X & & Ngày tạo tài khoản \\
+updated\_at & Timestamp & & & & X & & Ngày cập nhật gần nhất \\
+\end{longtblr}
+
+\phantomsection
+\begin{longtblr}[
+  caption = {Bảng workspaces - Lưu trữ thông tin workspace},
+  label = {tab:dict_workspaces}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[1,l]X[0.7,c]X[0.7,c]X[0.7,c]X[0.7,c]X[1.2,l]X[2,l]},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Tên trường & Kiểu dữ liệu & Khóa chính & Khóa ngoại & Duy nhất & Bắt buộc & Bảng tham chiếu & Mô tả \\
+workspace\_id & UUID & X & & X & X & & Mã workspace \\
+owner\_id & UUID & & X & & X & users & User ID chủ sở hữu \\
+name & String & & & & X & & Tên workspace \\
+description & String & & & & & & Mô tả workspace \\
+logo\_url & String & & & & & & URL logo workspace \\
+settings & JSONB & & & & & & Cấu hình tùy chỉnh \\
+storage\_limit & BigInt & & & & & & Giới hạn dung lượng \\
+member\_limit & Integer & & & & & & Số thành viên tối đa \\
+is\_active & Boolean & & & & & & Trạng thái hoạt động \\
+deleted\_at & Timestamp & & & & & & Timestamp soft delete \\
+created\_at & Timestamp & & & & X & & Ngày tạo workspace \\
+updated\_at & Timestamp & & & & X & & Ngày cập nhật gần nhất \\
+\end{longtblr}
+
+\phantomsection
+\begin{longtblr}[
+  caption = {Bảng workspace\_members - Lưu trữ quan hệ user và workspace},
+  label = {tab:dict_workspace_members}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[1,l]X[0.7,c]X[0.7,c]X[0.7,c]X[0.7,c]X[1.2,l]X[2,l]},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Tên trường & Kiểu dữ liệu & Khóa chính & Khóa ngoại & Duy nhất & Bắt buộc & Bảng tham chiếu & Mô tả \\
+member\_id & UUID & X & & X & X & & Mã quan hệ thành viên \\
+user\_id & UUID & & X & & X & users & User tham gia workspace \\
+workspace\_id & UUID & & X & & X & workspaces & Workspace được tham gia \\
+role & Enum & & & & X & & Vai trò (OWNER, ADMIN, MEMBER) \\
+joined\_at & Timestamp & & & & X & & Thời điểm tham gia \\
+created\_at & Timestamp & & & & X & & Ngày tạo record \\
+updated\_at & Timestamp & & & & X & & Ngày cập nhật gần nhất \\
+\end{longtblr}
+
+\phantomsection
+\begin{longtblr}[
+  caption = {Bảng permissions - Lưu trữ quyền chi tiết của thành viên},
+  label = {tab:dict_permissions}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[1,l]X[0.7,c]X[0.7,c]X[0.7,c]X[0.7,c]X[1.2,l]X[2,l]},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Tên trường & Kiểu dữ liệu & Khóa chính & Khóa ngoại & Duy nhất & Bắt buộc & Bảng tham chiếu & Mô tả \\
+permission\_id & UUID & X & & X & X & & Mã quyền \\
+member\_id & UUID & & X & & X & workspace\_members & Member sở hữu quyền \\
+resource\_type & String & & & & X & & Loại resource \\
+resource\_id & UUID & & & & X & & ID của resource \\
+actions & JSONB & & & & X & & Array các actions được phép \\
+created\_at & Timestamp & & & & X & & Ngày tạo quyền \\
+updated\_at & Timestamp & & & & X & & Ngày cập nhật gần nhất \\
+\end{longtblr}
+
+\phantomsection
+\begin{longtblr}[
+  caption = {Bảng folders - Lưu trữ thông tin cấu trúc thư mục},
+  label = {tab:dict_folders}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[1,l]X[0.7,c]X[0.7,c]X[0.7,c]X[0.7,c]X[1.2,l]X[2,l]},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Tên trường & Kiểu dữ liệu & Khóa chính & Khóa ngoại & Duy nhất & Bắt buộc & Bảng tham chiếu & Mô tả \\
+folder\_id & UUID & X & & X & X & & Mã thư mục \\
+workspace\_id & UUID & & X & & X & workspaces & Workspace chứa folder \\
+parent\_id & UUID & & X & & & folders & Thư mục cha \\
+name & String & & & & X & & Tên thư mục \\
+path & String & & & & X & & Đường dẫn đầy đủ \\
+created\_at & Timestamp & & & & X & & Ngày tạo thư mục \\
+updated\_at & Timestamp & & & & X & & Ngày cập nhật gần nhất \\
+\end{longtblr}
+
+\phantomsection
+\begin{longtblr}[
+  caption = {Bảng files - Lưu trữ metadata của files},
+  label = {tab:dict_files}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[1,l]X[0.7,c]X[0.7,c]X[0.7,c]X[0.7,c]X[1.2,l]X[2,l]},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Tên trường & Kiểu dữ liệu & Khóa chính & Khóa ngoại & Duy nhất & Bắt buộc & Bảng tham chiếu & Mô tả \\
+file\_id & UUID & X & & X & X & & Mã file \\
+workspace\_id & UUID & & X & & X & workspaces & Workspace chứa file \\
+folder\_id & UUID & & X & & & folders & Thư mục chứa file \\
+uploaded\_by & UUID & & X & & X & users & User upload file \\
+name & String & & & & X & & Tên file \\
+size & BigInt & & & & X & & Kích thước file (bytes) \\
+mime\_type & String & & & & X & & Loại MIME của file \\
+s3\_key & String & & & & X & & Key truy xuất object \\
+version & Integer & & & & & & Số phiên bản file \\
+checksum & String & & & & X & & SHA-256 checksum \\
+deleted\_at & Timestamp & & & & & & Timestamp soft delete \\
+created\_at & Timestamp & & & & X & & Thời điểm upload \\
+updated\_at & Timestamp & & & & X & & Ngày cập nhật gần nhất \\
+\end{longtblr}
+
+\phantomsection
+\begin{longtblr}[
+  caption = {Bảng file\_shares - Lưu trữ thông tin chia sẻ file},
+  label = {tab:dict_file_shares}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[1,l]X[0.7,c]X[0.7,c]X[0.7,c]X[0.7,c]X[1.2,l]X[2,l]},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Tên trường & Kiểu dữ liệu & Khóa chính & Khóa ngoại & Duy nhất & Bắt buộc & Bảng tham chiếu & Mô tả \\
+share\_id & UUID & X & & X & X & & Mã chia sẻ \\
+file\_id & UUID & & X & & X & files & File được chia sẻ \\
+shared\_by & UUID & & X & & X & users & User thực hiện chia sẻ \\
+shared\_with & UUID & & X & & & users & User nhận chia sẻ \\
+public\_link\_token & String & & & & & & Token cho public link \\
+permissions & String & & & & X & & Quyền chia sẻ \\
+expires\_at & Timestamp & & & & & & Thời hạn chia sẻ \\
+created\_at & Timestamp & & & & X & & Thời điểm tạo share \\
+\end{longtblr}
+
+\phantomsection
+\begin{longtblr}[
+  caption = {Bảng notifications - Lưu trữ thông báo của người dùng},
+  label = {tab:dict_notifications}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[1,l]X[0.7,c]X[0.7,c]X[0.7,c]X[0.7,c]X[1.2,l]X[2,l]},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Tên trường & Kiểu dữ liệu & Khóa chính & Khóa ngoại & Duy nhất & Bắt buộc & Bảng tham chiếu & Mô tả \\
+notification\_id & UUID & X & & X & X & & Mã thông báo \\
+user\_id & UUID & & X & & X & users & User nhận thông báo \\
+workspace\_id & UUID & & X & & & workspaces & Workspace liên quan \\
+type & String & & & & X & & Loại thông báo \\
+title & String & & & & X & & Tiêu đề thông báo \\
+message & String & & & & X & & Nội dung chi tiết \\
+metadata & JSONB & & & & & & Dữ liệu bổ sung \\
+read\_at & Timestamp & & & & & & Thời điểm đã đọc \\
+created\_at & Timestamp & & & & X & & Thời điểm tạo \\
+\end{longtblr}
+
+\phantomsection
+\begin{longtblr}[
+  caption = {Bảng reports - Lưu trữ báo cáo được tạo bởi AI},
+  label = {tab:dict_reports}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[1,l]X[0.7,c]X[0.7,c]X[0.7,c]X[0.7,c]X[1.2,l]X[2,l]},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Tên trường & Kiểu dữ liệu & Khóa chính & Khóa ngoại & Duy nhất & Bắt buộc & Bảng tham chiếu & Mô tả \\
+report\_id & UUID & X & & X & X & & Mã báo cáo \\
+workspace\_id & UUID & & X & & X & workspaces & Workspace chứa báo cáo \\
+generated\_by & UUID & & X & & X & users & User tạo báo cáo \\
+title & String & & & & X & & Tiêu đề báo cáo \\
+description & String & & & & & & Mô tả báo cáo \\
+content & JSONB & & & & X & & Nội dung báo cáo \\
+llm\_provider & String & & & & X & & LLM provider sử dụng \\
+prompt\_template & String & & & & X & & Template prompt \\
+tokens\_used & Integer & & & & X & & Số tokens tiêu thụ \\
+version & Integer & & & & & & Phiên bản báo cáo \\
+created\_at & Timestamp & & & & X & & Thời điểm tạo \\
+\end{longtblr}
+
+\phantomsection
+\begin{longtblr}[
+  caption = {Bảng audit\_logs - Lưu trữ lịch sử thao tác của người dùng},
+  label = {tab:dict_audit_logs}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[1,l]X[0.7,c]X[0.7,c]X[0.7,c]X[0.7,c]X[1.2,l]X[2,l]},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Tên trường & Kiểu dữ liệu & Khóa chính & Khóa ngoại & Duy nhất & Bắt buộc & Bảng tham chiếu & Mô tả \\
+log\_id & UUID & X & & X & X & & Mã log \\
+user\_id & UUID & & X & & & users & User thực hiện action \\
+workspace\_id & UUID & & X & & & workspaces & Workspace liên quan \\
+entity\_type & String & & & & X & & Loại entity bị tác động \\
+entity\_id & UUID & & & & X & & ID entity bị tác động \\
+action & String & & & & X & & Hành động thực hiện \\
+changes & JSONB & & & & X & & Before/after values \\
+ip\_address & String & & & & & & Địa chỉ IP \\
+user\_agent & String & & & & & & User agent string \\
+created\_at & Timestamp & & & & X & & Thời điểm action \\
+\end{longtblr}
+
+\end{landscape}
+\pagestyle{fancy}
+
+\phantomsection
+\subsection*{Các yêu cầu ràng buộc cần thiết khi xử lý dữ liệu}
+
+Phần này mô tả các ràng buộc dữ liệu cần được đảm bảo khi xử lý và lưu trữ thông tin trong hệ thống SaaS Platform.
+
+\subsubsection*{Ràng buộc dữ liệu người dùng (Users)}
+
+\begin{itemize}
+    \item Thuộc tính \texttt{email} phải khác rỗng, duy nhất trong hệ thống, và đúng định dạng email hợp lệ.
+    \item Thuộc tính \texttt{password\_\-hash} phải khác rỗng, được mã hóa bằng thuật toán Bcrypt với salt factor tối thiểu 12.
+    \item Thuộc tính \texttt{role} phải có một trong các giá trị được định nghĩa trước: SUPER\_\-ADMIN, WORKSPACE\_\-OWNER, MEMBER.
+    \item Thuộc tính \texttt{oauth\_\-provider} chỉ chấp nhận giá trị 'google' hoặc null nếu không sử dụng OAuth.
+    \item Thuộc tính \texttt{email\_\-verified} phải là giá trị boolean, mặc định là false khi tạo tài khoản mới.
+    \item Thuộc tính \texttt{is\_\-active} phải là giá trị boolean, mặc định là true khi tạo tài khoản mới.
+\end{itemize}
+
+\subsubsection*{Ràng buộc dữ liệu workspace (Workspaces)}
+
+\begin{itemize}
+    \item Thuộc tính \texttt{name} phải khác rỗng và có độ dài tối thiểu 3 ký tự, tối đa 100 ký tự.
+    \item Thuộc tính \texttt{owner\_\-id} phải là UUID hợp lệ và tham chiếu đến một user tồn tại trong hệ thống.
+    \item Thuộc tính \texttt{storage\_\-limit} phải là số nguyên dương, được tính bằng bytes.
+    \item Thuộc tính \texttt{member\_\-limit} phải là số nguyên dương trong khoảng từ 1 đến 1000.
+    \item Thuộc tính \texttt{settings} phải là dữ liệu JSON hợp lệ chứa cấu hình LLM provider, AI prompts, và reten\-tion poli\-cies.
+    \item Thuộc tính \texttt{is\_\-active} phải là giá trị boolean để quản lý trạng thái active/\-suspended.
+    \item Thuộc tính \texttt{deleted\_\-at} cho phép null, sử dụng cho soft delete để có thể khôi phục work\-space.
+\end{itemize}
+
+\subsubsection*{Ràng buộc dữ liệu thành viên (Members)}
+
+\begin{itemize}
+    \item Thuộc tính \texttt{user\_\-id} và \texttt{workspace\_\-id} phải là UUID hợp lệ, tham chiếu đến các bản ghi tồn tại.
+    \item Cặp (\texttt{user\_\-id}, \texttt{workspace\_\-id}) phải duy nhất để tránh dupli\-cate member\-ship.
+    \item Thuộc tính \texttt{role} phải có một trong các giá trị: OWNER, ADMIN, MEMBER.
+    \item Thuộc tính \texttt{permissions} phải là dữ liệu JSONB hợp lệ chứa các quyền chi tiết: read, write, delete, share cho từng re\-source.
+    \item Thuộc tính \texttt{invitation\_\-token} phải là chuỗi ngẫu nhiên duy nhất nếu status là 'pending'.
+    \item Thuộc tính \texttt{invitation\_\-expires\_\-at} phải là time\-stamp trong tương lai nếu có \texttt{invitation\_\-token}.
+\end{itemize}
+
+\subsubsection*{Ràng buộc dữ liệu files (Files)}
+
+\begin{itemize}
+    \item Thuộc tính \texttt{name} phải khác rỗng, có độ dài tối đa 255 ký tự.
+    \item Thuộc tính \texttt{size} phải là số nguyên dương, được tính bằng bytes.
+    \item Thuộc tính \texttt{mime\_\-type} phải khác rỗng và tuân theo chuẩn MIME type.
+    \item Thuộc tính \texttt{s3\_\-key} phải là chuỗi duy nhất để truy xuất object trong S3/\-MinIO.
+    \item Thuộc tính \texttt{version} phải là số nguyên dương, khởi tạo bằng 1 và tăng dần khi cập nhật file.
+    \item Thuộc tính \texttt{checksum} phải là chuỗi SHA-256 hợp lệ để verify file inte\-grity.
+    \item Thuộc tính \texttt{shared\_\-with} phải là mảng các UUID hợp lệ tham chiếu đến users.
+    \item Thuộc tính \texttt{deleted\_\-at} cho phép null, files sẽ bị xóa vĩnh viễn sau 30 ngày kể từ soft delete.
+\end{itemize}
+
+\subsubsection*{Ràng buộc dữ liệu thông báo (Notifications)}
+
+\begin{itemize}
+    \item Thuộc tính \texttt{user\_\-id} phải là UUID hợp lệ tham chiếu đến user nhận thông báo.
+    \item Thuộc tính \texttt{type} phải có một trong các giá trị định nghĩa: member\_\-joined, file\_\-uploaded, mention, settings\_\-changed, workspace\_\-locked.
+    \item Thuộc tính \texttt{title} phải khác rỗng, có độ dài tối đa 200 ký tự.
+    \item Thuộc tính \texttt{message} phải khác rỗng, có độ dài tối đa 1000 ký tự.
+    \item Thuộc tính \texttt{metadata} phải là dữ liệu JSONB hợp lệ chứa các entity IDs liên quan.
+    \item Thuộc tính \texttt{delivery\_\-status} phải có một trong các giá trị: sent, deli\-vered, failed.
+\end{itemize}
+
+\subsubsection*{Ràng buộc dữ liệu báo cáo (Reports)}
+
+\begin{itemize}
+    \item Thuộc tính \texttt{workspace\_\-id} phải là UUID hợp lệ tham chiếu đến work\-space chứa báo cáo.
+    \item Thuộc tính \texttt{title} phải khác rỗng, có độ dài từ 5 đến 200 ký tự.
+    \item Thuộc tính \texttt{content} phải là dữ liệu JSONB hợp lệ chứa sections, insights, recommen\-dations.
+    \item Thuộc tính \texttt{llm\_\-provider} phải có một trong các giá trị: OpenAI, Anthropic, Google.
+    \item Thuộc tính \texttt{tokens\_\-used} phải là số nguyên dương để tracking usage.
+    \item Thuộc tính \texttt{version} phải là số nguyên dương, khởi tạo bằng 1.
+\end{itemize}
+
+\subsubsection*{Ràng buộc dữ liệu audit log (Audit Logs)}
+
+\begin{itemize}
+    \item Thuộc tính \texttt{entity\_\-type} phải có một trong các giá trị: user, work\-space, file, member, notifi\-cation, report.
+    \item Thuộc tính \texttt{entity\_\-id} phải là UUID hợp lệ tham chiếu đến entity bị tác động.
+    \item Thuộc tính \texttt{action} phải có một trong các giá trị: create, update, delete, read.
+    \item Thuộc tính \texttt{changes} phải là dữ liệu JSONB hợp lệ chứa before/\-after values để audit trail đầy đủ.
+    \item Thuộc tính \texttt{ip\_\-address} phải là địa chỉ IPv4 hoặc IPv6 hợp lệ.
+    \item Thuộc tính \texttt{created\_\-at} phải là time\-stamp chính xác của action, không được null.
+\end{itemize}
+
+\subsubsection*{Ràng buộc chung cho toàn hệ thống}
+
+\begin{itemize}
+    \item Mọi bảng phải có primary key là UUID để tránh enume\-ration attacks và đảm bảo tính duy nhất.
+    \item Mọi bảng phải có \texttt{created\_\-at} và \texttt{updated\_\-at} time\-stamps để tracking thời gian tạo và cập nhật.
+    \item Các bảng quan trọng phải có \texttt{deleted\_\-at} time\-stamp để support soft delete, cho phép khôi phục dữ liệu.
+    \item Foreign key con\-straints phải được enforce với ON DELETE CASCADE hoặc RES\-TRICT tùy theo busi\-ness logic.
+    \item Các trường chứa dữ liệu nhạy cảm (pass\-word, tokens, API keys) phải được mã hóa trước khi lưu vào data\-base.
+    \item Dữ liệu JSONB phải được vali\-date schema trước khi lưu để đảm bảo tính toàn vẹn và nhất quán.
+    \item Tất cả các trường bắt buộc (NOT NULL) phải được vali\-date ở appli\-cation layer trước khi insert/\-update.
+    \item Các giá trị enum phải được kiểm tra strict để đảm bảo chỉ chứa các giá trị được định nghĩa.
+\end{itemize}

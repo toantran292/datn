@@ -9,18 +9,20 @@ export interface IIssue {
   projectId: string;
   sprintId: string | null;
   parentId: string | null;
+  statusId: string;
   name: string;
   description: string | null;
   descriptionHtml: string | null;
-  state: TIssueState;
+  state: TIssueState; // Deprecated: use statusId instead
   priority: TIssuePriority;
   type: TIssueType;
   point: number | null;
-  sequenceId: number | null;
+  sequenceId: number;
   sortOrder: number | null;
   startDate: string | null;
   targetDate: string | null;
   assignees: string[];
+  createdBy: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -36,7 +38,6 @@ export interface ICreateIssuePayload {
   name: string;
   description?: string | null;
   descriptionHtml?: string | null;
-  state: TIssueState;
   priority: TIssuePriority;
   type: TIssueType;
   point?: number | null;

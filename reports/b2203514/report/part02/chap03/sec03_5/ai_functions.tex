@@ -1,0 +1,277 @@
+% ==================== NHÓM AI ASSISTANT ====================
+
+% 3.5.14 Hỏi đáp AI (RAG)
+\subsubsection{Chức năng hỏi đáp AI (RAG)}
+
+Mục đích: Cho phép người dùng đặt câu hỏi về nội dung hội thoại và tài liệu trong kênh. AI sử dụng kỹ thuật RAG (Re\-triev\-al-Aug\-ment\-ed Ge\-ne\-ra\-tion) để tìm kiếm thông tin liên quan và sinh câu trả lời với trích dẫn nguồn.
+
+Giao diện:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/ui_ai_assistant_numbered.png}
+\caption{Giao diện chức năng hỏi đáp AI}
+\label{fig:ui_ai_qa}
+\end{figure}
+
+Các thành phần trong giao diện:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|l|p{5.5cm}|}
+\hline
+\textbf{STT} & \textbf{Loại điều khiển} & \textbf{Tên điều khiển} & \textbf{Nội dung thực hiện} \\
+\hline
+1 & Tab & AI Tabs & Chuyển đổi giữa Q\&A/Summary/Actions \\
+\hline
+2 & Textarea & Question Input & Nhập câu hỏi \\
+\hline
+3 & Button & Ask AI & Gửi câu hỏi cho AI \\
+\hline
+4 & Panel & Answer Panel & Hiển thị câu trả lời của AI \\
+\hline
+5 & List & Source Re\-fer\-ences & Hiển thị danh sách nguồn tham khảo \\
+\hline
+6 & Link & Source Link & Link đến tin nhắn/tài liệu nguồn \\
+\hline
+\end{tabular}
+\caption{Bảng các thành phần trong giao diện hỏi đáp AI}
+\label{tab:ui_ai_qa}
+\end{table}
+
+Dữ liệu được dùng:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|c|c|c|c|}
+\hline
+\multirow{2}{*}{\textbf{STT}} & \multirow{2}{*}{\textbf{Tên bảng}} & \multicolumn{4}{c|}{\textbf{Phương thức}} \\
+\cline{3-6}
+& & \textbf{Thêm} & \textbf{Sửa} & \textbf{Xóa} & \textbf{Truy vấn} \\
+\hline
+1 & mes\-sage\_em\-bed\-dings & & & & X \\
+\hline
+2 & document\_chunks & & & & X \\
+\hline
+3 & mes\-sages & & & & X \\
+\hline
+4 & ai\_con\-ver\-sa\-tions & X & & & X \\
+\hline
+\end{tabular}
+\caption{Bảng dữ liệu được dùng cho chức năng hỏi đáp AI}
+\label{tab:func_ai_qa}
+\end{table}
+
+Xử lý:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{part02/chap03/sec03_5/act_ai_qa.png}
+\caption{Sơ đồ hoạt động của chức năng hỏi đáp AI (RAG)}
+\label{fig:act_ai_qa}
+\end{figure}
+
+% 3.5.15 Tóm tắt hội thoại
+\subsubsection{Chức năng tóm tắt hội thoại}
+
+Mục đích: Cho phép người dùng tạo bản tóm tắt các tin nhắn mới trong kênh kể từ lần đọc cuối, giúp nhanh chóng nắm bắt nội dung thảo luận mà không cần đọc từng tin nhắn.
+
+Giao diện:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.55\textwidth]{part02/chap03/sec03_5/ui_ai_summary_numbered.png}
+\caption{Giao diện chức năng tóm tắt hội thoại}
+\label{fig:ui_ai_summary}
+\end{figure}
+
+Các thành phần trong giao diện:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|l|p{5.5cm}|}
+\hline
+\textbf{STT} & \textbf{Loại điều khiển} & \textbf{Tên điều khiển} & \textbf{Nội dung thực hiện} \\
+\hline
+1 & Tab & Summary Tab & Chọn tab tóm tắt \\
+\hline
+2 & Dropdown & Time Range & Chọn khoảng thời gian tóm tắt \\
+\hline
+3 & Button & Generate Summary & Tạo bản tóm tắt \\
+\hline
+4 & Panel & Summary Panel & Hiển thị bản tóm tắt \\
+\hline
+5 & Label & Mes\-sage Count & Hiển thị số tin nhắn được tóm tắt \\
+\hline
+\end{tabular}
+\caption{Bảng các thành phần trong giao diện tóm tắt hội thoại}
+\label{tab:ui_ai_summary}
+\end{table}
+
+Dữ liệu được dùng:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|c|c|c|c|}
+\hline
+\multirow{2}{*}{\textbf{STT}} & \multirow{2}{*}{\textbf{Tên bảng}} & \multicolumn{4}{c|}{\textbf{Phương thức}} \\
+\cline{3-6}
+& & \textbf{Thêm} & \textbf{Sửa} & \textbf{Xóa} & \textbf{Truy vấn} \\
+\hline
+1 & mes\-sages & & & & X \\
+\hline
+2 & threads & & & & X \\
+\hline
+3 & channel\_members & & X & & X \\
+\hline
+4 & ai\_con\-ver\-sa\-tions & X & & & \\
+\hline
+\end{tabular}
+\caption{Bảng dữ liệu được dùng cho chức năng tóm tắt hội thoại}
+\label{tab:func_ai_summary}
+\end{table}
+
+Xử lý:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/act_ai_summary.png}
+\caption{Sơ đồ hoạt động của chức năng tóm tắt hội thoại}
+\label{fig:act_ai_summary}
+\end{figure}
+
+% 3.5.16 Trích xuất action items
+\subsubsection{Chức năng trích xuất action items}
+
+Mục đích: Cho phép AI tự động nhận diện và trích xuất các công việc cần làm (action items) từ cuộc hội thoại, bao gồm thông tin về task, người được giao và độ ưu tiên.
+
+Giao diện:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.45\textwidth]{part02/chap03/sec03_5/ui_ai_actions_numbered.png}
+\caption{Giao diện chức năng trích xuất action items}
+\label{fig:ui_extract_actions}
+\end{figure}
+
+Các thành phần trong giao diện:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|l|p{5.5cm}|}
+\hline
+\textbf{STT} & \textbf{Loại điều khiển} & \textbf{Tên điều khiển} & \textbf{Nội dung thực hiện} \\
+\hline
+1 & Tab & Actions Tab & Chọn tab Action Items \\
+\hline
+2 & Button & Extract Actions & Trích xuất action items \\
+\hline
+3 & List & Action Items List & Hiển thị danh sách action items \\
+\hline
+4 & Checkbox & Complete Check\-box & Đánh dấu hoàn thành \\
+\hline
+5 & Label & As\-sign\-ee & Hiển thị người được giao \\
+\hline
+6 & Badge & Pri\-or\-i\-ty Badge & Hiển thị độ ưu tiên \\
+\hline
+\end{tabular}
+\caption{Bảng các thành phần trong giao diện trích xuất action items}
+\label{tab:ui_extract_actions}
+\end{table}
+
+Dữ liệu được dùng:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|c|c|c|c|}
+\hline
+\multirow{2}{*}{\textbf{STT}} & \multirow{2}{*}{\textbf{Tên bảng}} & \multicolumn{4}{c|}{\textbf{Phương thức}} \\
+\cline{3-6}
+& & \textbf{Thêm} & \textbf{Sửa} & \textbf{Xóa} & \textbf{Truy vấn} \\
+\hline
+1 & mes\-sages & & & & X \\
+\hline
+2 & mentions & & & & X \\
+\hline
+3 & ai\_con\-ver\-sa\-tions & X & & & \\
+\hline
+\end{tabular}
+\caption{Bảng dữ liệu được dùng cho chức năng trích xuất action items}
+\label{tab:func_extract_actions}
+\end{table}
+
+Xử lý:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{part02/chap03/sec03_5/act_extract_actions.png}
+\caption{Sơ đồ hoạt động của chức năng trích xuất action items}
+\label{fig:act_extract_actions}
+\end{figure}
+
+% 3.5.17 Tóm tắt tài liệu đính kèm
+\subsubsection{Chức năng tóm tắt tài liệu đính kèm}
+
+Mục đích: Cho phép người dùng tạo bản tóm tắt nội dung các file đính kèm (PDF, DOCX) trong kênh. AI sẽ trích xuất văn bản, phân tích và tạo bản tóm tắt ngắn gọn.
+
+Giao diện:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/ui_summarize_doc_numbered.png}
+\caption{Giao diện chức năng tóm tắt tài liệu}
+\label{fig:ui_summarize_doc}
+\end{figure}
+
+Các thành phần trong giao diện:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|l|p{5.5cm}|}
+\hline
+\textbf{STT} & \textbf{Loại điều khiển} & \textbf{Tên điều khiển} & \textbf{Nội dung thực hiện} \\
+\hline
+1 & Card & File Card & Hiển thị thông tin file đính kèm \\
+\hline
+2 & Button & Summarize AI & Tạo bản tóm tắt file \\
+\hline
+3 & Progress & Pro\-ces\-sing Pro\-gress & Hiển thị tiến trình xử lý \\
+\hline
+4 & Panel & Summary Panel & Hiển thị bản tóm tắt \\
+\hline
+5 & Label & File Info & Hiển thị thông tin file (tên, kích thước) \\
+\hline
+\end{tabular}
+\caption{Bảng các thành phần trong giao diện tóm tắt tài liệu}
+\label{tab:ui_summarize_doc}
+\end{table}
+
+Dữ liệu được dùng:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|l|c|c|c|c|}
+\hline
+\multirow{2}{*}{\textbf{STT}} & \multirow{2}{*}{\textbf{Tên bảng}} & \multicolumn{4}{c|}{\textbf{Phương thức}} \\
+\cline{3-6}
+& & \textbf{Thêm} & \textbf{Sửa} & \textbf{Xóa} & \textbf{Truy vấn} \\
+\hline
+1 & at\-tach\-ments & & & & X \\
+\hline
+2 & document\_chunks & X & & & X \\
+\hline
+3 & ai\_con\-ver\-sa\-tions & X & & & \\
+\hline
+\end{tabular}
+\caption{Bảng dữ liệu được dùng cho chức năng tóm tắt tài liệu}
+\label{tab:func_summarize_doc}
+\end{table}
+
+Xử lý:
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{part02/chap03/sec03_5/act_summarize_doc.png}
+\caption{Sơ đồ hoạt động của chức năng tóm tắt tài liệu đính kèm}
+\label{fig:act_summarize_doc}
+\end{figure}

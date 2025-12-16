@@ -1,0 +1,94 @@
+\subsection{Thiết kế giao diện}
+
+\subsubsection{Cơ sở thiết kế giao diện}
+
+Giao diện người dùng của phân hệ truyền thông được thiết kế hướng đến tính trực quan, thẩm mỹ, hiện đại và dễ sử dụng, đảm bảo UX/UI tốt nhất cho ứng dụng chat real-time. Thiết kế lấy cảm hứng từ các nền tảng chat hiện đại như Slack và Discord, đồng bộ với design system của phân hệ nền tảng.
+
+Về màu sắc chủ đạo, ứng dụng sử dụng màu cam (Primary Orange - \#FF8800) làm màu chủ đạo để tạo cảm giác năng động và hiện đại, thể hiện sự liên kết với thương hiệu chung của nền tảng. Màu xanh ngọc (Secondary Teal - \#00C4AB) được sử dụng cho các thành phần AI Assistant, tạo sự phân biệt rõ ràng giữa nội dung người dùng và nội dung AI. Màu nền chủ yếu là xám rất nhạt (\#F9FAFB) và trắng (\#FFFFFF), kết hợp với chữ màu đen đậm (\#1A1A1A) để tạo sự tương phản rõ ràng và dễ đọc trong thời gian dài.
+
+Các thành phần nổi bật như nút hành động chính (CTA) sử dụng gradient màu cam để thu hút sự chú ý. Hệ thống sử dụng soft shadows, rounded corners (8-16px), và subtle gradients để tạo chiều sâu và cảm giác hiện đại.
+
+Bố cục giao diện chat được thiết kế theo layout 3 cột phổ biến: Sidebar bên trái (260px) chứa danh sách kênh và workspace info, Main Chat Area ở giữa (flex) chứa tin nhắn và input, và AI Panel bên phải (340px) chứa AI Assistant. Layout này cho phép người dùng dễ dàng navigate giữa các kênh trong khi vẫn có thể sử dụng AI Assistant mà không cần chuyển màn hình.
+
+Về typography, sử dụng font Inter - một font sans-serif được thiết kế đặc biệt cho giao diện, với các kích thước: 14px cho body text, 16-18px cho headings, và 12-13px cho secondary text. Font weight sử dụng 400 (regular) cho nội dung, 500 (medium) cho labels, và 600-700 (semibold/bold) cho headings và emphasis.
+
+Responsive design đảm bảo hiển thị tốt trên desktop (1440px+) và tablet (768px+). Trên tablet, AI Panel sẽ chuyển thành overlay/drawer để tiết kiệm không gian.
+
+\subsubsection{Phác thảo thiết kế giao diện}
+
+\textbf{Giao diện chính Chat:}
+
+Giao diện chat chính là màn hình người dùng sử dụng nhiều nhất, bao gồm ba phần: Sidebar chứa danh sách kênh được phân nhóm (công khai, dự án, riêng tư), Main Chat Area hiển thị tin nhắn với avatar, reactions, threads, và AI Panel cho phép tương tác với AI Assistant.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\textwidth]{images/ui_chat_main.png}
+\caption{Giao diện phác thảo màn hình chat chính với layout 3 cột}
+\label{fig:ui_chat_main}
+\end{figure}
+
+\textbf{Giao diện tạo kênh mới:}
+
+Giao diện tạo kênh mới cho phép Channel Admin tạo kênh với các tùy chọn: loại kênh (công khai, riêng tư, dự án), tên và mô tả, mời thành viên ban đầu, và cấu hình các tính năng AI cho kênh.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{images/ui_create_channel.png}
+\caption{Giao diện phác thảo biểu mẫu tạo kênh mới}
+\label{fig:ui_create_channel}
+\end{figure}
+
+\textbf{Giao diện Thread thảo luận:}
+
+Giao diện Thread hiển thị luồng thảo luận từ một tin nhắn gốc, cho phép người dùng theo dõi và tham gia vào các cuộc thảo luận chi tiết mà không làm rối main chat.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{images/ui_thread.png}
+\caption{Giao diện phác thảo Thread thảo luận}
+\label{fig:ui_thread}
+\end{figure}
+
+\textbf{Giao diện tìm kiếm tin nhắn:}
+
+Giao diện tìm kiếm cho phép người dùng tìm kiếm tin nhắn theo từ khóa hoặc semantic search (AI), với các bộ lọc theo kênh, người gửi, thời gian, và có tệp đính kèm.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.45\textwidth]{images/ui_search.png}
+\caption{Giao diện phác thảo chức năng tìm kiếm tin nhắn}
+\label{fig:ui_search}
+\end{figure}
+
+\textbf{Giao diện AI Assistant:}
+
+Giao diện AI Assistant Panel hiển thị các tính năng AI: hỏi đáp theo ngữ cảnh với nguồn tham chiếu, tóm tắt hội thoại, và trích xuất action items. Panel sử dụng màu teal để phân biệt với nội dung người dùng.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.55\textwidth]{images/ui_ai_assistant.png}
+\caption{Giao diện phác thảo AI Assistant với kết quả hỏi đáp và action items}
+\label{fig:ui_ai_assistant}
+\end{figure}
+
+\textbf{Giao diện cài đặt kênh:}
+
+Giao diện cài đặt kênh cho phép Channel Admin chỉnh sửa thông tin kênh, bật/tắt các tính năng như threads, reactions, đính kèm tệp, và cấu hình AI Assistant cho kênh.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{images/ui_channel_settings.png}
+\caption{Giao diện phác thảo cài đặt kênh và cấu hình AI}
+\label{fig:ui_channel_settings}
+\end{figure}
+
+\textbf{Giao diện quản lý thành viên kênh:}
+
+Giao diện quản lý thành viên cho phép xem danh sách thành viên với trạng thái online, vai trò (Owner, Admin, Member), mời thành viên mới, và quản lý lời mời đang chờ.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.45\textwidth]{images/ui_channel_members.png}
+\caption{Giao diện phác thảo quản lý thành viên kênh}
+\label{fig:ui_channel_members}
+\end{figure}

@@ -17,7 +17,7 @@ enum SprintStatus {
 }
 
 model Project {
-  id              String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id              String   @id @default(uuid()) @db.Uuid
   orgId           String   @map("org_id") @db.VarChar(255)
   identifier      String   @unique @db.VarChar(50)
   name            String   @db.VarChar(255)
@@ -27,14 +27,17 @@ model Project {
   updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   // Relations
-  sprints Sprint[]
-  issues  Issue[]
+  sprints       Sprint[]
+  issues        Issue[]
+  issueStatuses IssueStatus[]
+  comments      IssueComment[]
+  activities    IssueActivity[]
 
   @@map("project")
 }
 
 model Sprint {
-  id        String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id        String    @id @default(uuid()) @db.Uuid
   projectId String    @map("project_id") @db.Uuid
   name      String    @db.VarChar(255)
   status    SprintStatus @default(FUTURE)
@@ -51,34 +54,104 @@ model Sprint {
   @@map("sprint")
 }
 
+model IssueStatus {
+  id          String   @id @default(uuid()) @db.Uuid
+  projectId   String   @map("project_id") @db.Uuid
+  name        String   @db.VarChar(100)
+  description String?  @db.Text
+  color       String   @db.VarChar(7) // Hex color like #FF0000
+  order       Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  issues  Issue[]
+
+  @@index([projectId])
+  @@unique([projectId, order], name: "unique_project_status_order")
+  @@map("issue_status")
+}
+
 model Issue {
-  id              String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id              String   @id @default(uuid()) @db.Uuid
   projectId       String   @map("project_id") @db.Uuid
   sprintId        String?  @map("sprint_id") @db.Uuid
   parentId        String?  @map("parent_id") @db.Uuid
+  statusId        String   @map("status_id") @db.Uuid
   name            String   @db.VarChar(255)
   description     String?  @db.Text
   descriptionHtml String?  @map("description_html") @db.Text
-  state           String   @db.VarChar(32)
   priority        String   @db.VarChar(32)
   type            String   @db.VarChar(32)
   point           Decimal? @db.Decimal(5, 2)
-  sequenceId      BigInt?  @map("sequence_id")
+  sequenceId      Int      @map("sequence_id")
   sortOrder       Decimal  @map("sort_order") @db.Decimal(20, 10)
   startDate       DateTime? @map("start_date") @db.Date
   targetDate      DateTime? @map("target_date") @db.Date
   assigneesJson   Json     @default("[]") @map("assignees_json") @db.JsonB
+  createdBy       String?  @map("created_by") @db.Uuid
   createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   // Relations
-  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  sprint       Sprint?  @relation(fields: [sprintId], references: [id], onDelete: SetNull)
-  parent       Issue?   @relation("IssueHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
-  subIssues    Issue[]  @relation("IssueHierarchy")
+  project      Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sprint       Sprint?        @relation(fields: [sprintId], references: [id], onDelete: SetNull)
+  status       IssueStatus    @relation(fields: [statusId], references: [id], onDelete: Restrict)
+  parent       Issue?         @relation("IssueHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  subIssues    Issue[]        @relation("IssueHierarchy")
+  comments     IssueComment[]
+  activities   IssueActivity[]
 
   @@index([projectId])
   @@index([sprintId])
+  @@index([statusId])
   @@index([parentId])
+  @@index([createdBy])
+  @@unique([projectId, sequenceId], name: "unique_project_sequence_id")
   @@map("issue")
+}
+
+model IssueComment {
+  id          String   @id @default(uuid()) @db.Uuid
+  issueId     String   @map("issue_id") @db.Uuid
+  projectId   String   @map("project_id") @db.Uuid
+  comment     String?  @db.Text
+  commentHtml String?  @map("comment_html") @db.Text
+  createdBy   String   @map("created_by") @db.Uuid // User ID
+  updatedBy   String?  @map("updated_by") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  issue   Issue   @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([issueId])
+  @@index([projectId])
+  @@index([createdBy])
+  @@map("issue_comment")
+}
+
+model IssueActivity {
+  id           String   @id @default(uuid()) @db.Uuid
+  issueId      String   @map("issue_id") @db.Uuid
+  projectId    String   @map("project_id") @db.Uuid
+  field        String   @db.VarChar(100) // Field that changed: "name", "state", "priority", "assignee", etc.
+  oldValue     String?  @map("old_value") @db.Text
+  newValue     String?  @map("new_value") @db.Text
+  oldIdentifier String? @map("old_identifier") @db.VarChar(255) // For display (e.g., status name, user name)
+  newIdentifier String? @map("new_identifier") @db.VarChar(255)
+  actorId      String   @map("actor_id") @db.Uuid // User who made the change
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relations
+  issue   Issue   @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([issueId])
+  @@index([projectId])
+  @@index([actorId])
+  @@index([createdAt])
+  @@map("issue_activity")
 }

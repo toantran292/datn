@@ -19,8 +19,8 @@ public class OrganizationRepositoryImpl implements OrganizationRepository {
     @Override public Optional<Organization> findBySlug(String slug){ return repo.findBySlugIgnoreCase(slug).map(this::toDomain); }
     @Override public void save(Organization org){ repo.save(toEntity(org)); }
 
-    private Organization toDomain(OrganizationEntity e){ return new Organization(e.getId(), e.getSlug(), e.getDisplayName()); }
+    private Organization toDomain(OrganizationEntity e){ return new Organization(e.getId(), e.getSlug(), e.getDisplayName(), e.getLogoAssetId()); }
     private OrganizationEntity toEntity(Organization d){
-        var e = new OrganizationEntity(); e.setId(d.id()); e.setSlug(d.slug()); e.setDisplayName(d.displayName()); return e;
+        var e = new OrganizationEntity(); e.setId(d.id()); e.setSlug(d.slug()); e.setDisplayName(d.displayName()); e.setLogoAssetId(d.logoAssetId()); return e;
     }
 }

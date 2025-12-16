@@ -1,0 +1,67 @@
+@startuml usecase_channel_admin
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+skinparam shadowing false
+skinparam defaultFontSize 11
+skinparam usecase {
+    BackgroundColor #FEFEFE
+    BorderColor #333333
+}
+skinparam rectangle {
+    BackgroundColor #F8F8F8
+    BorderColor #666666
+}
+skinparam package {
+    BackgroundColor #E8F4FD
+    BorderColor #4A90D9
+}
+
+title <b>Sơ đồ Use Case - Workspace Owner / Channel Admin</b>
+
+actor "Workspace Owner/\nChannel Admin" as Owner
+
+rectangle "Phân hệ Truyền thông" {
+    package "Quản lý kênh (Channel Management)" {
+        usecase "UC01: Tạo kênh mới" as UC01
+        usecase "UC01.1: Tạo kênh\ntheo dự án" as UC01_1
+        usecase "UC01.2: Tạo kênh\nriêng tư" as UC01_2
+        usecase "UC02: Cập nhật\nthông tin kênh" as UC02
+        usecase "UC03: Xóa/Lưu trữ kênh" as UC03
+        usecase "UC04: Cấu hình quyền\ntruy cập kênh" as UC04
+    }
+    
+    package "Quản lý thành viên kênh" {
+        usecase "UC05: Mời thành viên\nvào kênh" as UC05
+        usecase "UC06: Xóa thành viên\nkhỏi kênh" as UC06
+        usecase "UC07: Phân quyền\nthành viên" as UC07
+    }
+    
+    package "Cấu hình AI" {
+        usecase "UC08: Bật/tắt\nAI Assistant" as UC08
+        usecase "UC09: Chọn tính năng\nAI cho kênh" as UC09
+    }
+    
+    package "Giám sát" {
+        usecase "UC10: Xem thống kê\nhoạt động kênh" as UC10
+    }
+}
+
+' Main relationships
+Owner --> UC01
+Owner --> UC02
+Owner --> UC03
+Owner --> UC04
+Owner --> UC05
+Owner --> UC06
+Owner --> UC07
+Owner --> UC08
+Owner --> UC09
+Owner --> UC10
+
+' Extend relationships
+UC01_1 .up.> UC01 : <<extend>>
+UC01_2 .up.> UC01 : <<extend>>
+UC09 .up.> UC08 : <<extend>>
+
+@enduml

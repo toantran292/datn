@@ -1,0 +1,56 @@
+% UC13: Upload tệp
+\paragraph{Chức năng upload tệp}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/uc13_upload.png}
+    \caption{Sơ đồ use case chức năng upload tệp}
+    \label{fig:uc13_upload}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Bảng đặc tả chức năng upload tệp},
+    label = {tab:uc13}
+]{
+    colspec = {|l|X|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+Tên chức năng & Upload tệp \\
+ID & UC13 \\
+Mức độ cần thiết & Bắt buộc \\
+Người sử dụng & Thành viên của Work\-space \\
+Phân loại & Trung bình \\
+Các thành phần tham gia và mối quan tâm & \textbf{Người dùng:} Muốn tải tệp tin lên work\-space để chia sẻ và sử dụng cho báo cáo AI. \\
+Mô tả tóm tắt & Chức năng cho phép thành viên tải một hoặc nhiều tệp tin lên work\-space. \\
+Trigger & Người dùng nhấn nút "Upload" hoặc kéo thả tệp vào khu vực upload. \\
+Kiểu sự kiện & External \\
+Luồng xử lý bình thường &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{enumerate}[nosep, leftmargin=*]
+    \item Người dùng mở giao diện upload tệp.
+    \item Người dùng chọn tệp từ máy tính hoặc kéo thả.
+    \item Hệ thống kiểm tra định dạng và kích thước tệp.
+    \item Người dùng chọn thư mục đích (nếu cần).
+    \item Người dùng nhấn nút "Upload".
+    \item Hệ thống tải tệp lên và lưu trữ.
+    \item Hệ thống ghi audit log và thông báo thành công.
+\end{enumerate}
+\vspace{2pt}
+\end{minipage} \\
+Các luồng sự kiện con & N/A \\
+Luồng luân phiên/đặc biệt &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item 3a. Định dạng không hỗ trợ: Thông báo lỗi và danh sách định dạng cho phép.
+    \item 3b. Vượt quá kích thước: Thông báo giới hạn dung lượng.
+    \item 6a. Hết dung lượng work\-space: Yêu cầu xóa bớt tệp hoặc nâng cấp.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Kết quả & Tệp được tải lên và lưu trữ thành công trong work\-space. \\
+\end{longtblr}

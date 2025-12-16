@@ -1,5 +1,4 @@
 import { IsNotEmpty, IsString, IsEnum, IsOptional, IsUUID, IsNumber, IsDateString, IsArray } from "class-validator";
-import { IssueState } from "../enums/issue-state.enum";
 import { IssuePriority } from "../enums/issue-priority.enum";
 import { IssueType } from "../enums/issue-type.enum";
 
@@ -28,9 +27,9 @@ export class CreateIssueDto {
   @IsString()
   descriptionHtml?: string;
 
-  @IsNotEmpty()
-  @IsEnum(IssueState)
-  state: IssueState;
+  @IsOptional()
+  @IsUUID()
+  statusId?: string;
 
   @IsNotEmpty()
   @IsEnum(IssuePriority)

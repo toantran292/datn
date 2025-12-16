@@ -1,0 +1,41 @@
+\subsection{Giới thiệu về công nghệ Backend}
+
+\subsubsection{Khái quát}
+
+Hệ thống backend được xây dựng theo kiến trúc Micro\-services, trong đó mỗi service chịu trách nhiệm cho một chức năng cụ thể và giao tiếp qua REST APIs hoặc message queues. Kiến trúc này cho phép deploy và scale từng service độc lập.
+
+Toàn bộ backend được xây dựng bằng NestJS, một framework Node.js tiên tiến phù hợp cho ứng dụng real-time. NestJS cung cấp tích hợp sẵn với Socket.io cho Web\-Socket và Type\-Script native support.
+
+\subsubsection{NestJS và kiến trúc modular}
+
+NestJS được thiết kế với mo\-du\-lar ar\-chi\-tec\-ture cho phép tổ chức code thành các modules độc lập. Framework có built-in De\-pen\-den\-cy In\-jec\-tion và sử dụng de\-co\-ra\-tors để định nghĩa routes một cách de\-cla\-ra\-tive.
+
+Kiến trúc NestJS gồm các layer: Con\-trol\-lers xử lý HTTP requests, Gateways xử lý Web\-Socket events, Services chứa business logic, và Modules tổ chức các components. Guards xử lý au\-then\-ti\-ca\-tion và au\-tho\-ri\-za\-tion.
+
+\subsubsection{WebSocket và Socket.io}
+
+Web\-Socket là giao thức truyền thông full-duplex cho phép client và server giao tiếp hai chiều trên một kết nối TCP duy nhất. Server có thể chủ động gửi dữ liệu đến client mà không cần request, rất phù hợp cho ứng dụng real-time.
+
+Socket.io là thư viện phổ biến cho Web\-Socket trong hệ sinh thái Java\-Script. Socket.io cung cấp auto\-ma\-tic re\-con\-nec\-tion, fallback to HTTP long-polling, và room management cho phép broadcast messages đến nhóm clients.
+
+Để hỗ trợ ho\-ri\-zon\-tal scaling, Socket.io cung cấp Redis adapter. Khi một user gửi tin nhắn qua instance A, Redis broadcast event đến tất cả instances khác, đảm bảo tất cả users đều nhận được tin nhắn.
+
+\subsubsection{Message Queue và Background Jobs}
+
+Trong ứng dụng chat tích hợp AI, nhiều tác vụ không cần xử lý đồng bộ. Message queue và background jobs cho phép đưa các tác vụ nặng vào queue để xử lý bất đồng bộ, không block request cycle.
+
+BullMQ là thư viện message queue phổ biến cho Node.js, được xây dựng trên Redis. BullMQ cung cấp job scheduling, auto\-ma\-tic retries, và rate limiting. NestJS tích hợp BullMQ qua @nestjs/bullmq package.
+
+\subsubsection{Nguyên tắc RESTful API và WebSocket Events}
+
+REST là kiến trúc thiết kế API sử dụng HTTP methods để thực hiện CRUD opera\-tions. RESTful API tuân theo nguyên tắc: URL đại diện cho resources, HTTP methods được sử dụng đúng mục đích, và stateless design.
+
+Web\-Socket events cần được thiết kế nhất quán với naming convention rõ ràng (message:send, typing:start). Payload structure được định nghĩa bằng Type\-Script inter\-faces để đảm bảo consistency giữa backend và frontend.
+
+\subsubsection{Vận dụng vào đề tài}
+
+Backend được chia thành 4 services chính: Messaging Service quản lý kênh và tin nhắn, Web\-Socket Gateway xử lý kết nối real-time, Document Processing Service xử lý tệp đính kèm và tạo embeddings, AI Service tích hợp RAG cho các tính năng AI.
+
+Messaging Service cung cấp RESTful APIs cho CRUD operations trên channels và messages, sử dụng Prisma ORM để tương tác với Post\-gre\-SQL. Web\-Socket Gateway xử lý các events như send/receive messages, typing indicators, và read status.
+
+Document Processing Service trích xuất văn bản từ tài liệu, chia thành chunks, và tạo vector embeddings. AI Service cung cấp các endpoints tóm tắt hội thoại, trích xuất action items, và hỏi đáp theo ngữ cảnh qua RAG pipeline.

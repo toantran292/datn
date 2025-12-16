@@ -1,0 +1,221 @@
+import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
+import { PrismaService } from "../../prisma/prisma.service";
+import { CreateIssueStatusDto } from "./dto/create-issue-status.dto";
+import { UpdateIssueStatusDto } from "./dto/update-issue-status.dto";
+import { ReorderIssueStatusDto } from "./dto/reorder-issue-status.dto";
+import { IssueStatusResponseDto } from "./dto/issue-status-response.dto";
+
+@Injectable()
+export class IssueStatusService {
+  constructor(private prisma: PrismaService) {}
+
+  async create(dto: CreateIssueStatusDto): Promise<IssueStatusResponseDto> {
+    // Check if project exists
+    const project = await this.prisma.project.findUnique({
+      where: { id: dto.projectId },
+    });
+
+    if (!project) {
+      throw new NotFoundException(`Project with ID ${dto.projectId} not found`);
+    }
+
+    // Auto-calculate order if not provided
+    let order = dto.order;
+    if (order === undefined || order === null) {
+      const maxOrderStatus = await this.prisma.issueStatus.findFirst({
+        where: { projectId: dto.projectId },
+        orderBy: { order: 'desc' },
+      });
+      order = maxOrderStatus ? maxOrderStatus.order + 1 : 0;
+    } else {
+      // Check if order is already used in this project
+      const existingStatus = await this.prisma.issueStatus.findFirst({
+        where: {
+          projectId: dto.projectId,
+          order: order,
+        },
+      });
+
+      if (existingStatus) {
+        throw new BadRequestException(`Order ${order} is already used in this project`);
+      }
+    }
+
+    const status = await this.prisma.issueStatus.create({
+      data: {
+        projectId: dto.projectId,
+        name: dto.name,
+        description: dto.description || null,
+        color: dto.color,
+        order: order,
+      },
+    });
+
+    return this.mapToResponse(status);
+  }
+
+  async findAll(projectId: string): Promise<IssueStatusResponseDto[]> {
+    const statuses = await this.prisma.issueStatus.findMany({
+      where: { projectId },
+      orderBy: { order: "asc" },
+    });
+
+    return statuses.map((status) => this.mapToResponse(status));
+  }
+
+  async findOne(id: string): Promise<IssueStatusResponseDto> {
+    const status = await this.prisma.issueStatus.findUnique({
+      where: { id },
+    });
+
+    if (!status) {
+      throw new NotFoundException(`IssueStatus with ID ${id} not found`);
+    }
+
+    return this.mapToResponse(status);
+  }
+
+  async update(id: string, dto: UpdateIssueStatusDto): Promise<IssueStatusResponseDto> {
+    const status = await this.prisma.issueStatus.findUnique({
+      where: { id },
+    });
+
+    if (!status) {
+      throw new NotFoundException(`IssueStatus with ID ${id} not found`);
+    }
+
+    // If order is being updated, check if it conflicts
+    if (dto.order !== undefined && dto.order !== status.order) {
+      const existingStatus = await this.prisma.issueStatus.findFirst({
+        where: {
+          projectId: status.projectId,
+          order: dto.order,
+          id: { not: id },
+        },
+      });
+
+      if (existingStatus) {
+        throw new BadRequestException(`Order ${dto.order} is already used in this project`);
+      }
+    }
+
+    const updated = await this.prisma.issueStatus.update({
+      where: { id },
+      data: {
+        name: dto.name,
+        description: dto.description !== undefined ? dto.description : status.description,
+        color: dto.color,
+        order: dto.order,
+      },
+    });
+
+    return this.mapToResponse(updated);
+  }
+
+  async delete(id: string): Promise<void> {
+    const status = await this.prisma.issueStatus.findUnique({
+      where: { id },
+      include: { _count: { select: { issues: true } } },
+    });
+
+    if (!status) {
+      throw new NotFoundException(`IssueStatus with ID ${id} not found`);
+    }
+
+    if (status._count.issues > 0) {
+      throw new BadRequestException(
+        `Cannot delete status with ${status._count.issues} issues. Please reassign issues first.`
+      );
+    }
+
+    await this.prisma.issueStatus.delete({
+      where: { id },
+    });
+  }
+
+  async createDefaultStatuses(projectId: string): Promise<IssueStatusResponseDto[]> {
+    const defaultStatuses = [
+      { name: "TO DO", description: "Issues that are yet to be started", color: "#94A3B8", order: 0 },
+      { name: "IN PROGRESS", description: "Issues that are currently being worked on", color: "#3B82F6", order: 1 },
+      { name: "IN REVIEW", description: "Issues that are waiting for review", color: "#F59E0B", order: 2 },
+      { name: "DONE", description: "Issues that have been completed", color: "#10B981", order: 3 },
+    ];
+
+    const createdStatuses = await Promise.all(
+      defaultStatuses.map((status) =>
+        this.prisma.issueStatus.create({
+          data: {
+            projectId,
+            ...status,
+          },
+        })
+      )
+    );
+
+    return createdStatuses.map((status) => this.mapToResponse(status));
+  }
+
+  async reorder(dto: ReorderIssueStatusDto): Promise<IssueStatusResponseDto[]> {
+    // Verify project exists
+    const project = await this.prisma.project.findUnique({
+      where: { id: dto.projectId },
+    });
+
+    if (!project) {
+      throw new NotFoundException(`Project with ID ${dto.projectId} not found`);
+    }
+
+    // Verify all status IDs belong to this project
+    const statuses = await this.prisma.issueStatus.findMany({
+      where: {
+        projectId: dto.projectId,
+        id: { in: dto.statusIds },
+      },
+    });
+
+    if (statuses.length !== dto.statusIds.length) {
+      throw new BadRequestException("Some status IDs are invalid or do not belong to this project");
+    }
+
+    // Use transaction to avoid unique constraint violations
+    // Strategy: Set all to negative numbers first, then set to actual order
+    const updatedStatuses = await this.prisma.$transaction(async (tx) => {
+      // Step 1: Set all to negative order (temporary)
+      await Promise.all(
+        dto.statusIds.map((statusId, index) =>
+          tx.issueStatus.update({
+            where: { id: statusId },
+            data: { order: -(index + 1) },
+          })
+        )
+      );
+
+      // Step 2: Set to actual order
+      const results = await Promise.all(
+        dto.statusIds.map((statusId, index) =>
+          tx.issueStatus.update({
+            where: { id: statusId },
+            data: { order: index },
+          })
+        )
+      );
+
+      return results;
+    });
+
+    return updatedStatuses.map((status) => this.mapToResponse(status));
+  }
+
+  private mapToResponse(status: any): IssueStatusResponseDto {
+    return {
+      id: status.id,
+      projectId: status.projectId,
+      name: status.name,
+      description: status.description,
+      color: status.color,
+      order: status.order,
+      createdAt: status.createdAt,
+      updatedAt: status.updatedAt,
+    };
+  }
+}

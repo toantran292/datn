@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>UC15 - Quản lý thông báo</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; font-size: 13pt; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h3 { font-size: 14pt; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { border: 1px solid #000; padding: 8px; text-align: left; vertical-align: top; }
+        .caption { font-style: italic; font-weight: bold; text-align: center; margin: 10px 0; }
+        .figure { text-align: center; margin: 15px 0; }
+        .figure img { max-width: 100%; }
+        ol, ul { margin: 5px 0; padding-left: 20px; }
+    </style>
+</head>
+<body>
+
+<h3>- Chức năng quản lý thông báo</h3>
+
+<div class="figure">
+    <img src="uc15_notifications.png" alt="Sơ đồ Use Case quản lý thông báo">
+    <p class="caption">Hình 3.15. Sơ đồ use case chức năng quản lý thông báo</p>
+</div>
+
+<p class="caption">Bảng 3.15. Bảng đặc tả chức năng quản lý thông báo</p>
+
+<table>
+    <tr>
+        <td><b>Tên chức năng:</b> Quản lý thông báo</td>
+        <td><b>ID:</b> UC15</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Mức độ cần thiết:</b> Bắt buộc</td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <td><b>Người sử dụng:</b> Người dùng đã đăng nhập.</td>
+        <td><b>Phân loại:</b> Đơn giản</td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <td colspan="2"><b>Các thành phần tham gia và mối quan tâm:</b>
+            <ul>
+                <li><b>Người dùng:</b> Muốn xem, cấu hình và quản lý các thông báo từ hệ thống.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Mô tả tóm tắt:</b> Chức năng cho phép xem danh sách thông báo, cấu hình cài đặt nhận thông báo và đánh dấu đã đọc.</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Trigger:</b> Người dùng nhấn vào biểu tượng thông báo hoặc truy cập cài đặt thông báo.</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Kiểu sự kiện:</b> External</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Luồng xử lý bình thường của sự kiện:</b>
+            <ol>
+                <li>Người dùng mở trang thông báo.</li>
+                <li>Hệ thống hiển thị danh sách thông báo theo thời gian.</li>
+                <li>Người dùng có thể xem chi tiết, đánh dấu đã đọc hoặc cấu hình.</li>
+                <li>Hệ thống cập nhật trạng thái thông báo.</li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Các luồng sự kiện con (Subflows):</b>
+            <ul>
+                <li>Xem thông báo: Hiển thị danh sách với phân biệt đọc/chưa đọc.</li>
+                <li>Cấu hình thông báo: Bật/tắt email, push, in-app notification.</li>
+                <li>Đánh dấu đã đọc: Đánh dấu một hoặc tất cả thông báo.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Luồng luân phiên/đặc biệt (Alternative/Exceptional flows):</b>
+            <ul>
+                <li>2a. Không có thông báo: Hiển thị thông báo trống.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Kết quả:</b> Thông báo được xem và quản lý thành công.</td>
+    </tr>
+</table>
+
+</body>
+</html>

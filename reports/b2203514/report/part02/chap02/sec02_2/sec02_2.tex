@@ -1,0 +1,29 @@
+\subsection{Giới thiệu về công nghệ Frontend}
+
+\subsubsection{Khái quát}
+
+React.js là thư viện Java\-Script mã nguồn mở do Facebook phát triển, được sử dụng rộng rãi để xây dựng giao diện người dùng cho ứng dụng web. React sử dụng mô hình com\-po\-nent-based, cho phép chia nhỏ giao diện thành các thành phần độc lập và tái sử dụng.
+
+Next.js là React framework cung cấp các tính năng bổ sung như Server-Side Ren\-der\-ing (SSR) và Static Site Ge\-ne\-ra\-tion (SSG). Type\-Script bổ sung hệ thống type checking giúp phát hiện lỗi sớm và cải thiện chất lượng code.
+
+\subsubsection{Nguyên lý hoạt động}
+
+React sử dụng Virtual DOM để tối ưu hiệu suất render. Khi state thay đổi, React so sánh Virtual DOM với DOM thật và chỉ cập nhật những phần thay đổi, giảm thiểu các thao tác tốn kém.
+
+Func\-tion\-al Com\-po\-nents kết hợp với Hooks đã trở thành cách tiếp cận ưu tiên trong React hiện đại. Props là dữ liệu truyền từ component cha xuống con, trong khi State là dữ liệu nội bộ có thể thay đổi.
+
+Next.js mở rộng khả năng của React với các chiến lược rendering khác nhau. SSR render trang trên server trước khi gửi đến client, cải thiện SEO. SSG pre-render các trang tại build time, phù hợp cho nội dung ít thay đổi.
+
+\subsubsection{Ứng dụng và hệ sinh thái}
+
+React được sử dụng rộng rãi trong các ứng dụng web hiện đại, từ dashboard quản lý đến ứng dụng real-time như chat. React rất phù hợp cho ứng dụng nhắn tin nhờ khả năng quản lý state phức tạp và cập nhật UI hiệu quả.
+
+Hệ sinh thái React cung cấp nhiều thư viện hỗ trợ: Tailwind CSS cho styling, Socket.io-client cho Web\-Socket, React Query cho quản lý server state, Zustand cho client state, và các component libraries như Shadcn/ui.
+
+\subsubsection{Vận dụng vào đề tài}
+
+Frontend của phân hệ truyền thông được xây dựng bằng Next.js 14 với App Router, sử dụng Type\-Script để đảm bảo type safety. Giao diện chat theo layout ba cột: sidebar danh sách kênh, khung trò chuyện chính, và panel thông tin kênh hoặc AI Assistant.
+
+Ứng dụng sử dụng Socket.io-client để kết nối Web\-Socket, cho phép gửi/nhận tin nhắn real-time. Zustand quản lý các state phức tạp như danh sách kênh, tin nhắn, và trạng thái typing. React Query quản lý server state cho các API calls.
+
+Giao diện chat bao gồm các component chính: ChannelList hiển thị danh sách kênh, ChatPanel là khung trò chuyện với MessageList và MessageInput, ThreadPanel cho thread thảo luận, và AIAssistantPanel để tương tác với AI.

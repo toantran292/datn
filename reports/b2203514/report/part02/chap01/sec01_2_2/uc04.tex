@@ -1,0 +1,66 @@
+\paragraph{UC04: Tham gia kênh}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\textwidth]{images/UC04.png}
+    \caption{Sơ đồ use case UC04 - Tham gia kênh}
+    \label{fig:uc04}
+\end{figure}
+
+\begin{adjustwidth}{-2cm}{-1cm}
+\begin{longtblr}[
+    caption = {Đặc tả use case UC04 - Tham gia kênh},
+    label = {tab:uc04}
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Tham gia kênh} \\\hline
+ID & UC04 \\\hline
+Người sử dụng & Member \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Đơn giản \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{Member:} Muốn xem danh sách các kênh có thể truy cập và tham gia vào các kênh công khai hoặc rời khỏi kênh.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Cho phép Member xem danh sách kênh trong workspace, tham gia các kênh công khai và rời khỏi kênh đang tham gia. \\\hline
+Trigger & Member truy cập vào danh sách kênh hoặc chọn một kênh để tham gia/rời. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item Member truy cập vào trang danh sách kênh của workspace.
+        \item Hệ thống hiển thị danh sách kênh: kênh đang tham gia và kênh công khai có thể tham gia.
+        \item Member chọn một kênh công khai chưa tham gia.
+        \item Member nhấn "Tham gia kênh".
+        \item Hệ thống thêm Member vào kênh.
+        \item Member có thể xem và gửi tin nhắn trong kênh.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{S1 - Rời khỏi kênh:} Member vào kênh đang tham gia → Chọn "Rời kênh" → Xác nhận → Member bị xóa khỏi kênh.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- Kênh riêng tư: Hệ thống thông báo "Bạn cần được mời để tham gia kênh này".
+
+    \textbf{\textcolor{red}{E2}} -- Kênh đã đầy (nếu có giới hạn): Hệ thống thông báo "Kênh đã đạt giới hạn thành viên".
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Member tham gia/rời khỏi kênh thành công. \\\hline
+\end{longtblr}
+\end{adjustwidth}

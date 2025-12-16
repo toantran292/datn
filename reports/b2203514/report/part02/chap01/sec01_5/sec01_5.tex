@@ -1,0 +1,39 @@
+\subsection{Các ràng buộc thực thi và thiết kế}
+
+\subsubsection{Các ràng buộc thực thi}
+\begin{itemize}
+    \item Ngôn ngữ: Tiếng Việt (có thể điều chỉnh sang tiếng Anh qua i18n).
+    \item Giao thức:
+    \begin{itemize}
+        \item HTTPS (Hypertext Transfer Protocol Secure) cho API RESTful.
+        \item WSS (WebSocket Secure) cho truyền thông thời gian thực.
+    \end{itemize}
+    \item Frontend: TypeScript với React và Next.js, quản lý state với Zustand, kết nối WebSocket với Socket.io-client.
+    \item Backend: TypeScript với NestJS framework, bao gồm:
+    \begin{itemize}
+        \item Messaging Service: quản lý kênh, tin nhắn, thread.
+        \item WebSocket Gateway: xử lý kết nối real-time với Socket.io.
+        \item AI Service: tích hợp RAG với vector database và LLM.
+        \item Document Processing: trích xuất văn bản và tạo embedding.
+    \end{itemize}
+    \item Cơ sở dữ liệu: PostgreSQL với pgvector extension cho vector storage.
+    \item Cache và Message Broker: Redis cho caching, session và Socket.io adapter.
+    \item Queue: BullMQ cho xử lý tác vụ bất đồng bộ (embedding, document processing).
+    \item Tích hợp File Service từ phân hệ nền tảng để lưu trữ tệp đính kèm.
+    \item Kết nối Internet ổn định để gọi API AI Provider (OpenAI, Gemini).
+    \item API tuân thủ RESTful với documentation đầy đủ (OpenAPI/Swagger).
+    \item WebSocket events được định nghĩa rõ ràng với TypeScript interfaces.
+\end{itemize}
+
+\subsubsection{Các ràng buộc thiết kế}
+\begin{itemize}
+    \item Giao diện chat hiện đại, trực quan, phù hợp với người dùng doanh nghiệp và quen thuộc với các ứng dụng nhắn tin phổ biến (Slack, Discord).
+    \item Đáp ứng đầy đủ chức năng thiết yếu của hệ thống nhắn tin tích hợp AI: real-time messaging, thread, reaction, tệp đính kèm, tìm kiếm, tóm tắt và hỏi đáp.
+    \item Responsive Design tối ưu trên desktop và tablet, ưu tiên trải nghiệm desktop cho môi trường làm việc.
+    \item Thiết kế WebSocket connection pool và room management để hỗ trợ horizontal scaling.
+    \item Cơ sở dữ liệu đủ lớn để lưu trữ lịch sử tin nhắn, hỗ trợ sharding theo kênh hoặc workspace nếu cần.
+    \item Vector database thiết kế với index phù hợp (HNSW hoặc IVFFlat) để đảm bảo hiệu năng semantic search.
+    \item Kiến trúc tuân theo Microservices, mỗi service có thể scale độc lập.
+    \item UI/UX tuân theo design system nhất quán với Tailwind CSS và shadcn/ui.
+    \item Thiết kế event-driven cho việc đồng bộ embedding khi có tin nhắn mới hoặc tài liệu mới.
+\end{itemize}

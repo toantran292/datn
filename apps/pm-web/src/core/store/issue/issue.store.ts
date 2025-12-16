@@ -19,6 +19,7 @@ export interface IIssueStore {
   projectIssueIdsMap: TProjectIssueIdsMap;
 
   fetchIssuesByProject: (projectId: string) => Promise<IIssue[]>;
+  fetchIssueById: (issueId: string) => Promise<IIssue>;
   createIssue: (payload: ICreateIssuePayload) => Promise<IIssue>;
   reorderIssue: (projectId: string, payload: IReorderIssuePayload) => Promise<void>;
   updateIssue: (issueId: string, data: Partial<IIssue>) => Promise<IIssue>;
@@ -50,6 +51,7 @@ export class IssueStore implements IIssueStore {
       issueMap: observable.ref,
       projectIssueIdsMap: observable.ref,
       fetchIssuesByProject: action,
+      fetchIssueById: action,
       createIssue: action,
       reorderIssue: action,
       updateIssue: action,
@@ -85,6 +87,27 @@ export class IssueStore implements IIssueStore {
     }
   };
 
+  fetchIssueById = async (issueId: string) => {
+    const cached = this.issueMap[issueId];
+    if (cached) return cached;
+
+    const issue = await this.issueService.getIssueById(issueId);
+
+    runInAction(() => {
+      this.issueMap = { ...this.issueMap, [issue.id]: issue };
+
+      const existingIssueIds = this.projectIssueIdsMap[issue.projectId] ?? [];
+      this.projectIssueIdsMap = {
+        ...this.projectIssueIdsMap,
+        [issue.projectId]: existingIssueIds.includes(issue.id) ? existingIssueIds : [...existingIssueIds, issue.id],
+      };
+      this.projectLoaders = { ...this.projectLoaders, [issue.projectId]: "loaded" };
+      this.projectFetchStatus = { ...this.projectFetchStatus, [issue.projectId]: "complete" };
+    });
+
+    return issue;
+  };
+
   updateIssue = async (issueId: string, data: Partial<IIssue>) => {
     const existing = this.issueMap[issueId];
     if (!existing) throw new Error("Issue không tồn tại");
@@ -99,7 +122,7 @@ export class IssueStore implements IIssueStore {
     });
 
     try {
-      const saved = await this.issueService.updateIssue({ ...optimistic });
+      const saved = await this.issueService.updateIssue({ id: issueId, ...data });
       runInAction(() => {
         this.issueMap = { ...this.issueMap, [issueId]: saved };
       });

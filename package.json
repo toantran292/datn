@@ -4,8 +4,8 @@
   "version": "1.0.0",
   "scripts": {
     "prepare": "husky install || true",
-    "postinstall": "pnpm -r --filter=!infra --filter=!imgs install --ignore-scripts",
     "build": "turbo run build",
+    "build:packages": "turbo run build --filter=./packages/*/**",
     "dev":   "turbo run dev   --parallel --filter=./apps/*",
     "start": "turbo run start --parallel --filter=./apps/*",
 
@@ -16,6 +16,9 @@
     "marketing:dev": "pnpm --filter marketing-web dev",
     "marketing:build": "pnpm --filter marketing-web build",
     "marketing:preview": "pnpm --filter marketing-web preview",
+    "chat-api:dev": "pnpm --filter chat-api start:dev",
+    "chat-api:build": "pnpm --filter chat-api build",
+    "chat-api:test": "pnpm --filter chat-api test",
     "meeting:dev": "pnpm --filter meet-web dev",
     "meeting:build": "pnpm --filter meet-web build",
     "meeting:preview": "pnpm --filter meet-web preview"
@@ -26,9 +29,12 @@
     "rimraf": "^6.0.1"
   },
   "workspaces": [
+    "services/*",
+    "services/*/api",
     "packages/*",
     "apps/*",
     "services/*"
   ],
+
   "packageManager": "pnpm@10.14.0+sha512.ad27a79641b49c3e481a16a805baa71817a04bbe06a38d17e60e2eaee83f6a146c6a688125f5792e48dd5ba30e7da52a5cda4c3992b9ccf333f9ce223af84748"
 }

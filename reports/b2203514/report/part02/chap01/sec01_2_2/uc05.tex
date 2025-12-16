@@ -1,0 +1,67 @@
+\paragraph{UC05: Gửi/nhận tin nhắn}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.3\textwidth]{images/UC05.png}
+    \caption{Sơ đồ use case UC05 - Gửi/nhận tin nhắn}
+    \label{fig:uc05}
+\end{figure}
+
+\begin{adjustwidth}{-2cm}{-1cm}
+\begin{longtblr}[
+    caption = {Đặc tả use case UC05 - Gửi/nhận tin nhắn},
+    label = {tab:uc05}
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Gửi/nhận tin nhắn} \\\hline
+ID & UC05 \\\hline
+Người sử dụng & Member \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Phức tạp \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{Member:} Muốn gửi và nhận tin nhắn trong thời gian thực để trao đổi thông tin với các thành viên khác trong kênh.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Cho phép Member gửi tin nhắn văn bản, tin nhắn có định dạng (bold, italic, code) và nhận tin nhắn từ các thành viên khác trong thời gian thực thông qua WebSocket. \\\hline
+Trigger & Member mở kênh và nhập tin nhắn vào ô chat. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item Member mở một kênh đang tham gia.
+        \item Hệ thống kết nối WebSocket và tải lịch sử tin nhắn gần nhất.
+        \item Member nhập nội dung tin nhắn vào ô chat.
+        \item Member nhấn "Gửi" hoặc phím Enter.
+        \item Hệ thống gửi tin nhắn qua WebSocket đến server.
+        \item Server lưu tin nhắn và broadcast đến tất cả thành viên trong kênh.
+        \item Tin nhắn hiển thị trong khung chat của tất cả thành viên online.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{S1 - Gửi tin nhắn có định dạng:} Member sử dụng toolbar hoặc markdown để định dạng → Gửi → Tin nhắn hiển thị với định dạng.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- Mất kết nối WebSocket: Hệ thống tự động reconnect và đồng bộ tin nhắn bị miss.
+
+    \textbf{\textcolor{red}{E2}} -- Tin nhắn quá dài: Hệ thống thông báo "Tin nhắn vượt quá giới hạn ký tự".
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Tin nhắn được gửi và hiển thị cho tất cả thành viên trong kênh theo thời gian thực. \\\hline
+\end{longtblr}
+\end{adjustwidth}

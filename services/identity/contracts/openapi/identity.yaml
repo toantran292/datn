@@ -10,7 +10,7 @@ info:
 servers:
   - url: http://localhost:8080/identity
     description: Dev via Gateway
-  - url: http://localhost:40000
+  - url: http://localhost:3000
     description: Identity local
 
 tags:
@@ -894,7 +894,7 @@ components:
       required: [userId]
       properties:
         userId: { type: string, format: uuid }
-        roles: 
+        roles:
           type: array
           items: { type: string }
 

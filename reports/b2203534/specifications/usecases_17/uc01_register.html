@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>UC01 - Đăng ký tài khoản</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; font-size: 13pt; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h3 { font-size: 14pt; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { border: 1px solid #000; padding: 8px; text-align: left; vertical-align: top; }
+        .caption { font-style: italic; font-weight: bold; text-align: center; margin: 10px 0; }
+        .figure { text-align: center; margin: 15px 0; }
+        .figure img { max-width: 100%; }
+        ol { margin: 5px 0; padding-left: 20px; }
+    </style>
+</head>
+<body>
+
+<h3>- Chức năng đăng ký tài khoản</h3>
+
+<div class="figure">
+    <img src="uc01_register.png" alt="Sơ đồ Use Case đăng ký tài khoản">
+    <p class="caption">Hình 3.1. Sơ đồ use case chức năng đăng ký tài khoản</p>
+</div>
+
+<p class="caption">Bảng 3.1. Bảng đặc tả chức năng đăng ký tài khoản</p>
+
+<table>
+    <tr>
+        <td><b>Tên chức năng:</b> Đăng ký tài khoản</td>
+        <td><b>ID:</b> UC01</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Mức độ cần thiết:</b> Bắt buộc</td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <td><b>Người sử dụng:</b> Khách truy cập hệ thống.</td>
+        <td><b>Phân loại:</b> Đơn giản</td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <td colspan="2"><b>Các thành phần tham gia và mối quan tâm:</b>
+            <ul>
+                <li><b>Khách:</b> Muốn tạo tài khoản mới để truy cập và sử dụng các tính năng của hệ thống.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Mô tả tóm tắt:</b> Chức năng cho phép khách đăng ký tài khoản mới bằng cách cung cấp thông tin cá nhân và xác thực email.</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Trigger:</b> Khách nhấn nút "Đăng ký" hoặc link "Tạo tài khoản" trên trang đăng nhập.</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Kiểu sự kiện:</b> External</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Luồng xử lý bình thường của sự kiện:</b>
+            <ol>
+                <li>Khách truy cập trang đăng ký.</li>
+                <li>Khách nhập họ tên, email, mật khẩu và xác nhận mật khẩu.</li>
+                <li>Khách nhấn nút "Đăng ký".</li>
+                <li>Hệ thống kiểm tra tính hợp lệ của thông tin.</li>
+                <li>Hệ thống tạo tài khoản mới với trạng thái chưa xác thực.</li>
+                <li>Hệ thống gửi email chứa link xác thực đến địa chỉ email.</li>
+                <li>Khách mở email và nhấn link xác thực.</li>
+                <li>Hệ thống xác thực tài khoản và chuyển sang trang đăng nhập.</li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Các luồng sự kiện con (Subflows):</b> N/A</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Luồng luân phiên/đặc biệt (Alternative/Exceptional flows):</b>
+            <ul>
+                <li>4a. Email đã tồn tại: Hệ thống thông báo lỗi và yêu cầu nhập email khác.</li>
+                <li>4b. Mật khẩu không đủ mạnh: Hệ thống yêu cầu nhập mật khẩu đáp ứng yêu cầu.</li>
+                <li>7a. Link xác thực hết hạn: Hệ thống cho phép gửi lại email xác thực.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Kết quả:</b> Tài khoản mới được tạo thành công và người dùng có thể đăng nhập vào hệ thống.</td>
+    </tr>
+</table>
+
+</body>
+</html>

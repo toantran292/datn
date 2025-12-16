@@ -28,7 +28,7 @@ NODE_ENV=development         # Environment (development/production)
 BFF_HMAC_SECRET=change-me-dev # HMAC secret (must match EDGE_HMAC_SECRET)
 CLOCK_SKEW_SEC=300          # Allowed timestamp skew in seconds
 REPLAY_TTL_SEC=60           # Replay protection TTL in seconds
-IDENTITY_BASE_URL=http://identity:40000 # Identity service URL
+IDENTITY_BASE_URL=http://identity:3000 # Identity service URL
 SERVICE_TIMEOUT_MS=3500     # Service timeout in milliseconds
 CACHE_TTL_SEC=60            # Cache TTL in seconds
 ```

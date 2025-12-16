@@ -1,0 +1,59 @@
+\paragraph{UC03: Cấu hình AI cho kênh}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\textwidth]{images/UC03.png}
+    \caption{Sơ đồ use case UC03 - Cấu hình AI cho kênh}
+    \label{fig:uc03}
+\end{figure}
+
+\begin{adjustwidth}{-2cm}{-1cm}
+\begin{longtblr}[
+    caption = {Đặc tả use case UC03 - Cấu hình AI cho kênh},
+    label = {tab:uc03}
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Cấu hình AI cho kênh} \\\hline
+ID & UC03 \\\hline
+Người sử dụng & Workspace Owner, Channel Admin \\\hline
+Mức độ cần thiết & Quan trọng \\\hline
+Phân loại & Đơn giản \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{Channel Admin:} Muốn kiểm soát các tính năng AI được phép sử dụng trong kênh để phù hợp với mục đích và chính sách bảo mật của tổ chức.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Cho phép Channel Admin bật/tắt AI Assistant và chọn các tính năng AI cụ thể được phép sử dụng trong kênh (tóm tắt, hỏi đáp, trích xuất action items, tóm tắt tài liệu). \\\hline
+Trigger & Channel Admin truy cập vào cài đặt AI của kênh. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item Channel Admin truy cập vào cài đặt của kênh.
+        \item Channel Admin chọn tab "AI Assistant".
+        \item Hệ thống hiển thị trạng thái bật/tắt AI và danh sách các tính năng.
+        \item Channel Admin bật/tắt AI Assistant.
+        \item Channel Admin chọn/bỏ chọn các tính năng AI muốn cho phép.
+        \item Channel Admin nhấn "Lưu cấu hình".
+        \item Hệ thống lưu cấu hình và thông báo thành công.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- AI Assistant bị tắt ở cấp workspace: Hệ thống thông báo "AI Assistant đã bị vô hiệu hóa bởi Workspace Owner". Các tùy chọn cấu hình bị disabled.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Cấu hình AI cho kênh được cập nhật, các thành viên chỉ có thể sử dụng các tính năng AI được cho phép. \\\hline
+\end{longtblr}
+\end{adjustwidth}

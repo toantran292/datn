@@ -127,7 +127,7 @@ export const SidebarProjectsList = () => {
           "border-t border-custom-sidebar-border-300": isScrolled,
         })}
       >
-        <Disclosure as="div" className="flex flex-col" defaultOpen={isAllProjectsListOpen}>
+        {/* <Disclosure as="div" className="flex flex-col" defaultOpen={isAllProjectsListOpen}>
           <div className="group w-full flex items-center justify-between px-2 py-1.5 rounded text-custom-sidebar-text-400 hover:bg-custom-sidebar-background-90">
             <Disclosure.Button
               as="button"
@@ -203,7 +203,7 @@ export const SidebarProjectsList = () => {
               </div>
             )}
           </Transition>
-        </Disclosure>
+        </Disclosure> */}
         {workspaceSlug && shouldShowEmptyState && (
           <button
             type="button"

@@ -1,0 +1,62 @@
+% UC08: Quản lý trạng thái Workspace
+\paragraph{Chức năng quản lý trạng thái Work\-space}
+\mbox{}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{images/uc08_workspace_status.png}
+    \caption{Sơ đồ use case chức năng quản lý trạng thái Work\-space}
+    \label{fig:uc08_workspace_status}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Bảng đặc tả chức năng quản lý trạng thái Work\-space},
+    label = {tab:uc08}
+]{
+    colspec = {|l|X|},
+    rowhead = 1,
+    hlines,
+    row{1} = {font=\bfseries},
+}
+Tên chức năng & Quản lý trạng thái Work\-space \\
+ID & UC08 \\
+Mức độ cần thiết & Bắt buộc \\
+Người sử dụng & Super Admin của hệ thống \\
+Phân loại & Trung bình \\
+Các thành phần tham gia và mối quan tâm & \textbf{Super Admin:} Muốn khóa/mở khóa work\-space khi vi phạm chính sách hoặc theo yêu cầu. \\
+Mô tả tóm tắt & Chức năng cho phép Super Admin khóa hoặc mở khóa work\-space và gửi thông báo đến các thành viên. \\
+Trigger & Super Admin chọn thao tác khóa/mở khóa work\-space trong trang quản trị. \\
+Kiểu sự kiện & External \\
+Luồng xử lý bình thường &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{enumerate}[nosep, leftmargin=*]
+    \item Super Admin truy cập trang quản trị work\-space.
+    \item Super Admin chọn work\-space cần thay đổi trạng thái.
+    \item Super Admin chọn "Khóa" hoặc "Mở khóa".
+    \item Nếu khóa: Nhập lý do khóa work\-space.
+    \item Hệ thống cập nhật trạng thái work\-space.
+    \item Hệ thống gửi thông báo đến tất cả thành viên.
+    \item Hệ thống ghi audit log.
+\end{enumerate}
+\vspace{2pt}
+\end{minipage} \\
+Các luồng sự kiện con &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item Khóa Work\-space: Ngăn không cho thành viên truy cập và thao tác.
+    \item Mở khóa Work\-space: Khôi phục quyền truy cập bình thường.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Luồng luân phiên/đặc biệt &
+\begin{minipage}[t]{\linewidth}
+\vspace{2pt}
+\begin{itemize}[nosep, leftmargin=*]
+    \item 4a. Không nhập lý do: Hệ thống yêu cầu nhập lý do khóa.
+\end{itemize}
+\vspace{2pt}
+\end{minipage} \\
+Kết quả & Trạng thái work\-space được cập nhật và thông báo được gửi đến thành viên. \\
+\end{longtblr}

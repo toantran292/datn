@@ -1,0 +1,294 @@
+\begin{landscape}
+\pagestyle{lscape}
+
+\phantomsection
+\setsection{Phụ lục C. TÀI LIỆU KIỂM THỬ}
+\setcounter{section}{7}
+\setcounter{table}{0}
+\renewcommand{\thetable}{7.\arabic{table}}
+
+\subsection*{Các trường hợp kiểm thử chi tiết}
+
+Chi tiết các trường hợp kiểm thử cho 17 use case của hệ thống như sau:
+
+% TS_REG - UC01: Đăng ký
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng đăng ký tài khoản (UC01)},
+  label = {tab:tc_register}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-REG\_\-01 & TS\_\-REG & Kiểm thử đăng ký với thông tin hợp lệ & Họ tên: Nguyễn Văn A\newline Email: nguyenvana\-@gmail.com\newline Mật khẩu: Password123! & 1. Nhập họ tên\newline 2. Nhập email\newline 3. Nhập mật khẩu\newline 4. Xác nhận mật khẩu\newline 5. Nhấn Đăng ký & Hiển thị thông báo: "Đăng ký thành công!" & Hiển thị thông báo: "Đăng ký thành công!" & Pass \\
+TC\_\-REG\_\-02 & TS\_\-REG & Kiểm thử đăng ký với email đã tồn tại & Họ tên: Trần Thị B\newline Email: nguyenvana\-@gmail.com\newline Mật khẩu: Password123! & 1. Nhập họ tên\newline 2. Nhập email đã tồn tại\newline 3. Nhập mật khẩu\newline 4. Xác nhận mật khẩu\newline 5. Nhấn Đăng ký & Hiển thị thông báo: "Email đã được sử dụng!" & Hiển thị thông báo: "Email đã được sử dụng!" & Pass \\
+TC\_\-REG\_\-03 & TS\_\-REG & Kiểm thử đăng ký với email không hợp lệ & Họ tên: Lê Văn C\newline Email: invalid-email\newline Mật khẩu: Password123! & 1. Nhập họ tên\newline 2. Nhập email không hợp lệ\newline 3. Nhập mật khẩu\newline 4. Nhấn Đăng ký & Hiển thị thông báo: "Email không hợp lệ!" & Hiển thị thông báo: "Email không hợp lệ!" & Pass \\
+TC\_\-REG\_\-04 & TS\_\-REG & Kiểm thử đăng ký với mật khẩu yếu & Họ tên: Phạm Văn D\newline Email: phamvand\-@gmail.com\newline Mật khẩu: 123 & 1. Nhập họ tên\newline 2. Nhập email\newline 3. Nhập mật khẩu yếu\newline 4. Nhấn Đăng ký & Hiển thị thông báo: "Mật khẩu phải có ít nhất 8 ký tự!" & Hiển thị thông báo: "Mật khẩu phải có ít nhất 8 ký tự!" & Pass \\
+TC\_\-REG\_\-05 & TS\_\-REG & Kiểm thử đăng ký với mật khẩu không khớp & Họ tên: Hoàng Văn E\newline Email: hoangvane\-@gmail.com\newline Mật khẩu: Password123!\newline Xác nhận: Password456! & 1. Nhập họ tên\newline 2. Nhập email\newline 3. Nhập mật khẩu\newline 4. Nhập xác nhận khác\newline 5. Nhấn Đăng ký & Hiển thị thông báo: "Mật khẩu xác nhận không khớp!" & Hiển thị thông báo: "Mật khẩu xác nhận không khớp!" & Pass \\
+\end{longtblr}
+
+% TS_LOGIN - UC02: Đăng nhập
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng đăng nhập (UC02)},
+  label = {tab:tc_login}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-LOGIN\_\-01 & TS\_\-LOGIN & Kiểm thử đăng nhập với thông tin hợp lệ & Email: nguyenvana\-@gmail.com\newline Mật khẩu: Password123! & 1. Nhập email\newline 2. Nhập mật khẩu\newline 3. Nhấn Đăng nhập & Chuyển đến trang Workspaces & Chuyển đến trang Workspaces & Pass \\
+TC\_\-LOGIN\_\-02 & TS\_\-LOGIN & Kiểm thử đăng nhập với email đúng, mật khẩu sai & Email: nguyenvana\-@gmail.com\newline Mật khẩu: WrongPass123! & 1. Nhập email\newline 2. Nhập mật khẩu sai\newline 3. Nhấn Đăng nhập & Hiển thị thông báo: "Email hoặc mật khẩu không đúng!" & Hiển thị thông báo: "Email hoặc mật khẩu không đúng!" & Pass \\
+TC\_\-LOGIN\_\-03 & TS\_\-LOGIN & Kiểm thử đăng nhập với email không tồn tại & Email: notexist\-@gmail.com\newline Mật khẩu: Password123! & 1. Nhập email không tồn tại\newline 2. Nhập mật khẩu\newline 3. Nhấn Đăng nhập & Hiển thị thông báo: "Email hoặc mật khẩu không đúng!" & Hiển thị thông báo: "Email hoặc mật khẩu không đúng!" & Pass \\
+TC\_\-LOGIN\_\-04 & TS\_\-LOGIN & Kiểm thử đăng nhập bằng Google OAuth & Tài khoản Google hợp lệ & 1. Nhấn nút "Sign in with Google"\newline 2. Chọn tài khoản Google\newline 3. Xác nhận quyền & Chuyển đến trang Workspaces & Chuyển đến trang Workspaces & Pass \\
+\end{longtblr}
+
+% TS_LOGOUT - UC03: Đăng xuất
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng đăng xuất (UC03)},
+  label = {tab:tc_logout}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-LOGOUT\_\-01 & TS\_\-LOGOUT & Kiểm thử đăng xuất thành công & User đã đăng nhập & 1. Nhấn vào avatar\newline 2. Chọn "Đăng xuất" & Chuyển đến trang đăng nhập & Chuyển đến trang đăng nhập & Pass \\
+TC\_\-LOGOUT\_\-02 & TS\_\-LOGOUT & Kiểm thử truy cập trang bảo vệ sau khi đăng xuất & User đã đăng xuất & 1. Đăng xuất\newline 2. Truy cập URL dashboard & Chuyển hướng về trang đăng nhập & Chuyển hướng về trang đăng nhập & Pass \\
+\end{longtblr}
+
+% TS_PASSWORD - UC04: Quản lý mật khẩu
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng quản lý mật khẩu (UC04)},
+  label = {tab:tc_password}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-PWD\_\-01 & TS\_\-PASS\-WORD & Kiểm thử gửi email reset mật khẩu & Email: nguyenvana\-@gmail.com & 1. Nhấn "Forgot password"\newline 2. Nhập email\newline 3. Nhấn "Send Reset Link" & Hiển thị thông báo: "Đã gửi link reset mật khẩu!" & Hiển thị thông báo: "Đã gửi link reset mật khẩu!" & Pass \\
+TC\_\-PWD\_\-02 & TS\_\-PASS\-WORD & Kiểm thử đổi mật khẩu thành công & Mật khẩu cũ: Password123!\newline Mật khẩu mới: NewPass456! & 1. Vào Profile > Password\newline 2. Nhập mật khẩu cũ\newline 3. Nhập mật khẩu mới\newline 4. Xác nhận\newline 5. Lưu & Hiển thị thông báo: "Đổi mật khẩu thành công!" & Hiển thị thông báo: "Đổi mật khẩu thành công!" & Pass \\
+TC\_\-PWD\_\-03 & TS\_\-PASS\-WORD & Kiểm thử đổi mật khẩu với mật khẩu cũ sai & Mật khẩu cũ: WrongOld123! & 1. Nhập mật khẩu cũ sai\newline 2. Nhập mật khẩu mới\newline 3. Lưu & Hiển thị thông báo: "Mật khẩu hiện tại không đúng!" & Hiển thị thông báo: "Mật khẩu hiện tại không đúng!" & Pass \\
+TC\_\-PWD\_\-04 & TS\_\-PASS\-WORD & Kiểm thử reset với email không tồn tại & Email: notexist\-@gmail.com & 1. Nhấn "Forgot password"\newline 2. Nhập email không tồn tại\newline 3. Nhấn gửi & Hiển thị thông báo: "Email không tồn tại trong hệ thống!" & Hiển thị thông báo: "Email không tồn tại trong hệ thống!" & Pass \\
+\end{longtblr}
+
+% TS_PROFILE - UC05: Cập nhật thông tin cá nhân
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng cập nhật thông tin cá nhân (UC05)},
+  label = {tab:tc_profile}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-PROFILE\_\-01 & TS\_\-PROFILE & Kiểm thử cập nhật họ tên thành công & Họ tên mới: Nguyễn Văn B & 1. Vào trang Profile\newline 2. Nhấn Edit\newline 3. Đổi họ tên\newline 4. Lưu & Hiển thị thông báo: "Cập nhật thành công!" & Hiển thị thông báo: "Cập nhật thành công!" & Pass \\
+TC\_\-PROFILE\_\-02 & TS\_\-PROFILE & Kiểm thử cập nhật số điện thoại hợp lệ & SĐT: 0901234567 & 1. Vào trang Profile\newline 2. Nhập SĐT mới\newline 3. Lưu & Số điện thoại được cập nhật & Số điện thoại được cập nhật & Pass \\
+TC\_\-PROFILE\_\-03 & TS\_\-PROFILE & Kiểm thử cập nhật số điện thoại không hợp lệ & SĐT: abc123 & 1. Vào trang Profile\newline 2. Nhập SĐT không hợp lệ\newline 3. Lưu & Hiển thị thông báo: "Số điện thoại không hợp lệ!" & Hiển thị thông báo: "Số điện thoại không hợp lệ!" & Pass \\
+\end{longtblr}
+
+% TS_CREATE_WS - UC06: Tạo Workspace
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng tạo Workspace (UC06)},
+  label = {tab:tc_create_workspace}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-CWS\_\-01 & TS\_\-CREATE\_\-WS & Kiểm thử tạo workspace với thông tin hợp lệ & Tên: Marketing Team & 1. Nhấn "Create Workspace"\newline 2. Nhập tên\newline 3. Nhấn Tạo & Hiển thị thông báo: "Tạo workspace thành công!" & Hiển thị thông báo: "Tạo workspace thành công!" & Pass \\
+TC\_\-CWS\_\-02 & TS\_\-CREATE\_\-WS & Kiểm thử tạo workspace với tên trống & Tên: (trống) & 1. Nhấn "Create Workspace"\newline 2. Để trống tên\newline 3. Nhấn Tạo & Hiển thị thông báo: "Tên workspace không được để trống!" & Hiển thị thông báo: "Tên workspace không được để trống!" & Pass \\
+TC\_\-CWS\_\-03 & TS\_\-CREATE\_\-WS & Kiểm thử tạo workspace với tên quá dài & Tên: (255+ ký tự) & 1. Nhấn "Create Workspace"\newline 2. Nhập tên quá dài\newline 3. Nhấn Tạo & Hiển thị thông báo: "Tên không được vượt quá 255 ký tự!" & Hiển thị thông báo: "Tên không được vượt quá 255 ký tự!" & Pass \\
+TC\_\-CWS\_\-04 & TS\_\-CREATE\_\-WS & Kiểm thử người tạo được gán làm Owner & Tên: Dev Team & 1. Tạo workspace mới\newline 2. Vào trang Members\newline 3. Kiểm tra vai trò & Người tạo có vai trò "Owner" & Người tạo có vai trò "Owner" & Pass \\
+\end{longtblr}
+
+% TS_CONFIG_WS - UC07: Cấu hình Workspace
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng cấu hình Workspace (UC07)},
+  label = {tab:tc_config_workspace}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-CFG\_\-01 & TS\_\-CONFIG\_\-WS & Kiểm thử đổi tên workspace & Tên mới: Marketing Pro & 1. Vào Settings\newline 2. Đổi tên workspace\newline 3. Nhấn Save & Hiển thị thông báo: "Cập nhật thành công!" & Hiển thị thông báo: "Cập nhật thành công!" & Pass \\
+TC\_\-CFG\_\-02 & TS\_\-CONFIG\_\-WS & Kiểm thử đổi LLM Provider mặc định & Provider: Anthropic Claude & 1. Vào Settings > AI Settings\newline 2. Chọn Anthropic\newline 3. Nhấn Save & LLM Provider được cập nhật & LLM Provider được cập nhật & Pass \\
+TC\_\-CFG\_\-03 & TS\_\-CONFIG\_\-WS & Kiểm thử Member không có quyền cấu hình & User có vai trò Member & 1. Đăng nhập với Member\newline 2. Vào workspace\newline 3. Kiểm tra menu Settings & Không hiển thị menu Settings & Không hiển thị menu Settings & Pass \\
+\end{longtblr}
+
+% TS_LOCK_WS - UC08: Khóa/Mở khóa Workspace
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng khóa/mở khóa Workspace (UC08)},
+  label = {tab:tc_lock_workspace}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-LOCK\_\-01 & TS\_\-LOCK\_\-WS & Kiểm thử Super Admin khóa workspace & Workspace: Marketing Team & 1. Đăng nhập Super Admin\newline 2. Vào Admin Panel\newline 3. Chọn workspace\newline 4. Nhấn Lock & Hiển thị thông báo: "Đã khóa workspace!" & Hiển thị thông báo: "Đã khóa workspace!" & Pass \\
+TC\_\-LOCK\_\-02 & TS\_\-LOCK\_\-WS & Kiểm thử Super Admin mở khóa workspace & Workspace đang bị khóa & 1. Đăng nhập Super Admin\newline 2. Vào Admin Panel\newline 3. Chọn workspace bị khóa\newline 4. Nhấn Unlock & Hiển thị thông báo: "Đã mở khóa workspace!" & Hiển thị thông báo: "Đã mở khóa workspace!" & Pass \\
+TC\_\-LOCK\_\-03 & TS\_\-LOCK\_\-WS & Kiểm thử user thường không truy cập được Admin Panel & User thường & 1. Đăng nhập user thường\newline 2. Truy cập URL /admin & Chuyển hướng về trang 403 Forbidden & Chuyển hướng về trang 403 Forbidden & Pass \\
+\end{longtblr}
+
+% TS_DASHBOARD - UC09: Xem Dashboard
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng xem Dashboard (UC09)},
+  label = {tab:tc_dashboard}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-DASH\_\-01 & TS\_\-DASHBOARD & Kiểm thử hiển thị stats cards & Workspace có dữ liệu & 1. Vào workspace\newline 2. Xem Dashboard & Hiển thị đúng số Members, Files, Reports, Activities & Hiển thị đúng số Members, Files, Reports, Activities & Pass \\
+TC\_\-DASH\_\-02 & TS\_\-DASHBOARD & Kiểm thử hiển thị Recent Activity & Workspace có hoạt động & 1. Vào Dashboard\newline 2. Xem Recent Activity & Hiển thị danh sách hoạt động gần đây & Hiển thị danh sách hoạt động gần đây & Pass \\
+\end{longtblr}
+
+% TS_AUDIT - UC10: Xem Audit Log
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng xem Audit Log (UC10)},
+  label = {tab:tc_audit}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-AUDIT\_\-01 & TS\_\-AUDIT & Kiểm thử hiển thị danh sách audit logs & Workspace có hoạt động & 1. Vào Audit Logs\newline 2. Xem danh sách & Hiển thị danh sách logs với Action, User, Time, IP & Hiển thị danh sách logs với Action, User, Time, IP & Pass \\
+TC\_\-AUDIT\_\-02 & TS\_\-AUDIT & Kiểm thử lọc theo loại hành động & Filter: File Upload & 1. Vào Audit Logs\newline 2. Chọn filter "File Upload" & Chỉ hiển thị logs upload file & Chỉ hiển thị logs upload file & Pass \\
+TC\_\-AUDIT\_\-03 & TS\_\-AUDIT & Kiểm thử Member không xem được Audit Logs & User có vai trò Member & 1. Đăng nhập Member\newline 2. Kiểm tra menu Audit Logs & Không hiển thị menu Audit Logs & Không hiển thị menu Audit Logs & Pass \\
+\end{longtblr}
+
+% TS_MEMBER - UC11: Quản lý thành viên
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng quản lý thành viên (UC11)},
+  label = {tab:tc_member}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-MEM\_\-01 & TS\_\-MEMBER & Kiểm thử mời thành viên với email hợp lệ & Email: member\-@gmail.com\newline Vai trò: Member & 1. Nhấn "Invite"\newline 2. Nhập email\newline 3. Chọn vai trò\newline 4. Nhấn Send & Hiển thị thông báo: "Đã gửi lời mời thành công!" & Hiển thị thông báo: "Đã gửi lời mời thành công!" & Pass \\
+TC\_\-MEM\_\-02 & TS\_\-MEMBER & Kiểm thử mời thành viên đã là member & Email: nguyenvana\-@gmail.com & 1. Nhấn "Invite"\newline 2. Nhập email đã là member\newline 3. Nhấn Send & Hiển thị thông báo: "Người này đã là thành viên!" & Hiển thị thông báo: "Người này đã là thành viên!" & Pass \\
+TC\_\-MEM\_\-03 & TS\_\-MEMBER & Kiểm thử đổi vai trò Member thành Admin & Member: Trần Thị B\newline Vai trò mới: Admin & 1. Chọn thành viên\newline 2. Nhấn Edit\newline 3. Đổi vai trò\newline 4. Lưu & Hiển thị thông báo: "Cập nhật vai trò thành công!" & Hiển thị thông báo: "Cập nhật vai trò thành công!" & Pass \\
+TC\_\-MEM\_\-04 & TS\_\-MEMBER & Kiểm thử xóa thành viên khỏi workspace & Member cần xóa & 1. Chọn thành viên\newline 2. Nhấn Remove\newline 3. Xác nhận & Hiển thị thông báo: "Đã xóa thành viên!" & Hiển thị thông báo: "Đã xóa thành viên!" & Pass \\
+TC\_\-MEM\_\-05 & TS\_\-MEMBER & Kiểm thử Member không có quyền mời & User có vai trò Member & 1. Đăng nhập Member\newline 2. Vào trang Members\newline 3. Kiểm tra nút Invite & Không hiển thị nút "Invite" & Không hiển thị nút "Invite" & Pass \\
+\end{longtblr}
+
+% TS_TRANSFER - UC12: Chuyển quyền sở hữu
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng chuyển quyền sở hữu (UC12)},
+  label = {tab:tc_transfer}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-TRANS\_\-01 & TS\_\-TRANS\-FER & Kiểm thử chuyển quyền Owner thành công & New Owner: Trần Thị B & 1. Vào Members\newline 2. Chọn thành viên\newline 3. Nhấn "Transfer Ownership"\newline 4. Xác nhận & Hiển thị thông báo: "Đã chuyển quyền sở hữu!" & Hiển thị thông báo: "Đã chuyển quyền sở hữu!" & Pass \\
+TC\_\-TRANS\_\-02 & TS\_\-TRANS\-FER & Kiểm thử Owner cũ trở thành Admin & Sau khi chuyển quyền & 1. Chuyển quyền sở hữu\newline 2. Kiểm tra vai trò Owner cũ & Owner cũ có vai trò "Admin" & Owner cũ có vai trò "Admin" & Pass \\
+TC\_\-TRANS\_\-03 & TS\_\-TRANS\-FER & Kiểm thử Admin không có quyền chuyển ownership & User có vai trò Admin & 1. Đăng nhập Admin\newline 2. Vào Members\newline 3. Kiểm tra tùy chọn & Không hiển thị "Transfer Ownership" & Không hiển thị "Transfer Ownership" & Pass \\
+\end{longtblr}
+
+% TS_UPLOAD - UC13: Upload tệp tin
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng upload tệp tin (UC13)},
+  label = {tab:tc_upload}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-UPLOAD\_\-01 & TS\_\-UPLOAD & Kiểm thử upload file hợp lệ & File: report.pdf\newline Kích thước: 2MB & 1. Nhấn "Upload"\newline 2. Chọn file\newline 3. Xác nhận upload & Hiển thị thông báo: "Upload thành công!" & Hiển thị thông báo: "Upload thành công!" & Pass \\
+TC\_\-UPLOAD\_\-02 & TS\_\-UPLOAD & Kiểm thử upload file quá lớn & File: bigfile.zip\newline Kích thước: 150MB & 1. Nhấn "Upload"\newline 2. Chọn file lớn\newline 3. Xác nhận upload & Hiển thị thông báo: "File không được vượt quá 100MB!" & Hiển thị thông báo: "File không được vượt quá 100MB!" & Pass \\
+TC\_\-UPLOAD\_\-03 & TS\_\-UPLOAD & Kiểm thử upload file không được hỗ trợ & File: malware.exe\newline Kích thước: 1MB & 1. Nhấn "Upload"\newline 2. Chọn file .exe\newline 3. Xác nhận upload & Hiển thị thông báo: "Loại file không được hỗ trợ!" & Hiển thị thông báo: "Loại file không được hỗ trợ!" & Pass \\
+TC\_\-UPLOAD\_\-04 & TS\_\-UPLOAD & Kiểm thử file xuất hiện trong danh sách sau upload & File vừa upload & 1. Upload file\newline 2. Xem danh sách Files & File xuất hiện với đúng tên, size, uploader & File xuất hiện với đúng tên, size, uploader & Pass \\
+\end{longtblr}
+
+% TS_FILE - UC14: Quản lý tệp tin
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng quản lý tệp tin (UC14)},
+  label = {tab:tc_file}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-FILE\_\-01 & TS\_\-FILE & Kiểm thử download file thành công & File: report.pdf & 1. Chọn file\newline 2. Nhấn nút Download & File được tải xuống & File được tải xuống & Pass \\
+TC\_\-FILE\_\-02 & TS\_\-FILE & Kiểm thử xóa file thành công & File cần xóa & 1. Chọn file\newline 2. Nhấn Delete\newline 3. Xác nhận & Hiển thị thông báo: "Đã xóa file!" & Hiển thị thông báo: "Đã xóa file!" & Pass \\
+TC\_\-FILE\_\-03 & TS\_\-FILE & Kiểm thử tìm kiếm file theo tên & Từ khóa: "report" & 1. Nhập từ khóa vào ô Search\newline 2. Nhấn Enter & Hiển thị các file có tên chứa "report" & Hiển thị các file có tên chứa "report" & Pass \\
+TC\_\-FILE\_\-04 & TS\_\-FILE & Kiểm thử Member không có quyền xóa file người khác & File của người khác & 1. Đăng nhập Member\newline 2. Chọn file của người khác\newline 3. Kiểm tra nút Delete & Không hiển thị nút Delete & Không hiển thị nút Delete & Pass \\
+\end{longtblr}
+
+% TS_NOTIF - UC15: Quản lý thông báo
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng quản lý thông báo (UC15)},
+  label = {tab:tc_notification}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-NOTIF\_\-01 & TS\_\-NOTIF & Kiểm thử hiển thị danh sách thông báo & User có thông báo & 1. Nhấn vào icon thông báo & Hiển thị dropdown danh sách thông báo & Hiển thị dropdown danh sách thông báo & Pass \\
+TC\_\-NOTIF\_\-02 & TS\_\-NOTIF & Kiểm thử đánh dấu đã đọc & Thông báo chưa đọc & 1. Nhấn vào thông báo chưa đọc & Thông báo được đánh dấu đã đọc & Thông báo được đánh dấu đã đọc & Pass \\
+TC\_\-NOTIF\_\-03 & TS\_\-NOTIF & Kiểm thử đánh dấu tất cả đã đọc & Nhiều thông báo chưa đọc & 1. Nhấn "Mark all read" & Tất cả thông báo được đánh dấu đã đọc & Tất cả thông báo được đánh dấu đã đọc & Pass \\
+\end{longtblr}
+
+% TS_AI_CREATE - UC16: Tạo báo cáo AI
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng tạo báo cáo AI (UC16)},
+  label = {tab:tc_ai_create}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-AICR\_\-01 & TS\_\-AI\_\-CREATE & Kiểm thử tạo báo cáo Weekly Digest & Loại: Weekly Digest\newline Provider: OpenAI GPT-4 & 1. Nhấn "Generate"\newline 2. Chọn loại báo cáo\newline 3. Chọn provider\newline 4. Nhấn Generate & Hiển thị "Đang tạo báo cáo..." rồi hiển thị báo cáo & Hiển thị "Đang tạo báo cáo..." rồi hiển thị báo cáo & Pass \\
+TC\_\-AICR\_\-02 & TS\_\-AI\_\-CREATE & Kiểm thử tạo báo cáo Custom với prompt & Loại: Custom\newline Prompt: "Tóm tắt hoạt động" & 1. Chọn Custom\newline 2. Nhập prompt\newline 3. Chọn data sources\newline 4. Nhấn Generate & Báo cáo được tạo theo prompt & Báo cáo được tạo theo prompt & Pass \\
+TC\_\-AICR\_\-03 & TS\_\-AI\_\-CREATE & Kiểm thử chọn LLM Provider khác & Provider: Anthropic Claude & 1. Chọn Anthropic Claude\newline 2. Tạo báo cáo & Báo cáo được tạo bởi Claude & Báo cáo được tạo bởi Claude & Pass \\
+TC\_\-AICR\_\-04 & TS\_\-AI\_\-CREATE & Kiểm thử Member không có quyền tạo báo cáo & User có vai trò Member & 1. Đăng nhập Member\newline 2. Vào AI Reports\newline 3. Kiểm tra nút Generate & Không hiển thị nút "Generate" & Không hiển thị nút "Generate" & Pass \\
+\end{longtblr}
+
+% TS_AI_EXPORT - UC17: Xem và xuất báo cáo
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng xem và xuất báo cáo (UC17)},
+  label = {tab:tc_ai_export}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-AIEX\_\-01 & TS\_\-AI\_\-EXPORT & Kiểm thử xem chi tiết báo cáo & Báo cáo đã tạo & 1. Chọn báo cáo\newline 2. Nhấn "View" & Hiển thị nội dung chi tiết báo cáo & Hiển thị nội dung chi tiết báo cáo & Pass \\
+TC\_\-AIEX\_\-02 & TS\_\-AI\_\-EXPORT & Kiểm thử xuất báo cáo ra PDF & Báo cáo đã tạo & 1. Chọn báo cáo\newline 2. Nhấn Export\newline 3. Chọn PDF & File PDF được tải xuống & File PDF được tải xuống & Pass \\
+TC\_\-AIEX\_\-03 & TS\_\-AI\_\-EXPORT & Kiểm thử xuất báo cáo ra DOCX & Báo cáo đã tạo & 1. Chọn báo cáo\newline 2. Nhấn Export\newline 3. Chọn DOCX & File DOCX được tải xuống & File DOCX được tải xuống & Pass \\
+\end{longtblr}
+
+\end{landscape}

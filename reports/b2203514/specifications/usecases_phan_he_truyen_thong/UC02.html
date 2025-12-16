@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>UC02 - Quản lý thành viên kênh</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; font-size: 13pt; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; vertical-align: top; }
+        .header-row td:first-child { width: 70%; }
+        .header-row td:last-child { width: 30%; }
+        h4 { margin: 10px 0 5px 0; }
+        ul, ol { margin: 5px 0; padding-left: 20px; }
+        .section-title { font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<table>
+    <tr class="header-row">
+        <td><strong>Tên chức năng:</strong> Quản lý thành viên kênh</td>
+        <td><strong>ID:</strong> UC02</td>
+    </tr>
+    <tr>
+        <td><strong>Người sử dụng:</strong> Workspace Owner, Channel Admin</td>
+        <td><strong>Mức độ cần thiết:</strong> Bắt buộc</td>
+    </tr>
+    <tr>
+        <td colspan="2" style="text-align: right;"><strong>Phân loại:</strong> Trung bình</td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Các thành phần tham gia và mối quan tâm:</p>
+            <ul>
+                <li><strong>Workspace Owner/Channel Admin:</strong> Muốn quản lý danh sách thành viên trong kênh, mời người mới, xóa thành viên và phân quyền truy cập.</li>
+                <li><strong>Member:</strong> Được mời vào kênh hoặc bị xóa khỏi kênh.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Mô tả tóm tắt:</p>
+            <p>Cho phép Channel Admin mời thành viên workspace vào kênh, xóa thành viên khỏi kênh, và phân quyền Admin/Member cho từng thành viên trong kênh.</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p><strong>Trigger:</strong> Channel Admin chọn chức năng "Quản lý thành viên" của một kênh.</p>
+            <p><strong>Kiểu sự kiện:</strong> External</p>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Luồng xử lý bình thường của sự kiện:</p>
+            <ol>
+                <li>Channel Admin truy cập vào cài đặt của kênh.</li>
+                <li>Channel Admin chọn tab "Thành viên".</li>
+                <li>Hệ thống hiển thị danh sách thành viên hiện tại của kênh.</li>
+                <li>Channel Admin chọn "Mời thành viên".</li>
+                <li>Hệ thống hiển thị danh sách thành viên workspace chưa tham gia kênh.</li>
+                <li>Channel Admin chọn một hoặc nhiều thành viên và nhấn "Mời".</li>
+                <li>Hệ thống thêm thành viên vào kênh và gửi thông báo.</li>
+                <li>Danh sách thành viên được cập nhật.</li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Các luồng sự kiện con (Subflows):</p>
+            <ul>
+                <li><strong>S1 - Xóa thành viên:</strong> Channel Admin chọn thành viên → Chọn "Xóa" → Xác nhận → Thành viên bị xóa khỏi kênh.</li>
+                <li><strong>S2 - Phân quyền:</strong> Channel Admin chọn thành viên → Chọn vai trò (Admin/Member) → Lưu → Quyền được cập nhật.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p class="section-title">Luồng luân phiên/đặc biệt (Alternative/Exceptional flows):</p>
+            <p><strong>6a. Thành viên đã tồn tại trong kênh:</strong></p>
+            <ol start="7">
+                <li>Hệ thống bỏ qua thành viên đã tồn tại và chỉ thêm các thành viên mới.</li>
+            </ol>
+            <p><strong>7a. Không thể xóa Channel Admin cuối cùng:</strong></p>
+            <ol start="8">
+                <li>Hệ thống thông báo "Kênh phải có ít nhất một Admin".</li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p><strong>Kết quả:</strong> Danh sách thành viên kênh được cập nhật (thêm/xóa/thay đổi quyền).</p>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>

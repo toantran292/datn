@@ -11,6 +11,22 @@ export enum EUserWorkspaceRoles {
   GUEST = 5,
 }
 
+// Workspace selector types (for auth-web API)
+export type TWorkspaceRole = 'OWNER' | 'ADMIN' | 'MEMBER';
+
+export interface IWorkspaceOrg {
+  id: string;
+  display_name: string;
+  slug: string;
+  role: TWorkspaceRole;
+  logo_url?: string;
+}
+
+export interface IWorkspaceTenants {
+  joined: IWorkspaceOrg[];
+  invites: any[]; // TODO: Define invite type
+}
+
 export interface IWorkspace {
   readonly id: string;
   readonly owner: IUser;

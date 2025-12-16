@@ -1,0 +1,276 @@
+\phantomsection
+\setsection{Phụ lục A. Hướng dẫn cài đặt và sử dụng phần mềm}
+
+\newcounter{appendixstep}
+\setcounter{appendixstep}{0}
+\renewcommand{\theappendixstep}{\arabic{appendixstep}}
+
+\refstepcounter{appendixstep}
+\subsubsection*{\theappendixstep. Yêu cầu hệ thống}
+
+\textbf{Phần cứng tối thiểu:}
+\begin{itemize}
+    \item Vi xử lý: Intel Core i5 hoặc tương đương
+    \item RAM: 8GB (khuyến nghị 16GB cho môi trường development)
+    \item Ổ cứng: SSD 256GB trở lên (ít nhất 20GB dung lượng trống)
+    \item Kết nối mạng: Băng thông ổn định để tải dependencies và Docker images
+\end{itemize}
+
+\textbf{Phần mềm yêu cầu:}
+\begin{itemize}
+    \item Hệ điều hành: Windows 10/11, macOS 10.15+, hoặc Linux (Ubuntu 20.04+)
+    \item Node.js: phiên bản 20.19.0 (theo file \texttt{.nvmrc})
+    \item pnpm: phiên bản 10.14.0+ (package manager)
+    \item Docker: phiên bản 20.10+ và Docker Compose v2
+    \item Git: phiên bản 2.30+
+    \item OpenSSL: để sinh JWT keys cho Identity service
+\end{itemize}
+
+\refstepcounter{appendixstep}
+\subsubsection*{\theappendixstep. Cài đặt các công cụ cần thiết}
+
+\textbf{1. Cài đặt Node.js}
+
+Hệ thống sử dụng Node.js phiên bản 20.19.0. Khuyến nghị sử dụng Node Version Manager (nvm) để quản lý phiên bản Node.js.
+
+\textbf{Trên macOS/Linux:}
+\begin{lstlisting}
+# Cai dat nvm
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+# Khoi dong lai terminal, sau do:
+nvm install 20.19.0 && nvm use 20.19.0
+\end{lstlisting}
+
+\textbf{Trên Windows:} Tải và cài đặt nvm-windows từ: \url{https://github.com/coreybutler/nvm-windows}, sau đó chạy lệnh tương tự.
+
+\textbf{2. Cài đặt pnpm và Docker}
+\begin{lstlisting}
+npm install -g pnpm@10.14.0
+\end{lstlisting}
+\newpage
+Docker: Tải Docker Desktop từ \url{https://www.docker.com/products/docker-desktop} (Windows/macOS) hoặc cài qua apt trên Ubuntu:
+\begin{lstlisting}
+sudo apt-get update && sudo apt-get install docker.io docker-compose-v2
+sudo usermod -aG docker $USER
+\end{lstlisting}
+
+\refstepcounter{appendixstep}
+\subsubsection*{\theappendixstep. Clone và cấu hình môi trường}
+
+\begin{lstlisting}
+# Clone repository
+git clone https://github.com/toantran292/datn.git unified-teamspace && cd unified-teamspace
+
+# Chay setup script (tao .env.dev va sinh JWT keys)
+make dev.setup
+\end{lstlisting}
+
+\textbf{Cấu hình biến môi trường Docker} - Chỉnh sửa file \texttt{infra/docker/.env.dev}:
+\begin{lstlisting}
+# PostgreSQL
+PG_USER=postgres
+PG_PASSWORD=<mat-khau-manh>
+PG_DB=uts_db
+PG_PORT=5432
+
+# Redis
+REDIS_PORT=6379
+
+# MinIO S3 Storage
+MINIO_ROOT_USER=minioadmin
+MINIO_ROOT_PASSWORD=<mat-khau-manh>
+MINIO_API_PORT=41200
+MINIO_CONSOLE_PORT=41201
+
+# OpenSearch
+OPENSEARCH_PORT=9200
+OS_DASHBOARDS_PORT=5601
+\end{lstlisting}
+
+\textbf{Cấu hình services} - Tạo file \texttt{.env} từ template cho mỗi service:
+\begin{lstlisting}
+cd services/tenant-bff && cp .env.example .env
+# Chinh sua .env voi cac gia tri phu hop
+\end{lstlisting}
+
+\refstepcounter{appendixstep}
+\subsubsection*{\theappendixstep. Cài đặt Dependencies và Build}
+
+\begin{lstlisting}
+# Cai dat dependencies cho toan bo monorepo
+pnpm install
+
+# Build cac shared packages
+pnpm build:packages
+\end{lstlisting}
+
+\refstepcounter{appendixstep}
+\subsubsection*{\theappendixstep. Khởi động Infrastructure Services}
+
+\begin{lstlisting}
+# Khoi dong tat ca infrastructure (PostgreSQL, Redis, MinIO, OpenSearch)
+make dev.up
+
+# Kiem tra trang thai
+make dev.ps
+
+# Xem logs
+make dev.logs
+\end{lstlisting}
+
+\textbf{Kiểm tra health:}
+\begin{lstlisting}
+docker exec uts_pg pg_isready -U postgres     # PostgreSQL
+docker exec uts_redis redis-cli PING          # Redis
+curl http://localhost:41200/minio/health/live # MinIO
+curl http://localhost:9200                    # OpenSearch
+\end{lstlisting}
+
+\refstepcounter{appendixstep}
+\subsubsection*{\theappendixstep. Khởi tạo Database và chạy ứng dụng}
+
+\begin{lstlisting}
+# Chay migrations
+cd services/tenant-bff
+pnpm run migration:run
+pnpm run seed  # (tuy chon) Seed du lieu mau
+\end{lstlisting}
+
+\textbf{Chạy Development:}
+\begin{lstlisting}
+# Chay tat ca frontend apps (su dung Turbo)
+pnpm dev
+
+# Hoac chay tung app rieng le
+pnpm marketing:dev
+pnpm --filter @uts/tenant-web dev
+
+# Chay backend services (moi service trong terminal rieng)
+cd services/tenant-bff && pnpm start:dev
+cd services/chat && pnpm start:dev
+\end{lstlisting}
+
+\textbf{Các địa chỉ truy cập:}
+\begin{itemize}
+    \item Marketing Web: \url{http://localhost:5173}
+    \item Tenant Web: \url{http://localhost:5174}
+    \item Tenant BFF API: \url{http://localhost:8085}
+    \item MinIO Console: \url{http://localhost:41201}
+    \item OpenSearch Dashboards: \url{http://localhost:5601}
+\end{itemize}
+
+\refstepcounter{appendixstep}
+\subsubsection*{\theappendixstep. Build Production}
+
+\begin{lstlisting}
+# Build tat ca
+pnpm build
+
+# Build backend service
+cd services/tenant-bff && pnpm build && pnpm start:prod
+\end{lstlisting}
+
+\refstepcounter{appendixstep}
+\subsubsection*{\theappendixstep. Các lệnh Makefile hữu ích}
+
+\begin{lstlisting}
+make dev.logs.postgres    # Xem logs PostgreSQL
+make dev.logs.redis       # Xem logs Redis
+make dev.restart.postgres # Restart PostgreSQL
+make dev.build.postgres   # Build lai (no-cache)
+make dev.down             # Dung tat ca services
+make dev.clean            # Dung va xoa volumes (mat du lieu)
+\end{lstlisting}
+
+\refstepcounter{appendixstep}
+\subsubsection*{\theappendixstep. Testing và Linting}
+
+\begin{lstlisting}
+pnpm test                 # Chay tat ca tests
+pnpm test:cov             # Test voi coverage
+pnpm lint                 # Chay linter
+pnpm typecheck            # Kiem tra TypeScript types
+
+# E2E tests
+cd services/tenant-bff && pnpm test:e2e
+\end{lstlisting}
+
+\refstepcounter{appendixstep}
+\subsubsection*{\theappendixstep. Troubleshooting}
+
+\textbf{1. Port đã được sử dụng:}
+\begin{lstlisting}
+lsof -i :5432    # Kiem tra port
+kill -9 <PID>    # Kill process
+\end{lstlisting}
+
+\textbf{2. Docker container không healthy:}
+\begin{lstlisting}
+docker logs uts_pg        # Xem logs
+docker restart uts_pg     # Restart container
+\end{lstlisting}
+
+\textbf{3. Module not found:}
+\begin{lstlisting}
+pnpm clean && pnpm install && pnpm build:packages
+\end{lstlisting}
+
+\textbf{4. Permission errors (Linux):}
+\begin{lstlisting}
+sudo chown -R $USER:$USER .
+sudo usermod -aG docker $USER && newgrp docker
+\end{lstlisting}
+
+\textbf{5. JWT keys không tồn tại:}
+\begin{lstlisting}
+cd services/identity
+openssl genpkey -algorithm RSA -out private.pem -pkeyopt rsa_keygen_bits:2048
+openssl rsa -pubout -in private.pem -out public.pem
+\end{lstlisting}
+
+\refstepcounter{appendixstep}
+\subsubsection*{\theappendixstep. Clean Up}
+
+\begin{lstlisting}
+make dev.down    # Dung containers
+make dev.clean   # Xoa volumes (mat du lieu)
+pnpm clean       # Xoa node_modules va build artifacts
+\end{lstlisting}
+
+\refstepcounter{appendixstep}
+\subsubsection*{\theappendixstep. Cấu trúc thư mục dự án}
+
+\begin{lstlisting}
+unified-teamspace/
++-- apps/                  # Frontend applications
+|   +-- marketing-web/     # Marketing website (Vite + React)
+|   +-- tenant-web/        # Tenant dashboard
+|   +-- pm-web/            # Project Management web
+|   +-- chat-web/          # Chat interface
+|   +-- auth-web/          # Authentication UI
++-- services/              # Backend microservices (NestJS)
+|   +-- tenant-bff/        # Tenant Backend-for-Frontend
+|   +-- pm/                # Project Management service
+|   +-- chat/              # Chat service
+|   +-- notification/      # Notification service
+|   +-- file-storage/      # File storage service
++-- packages/              # Shared packages
+|   +-- design-system/     # UI component library
+|   +-- types/             # Shared TypeScript types
++-- infra/docker/          # Docker Compose files
++-- Makefile               # Automation scripts
++-- turbo.json             # Turbo monorepo config
++-- package.json           # Root package.json
+\end{lstlisting}
+
+\refstepcounter{appendixstep}
+\subsubsection*{\theappendixstep. Kết luận}
+
+Hướng dẫn này cung cấp các bước cơ bản để cài đặt và chạy hệ thống Unified Teamspace ở môi trường development. Đối với môi trường production, cần có thêm:
+\begin{itemize}
+    \item Cấu hình SSL/TLS certificates và reverse proxy (Nginx, Traefik)
+    \item Monitoring và logging (Prometheus, Grafana, ELK Stack)
+    \item Database backup và recovery strategies
+    \item CI/CD pipeline với GitHub Actions hoặc GitLab CI
+    \item Container orchestration với Kubernetes hoặc Docker Swarm
+\end{itemize}

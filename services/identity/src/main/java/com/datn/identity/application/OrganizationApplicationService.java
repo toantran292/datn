@@ -152,6 +152,13 @@ public class OrganizationApplicationService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
+    public void updateLogo(UUID orgId, String logoAssetId) {
+        var org = orgs.findById(orgId).orElseThrow(() -> new IllegalStateException("org_not_found"));
+        var updatedOrg = org.withLogoAssetId(logoAssetId);
+        orgs.save(updatedOrg);
+    }
+
     private String toJson(Object o) {
         try { return mapper.writeValueAsString(o); }
         catch (JsonProcessingException e) { throw new RuntimeException(e); }

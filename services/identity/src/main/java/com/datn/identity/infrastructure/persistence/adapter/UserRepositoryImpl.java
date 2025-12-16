@@ -6,8 +6,11 @@ import com.datn.identity.infrastructure.persistence.entity.UserEntity;
 import com.datn.identity.infrastructure.persistence.springdata.UserJpaRepo;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Repository
 public class UserRepositoryImpl implements UserRepository {
@@ -24,11 +27,19 @@ public class UserRepositoryImpl implements UserRepository {
         e.setPasswordHash(u.passwordHash());
         e.setDisabled(u.disabled());
         e.setMustChangePassword(u.mustChangePassword());
+        e.setDisplayName(u.displayName());
         return e;
     }
 
     private static User toDomain(UserEntity e) {
-        return new User(e.getId(), e.getEmail(), e.getPasswordHash(), e.isDisabled(), e.isMustChangePassword());
+        return new User(
+            e.getId(),
+            e.getEmail(),
+            e.getPasswordHash(),
+            e.isDisabled(),
+            e.isMustChangePassword(),
+            e.getDisplayName()
+        );
     }
 
     @Override
@@ -44,6 +55,16 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public Optional<User> findByEmail(String emailCI) {
         return repo.findByEmailIgnoreCase(emailCI).map(UserRepositoryImpl::toDomain);
+    }
+
+    @Override
+    public List<User> findByIds(Collection<UUID> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return repo.findAllById(ids).stream()
+                .map(UserRepositoryImpl::toDomain)
+                .collect(Collectors.toList());
     }
 
     @Override

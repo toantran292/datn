@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 @Configuration
 public class SecurityConfig {
 
-    @Value("${cors.allowed-origins:http://localhost:3000}")
+    @Value("${cors.allowed-origins:*}")
     private String[] allowedOrigins;
 
     @Value("${cors.allowed-methods:GET,POST,PUT,DELETE,OPTIONS}")
@@ -91,7 +91,8 @@ public class SecurityConfig {
         };
     }
 
-    @Bean @Order(1)
+    @Bean
+    @Order(1)
     SecurityFilterChain oauth2Chain(HttpSecurity http, AuthenticationSuccessHandler googleSuccess) throws Exception {
         http
                 .securityMatcher("/login/**", "/oauth2/**")
@@ -104,7 +105,8 @@ public class SecurityConfig {
         return http.build();
     }
 
-    @Bean @Order(2)
+    @Bean
+    @Order(2)
     SecurityFilterChain apiChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
@@ -114,12 +116,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/.well-known/jwks.json").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/token").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/refresh").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/invitations/accept").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers("/internal/**").permitAll() // Allow internal service-to-service calls
                         .requestMatchers(HttpMethod.POST, "/auth/password/set").authenticated()
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .addFilterBefore(new CookieAuthFilter(jwtDecoder), AnonymousAuthenticationFilter.class)
                 .addFilterBefore(new InternalCallBypassFilter(), AnonymousAuthenticationFilter.class)
@@ -135,8 +138,8 @@ public class SecurityConfig {
     static class InternalCallBypassFilter extends OncePerRequestFilter {
         @Override
         protected void doFilterInternal(@NonNull HttpServletRequest request,
-                                        @NonNull HttpServletResponse response,
-                                        @NonNull FilterChain filterChain)
+                @NonNull HttpServletResponse response,
+                @NonNull FilterChain filterChain)
                 throws ServletException, IOException {
 
             String internal = request.getHeader("X-Internal-Call");
@@ -149,15 +152,13 @@ public class SecurityConfig {
                 var auth = new UsernamePasswordAuthenticationToken(
                         systemUserId,
                         null,
-                        List.of(new SimpleGrantedAuthority("ROLE_SYSTEM"))
-                );
+                        List.of(new SimpleGrantedAuthority("ROLE_SYSTEM")));
 
                 var details = new SecurityConfig.UserAuthDetails(
                         systemUserId,
                         "system@internal",
                         null,
-                        List.of("SYSTEM")
-                );
+                        List.of("SYSTEM"));
 
                 auth.setDetails(details);
 
@@ -177,8 +178,8 @@ public class SecurityConfig {
 
         @Override
         protected void doFilterInternal(@NonNull HttpServletRequest req,
-                                        @NonNull HttpServletResponse res,
-                                        @NonNull FilterChain chain) throws ServletException, IOException {
+                @NonNull HttpServletResponse res,
+                @NonNull FilterChain chain) throws ServletException, IOException {
 
             // Skip authentication if already authenticated
             if (SecurityContextHolder.getContext().getAuthentication() != null) {
@@ -201,11 +202,9 @@ public class SecurityConfig {
 
                     // Extract roles from JWT claims
                     Collection<String> roles = jwt.getClaimAsStringList("roles");
-                    List<SimpleGrantedAuthority> authorities = roles != null ?
-                        roles.stream()
+                    List<SimpleGrantedAuthority> authorities = roles != null ? roles.stream()
                             .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
-                            .collect(Collectors.toList()) :
-                        List.of();
+                            .collect(Collectors.toList()) : List.of();
 
                     // Create authentication token with user details
                     var auth = new UsernamePasswordAuthenticationToken(userId, null, authorities);
@@ -261,9 +260,20 @@ public class SecurityConfig {
             this.roles = roles;
         }
 
-        public String getUserId() { return userId; }
-        public String getEmail() { return email; }
-        public String getOrgId() { return orgId; }
-        public Collection<String> getRoles() { return roles; }
+        public String getUserId() {
+            return userId;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public String getOrgId() {
+            return orgId;
+        }
+
+        public Collection<String> getRoles() {
+            return roles;
+        }
     }
 }

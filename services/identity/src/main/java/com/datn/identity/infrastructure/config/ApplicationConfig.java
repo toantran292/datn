@@ -4,6 +4,7 @@ import com.datn.identity.domain.user.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.web.client.RestTemplate;
 
 @Configuration
 public class ApplicationConfig {
@@ -27,5 +28,10 @@ public class ApplicationConfig {
                 throw new IllegalArgumentException("password_too_short");
             }
         };
+    }
+
+    @Bean
+    RestTemplate restTemplate() {
+        return new RestTemplate();
     }
 }

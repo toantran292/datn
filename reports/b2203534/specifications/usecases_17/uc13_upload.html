@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>UC13 - Upload tệp</title>
+    <style>
+        body { font-family: 'Times New Roman', serif; font-size: 13pt; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h3 { font-size: 14pt; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { border: 1px solid #000; padding: 8px; text-align: left; vertical-align: top; }
+        .caption { font-style: italic; font-weight: bold; text-align: center; margin: 10px 0; }
+        .figure { text-align: center; margin: 15px 0; }
+        .figure img { max-width: 100%; }
+        ol, ul { margin: 5px 0; padding-left: 20px; }
+    </style>
+</head>
+<body>
+
+<h3>- Chức năng upload tệp</h3>
+
+<div class="figure">
+    <img src="uc13_upload.png" alt="Sơ đồ Use Case upload tệp">
+    <p class="caption">Hình 3.13. Sơ đồ use case chức năng upload tệp</p>
+</div>
+
+<p class="caption">Bảng 3.13. Bảng đặc tả chức năng upload tệp</p>
+
+<table>
+    <tr>
+        <td><b>Tên chức năng:</b> Upload tệp</td>
+        <td><b>ID:</b> UC13</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Mức độ cần thiết:</b> Bắt buộc</td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <td><b>Người sử dụng:</b> Thành viên của Workspace.</td>
+        <td><b>Phân loại:</b> Trung bình</td>
+    </tr>
+</table>
+
+<table>
+    <tr>
+        <td colspan="2"><b>Các thành phần tham gia và mối quan tâm:</b>
+            <ul>
+                <li><b>Người dùng:</b> Muốn tải tệp tin lên workspace để chia sẻ và sử dụng cho báo cáo AI.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Mô tả tóm tắt:</b> Chức năng cho phép thành viên tải một hoặc nhiều tệp tin lên workspace.</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Trigger:</b> Người dùng nhấn nút "Upload" hoặc kéo thả tệp vào khu vực upload.</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Kiểu sự kiện:</b> External</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Luồng xử lý bình thường của sự kiện:</b>
+            <ol>
+                <li>Người dùng mở giao diện upload tệp.</li>
+                <li>Người dùng chọn tệp từ máy tính hoặc kéo thả.</li>
+                <li>Hệ thống kiểm tra định dạng và kích thước tệp.</li>
+                <li>Người dùng chọn thư mục đích (nếu cần).</li>
+                <li>Người dùng nhấn nút "Upload".</li>
+                <li>Hệ thống tải tệp lên và lưu trữ.</li>
+                <li>Hệ thống ghi audit log và thông báo thành công.</li>
+            </ol>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Các luồng sự kiện con (Subflows):</b> N/A</td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Luồng luân phiên/đặc biệt (Alternative/Exceptional flows):</b>
+            <ul>
+                <li>3a. Định dạng không hỗ trợ: Thông báo lỗi và danh sách định dạng cho phép.</li>
+                <li>3b. Vượt quá kích thước: Thông báo giới hạn dung lượng.</li>
+                <li>6a. Hết dung lượng workspace: Yêu cầu xóa bớt tệp hoặc nâng cấp.</li>
+            </ul>
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"><b>Kết quả:</b> Tệp được tải lên và lưu trữ thành công trong workspace.</td>
+    </tr>
+</table>
+
+</body>
+</html>

@@ -1,0 +1,31 @@
+\subsection{Giới thiệu khái quát về mô hình SaaS}
+
+\subsubsection{Khái quát}
+
+SaaS (Software as a Service) là mô hình phân phối phần mềm qua Internet. Người dùng truy cập ứng dụng qua trình duyệt web mà không cần cài đặt hay bảo trì. Nhà cung cấp chịu trách nhiệm quản lý toàn bộ hạ tầng bao gồm máy chủ, lưu trữ và phần mềm.
+
+SaaS là một trong ba mô hình chính của Cloud Computing, bên cạnh IaaS và PaaS. Các ứng dụng SaaS phổ biến như Google Workspace, Microsoft 365, Salesforce, Slack đã chứng minh hiệu quả trong việc giảm chi phí vận hành và tăng khả năng tiếp cận.
+
+\subsubsection{Đặc điểm và nguyên lý hoạt động}
+
+SaaS hoạt động dựa trên nguyên lý Multi-\-tenancy, trong đó một ứng dụng phục vụ nhiều khách hàng khác nhau. Dữ liệu được phân tách để đảm bảo bảo mật và riêng tư giữa các tổ chức.
+
+Người dùng trả phí theo mô hình Sub\-scrip\-tion, thanh toán theo tháng hoặc năm thay vì mua license một lần. Điều này giúp giảm chi phí ban đầu và linh hoạt trong việc điều chỉnh quy mô sử dụng.
+
+Nhà cung cấp tự động cập nhật và bảo trì phần mềm, đảm bảo ứng dụng luôn ở phiên bản mới nhất. Hệ thống được thiết kế với khả năng scala\-bi\-lity, dễ dàng mở rộng theo nhu cầu thực tế.
+
+\subsubsection{Ưu điểm và khả năng ứng dụng}
+
+Chi phí ban đầu thấp là ưu điểm nổi bật do không cần đầu tư phần cứng hay license đắt tiền. Thời gian triển khai nhanh cho phép người dùng bắt đầu sử dụng ngay sau khi đăng ký.
+
+Việc bảo trì tự động giúp giảm gánh nặng cho đội ngũ IT nội bộ. Hầu hết ứng dụng SaaS cung cấp API để tích hợp với các hệ thống khác, tạo nên hệ sinh thái phần mềm liên kết.
+
+Mô hình SaaS phù hợp với các tổ chức muốn số hóa quy trình mà không cần đầu tư lớn vào hạ tầng IT, hoặc các startup cần triển khai nhanh sản phẩm.
+
+\subsubsection{Vận dụng vào đề tài}
+
+Phân hệ truyền thông được xây dựng như một thành phần của nền tảng SaaS quản lý dự án Agile. Mỗi workspace đại diện cho một tenant độc lập với dữ liệu được phân tách hoàn toàn.
+
+Người dùng truy cập hệ thống nhắn tin qua trình duyệt web với giao diện real-time quen thuộc như Slack, Discord. Kết nối Web\-Socket đảm bảo tin nhắn được gửi và nhận tức thì.
+
+Hệ thống được thiết kế theo kiến trúc Micro\-services với các services độc lập: Messaging Service, Web\-Socket Gateway, và AI Service tích hợp RAG. Việc tích hợp AI cho phép người dùng tóm tắt hội thoại, trích xuất công việc, hoặc đặt câu hỏi về nội dung đã trao đổi.
