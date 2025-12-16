@@ -5,6 +5,7 @@ import { AIController } from './ai.controller';
 import { AIService } from './ai.service';
 import { OpenAIService } from './openai.service';
 import { PromptService } from './prompt.service';
+import { AISprintSummaryService } from './ai-sprint-summary.service';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { PromptService } from './prompt.service';
     }),
   ],
   controllers: [AIController],
-  providers: [AIService, OpenAIService, PromptService],
-  exports: [AIService, OpenAIService],
+  providers: [AIService, OpenAIService, PromptService, AISprintSummaryService],
+  exports: [AIService, OpenAIService, AISprintSummaryService],
 })
 export class AIModule {}

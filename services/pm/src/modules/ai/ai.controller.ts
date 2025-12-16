@@ -25,6 +25,7 @@ import { createHash } from 'crypto';
 // import { CurrentUser } from '../auth/decorators/current-user.decorator';
 // import { User } from '@prisma/client';
 import { AIService } from './ai.service';
+import { AISprintSummaryService } from './ai-sprint-summary.service';
 import {
   RefineDescriptionDto,
   RefineDescriptionResponseDto,
@@ -32,6 +33,8 @@ import {
   EstimatePointsResponseDto,
   BreakdownIssueDto,
   BreakdownResponseDto,
+  SprintSummaryDto,
+  SprintSummaryResponseDto,
 } from './dto';
 import { SkipOrgCheck } from '../../common/decorators/skip-org-check.decorator';
 
@@ -46,6 +49,7 @@ export class AIController {
 
   constructor(
     private readonly aiService: AIService,
+    private readonly sprintSummaryService: AISprintSummaryService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
 
@@ -400,5 +404,95 @@ export class AIController {
         }
       })();
     });
+  }
+
+  /**
+   * AI Sprint Summary endpoints
+   */
+
+  @Post('sprint-summary')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Generate AI Sprint Summary',
+    description:
+      'Analyzes sprint performance and generates comprehensive summary with insights, recommendations, and sentiment-based closing message',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Sprint summary generated successfully',
+    type: SprintSummaryResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid sprint ID or insufficient data',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Sprint not found',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'AI service error',
+  })
+  async generateSprintSummary(
+    @Body() dto: SprintSummaryDto,
+  ): Promise<SprintSummaryResponseDto> {
+    this.logger.log(`Sprint summary request for sprint ${dto.sprintId}`);
+
+    return await this.sprintSummaryService.generateSprintSummary(dto);
+  }
+
+  @Post('sprint-summary-stream')
+  @ApiOperation({
+    summary: 'Generate AI Sprint Summary with streaming',
+    description:
+      'Streams sprint summary progressively - overview, metrics, insights, recommendations, and closing message',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Streaming response with progressive summary sections',
+    headers: {
+      'Content-Type': {
+        description: 'text/event-stream',
+      },
+    },
+  })
+  async generateSprintSummaryStream(
+    @Body() dto: SprintSummaryDto,
+    @Res() res: Response,
+  ): Promise<void> {
+    this.logger.log(`Streaming sprint summary for sprint ${dto.sprintId}`);
+
+    // Set SSE headers with proper buffering control
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no'); // Disable nginx buffering
+    res.flushHeaders();
+
+    try {
+      for await (const chunk of this.sprintSummaryService.generateSprintSummaryStream(
+        dto,
+      )) {
+        // Send SSE format: data: {...}\n\n
+        const data = `data: ${JSON.stringify(chunk)}\n\n`;
+        res.write(data);
+
+        // Force flush to ensure immediate delivery
+        if (typeof (res as any).flush === 'function') {
+          (res as any).flush();
+        }
+      }
+      res.end();
+    } catch (error) {
+      this.logger.error('Streaming sprint summary error', error.stack);
+      res.write(
+        `data: ${JSON.stringify({
+          type: 'error',
+          message: error.message || 'Streaming failed',
+        })}\n\n`,
+      );
+      res.end();
+    }
   }
 }

@@ -7,9 +7,13 @@ export { AILoadingState } from "./ai-loading-state";
 export { AIImprovementsList } from "./ai-improvements-list";
 export { AIErrorState } from "./ai-error-state";
 export { AIGeneratingButton } from "./ai-generating-button";
+export { AISprintSummaryModal } from "./ai-sprint-summary-modal";
+export { AISprintSummaryContent } from "./ai-sprint-summary-content";
 
 export type { AIRefineButtonProps } from "./ai-refine-button";
 export type { AIRefineModalProps } from "./ai-refine-modal";
 export type { AIRefineSectionProps } from "./ai-refine-section";
 export type { AIEstimateSectionProps } from "./ai-estimate-section";
 export type { AIBreakdownSectionProps } from "./ai-breakdown-section";
+export type { AISprintSummaryModalProps } from "./ai-sprint-summary-modal";
+export type { AISprintSummaryContentProps } from "./ai-sprint-summary-content";

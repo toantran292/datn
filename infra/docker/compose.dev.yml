@@ -268,6 +268,8 @@ services:
       DATABASE_NAME: ${PM_DATABASE_NAME}
       DATABASE_URL: ${PM_DATABASE_URL}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+    ports:
+      - "41003:${PM_PORT}"
     healthcheck:
       test:
         [
