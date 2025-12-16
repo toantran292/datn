@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { Circle, Users, Signal, User, Calendar, CalendarClock, Network, Hash, Sparkles, TrendingUp } from "lucide-react";
 import { Badge, Button, setToast, TOAST_TYPE } from "@uts/design-system/ui";
 import { IIssue } from "@/core/types/issue";
@@ -198,12 +198,24 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
   const [estimationData, setEstimationData] = useState<EstimatePointsData | null>(null);
   const [storyPointsValue, setStoryPointsValue] = useState<number | null>(issue.point);
 
+  // Debounce timer for story points
+  const storyPointsDebounceRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     setStartDateValue(issue.startDate);
     setDueDateValue(issue.targetDate);
     setParentValue(issue.parentId);
     setStoryPointsValue(issue.point);
   }, [issue.startDate, issue.targetDate, issue.parentId, issue.point]);
+
+  // Cleanup debounce timer on unmount or when issue changes
+  useEffect(() => {
+    return () => {
+      if (storyPointsDebounceRef.current) {
+        clearTimeout(storyPointsDebounceRef.current);
+      }
+    };
+  }, [issue.id]);
 
   const handleStartDateChange = async (value: string) => {
     const next = value || null;
@@ -243,7 +255,7 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
     }
   };
 
-  const handleStoryPointsChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleStoryPointsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     const points = value === "" ? null : parseInt(value, 10);
 
@@ -251,16 +263,25 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
       return; // Invalid input, ignore
     }
 
+    // Update local state immediately for responsive UI
     setStoryPointsValue(points);
 
-    if (onUpdateIssue) {
-      try {
-        await onUpdateIssue(issue.id, { point: points });
-      } catch (error) {
-        console.error("Failed to update story points:", error);
-        setStoryPointsValue(issue.point);
-      }
+    // Clear previous debounce timer
+    if (storyPointsDebounceRef.current) {
+      clearTimeout(storyPointsDebounceRef.current);
     }
+
+    // Set new debounce timer
+    storyPointsDebounceRef.current = setTimeout(async () => {
+      if (onUpdateIssue) {
+        try {
+          await onUpdateIssue(issue.id, { point: points });
+        } catch (error) {
+          console.error("Failed to update story points:", error);
+          setStoryPointsValue(issue.point);
+        }
+      }
+    }, 500); // 500ms debounce delay
   };
 
   const handleEstimate = async () => {
