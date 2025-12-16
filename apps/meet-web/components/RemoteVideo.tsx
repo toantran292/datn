@@ -15,7 +15,6 @@ export function RemoteVideo({ name, tracks }: RemoteVideoProps) {
   const audioTrack = tracks.find(t => t.getType() === 'audio');
   const audioTrackId = audioTrack?.getId();
 
-  console.log('[RemoteVideo]', name, 'videoTrack:', videoTrack?.getId(), 'tracks.length:', tracks.length);
 
   useEffect(() => {
     if (!audioTrack || !audioRef.current) return;

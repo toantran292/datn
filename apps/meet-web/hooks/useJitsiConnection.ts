@@ -14,7 +14,6 @@ export function useJitsiConnection(websocketUrl: string | null, jwt: string | nu
     let conn: JitsiConnection | null = null;
 
     const handleConnectionEstablished = () => {
-      console.log('[Jitsi] Connection established');
       setIsConnected(true);
       setError(null);
     };
@@ -26,7 +25,6 @@ export function useJitsiConnection(websocketUrl: string | null, jwt: string | nu
     };
 
     const handleConnectionDisconnected = () => {
-      console.log('[Jitsi] Connection disconnected');
       setIsConnected(false);
     };
 

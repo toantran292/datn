@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { initializeJitsi } from '@/lib/jitsi';
 import { useJitsiConnection } from '@/hooks/useJitsiConnection';
@@ -12,8 +12,9 @@ import { ScreenShareView } from '@/components/ScreenShareView';
 import { ReactionDisplay, FloatingReaction } from '@/components/ReactionDisplay';
 import { CaptionDisplay, useSpeechRecognition } from '@/components/CaptionDisplay';
 import { RecordingIndicator } from '@/components/RecordingIndicator';
-import { useRecording } from '@/hooks/useRecording';
+import { useClientRecording } from '@/hooks/useClientRecording';
 import { HuddleWidget } from '@/components/HuddleWidget';
+import { SettingsPanel, BackgroundOption } from '@/components/SettingsPanel';
 import type { JitsiTrack } from '@/types/jitsi';
 import { Video } from 'lucide-react';
 import { useCallback } from 'react';
@@ -29,6 +30,12 @@ export default function MeetingPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [meetingId, setMeetingId] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+
+  // Settings panel state
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [currentCameraId, setCurrentCameraId] = useState<string | undefined>();
+  const [currentMicId, setCurrentMicId] = useState<string | undefined>();
+  const [currentBackground, setCurrentBackground] = useState<BackgroundOption>({ type: 'none' });
 
   // Initialize Jitsi and load meeting data from localStorage
   useEffect(() => {
@@ -99,24 +106,62 @@ export default function MeetingPage() {
     router.push('/join');
   };
 
-  // Speech recognition callback
+  // Settings handlers
+  const handleShowSettings = useCallback(() => {
+    setIsSettingsOpen(true);
+  }, []);
+
+  const handleCloseSettings = useCallback(() => {
+    setIsSettingsOpen(false);
+  }, []);
+
+  const handleCameraChange = useCallback((deviceId: string) => {
+    setCurrentCameraId(deviceId);
+    // TODO: Switch camera track in useJitsiConference
+    console.log('[Settings] Camera changed to:', deviceId);
+  }, []);
+
+  const handleMicChange = useCallback((deviceId: string) => {
+    setCurrentMicId(deviceId);
+    // TODO: Switch mic track in useJitsiConference
+    console.log('[Settings] Mic changed to:', deviceId);
+  }, []);
+
+  const handleBackgroundChange = useCallback((background: BackgroundOption) => {
+    setCurrentBackground(background);
+    // TODO: Apply virtual background effect
+    console.log('[Settings] Background changed to:', background);
+  }, []);
+
+  // Speech recognition callback - always send caption when recognized
+  // Each client only recognizes speech from their local microphone
+  // The Web Speech API only listens to the default microphone, not speaker output
   const handleSpeechResult = useCallback((text: string, isFinal: boolean) => {
     sendCaption(text, isFinal);
   }, [sendCaption]);
 
-  // Use speech recognition when captions are enabled and mic is on
-  useSpeechRecognition(isCaptionsEnabled && !isAudioMuted, handleSpeechResult);
+  // Auto-run speech recognition when mic is on (no need to enable captions button)
+  // Each user's speech is recognized and sent to all participants
+  // The Captions button only controls whether to SHOW captions locally
+  useSpeechRecognition(!isAudioMuted, handleSpeechResult);
 
-  // Recording hook
+  // Client-side Recording hook (uses MediaRecorder API)
   const {
     isRecording,
     duration: recordingDuration,
-    status: recordingStatus,
+    recordedBlob,
     toggleRecording,
-  } = useRecording({
+    downloadRecording,
+    uploadRecording,
+    isSupported: isRecordingSupported,
+  } = useClientRecording({
     meetingId,
     userId,
-    isJoined,
+    onRecordingComplete: useCallback((blob: Blob, duration: number) => {
+      console.log('[Recording] Recording complete:', { size: blob.size, duration });
+      // Auto-download when recording stops
+      // downloadRecording will use the blob from state
+    }, []),
   });
 
   // Loading state
@@ -242,6 +287,7 @@ export default function MeetingPage() {
               }}
               isLocalSpeaking={isLocalSpeaking}
               speakingParticipants={speakingParticipants}
+              virtualBackground={currentBackground}
             />
           )}
         </div>
@@ -268,7 +314,6 @@ export default function MeetingPage() {
       <RecordingIndicator
         isRecording={isRecording}
         duration={recordingDuration}
-        status={recordingStatus}
       />
 
       {/* Controls */}
@@ -284,10 +329,23 @@ export default function MeetingPage() {
         onToggleRecording={toggleRecording}
         onToggleCaptions={toggleCaptions}
         onSendReaction={sendReaction}
+        onShowSettings={handleShowSettings}
         onLeave={handleLeave}
       />
 
-      {/* Huddle Widget - Popup with controls */}
+      {/* Settings Panel */}
+      <SettingsPanel
+        isOpen={isSettingsOpen}
+        onClose={handleCloseSettings}
+        currentCameraId={currentCameraId}
+        currentMicId={currentMicId}
+        currentBackground={currentBackground.value}
+        onCameraChange={handleCameraChange}
+        onMicChange={handleMicChange}
+        onBackgroundChange={handleBackgroundChange}
+      />
+
+      {/* Huddle Widget - Compact inline widget */}
       <HuddleWidget
         participants={participantsArray}
         localParticipant={{
@@ -297,8 +355,6 @@ export default function MeetingPage() {
         isLocalSpeaking={isLocalSpeaking}
         speakingParticipants={speakingParticipants}
         isAudioMuted={isAudioMuted}
-        onToggleMic={toggleAudio}
-        onLeave={handleLeave}
       />
     </div>
   );

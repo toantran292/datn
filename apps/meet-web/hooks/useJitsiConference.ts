@@ -172,7 +172,6 @@ export function useJitsiConference(
       try {
         conferenceRef.current.setLocalParticipantProperty('reaction', reactionData);
       } catch (e) {
-        console.log('[Conference] Could not send reaction - may not be connected');
         return;
       }
 
@@ -196,7 +195,6 @@ export function useJitsiConference(
         }
       }, 100);
 
-      console.log('[Conference] Sent reaction:', emoji);
     } catch (err) {
       console.error('[Conference] Error sending reaction:', err);
     }
@@ -214,7 +212,12 @@ export function useJitsiConference(
 
   // Send caption (local speech-to-text result)
   const sendCaption = useCallback((text: string, isFinal: boolean) => {
-    if (!conferenceRef.current || !text.trim() || !isJoined) return;
+    if (!conferenceRef.current || !text.trim() || !isJoined) {
+      console.log('[Caption] sendCaption skipped:', { hasConference: !!conferenceRef.current, text: text.trim(), isJoined });
+      return;
+    }
+
+    console.log('[Caption] Sending caption:', { text: text.trim(), isFinal });
 
     try {
       const captionData = JSON.stringify({
@@ -227,8 +230,8 @@ export function useJitsiConference(
       try {
         conferenceRef.current.setLocalParticipantProperty('caption', captionData);
       } catch (e) {
+        console.log('[Caption] setLocalParticipantProperty failed:', e);
         // Ignore errors when not connected
-        console.log('[Conference] Could not send caption - may not be connected');
         return;
       }
 
@@ -255,7 +258,6 @@ export function useJitsiConference(
         return [...prev.slice(-10), captionEvent]; // Keep last 10 captions
       });
 
-      console.log('[Conference] Sent caption:', text, isFinal ? '(final)' : '(interim)');
     } catch (err) {
       console.error('[Conference] Error sending caption:', err);
     }
@@ -319,7 +321,6 @@ export function useJitsiConference(
     const participant = participants.get(screenShareParticipantId);
     if (!participant) {
       // Participant left, clear screen share
-      console.log('[Conference] Screen share participant left, clearing screen share');
       setScreenShareTrack(null);
       setIsScreenSharing(false);
       setScreenShareParticipantId(null);
@@ -335,7 +336,6 @@ export function useJitsiConference(
     });
 
     if (!hasDesktopTrack) {
-      console.log('[Conference] Screen share participant no longer has desktop track, clearing');
       setScreenShareTrack(null);
       setIsScreenSharing(false);
       setScreenShareParticipantId(null);
@@ -370,7 +370,6 @@ export function useJitsiConference(
 
         // Conference joined
         conf.on(JitsiMeetJS.events.conference.CONFERENCE_JOINED, () => {
-          console.log('[Conference] Joined');
           setIsJoined(true);
 
           // Set receiver constraints to request video from all participants
@@ -379,16 +378,13 @@ export function useJitsiConference(
               lastN: -1, // Receive from all participants
               defaultConstraints: { maxHeight: 720 },
             });
-            console.log('[Conference] Set receiver constraints');
           } catch (err) {
-            console.log('[Conference] setReceiverConstraints not available or failed');
           }
         });
 
         // User joined
         conf.on(JitsiMeetJS.events.conference.USER_JOINED, (jid: string, user: JitsiParticipant) => {
           const id = normalizeId(jid);
-          console.log('[Conference] User joined:', id);
 
           setParticipants(prev => {
             const next = new Map(prev);
@@ -405,7 +401,6 @@ export function useJitsiConference(
         // User left
         conf.on(JitsiMeetJS.events.conference.USER_LEFT, (jid: string) => {
           const id = normalizeId(jid);
-          console.log('[Conference] User left:', id);
 
           setParticipants(prev => {
             const next = new Map(prev);
@@ -431,13 +426,6 @@ export function useJitsiConference(
           const trackId = track.getId?.() || 'unknown';
           const participantId = track.getParticipantId?.() || 'unknown';
 
-          console.log('[Conference] Track added:', {
-            type: trackType,
-            isLocal,
-            trackId,
-            participantId,
-            isMuted: track.isMuted?.(),
-          });
 
           // For video tracks, log stream info
           if (trackType === 'video') {
@@ -445,12 +433,6 @@ export function useJitsiConference(
               const stream = (track as any).getOriginalStream?.();
               if (stream) {
                 const videoTracks = stream.getVideoTracks();
-                console.log('[Conference] Video stream info:', {
-                  streamId: stream.id,
-                  videoTracksCount: videoTracks.length,
-                  firstTrackState: videoTracks[0]?.readyState,
-                  firstTrackEnabled: videoTracks[0]?.enabled,
-                });
               }
             } catch (e) {
               // Ignore
@@ -498,14 +480,8 @@ export function useJitsiConference(
             // Check if remote is sharing screen
             const trackAny = track as any;
             const videoType = trackAny.getVideoType?.() || trackAny.videoType;
-            console.log('[Conference] Remote track added - checking for desktop:', {
-              trackType: track.getType(),
-              videoType,
-              hasGetVideoType: typeof trackAny.getVideoType === 'function',
-            });
             const isDesktop = track.getType() === 'video' && videoType === 'desktop';
             if (isDesktop) {
-              console.log('[Conference] Remote screen share detected from participant:', pid);
               setScreenShareTrack(track);
               // Don't set isScreenSharing to true - that's only for local user
               // isScreenSharing controls the button highlight, screenShareTrack controls the view
@@ -518,7 +494,6 @@ export function useJitsiConference(
                   const videoTracks = stream.getVideoTracks();
                   if (videoTracks[0]) {
                     videoTracks[0].addEventListener('ended', () => {
-                      console.log('[Conference] Remote screen share track ended via stream event');
                       setScreenShareTrack(null);
                       setScreenShareParticipantId(null);
                     });
@@ -527,12 +502,10 @@ export function useJitsiConference(
 
                 // Also listen on the JitsiTrack itself
                 track.addEventListener('track.stopped', () => {
-                  console.log('[Conference] Remote screen share - track.stopped event');
                   setScreenShareTrack(null);
                   setScreenShareParticipantId(null);
                 });
               } catch (e) {
-                console.log('[Conference] Could not attach stream listeners:', e);
               }
             }
           }
@@ -542,12 +515,6 @@ export function useJitsiConference(
         conf.on(JitsiMeetJS.events.conference.TRACK_REMOVED, (track: JitsiTrack) => {
           const trackAny = track as any;
           const videoType = trackAny.getVideoType?.() || trackAny.videoType;
-          console.log('[Conference] Track removed:', {
-            type: track.getType(),
-            isLocal: track.isLocal(),
-            videoType,
-            participantId: track.getParticipantId?.(),
-          });
 
           if (track.isLocal()) {
             setLocalTracks(prev => prev.filter(t => t !== track));
@@ -583,7 +550,6 @@ export function useJitsiConference(
             // Also clear if this track matches the current screenShareTrack
             setScreenShareTrack(currentTrack => {
               if (currentTrack === track || isDesktop) {
-                console.log('[Conference] Remote screen share track removed, clearing state');
                 setIsScreenSharing(false);
                 return null;
               }
@@ -602,12 +568,6 @@ export function useJitsiConference(
         conf.on(JitsiMeetJS.events.conference.TRACK_MUTE_CHANGED, (track: JitsiTrack) => {
           const trackAny = track as any;
           const videoType = trackAny.getVideoType?.() || trackAny.videoType;
-          console.log('[Conference] Track mute changed:', {
-            type: track.getType(),
-            isLocal: track.isLocal(),
-            isMuted: track.isMuted(),
-            videoType,
-          });
 
           if (track.isLocal()) {
             // Force re-render of local tracks
@@ -618,7 +578,6 @@ export function useJitsiConference(
 
             // Check if screen share track was muted (some Jitsi versions use mute instead of remove)
             if (track.getType() === 'video' && videoType === 'desktop' && track.isMuted()) {
-              console.log('[Conference] Remote screen share muted, clearing state');
               setScreenShareTrack(null);
               setIsScreenSharing(false);
             }
@@ -667,7 +626,6 @@ export function useJitsiConference(
               const pid = normalizeId(participant.getId());
               const participantName = participant.getDisplayName() || 'Unknown';
 
-              console.log('[Conference] Received reaction from', participantName, ':', reactionData.emoji);
 
               const reactionEvent: ReactionEvent = {
                 id: `${reactionData.timestamp}-${pid}`,
@@ -690,7 +648,6 @@ export function useJitsiConference(
               const pid = normalizeId(participant.getId());
               const participantName = participant.getDisplayName() || 'Unknown';
 
-              console.log('[Conference] Received caption from', participantName, ':', captionData.text);
 
               const captionEvent: CaptionEvent = {
                 id: `${captionData.timestamp}-${pid}-${captionData.isFinal ? 'final' : 'interim'}`,
@@ -720,7 +677,6 @@ export function useJitsiConference(
         // Dominant speaker changed - track who is speaking
         conf.on(JitsiMeetJS.events.conference.DOMINANT_SPEAKER_CHANGED, (id: string) => {
           const speakerId = normalizeId(id);
-          console.log('[Conference] Dominant speaker changed:', speakerId);
           setDominantSpeakerId(speakerId);
         });
 
@@ -850,7 +806,6 @@ export function useJitsiConference(
               (conf as any)._audioContext = audioContext;
             }
           } catch (err) {
-            console.log('[Conference] Failed to set up local audio level detection:', err);
           }
         }
 

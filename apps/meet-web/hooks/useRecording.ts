@@ -94,7 +94,6 @@ export function useRecording({ meetingId, userId, isJoined }: UseRecordingOption
 
     try {
       setState(prev => ({ ...prev, error: null }));
-      console.log('[Recording] Starting recording for meeting:', meetingId);
 
       const response = await apiStartRecording(meetingId, userId);
 
@@ -107,7 +106,6 @@ export function useRecording({ meetingId, userId, isJoined }: UseRecordingOption
         error: null,
       });
 
-      console.log('[Recording] Recording started:', response.recording_id);
     } catch (err: any) {
       console.error('[Recording] Failed to start recording:', err);
       setState(prev => ({
@@ -126,7 +124,6 @@ export function useRecording({ meetingId, userId, isJoined }: UseRecordingOption
 
     try {
       setState(prev => ({ ...prev, error: null }));
-      console.log('[Recording] Stopping recording:', state.recordingId);
 
       const response = await apiStopRecording(state.recordingId, userId);
 
@@ -138,7 +135,6 @@ export function useRecording({ meetingId, userId, isJoined }: UseRecordingOption
         error: null,
       }));
 
-      console.log('[Recording] Recording stopped, duration:', response.duration);
     } catch (err: any) {
       console.error('[Recording] Failed to stop recording:', err);
       setState(prev => ({

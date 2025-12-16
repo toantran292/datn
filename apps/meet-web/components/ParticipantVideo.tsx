@@ -21,16 +21,13 @@ export function ParticipantVideo({ name, tracks, isLocal = false }: ParticipantV
   const videoMuted = videoTrack?.isMuted();
   const audioMuted = audioTrack?.isMuted();
 
-  console.log('[ParticipantVideo]', name, 'render - tracks:', tracks.length, 'video:', !!videoTrack, 'audio:', !!audioTrack, 'videoId:', videoTrackId, 'isLocal:', isLocal);
 
   useEffect(() => {
-    console.log('[ParticipantVideo]', name, 'attaching video track, trackId:', videoTrackId);
 
     // Attach video track
     if (videoRef.current && videoTrack) {
       try {
         videoTrack.attach(videoRef.current);
-        console.log('[ParticipantVideo]', name, 'video attached successfully');
       } catch (err) {
         console.error('[ParticipantVideo]', name, 'Error attaching video:', err);
       }
@@ -40,7 +37,6 @@ export function ParticipantVideo({ name, tracks, isLocal = false }: ParticipantV
       if (videoRef.current && videoTrack) {
         try {
           videoTrack.detach(videoRef.current);
-          console.log('[ParticipantVideo]', name, 'video detached');
         } catch (err) {
           console.error('[ParticipantVideo]', name, 'Error detaching video:', err);
         }
@@ -49,13 +45,11 @@ export function ParticipantVideo({ name, tracks, isLocal = false }: ParticipantV
   }, [videoTrack, videoTrackId, videoMuted, name]);
 
   useEffect(() => {
-    console.log('[ParticipantVideo]', name, 'attaching audio track, trackId:', audioTrackId, 'isLocal:', isLocal);
 
     // Attach audio track
     if (audioRef.current && audioTrack && !isLocal) {
       try {
         audioTrack.attach(audioRef.current);
-        console.log('[ParticipantVideo]', name, 'audio attached successfully');
       } catch (err) {
         console.error('[ParticipantVideo]', name, 'Error attaching audio:', err);
       }
@@ -65,7 +59,6 @@ export function ParticipantVideo({ name, tracks, isLocal = false }: ParticipantV
       if (audioRef.current && audioTrack) {
         try {
           audioTrack.detach(audioRef.current);
-          console.log('[ParticipantVideo]', name, 'audio detached');
         } catch (err) {
           console.error('[ParticipantVideo]', name, 'Error detaching audio:', err);
         }

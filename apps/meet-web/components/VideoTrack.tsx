@@ -14,7 +14,6 @@ export function VideoTrack({ track, className, muted = true }: VideoTrackProps) 
     const videoElement = videoRef.current;
     if (!track || !videoElement) return;
 
-    console.log('[VideoTrack] Attaching track:', track.getId());
 
     try {
       // Attach track to video element
@@ -27,7 +26,6 @@ export function VideoTrack({ track, className, muted = true }: VideoTrackProps) 
         }
       });
 
-      console.log('[VideoTrack] Track attached and playing');
     } catch (error) {
       console.error('[VideoTrack] Attach error:', error);
     }
@@ -36,7 +34,6 @@ export function VideoTrack({ track, className, muted = true }: VideoTrackProps) 
       if (videoElement && track) {
         try {
           track.detach(videoElement);
-          console.log('[VideoTrack] Track detached');
         } catch (error) {
           console.error('[VideoTrack] Detach error:', error);
         }

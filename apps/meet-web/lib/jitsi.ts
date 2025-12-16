@@ -70,10 +70,11 @@ export async function initializeJitsi() {
         fullMessage.includes('Channel error') ||
         fullMessage.includes('XmppConnection') ||
         fullMessage.includes('Trying to send stanza while not connected') ||
-        fullMessage.includes('location.onerror') ||
         fullMessage.includes('P2P Jingle session') ||
-        fullMessage.includes('location.onerror') ||
-        fullMessage.includes('JitsiConference')
+        fullMessage.includes('JitsiConference') ||
+        fullMessage.includes('TraceablePeerConnection') ||
+        fullMessage.includes('No SSRC owner known') ||
+        fullMessage.includes('track creation failed')
       ) {
         return; // Suppress these errors
       }

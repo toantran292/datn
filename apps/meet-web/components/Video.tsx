@@ -28,7 +28,6 @@ export function Video({
     if (attachedTrackRef.current && attachedTrackRef.current !== videoTrack) {
       try {
         attachedTrackRef.current.detach(el);
-        console.log('[Video] Detached old track:', attachedTrackRef.current.getId());
         attachedTrackRef.current = null;
       } catch (err) {
         console.error('[Video] Detach error:', err);
@@ -38,7 +37,6 @@ export function Video({
     // Attach new track
     if (videoTrack && attachedTrackRef.current !== videoTrack) {
       try {
-        console.log('[Video] Attaching new track:', videoTrack.getId());
         videoTrack.attach(el);
         attachedTrackRef.current = videoTrack;
         el.volume = 0;
@@ -61,7 +59,6 @@ export function Video({
       if (el && attachedTrackRef.current) {
         try {
           attachedTrackRef.current.detach(el);
-          console.log('[Video] Detached on unmount');
         } catch (err) {}
       }
     };

@@ -73,17 +73,13 @@ export function CaptionDisplay({ captions, isEnabled, maxSpeakers = 2 }: Caption
   const dragRef = useRef<HTMLDivElement>(null);
   const dragStartRef = useRef({ x: 0, y: 0, posX: 0, posY: 0 });
 
+  // Track the order participants first appeared (to maintain stable positions)
+  const participantOrderRef = useRef<string[]>([]);
+
   // Update activeCaptions when new captions arrive - show up to maxSpeakers
   useEffect(() => {
     if (!isEnabled) return;
     if (captions.length === 0) return;
-
-    // Debug: log all captions
-    console.log('[CaptionDisplay] All captions:', captions.map(c => ({
-      participant: c.participantName,
-      text: c.text.substring(0, 20),
-      isFinal: c.isFinal
-    })));
 
     // Group captions by participant, keeping only the most recent for each
     const captionsByParticipant = new Map<string, Caption>();
@@ -94,13 +90,27 @@ export function CaptionDisplay({ captions, isEnabled, maxSpeakers = 2 }: Caption
       }
     }
 
-    console.log('[CaptionDisplay] Unique participants:', captionsByParticipant.size);
+    // Update participant order - add new participants, keep existing order
+    const currentParticipants = Array.from(captionsByParticipant.keys());
+    for (const pid of currentParticipants) {
+      if (!participantOrderRef.current.includes(pid)) {
+        participantOrderRef.current.push(pid);
+      }
+    }
 
-    // Sort by timestamp (oldest first so newest appears at bottom) and take top maxSpeakers
+    // Remove participants who are no longer speaking (caption expired)
+    participantOrderRef.current = participantOrderRef.current.filter(pid =>
+      captionsByParticipant.has(pid)
+    );
+
+    // Sort captions by participant order (stable positions)
     const sortedCaptions = Array.from(captionsByParticipant.values())
-      .sort((a, b) => b.timestamp - a.timestamp) // Get most recent speakers
-      .slice(0, maxSpeakers)
-      .sort((a, b) => a.timestamp - b.timestamp); // Then reverse so newest is at bottom
+      .sort((a, b) => {
+        const orderA = participantOrderRef.current.indexOf(a.participantId);
+        const orderB = participantOrderRef.current.indexOf(b.participantId);
+        return orderA - orderB;
+      })
+      .slice(0, maxSpeakers);
 
     // Only update if captions changed
     const hasChanged = sortedCaptions.length !== activeCaptions.length ||
@@ -398,24 +408,54 @@ export function useSpeechRecognition(
   const [isListening, setIsListening] = useState(false);
   const [isSupported, setIsSupported] = useState(true);
   const isEnabledRef = useRef(isEnabled);
+  const restartTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isRestartingRef = useRef(false);
+  const retryCountRef = useRef(0);
+  const lastSuccessRef = useRef(0);
 
   // Keep ref in sync
   useEffect(() => {
     isEnabledRef.current = isEnabled;
   }, [isEnabled]);
 
+  // Function to safely start recognition
+  const startRecognition = useCallback(() => {
+    if (!recognitionRef.current || isRestartingRef.current) return;
+
+    isRestartingRef.current = true;
+    try {
+      recognitionRef.current.start();
+    } catch (err: any) {
+      // If already started, ignore the error
+      if (err.name !== 'InvalidStateError') {
+        console.error('[Caption] Failed to start speech recognition:', err);
+      }
+    }
+    // Reset restarting flag after a short delay
+    setTimeout(() => {
+      isRestartingRef.current = false;
+    }, 100);
+  }, []);
+
   useEffect(() => {
+    console.log('[Caption] useSpeechRecognition useEffect called, isEnabled:', isEnabled);
+
     // Check if Web Speech API is supported
     const SpeechRecognitionConstructor =
       window.SpeechRecognition || window.webkitSpeechRecognition;
 
     if (!SpeechRecognitionConstructor) {
-      console.warn('[Caption] Speech Recognition not supported in this browser');
+      console.log('[Caption] Web Speech API NOT SUPPORTED');
       setIsSupported(false);
       return;
     }
 
     if (!isEnabled) {
+      console.log('[Caption] isEnabled is false, stopping recognition');
+      if (restartTimeoutRef.current) {
+        clearTimeout(restartTimeoutRef.current);
+        restartTimeoutRef.current = null;
+      }
       if (recognitionRef.current) {
         recognitionRef.current.stop();
         recognitionRef.current = null;
@@ -424,6 +464,7 @@ export function useSpeechRecognition(
       return;
     }
 
+    console.log('[Caption] Creating new SpeechRecognition instance...');
     // Create recognition instance
     const recognition = new SpeechRecognitionConstructor();
     recognition.continuous = true;
@@ -431,48 +472,86 @@ export function useSpeechRecognition(
     recognition.lang = 'vi-VN'; // Vietnamese, can be changed to 'en-US'
 
     recognition.onstart = () => {
-      console.log('[Caption] Speech recognition started');
+      console.log('[Caption] Speech recognition STARTED');
       setIsListening(true);
+      lastSuccessRef.current = Date.now();
+      retryCountRef.current = 0; // Reset retry count on successful start
     };
 
     recognition.onend = () => {
-      console.log('[Caption] Speech recognition ended');
+      const timeSinceStart = Date.now() - lastSuccessRef.current;
+      const wasQuickFailure = timeSinceStart < 500; // Failed within 500ms = conflict
+
+      console.log('[Caption] Speech recognition ENDED, isEnabled:', isEnabledRef.current, 'timeSinceStart:', timeSinceStart);
       setIsListening(false);
 
-      // Restart if still enabled (with small delay to prevent rapid restarts)
+      // Clear any existing restart timeout
+      if (restartTimeoutRef.current) {
+        clearTimeout(restartTimeoutRef.current);
+      }
+
+      // Restart if still enabled
       if (isEnabledRef.current && recognitionRef.current) {
-        setTimeout(() => {
+        // Use exponential backoff if quick failures (mic conflict)
+        let delay = 1000;
+        if (wasQuickFailure) {
+          retryCountRef.current++;
+          // Exponential backoff: 2s, 4s, 8s, max 10s
+          delay = Math.min(2000 * Math.pow(2, retryCountRef.current - 1), 10000);
+          console.log('[Caption] Quick failure detected, retry #', retryCountRef.current, 'delay:', delay);
+        }
+
+        console.log('[Caption] Will restart in', delay, 'ms...');
+        restartTimeoutRef.current = setTimeout(() => {
           if (isEnabledRef.current && recognitionRef.current) {
-            try {
-              recognitionRef.current.start();
-            } catch (err) {
-              console.log('[Caption] Could not restart recognition:', err);
-            }
+            console.log('[Caption] Restarting speech recognition...');
+            startRecognition();
           }
-        }, 500);
+        }, delay);
       }
     };
 
     recognition.onerror = (event) => {
-      // Ignore 'aborted' error - this happens when we stop recognition intentionally
-      if (event.error === 'aborted' || event.error === 'no-speech') {
-        console.log('[Caption] Speech recognition:', event.error);
+      // Ignore common non-critical errors silently
+      if (event.error === 'no-speech') {
         return;
       }
-      console.error('[Caption] Speech recognition error:', event.error);
+
+      // Handle aborted error - this happens when WebRTC and Speech API conflict
+      // Don't restart immediately, let onend handle it with delay
+      if (event.error === 'aborted') {
+        console.log('[Caption] Speech recognition aborted (likely mic conflict)');
+        return;
+      }
+
+      console.log('[Caption] Speech recognition error:', event.error);
+
+      // Handle audio-capture error - happens when mic is busy or has issues
+      if (event.error === 'audio-capture') {
+        console.warn('[Caption] Audio capture issue, will retry in 2s...');
+        // Try to restart after a longer delay
+        if (restartTimeoutRef.current) {
+          clearTimeout(restartTimeoutRef.current);
+        }
+        restartTimeoutRef.current = setTimeout(() => {
+          if (isEnabledRef.current && recognitionRef.current) {
+            startRecognition();
+          }
+        }, 2000);
+        return;
+      }
+
       if (event.error === 'not-allowed') {
         setIsSupported(false);
       }
     };
 
     recognition.onresult = (event) => {
-      console.log('[Caption] Got speech result event');
       let interimTranscript = '';
       let finalTranscript = '';
 
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript;
-        console.log('[Caption] Transcript:', transcript, 'isFinal:', event.results[i].isFinal);
         if (event.results[i].isFinal) {
           finalTranscript += transcript;
         } else {
@@ -481,29 +560,42 @@ export function useSpeechRecognition(
       }
 
       if (finalTranscript) {
-        console.log('[Caption] Calling onResult with final:', finalTranscript);
+        console.log('[Caption] Final transcript:', finalTranscript);
         onResult(finalTranscript, true);
       } else if (interimTranscript) {
-        console.log('[Caption] Calling onResult with interim:', interimTranscript);
+        console.log('[Caption] Interim transcript:', interimTranscript);
         onResult(interimTranscript, false);
       }
     };
 
     recognitionRef.current = recognition;
 
-    try {
-      recognition.start();
-    } catch (err) {
-      console.error('[Caption] Failed to start speech recognition:', err);
-    }
+    // Delay starting recognition to let WebRTC stabilize first
+    console.log('[Caption] Will start recognition after 2s delay...');
+    const startDelay = setTimeout(() => {
+      if (!isEnabledRef.current || !recognitionRef.current) return;
+
+      console.log('[Caption] Attempting to start recognition...');
+      try {
+        recognitionRef.current.start();
+        console.log('[Caption] recognition.start() called successfully');
+      } catch (err) {
+        console.error('[Caption] Failed to start speech recognition:', err);
+      }
+    }, 2000); // Wait 2 seconds for WebRTC to stabilize
 
     return () => {
+      clearTimeout(startDelay);
+      if (restartTimeoutRef.current) {
+        clearTimeout(restartTimeoutRef.current);
+        restartTimeoutRef.current = null;
+      }
       if (recognitionRef.current) {
         recognitionRef.current.stop();
         recognitionRef.current = null;
       }
     };
-  }, [isEnabled, onResult]);
+  }, [isEnabled, onResult, startRecognition]);
 
   return { isListening, isSupported };
 }

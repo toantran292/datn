@@ -2,7 +2,7 @@
 
 import { motion } from 'motion/react';
 import { Circle } from 'lucide-react';
-import { formatDuration } from '@/hooks/useRecording';
+import { formatRecordingDuration } from '@/hooks/useClientRecording';
 
 interface RecordingIndicatorProps {
   isRecording: boolean;
@@ -46,7 +46,7 @@ export function RecordingIndicator({ isRecording, duration, status }: RecordingI
         {/* Duration */}
         {!isPending && (
           <span className="text-white/90 font-mono text-sm">
-            {formatDuration(duration)}
+            {formatRecordingDuration(duration)}
           </span>
         )}
       </div>

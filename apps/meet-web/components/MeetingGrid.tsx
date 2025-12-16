@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { ParticipantTile } from './ParticipantTile';
 import type { JitsiTrack } from '@/types/jitsi';
+import type { BackgroundOption } from './SettingsPanel';
 
 interface Participant {
   id: string;
@@ -21,13 +22,14 @@ interface MeetingGridProps {
   };
   isLocalSpeaking?: boolean;
   speakingParticipants?: Set<string>;
+  virtualBackground?: BackgroundOption;
 }
 
 /**
  * Simple meeting grid component.
  * Displays all participants in a responsive grid layout.
  */
-export function MeetingGrid({ participants, localParticipant, isLocalSpeaking = false, speakingParticipants = new Set() }: MeetingGridProps) {
+export function MeetingGrid({ participants, localParticipant, isLocalSpeaking = false, speakingParticipants = new Set(), virtualBackground }: MeetingGridProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
 
@@ -135,6 +137,7 @@ export function MeetingGrid({ participants, localParticipant, isLocalSpeaking = 
                   isLocal={participant.isLocal}
                   size={config.size}
                   isSpeaking={participant.isSpeaking}
+                  virtualBackground={participant.isLocal ? virtualBackground : undefined}
                 />
               </motion.div>
             ))}

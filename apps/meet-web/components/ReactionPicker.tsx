@@ -42,17 +42,16 @@ export function ReactionPicker({ onSelectReaction, disabled }: ReactionPickerPro
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
         disabled={disabled}
-        className={`p-3 rounded-xl transition-all ${
-          isOpen
+        className={`p-3 rounded-xl transition-all ${isOpen
             ? 'bg-[var(--ts-teal)] text-white'
             : 'text-[var(--ts-text-secondary)] hover:text-white hover:bg-[var(--ts-card-surface)]'
-        } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+          } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         style={isOpen ? { boxShadow: '0 0 20px rgba(0, 196, 171, 0.4)' } : undefined}
       >
         <Smile className="w-5 h-5" />
       </motion.button>
 
-      {/* Picker Popup */}
+      {/* Picker Popup - Fixed position in center of screen */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -60,7 +59,7 @@ export function ReactionPicker({ onSelectReaction, disabled }: ReactionPickerPro
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 p-2 rounded-2xl backdrop-blur-xl border"
+            className="fixed bottom-24 left-2 -translate-x-1/2 p-2 rounded-2xl backdrop-blur-xl border z-50"
             style={{
               background: 'rgba(17, 24, 39, 0.95)',
               borderColor: 'var(--ts-border)',

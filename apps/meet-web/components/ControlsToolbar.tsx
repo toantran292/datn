@@ -141,7 +141,7 @@ export function ControlsToolbar({
               )}
 
               {/* Recording */}
-              {/* {onToggleRecording && (
+              {onToggleRecording && (
                 <ControlButton
                   icon={isRecording ? <Square className="w-4 h-4 fill-current" /> : <Circle className="w-5 h-5 fill-current" />}
                   active={isRecording}
@@ -149,7 +149,7 @@ export function ControlsToolbar({
                   activeColor="recording"
                   label={isRecording ? "Stop" : "Record"}
                 />
-              )} */}
+              )}
 
               {/* Reactions */}
               {onSendReaction && (

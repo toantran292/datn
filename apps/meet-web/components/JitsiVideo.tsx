@@ -24,7 +24,6 @@ export function JitsiVideo({ track, mirror = false, className = '' }: JitsiVideo
     const trackId = track.getId?.() || 'unknown';
     const isLocal = track.isLocal();
 
-    console.log(`[JitsiVideo] Attaching track: ${trackId}, isLocal: ${isLocal}`);
 
     // Attach track to video element
     track.attach(videoEl);
@@ -32,13 +31,11 @@ export function JitsiVideo({ track, mirror = false, className = '' }: JitsiVideo
     // Check if stream is attached
     const checkStream = () => {
       if (videoEl.srcObject) {
-        console.log(`[JitsiVideo] Stream attached for ${trackId}, videoWidth: ${videoEl.videoWidth}, videoHeight: ${videoEl.videoHeight}`);
         setHasStream(true);
 
         // Try to play
         if (videoEl.paused) {
           videoEl.play().catch(err => {
-            console.log('[JitsiVideo] Play failed:', err.message);
           });
         }
       }
@@ -52,7 +49,6 @@ export function JitsiVideo({ track, mirror = false, className = '' }: JitsiVideo
 
     // Listen for loadedmetadata
     const handleLoadedMetadata = () => {
-      console.log(`[JitsiVideo] loadedmetadata for ${trackId}, videoWidth: ${videoEl.videoWidth}`);
       setHasStream(true);
     };
 
@@ -63,7 +59,6 @@ export function JitsiVideo({ track, mirror = false, className = '' }: JitsiVideo
       clearTimeout(t2);
       clearTimeout(t3);
       videoEl.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      console.log(`[JitsiVideo] Detaching track: ${trackId}`);
       track.detach(videoEl);
       setHasStream(false);
     };

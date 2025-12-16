@@ -2,8 +2,10 @@
 
 import { useMemo, useEffect, useRef, useState } from 'react';
 import { JitsiAudio } from './JitsiAudio';
+import { VideoWithBackground } from './VideoWithBackground';
 import { MicOff, Mic } from 'lucide-react';
 import type { JitsiTrack } from '@/types/jitsi';
+import type { BackgroundOption } from './SettingsPanel';
 
 interface ParticipantTileProps {
   id: string;
@@ -12,6 +14,7 @@ interface ParticipantTileProps {
   isLocal?: boolean;
   size?: 'small' | 'medium' | 'large';
   isSpeaking?: boolean;
+  virtualBackground?: BackgroundOption;
 }
 
 /**
@@ -24,9 +27,13 @@ export function ParticipantTile({
   isLocal = false,
   size = 'medium',
   isSpeaking = false,
+  virtualBackground,
 }: ParticipantTileProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [showVideo, setShowVideo] = useState(false);
+
+  // Check if virtual background is enabled (only for local participant)
+  const hasVirtualBg = isLocal && virtualBackground && virtualBackground.type !== 'none';
 
   // Store track IDs for stable comparison
   const videoTrackIdRef = useRef<string | null>(null);
@@ -72,14 +79,12 @@ export function ParticipantTile({
     if (!videoEl) return;
 
     if (!videoTrack) {
-      console.log(`[ParticipantTile] ${name} - no video track`);
       setShowVideo(false);
       return;
     }
 
     const trackId = videoTrack.getId?.() || 'unknown';
     const isLocalTrack = videoTrack.isLocal();
-    console.log(`[ParticipantTile] ${name} - attaching video, trackId: ${trackId}, isLocal: ${isLocalTrack}`);
 
     // Attach track - this is the key step from official example
     videoTrack.attach(videoEl);
@@ -89,7 +94,6 @@ export function ParticipantTile({
       try {
         const stream = (videoTrack as any).getOriginalStream?.();
         if (stream && !videoEl.srcObject) {
-          console.log(`[ParticipantTile] ${name} - manually setting srcObject from getOriginalStream`);
           videoEl.srcObject = stream;
         }
       } catch (e) {
@@ -120,7 +124,6 @@ export function ParticipantTile({
         } catch (e) {}
       }
 
-      console.log(`[ParticipantTile] ${name} checkVideo: ${width}x${height}, isMuted=${isMuted}, isLocal=${isLocalTrack}`);
 
       if (width > 0 && height > 0 && !isMuted) {
         setShowVideo(true);
@@ -133,17 +136,14 @@ export function ParticipantTile({
 
     // Listen for video events
     const handlePlaying = () => {
-      console.log(`[ParticipantTile] ${name} - video playing event`);
       checkVideo();
     };
 
     const handleLoadedMetadata = () => {
-      console.log(`[ParticipantTile] ${name} - video loadedmetadata, width: ${videoEl.videoWidth}`);
       checkVideo();
     };
 
     const handleCanPlay = () => {
-      console.log(`[ParticipantTile] ${name} - video canplay event`);
       checkVideo();
     };
 
@@ -170,7 +170,6 @@ export function ParticipantTile({
 
       // Only log first few checks
       if (checkCount <= 5) {
-        console.log(`[ParticipantTile] ${name} - check #${checkCount}: ${videoEl.videoWidth}x${videoEl.videoHeight}, readyState=${videoEl.readyState}`);
       }
 
       // Try to play if paused
@@ -190,7 +189,6 @@ export function ParticipantTile({
     // Listen for resize event
     const handleResize = () => {
       if (videoEl.videoWidth > 0 && videoEl.videoHeight > 0) {
-        console.log(`[ParticipantTile] ${name} - resize event: ${videoEl.videoWidth}x${videoEl.videoHeight}`);
         checkVideo();
       }
     };
@@ -199,7 +197,6 @@ export function ParticipantTile({
     // Listen for track mute/unmute events
     const handleTrackMuteChanged = () => {
       const muted = videoTrack.isMuted();
-      console.log(`[ParticipantTile] ${name} - track mute changed: ${muted}`);
       if (muted) {
         setShowVideo(false);
       } else {
@@ -224,15 +221,12 @@ export function ParticipantTile({
           mediaTrack = stream.getVideoTracks()[0];
           if (mediaTrack) {
             mediaTrack.addEventListener('mute', () => {
-              console.log(`[ParticipantTile] ${name} - MediaStreamTrack mute event`);
               setShowVideo(false);
             });
             mediaTrack.addEventListener('unmute', () => {
-              console.log(`[ParticipantTile] ${name} - MediaStreamTrack unmute event`);
               checkVideo();
             });
             mediaTrack.addEventListener('ended', () => {
-              console.log(`[ParticipantTile] ${name} - MediaStreamTrack ended event`);
               setShowVideo(false);
             });
           }
@@ -255,7 +249,6 @@ export function ParticipantTile({
       } catch (e) {
         // Ignore
       }
-      console.log(`[ParticipantTile] ${name} - detaching video`);
       videoTrack.detach(videoEl);
       setShowVideo(false);
     };
@@ -316,10 +309,25 @@ export function ParticipantTile({
           className="absolute inset-0 w-full h-full object-cover"
           style={{
             transform: isLocal ? 'scaleX(-1)' : 'none',
-            opacity: showVideo ? 1 : 0,
-            zIndex: showVideo ? 1 : 0,
+            opacity: showVideo && !hasVirtualBg ? 1 : 0,
+            zIndex: showVideo && !hasVirtualBg ? 1 : 0,
           }}
         />
+
+        {/* Virtual background canvas overlay for local participant */}
+        {hasVirtualBg && showVideo && videoRef.current && (
+          <VideoWithBackground
+            videoElement={videoRef.current}
+            background={virtualBackground!}
+            width={videoRef.current.videoWidth || 640}
+            height={videoRef.current.videoHeight || 480}
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{
+              transform: 'scaleX(-1)',
+              zIndex: 2,
+            }}
+          />
+        )}
 
         {/* Avatar fallback when no video */}
         <div
