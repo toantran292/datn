@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -129,4 +130,29 @@ model MeetingEvent {
 
   @@index([meetingId])
   @@index([eventType])
+}
+
+// Transcript entry for meeting captions/subtitles
+model Transcript {
+  id            String   @id @default(uuid())
+  meetingId     String
+
+  speakerId     String          // userId of the speaker
+  speakerName   String?         // Display name at time of speaking
+
+  originalText  String          // Original spoken text
+  originalLang  String?         // Detected/specified source language
+
+  translatedText String?        // Translated text (if translation was applied)
+  translatedLang String?        // Target language of translation
+
+  startTime     DateTime        // When the speech started
+  endTime       DateTime?       // When the speech ended
+  isFinal       Boolean  @default(true)  // false for interim results
+
+  createdAt     DateTime @default(now())
+
+  @@index([meetingId])
+  @@index([speakerId])
+  @@index([startTime])
 }

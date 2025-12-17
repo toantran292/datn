@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState, Suspense, useRef } from 'react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { initializeJitsi } from '@/lib/jitsi';
+import { leaveMeeting } from '@/lib/api';
 import { useJitsiConnection } from '@/hooks/useJitsiConnection';
 import { useJitsiConference } from '@/hooks/useJitsiConference';
 import { WaitingState } from '@/components/WaitingState';
@@ -11,18 +12,32 @@ import { MeetingGrid } from '@/components/MeetingGrid';
 import { ScreenShareView } from '@/components/ScreenShareView';
 import { ReactionDisplay, FloatingReaction } from '@/components/ReactionDisplay';
 import { CaptionDisplay, useSpeechRecognition } from '@/components/CaptionDisplay';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useTranscriptSaver } from '@/hooks/useTranscriptSaver';
+import type { LanguageCode } from '@/lib/translation';
 import { RecordingIndicator } from '@/components/RecordingIndicator';
 import { useClientRecording } from '@/hooks/useClientRecording';
-import { HuddleWidget } from '@/components/HuddleWidget';
 import { SettingsPanel, BackgroundOption } from '@/components/SettingsPanel';
+import { MeetingExports } from '@/components/MeetingExports';
 import type { JitsiTrack } from '@/types/jitsi';
 import { Video } from 'lucide-react';
 import { useCallback } from 'react';
 
-export default function MeetingPage() {
+// Helper to send message to parent window (for embed mode)
+const postToParent = (type: string, payload?: any) => {
+  if (typeof window !== 'undefined' && window.parent !== window) {
+    window.parent.postMessage({ type, payload }, '*');
+  }
+};
+
+function MeetingPageContent() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const roomId = params.roomId as string;
+
+  // Check if running in embed mode (iframe)
+  const isEmbedMode = searchParams.get('embed') === 'true';
 
   const [jwtToken, setJwtToken] = useState<string | null>(null);
   const [websocketUrl, setWebsocketUrl] = useState<string | null>(null);
@@ -36,6 +51,13 @@ export default function MeetingPage() {
   const [currentCameraId, setCurrentCameraId] = useState<string | undefined>();
   const [currentMicId, setCurrentMicId] = useState<string | undefined>();
   const [currentBackground, setCurrentBackground] = useState<BackgroundOption>({ type: 'none' });
+
+  // Translation settings state
+  const [translationEnabled, setTranslationEnabled] = useState(false);
+  const [translationLang, setTranslationLang] = useState<LanguageCode>('en');
+
+  // Exports panel state
+  const [isExportsOpen, setIsExportsOpen] = useState(false);
 
   // Initialize Jitsi and load meeting data from localStorage
   useEffect(() => {
@@ -54,7 +76,7 @@ export default function MeetingPage() {
 
     if (!token || !wsUrl) {
       console.error('[Meeting] Missing token or websocket URL');
-      router.push('/join');
+      router.push('/not-found');
       return;
     }
 
@@ -64,7 +86,25 @@ export default function MeetingPage() {
     setUserId(uId);
     setMeetingId(mId);
     setIsInitialized(true);
+
+    // Handle page unload - notify meeting service using sendBeacon for reliability
+    const handleBeforeUnload = () => {
+      if (mId && uId) {
+        const API_URL = process.env.NEXT_PUBLIC_MEET_API || 'http://localhost:40600';
+        // Use Blob with correct content type for sendBeacon
+        const data = new Blob([JSON.stringify({ user_id: uId })], { type: 'application/json' });
+        navigator.sendBeacon(`${API_URL}/meet/${mId}/leave`, data);
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [router]);
+
+  // Refs for use in message handler (to avoid stale closures)
+  const handleLeaveRef = useRef<(() => Promise<void>) | null>(null);
+  const toggleAudioRef = useRef<(() => Promise<void>) | null>(null);
+  const toggleVideoRef = useRef<(() => Promise<void>) | null>(null);
 
   // Jitsi connection
   const { connection, isConnected, error: connectionError } = useJitsiConnection(
@@ -72,7 +112,15 @@ export default function MeetingPage() {
     jwtToken
   );
 
-  // Jitsi conference - simplified hook
+  // Transcript saver - saves all final captions to database
+  const { saveCaption } = useTranscriptSaver({
+    meetingId,
+    enabled: true, // Always save transcripts
+    translateToLang: translationEnabled ? translationLang : undefined,
+    currentUserId: userId, // Replace 'local' with real userId
+  });
+
+  // Jitsi conference - simplified hook with transcript callback
   const {
     isJoined,
     participants,
@@ -99,14 +147,137 @@ export default function MeetingPage() {
   } = useJitsiConference(
     connection,
     isConnected ? roomId : null,
-    displayName
+    displayName,
+    { onFinalCaption: saveCaption }
   );
+
+  // Embed mode: Notify parent when connected
+  useEffect(() => {
+    if (!isEmbedMode) return;
+    if (isConnected && isJoined) {
+      postToParent('huddle:connected');
+    }
+  }, [isEmbedMode, isConnected, isJoined]);
+
+  // Embed mode: Send participants data to parent
+  useEffect(() => {
+    if (!isEmbedMode || !isJoined) return;
+
+    const participantsArray = Array.from(participants.values());
+    const participantsData = [
+      // Add local participant first
+      {
+        id: 'local',
+        name: displayName,
+        avatarUrl: undefined,
+        isSpeaking: isLocalSpeaking,
+        isMuted: isAudioMuted,
+      },
+      // Add remote participants
+      ...participantsArray.map(p => {
+        // Check if participant has audio track that is muted
+        const audioTrack = p.tracks.find(t => t.getType() === 'audio');
+        const isMuted = audioTrack ? audioTrack.isMuted() : true;
+        return {
+          id: p.id,
+          name: p.name,
+          avatarUrl: undefined,
+          isSpeaking: speakingParticipants.has(p.id),
+          isMuted,
+        };
+      }),
+    ];
+
+    postToParent('huddle:participants', { participants: participantsData });
+  }, [isEmbedMode, isJoined, participants, displayName, isLocalSpeaking, isAudioMuted, speakingParticipants]);
+
+  // Embed mode: Send speaking status to parent
+  useEffect(() => {
+    if (!isEmbedMode || !isJoined) return;
+
+    // Find who is speaking
+    let speakingUserName: string | null = null;
+
+    if (isLocalSpeaking) {
+      speakingUserName = displayName;
+    } else {
+      // Check remote participants
+      for (const [participantId, _] of speakingParticipants) {
+        const participant = participants.get(participantId);
+        if (participant) {
+          speakingUserName = participant.name;
+          break;
+        }
+      }
+    }
+
+    postToParent('huddle:speaking', { userName: speakingUserName });
+  }, [isEmbedMode, isJoined, isLocalSpeaking, speakingParticipants, participants, displayName]);
+
+  // Embed mode: Send audio mute status to parent
+  useEffect(() => {
+    if (!isEmbedMode || !isJoined) return;
+    postToParent('huddle:audioMuted', { muted: isAudioMuted });
+  }, [isEmbedMode, isJoined, isAudioMuted]);
+
+  // Embed mode: Send video mute status to parent
+  useEffect(() => {
+    if (!isEmbedMode || !isJoined) return;
+    postToParent('huddle:videoMuted', { muted: isVideoMuted });
+  }, [isEmbedMode, isJoined, isVideoMuted]);
 
   // Handle leave
   const handleLeave = async () => {
+    // Notify parent window in embed mode
+    if (isEmbedMode) {
+      postToParent('huddle:leave');
+    }
+    // Notify meeting service that user is leaving
+    if (meetingId && userId) {
+      await leaveMeeting(meetingId, userId);
+    }
     await leaveConference();
-    router.push('/join');
+    // Clear stored meeting info
+    localStorage.removeItem('jwtToken');
+    localStorage.removeItem('websocketUrl');
+    localStorage.removeItem('roomId');
+    localStorage.removeItem('meetingId');
+    localStorage.removeItem('iceServers');
+    // Close the tab (works when opened via window.open from chat-web)
+    if (!isEmbedMode) {
+      window.close();
+    }
   };
+
+  // Update refs for message handler
+  handleLeaveRef.current = handleLeave;
+  toggleAudioRef.current = toggleAudio;
+  toggleVideoRef.current = toggleVideo;
+
+  // Embed mode: Listen for commands from parent window
+  useEffect(() => {
+    if (!isEmbedMode) return;
+
+    const handleMessage = (event: MessageEvent) => {
+      const { type, payload } = event.data || {};
+      if (type === 'huddle:command') {
+        switch (payload?.action) {
+          case 'leave':
+            handleLeaveRef.current?.();
+            break;
+          case 'toggleAudio':
+            toggleAudioRef.current?.();
+            break;
+          case 'toggleVideo':
+            toggleVideoRef.current?.();
+            break;
+        }
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [isEmbedMode]);
 
   // Settings handlers
   const handleShowSettings = useCallback(() => {
@@ -147,6 +318,28 @@ export default function MeetingPage() {
   // The Captions button only controls whether to SHOW captions locally
   useSpeechRecognition(!isAudioMuted, handleSpeechResult);
 
+  // Translation hook - translates captions to target language
+  // Note: Transcript saving is handled by useTranscriptSaver above
+  const { translatedCaptions } = useTranslation({
+    enabled: translationEnabled && isCaptionsEnabled,
+    targetLang: translationLang,
+    captions: captions,
+    meetingId: meetingId,
+  });
+
+  // Use translated captions if translation is enabled, otherwise use original captions
+  const displayCaptions = translationEnabled ? translatedCaptions : captions;
+
+  // Debug log
+  console.log('[Page] displayCaptions:', {
+    translationEnabled,
+    captionsLength: captions.length,
+    translatedCaptionsLength: translatedCaptions.length,
+    firstCaption: displayCaptions[0],
+    meetingId, // Check if meetingId exists
+    userId,
+  });
+
   // Client-side Recording hook (uses MediaRecorder API)
   const {
     isRecording,
@@ -161,8 +354,6 @@ export default function MeetingPage() {
     userId,
     onRecordingComplete: useCallback((blob: Blob, duration: number) => {
       console.log('[Recording] Recording complete:', { size: blob.size, duration });
-      // Auto-download when recording stops
-      // downloadRecording will use the blob from state
     }, []),
   });
 
@@ -234,6 +425,25 @@ export default function MeetingPage() {
     }
   }
 
+  // Embed mode: Just video grid, no controls (controls are in parent EmbeddedHuddle)
+  if (isEmbedMode) {
+    return (
+      <div className="w-full h-full overflow-hidden" style={{ backgroundColor: 'var(--ts-bg-dark)' }}>
+        <MeetingGrid
+          participants={participantsArray}
+          localParticipant={{
+            name: displayName,
+            tracks: filteredLocalTracks,
+          }}
+          isLocalSpeaking={isLocalSpeaking}
+          speakingParticipants={speakingParticipants}
+          virtualBackground={currentBackground}
+          compact
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="w-screen h-screen flex flex-col overflow-hidden" style={{ backgroundColor: 'var(--ts-bg-dark)' }}>
       {/* Header - Only show when not in screen share mode */}
@@ -295,8 +505,9 @@ export default function MeetingPage() {
 
         {/* Captions Display - Above controls */}
         <CaptionDisplay
-          captions={captions}
+          captions={displayCaptions}
           isEnabled={isCaptionsEnabled}
+          showTranslation={translationEnabled}
         />
       </div>
 
@@ -331,6 +542,8 @@ export default function MeetingPage() {
         onToggleCaptions={toggleCaptions}
         onSendReaction={sendReaction}
         onShowSettings={handleShowSettings}
+        onShowExports={() => setIsExportsOpen(true)}
+        hasRecording={!!recordedBlob}
         onLeave={handleLeave}
       />
 
@@ -341,22 +554,42 @@ export default function MeetingPage() {
         currentCameraId={currentCameraId}
         currentMicId={currentMicId}
         currentBackground={currentBackground.value}
+        translationEnabled={translationEnabled}
+        translationLang={translationLang}
         onCameraChange={handleCameraChange}
         onMicChange={handleMicChange}
         onBackgroundChange={handleBackgroundChange}
+        onTranslationEnabledChange={setTranslationEnabled}
+        onTranslationLangChange={setTranslationLang}
       />
 
-      {/* Huddle Widget - Compact inline widget */}
-      <HuddleWidget
-        participants={participantsArray}
-        localParticipant={{
-          name: displayName,
-          tracks: filteredLocalTracks,
-        }}
-        isLocalSpeaking={isLocalSpeaking}
-        speakingParticipants={speakingParticipants}
-        isAudioMuted={isAudioMuted}
-      />
+      {/* Exports Panel */}
+      {isExportsOpen && (
+        <MeetingExports
+          meetingId={meetingId}
+          recordedBlob={recordedBlob}
+          isRecording={isRecording}
+          onDownloadRecording={downloadRecording}
+          onClose={() => setIsExportsOpen(false)}
+        />
+      )}
     </div>
+  );
+}
+
+export default function MeetingPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="w-screen h-screen flex items-center justify-center bg-ts-bg-dark">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-4 border-ts-orange/20 border-t-ts-orange mx-auto mb-4" />
+            <p className="text-ts-text-secondary">Loading...</p>
+          </div>
+        </div>
+      }
+    >
+      <MeetingPageContent />
+    </Suspense>
   );
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Mic, MicOff, Video, VideoOff, Monitor, Users, Settings, PhoneOff, MessageSquare, Captions, CaptionsOff, Circle, Square } from 'lucide-react';
+import { Mic, MicOff, Video, VideoOff, Monitor, Users, Settings, PhoneOff, MessageSquare, Captions, CaptionsOff, Circle, Square, Download } from 'lucide-react';
 import { ReactionPicker } from './ReactionPicker';
 
 interface ControlsToolbarProps {
@@ -20,6 +20,8 @@ interface ControlsToolbarProps {
   onShowParticipants?: () => void;
   onShowSettings?: () => void;
   onSendReaction?: (emoji: string) => void;
+  onShowExports?: () => void;
+  hasRecording?: boolean;
   onLeave: () => void;
 }
 
@@ -40,6 +42,8 @@ export function ControlsToolbar({
   onShowParticipants,
   onShowSettings,
   onSendReaction,
+  onShowExports,
+  hasRecording = false,
   onLeave,
 }: ControlsToolbarProps) {
   const [isVisible, setIsVisible] = useState(true);
@@ -210,6 +214,22 @@ export function ControlsToolbar({
                   onClick={onShowSettings}
                   label="Settings"
                 />
+              )}
+
+              {/* Export/Download */}
+              {onShowExports && (
+                <div className="relative">
+                  <ControlButton
+                    icon={<Download className="w-5 h-5" />}
+                    onClick={onShowExports}
+                    active={hasRecording}
+                    activeColor="teal"
+                    label="Export"
+                  />
+                  {hasRecording && (
+                    <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse" />
+                  )}
+                </div>
               )}
 
               {/* Divider */}

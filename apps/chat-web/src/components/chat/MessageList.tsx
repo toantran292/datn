@@ -3,6 +3,7 @@ import { Hash, Lock } from 'lucide-react';
 import type { Message, Room } from '../../types';
 import type { UserInfo } from '../../contexts/ChatContext';
 import { MessageItem } from './MessageItem';
+import { HuddleMessage } from './HuddleMessage';
 
 export interface MessageListProps {
   room: Room | null;
@@ -65,6 +66,17 @@ export function MessageList({
     <div className="flex-1 overflow-y-auto px-5 py-4 vertical-scrollbar scrollbar-sm">
       <div className="space-y-0.5">
         {mainMessages.map((msg) => {
+          // Render huddle messages with special component
+          if (msg.type === 'huddle_started' || msg.type === 'huddle_ended') {
+            return (
+              <HuddleMessage
+                key={msg.id}
+                message={msg}
+                currentUserId={currentUserId}
+              />
+            );
+          }
+
           const userInfo = usersCache?.get(msg.userId);
           return (
             <MessageItem

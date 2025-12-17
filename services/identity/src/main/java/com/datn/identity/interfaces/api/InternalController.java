@@ -7,8 +7,11 @@ import com.datn.identity.interfaces.api.dto.Dtos;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * Internal endpoints for service-to-service communication (BFF calls).
@@ -21,11 +24,13 @@ public class InternalController {
     private final OrganizationApplicationService orgs;
     private final InvitationApplicationService invites;
     private final DashboardService dashboard;
+    private final JdbcTemplate jdbc;
 
-    public InternalController(OrganizationApplicationService orgs, InvitationApplicationService invites, DashboardService dashboard) {
+    public InternalController(OrganizationApplicationService orgs, InvitationApplicationService invites, DashboardService dashboard, JdbcTemplate jdbc) {
         this.orgs = orgs;
         this.invites = invites;
         this.dashboard = dashboard;
+        this.jdbc = jdbc;
     }
 
     /**
@@ -270,4 +275,41 @@ public class InternalController {
     public record InviteRequest(String email, String role) {}
     public record UpdateRoleRequest(String role) {}
     public record UpdateLogoRequest(String logoUrl) {}
+
+    // ==================== System Admin Check ====================
+
+    /**
+     * Check if a user is a system admin (ROOT or SYS_ADMIN role).
+     * Used by meeting-api for admin meeting management.
+     * GET /internal/users/{userId}/is-system-admin
+     */
+    @GetMapping("/users/{userId}/is-system-admin")
+    public ResponseEntity<?> isSystemAdmin(@PathVariable String userId) {
+        try {
+            UUID uid = UUID.fromString(userId);
+
+            // Query role_bindings for system-level roles (ROOT or SYS_ADMIN)
+            String sql = """
+                SELECT r.name FROM role_bindings rb
+                JOIN roles r ON r.id = rb.role_id
+                WHERE rb.user_id = ?
+                  AND rb.scope = 'SYSTEM'
+                  AND rb.org_id IS NULL
+                  AND r.name IN ('ROOT', 'SYS_ADMIN')
+                """;
+
+            List<String> systemRoles = jdbc.queryForList(sql, String.class, uid);
+            boolean isAdmin = !systemRoles.isEmpty();
+
+            return ResponseEntity.ok(Map.of(
+                    "user_id", userId,
+                    "is_system_admin", isAdmin,
+                    "system_roles", systemRoles
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "invalid_uuid_format"));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "internal_error", "message", e.getMessage()));
+        }
+    }
 }

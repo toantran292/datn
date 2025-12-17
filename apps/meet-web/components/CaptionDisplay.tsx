@@ -54,15 +54,19 @@ export interface Caption {
   text: string;
   timestamp: number;
   isFinal: boolean;
+  // Translation fields
+  translatedText?: string;
+  isTranslating?: boolean;
 }
 
 interface CaptionDisplayProps {
   captions: Caption[];
   isEnabled: boolean;
   maxSpeakers?: number; // Maximum speakers to show at once (default: 2)
+  showTranslation?: boolean; // Whether to show translated text
 }
 
-export function CaptionDisplay({ captions, isEnabled, maxSpeakers = 2 }: CaptionDisplayProps) {
+export function CaptionDisplay({ captions, isEnabled, maxSpeakers = 2, showTranslation = false }: CaptionDisplayProps) {
   const [activeCaptions, setActiveCaptions] = useState<Caption[]>([]);
   const [popoutWindow, setPopoutWindow] = useState<Window | null>(null);
   const popoutIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -376,19 +380,33 @@ export function CaptionDisplay({ captions, isEnabled, maxSpeakers = 2 }: Caption
         {/* Captions for each active speaker */}
         <div style={{ borderColor: 'var(--ts-widget-border)' }}>
           {activeCaptions.length > 0 ? (
-            activeCaptions.map((caption) => (
-              <div key={caption.participantId} className="px-3 py-2" style={{ borderBottom: '1px solid var(--ts-widget-border)' }}>
-                <span className="text-ts-orange font-medium text-xs mr-2">
-                  {caption.participantName}:
-                </span>
-                <span className="text-sm" style={{ color: 'var(--ts-text-primary)' }}>
-                  {caption.text}
-                  {!caption.isFinal && (
-                    <span className="inline-block w-0.5 h-3 ml-0.5 animate-pulse align-middle" style={{ background: 'var(--ts-text-secondary)' }} />
+            activeCaptions.map((caption) => {
+              // Determine which text to display
+              const displayText = showTranslation && caption.translatedText
+                ? caption.translatedText
+                : caption.text;
+              const isTranslating = showTranslation && caption.isTranslating;
+
+              return (
+                <div key={caption.participantId} className="px-3 py-2" style={{ borderBottom: '1px solid var(--ts-widget-border)' }}>
+                  <span className="text-ts-orange font-medium text-xs mr-2">
+                    {caption.participantName}:
+                  </span>
+                  <span className="text-sm" style={{ color: 'var(--ts-text-primary)' }}>
+                    {displayText}
+                    {(!caption.isFinal || isTranslating) && (
+                      <span className="inline-block w-0.5 h-3 ml-0.5 animate-pulse align-middle" style={{ background: 'var(--ts-text-secondary)' }} />
+                    )}
+                  </span>
+                  {/* Show original text in smaller font when showing translation */}
+                  {showTranslation && caption.translatedText && caption.translatedText !== caption.text && (
+                    <div className="text-xs mt-1 opacity-60" style={{ color: 'var(--ts-text-secondary)' }}>
+                      {caption.text}
+                    </div>
                   )}
-                </span>
-              </div>
-            ))
+                </div>
+              );
+            })
           ) : (
             <div className="px-3 py-2 text-sm text-center" style={{ color: 'var(--ts-text-secondary)' }}>
               Waiting for speech...

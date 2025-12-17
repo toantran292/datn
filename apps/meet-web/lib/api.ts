@@ -7,6 +7,7 @@ export interface MeetingTokenRequest {
   chat_id?: string;
   project_id?: string;
   room_id?: string;
+  org_id?: string;
 }
 
 export interface MeetingTokenResponse {
@@ -85,6 +86,27 @@ export async function getMeetingToken(
   }
 
   return response.json();
+}
+
+/**
+ * Notify meeting service that user is leaving the meeting
+ */
+export async function leaveMeeting(
+  meetingId: string,
+  userId: string
+): Promise<void> {
+  try {
+    await fetch(`${API_URL}/meet/${meetingId}/leave`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ user_id: userId }),
+    });
+  } catch (error) {
+    // Don't throw - leaving notification failure shouldn't block UI
+    console.warn('Failed to notify meeting service about leave:', error);
+  }
 }
 
 /**

@@ -6,6 +6,7 @@ interface UseCaptionsOptions {
   conference: JitsiConference | null;
   isJoined: boolean;
   displayName: string;
+  onFinalCaption?: (caption: CaptionEvent) => void;
 }
 
 interface UseCaptionsReturn {
@@ -23,11 +24,14 @@ export function useCaptions({
   conference,
   isJoined,
   displayName,
+  onFinalCaption,
 }: UseCaptionsOptions): UseCaptionsReturn {
   const [captions, setCaptions] = useState<CaptionEvent[]>([]);
   const [isCaptionsEnabled, setIsCaptionsEnabled] = useState(false);
   const displayNameRef = useRef(displayName);
   displayNameRef.current = displayName;
+  const onFinalCaptionRef = useRef(onFinalCaption);
+  onFinalCaptionRef.current = onFinalCaption;
 
   const toggleCaptions = useCallback(() => {
     setIsCaptionsEnabled(prev => !prev);
@@ -72,6 +76,11 @@ export function useCaptions({
         // For final captions, just add (keep last 10)
         return [...prev.slice(-10), captionEvent];
       });
+
+      // Notify callback for final captions (for transcript saving)
+      if (isFinal && onFinalCaptionRef.current) {
+        onFinalCaptionRef.current(captionEvent);
+      }
     } catch (err) {
       console.error('[useCaptions] Error sending caption:', err);
     }
@@ -88,6 +97,11 @@ export function useCaptions({
       }
       return [...prev.slice(-10), caption];
     });
+
+    // Notify callback for final captions (for transcript saving)
+    if (caption.isFinal && onFinalCaptionRef.current) {
+      onFinalCaptionRef.current(caption);
+    }
   }, []);
 
   // Clear old captions periodically

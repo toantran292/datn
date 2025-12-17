@@ -2,8 +2,9 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Camera, Mic, Image, Check, Upload, Sun, Moon, Palette } from 'lucide-react';
+import { X, Camera, Mic, Image, Check, Upload, Sun, Moon, Palette, Languages } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { SUPPORTED_LANGUAGES, type LanguageCode } from '@/lib/translation';
 
 interface DeviceInfo {
   deviceId: string;
@@ -16,9 +17,14 @@ interface SettingsPanelProps {
   currentCameraId?: string;
   currentMicId?: string;
   currentBackground?: string;
+  // Caption translation settings
+  translationEnabled?: boolean;
+  translationLang?: LanguageCode;
   onCameraChange: (deviceId: string) => void;
   onMicChange: (deviceId: string) => void;
   onBackgroundChange: (background: BackgroundOption) => void;
+  onTranslationEnabledChange?: (enabled: boolean) => void;
+  onTranslationLangChange?: (lang: LanguageCode) => void;
 }
 
 export interface BackgroundOption {
@@ -41,9 +47,13 @@ export function SettingsPanel({
   currentCameraId,
   currentMicId,
   currentBackground,
+  translationEnabled = false,
+  translationLang = 'en',
   onCameraChange,
   onMicChange,
   onBackgroundChange,
+  onTranslationEnabledChange,
+  onTranslationLangChange,
 }: SettingsPanelProps) {
   const [cameras, setCameras] = useState<DeviceInfo[]>([]);
   const [microphones, setMicrophones] = useState<DeviceInfo[]>([]);
@@ -52,7 +62,7 @@ export function SettingsPanel({
   const [selectedBackground, setSelectedBackground] = useState<BackgroundOption>(
     { type: 'none' }
   );
-  const [activeTab, setActiveTab] = useState<'devices' | 'background' | 'appearance'>('devices');
+  const [activeTab, setActiveTab] = useState<'devices' | 'background' | 'captions' | 'appearance'>('devices');
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -219,6 +229,16 @@ export function SettingsPanel({
               }`}
             >
               Background
+            </button>
+            <button
+              onClick={() => setActiveTab('captions')}
+              className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                activeTab === 'captions'
+                  ? 'text-[var(--ts-orange)] border-b-2 border-[var(--ts-orange)]'
+                  : 'text-[var(--ts-text-secondary)] hover:text-[var(--ts-text-primary)]'
+              }`}
+            >
+              Captions
             </button>
             <button
               onClick={() => setActiveTab('appearance')}
@@ -403,6 +423,76 @@ export function SettingsPanel({
 
                 <p className="text-xs text-[var(--ts-text-secondary)] mt-4">
                   Virtual backgrounds use your device&apos;s processing power. Performance may vary.
+                </p>
+              </div>
+            )}
+
+            {activeTab === 'captions' && (
+              /* Captions Tab - Translation Settings */
+              <div className="space-y-6">
+                {/* Translation Toggle */}
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-medium text-[var(--ts-text-primary)] mb-3">
+                    <Languages className="w-4 h-4" />
+                    Real-time Translation
+                  </label>
+                  <button
+                    onClick={() => onTranslationEnabledChange?.(!translationEnabled)}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all ${
+                      translationEnabled
+                        ? 'bg-ts-teal/20 border border-ts-teal'
+                        : 'border border-transparent'
+                    }`}
+                    style={{
+                      backgroundColor: translationEnabled ? undefined : 'var(--ts-input-bg)',
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-6 rounded-full transition-colors relative ${
+                        translationEnabled ? 'bg-ts-teal' : 'bg-gray-500'
+                      }`}>
+                        <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${
+                          translationEnabled ? 'left-5' : 'left-1'
+                        }`} />
+                      </div>
+                      <span className="text-sm" style={{ color: 'var(--ts-text-primary)' }}>
+                        {translationEnabled ? 'Translation On' : 'Translation Off'}
+                      </span>
+                    </div>
+                  </button>
+                </div>
+
+                {/* Target Language Selection */}
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-medium text-[var(--ts-text-primary)] mb-3">
+                    Translate to
+                  </label>
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {(Object.entries(SUPPORTED_LANGUAGES) as [LanguageCode, string][]).map(([code, name]) => (
+                      <button
+                        key={code}
+                        onClick={() => onTranslationLangChange?.(code)}
+                        disabled={!translationEnabled}
+                        className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all ${
+                          translationLang === code
+                            ? 'bg-ts-orange/20 border border-ts-orange'
+                            : 'border border-transparent'
+                        } ${!translationEnabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        style={{
+                          backgroundColor: translationLang === code ? undefined : 'var(--ts-input-bg)',
+                        }}
+                      >
+                        <span className="text-sm" style={{ color: 'var(--ts-text-primary)' }}>{name}</span>
+                        {translationLang === code && (
+                          <Check className="w-4 h-4 text-ts-orange flex-shrink-0" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <p className="text-xs text-[var(--ts-text-secondary)]">
+                  Captions will be translated in real-time using AI. Translation may have a slight delay.
                 </p>
               </div>
             )}

@@ -145,6 +145,7 @@ services:
       REPLAY_TTL_SEC: 60
       # Use identity:3000 if identity runs in Docker, or host.docker.internal:3000 if running locally
       IDENTITY_BASE_URL: ${IDENTITY_BASE_URL:-http://identity:3000}
+      PM_BASE_URL: ${PM_BASE_URL:-http://pm:3000}
       SERVICE_TIMEOUT_MS: 3500
       CACHE_TTL_SEC: 60
       # LLM Configuration for Reports (UC16)
@@ -230,6 +231,8 @@ services:
       # File Storage Service
       FILE_STORAGE_URL: http://file-storage-api:3000
       NOTIFICATION_URL: http://notification-api:3000
+      # Identity Service
+      IDENTITY_SERVICE_URL: ${IDENTITY_SERVICE_URL:-http://identity:3000}
     depends_on:
       postgres: { condition: service_healthy }
     healthcheck:
@@ -334,6 +337,8 @@ services:
     environment:
       NODE_ENV: development
       PORT_HTTP: 40600
+      # Chat service for huddle notifications
+      CHAT_SERVICE_URL: http://chat-api:3000
       # Prosody WebSocket
       MEET_WS: ${MEET_WS:-wss://meet.unifiedteamspace.com/xmpp-websocket}
       # JWT settings
@@ -347,6 +352,8 @@ services:
       TURN_SECRET: ${TURN_SECRET:-turnsharedsecret}
       # Database
       DATABASE_URL: postgresql://${PG_USER}:${PG_PASSWORD}@postgres:5432/meeting_db
+      # AI/LLM Configuration
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
     depends_on:
       postgres: { condition: service_healthy }
     ports:

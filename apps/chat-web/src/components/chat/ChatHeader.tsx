@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Hash, Lock, Info, Pin, ChevronDown, X, Search } from 'lucide-react';
+import { Hash, Lock, Info, Pin, ChevronDown, X, Search, Headphones } from 'lucide-react';
 import type { Room, Message } from '../../types';
 import { api } from '../../services/api';
 
@@ -9,9 +9,13 @@ export interface ChatHeaderProps {
   onToggleSidebar?: () => void;
   onJumpToMessage?: (messageId: string) => void;
   onOpenSearch?: () => void;
+  onStartMeeting?: () => void;
+  onCopyMeetingLink?: () => void;
+  isHuddleActive?: boolean;
+  huddleParticipantCount?: number;
 }
 
-export function ChatHeader({ room, sidebarOpen, onToggleSidebar, onJumpToMessage, onOpenSearch }: ChatHeaderProps) {
+export function ChatHeader({ room, sidebarOpen, onToggleSidebar, onJumpToMessage, onOpenSearch, onStartMeeting, isHuddleActive, huddleParticipantCount = 0 }: ChatHeaderProps) {
   const [pinnedMessages, setPinnedMessages] = useState<Message[]>([]);
   const [showPinnedDropdown, setShowPinnedDropdown] = useState(false);
 
@@ -102,6 +106,24 @@ export function ChatHeader({ room, sidebarOpen, onToggleSidebar, onJumpToMessage
       </div>
 
       <div className="flex items-center gap-1">
+        {/* Huddle button */}
+        {onStartMeeting && (
+          <button
+            onClick={onStartMeeting}
+            className={`flex items-center gap-1.5 p-2 rounded-lg transition-colors ${
+              isHuddleActive
+                ? 'text-teal-500 bg-teal-500/10 hover:bg-teal-500/20'
+                : 'text-custom-text-400 hover:text-custom-text-100 hover:bg-custom-background-80'
+            }`}
+            title={isHuddleActive ? "Join Huddle" : "Start Huddle"}
+          >
+            <Headphones size={18} />
+            {isHuddleActive && huddleParticipantCount > 0 && (
+              <span className="text-sm font-medium">{huddleParticipantCount}</span>
+            )}
+          </button>
+        )}
+
         {/* Search button */}
         {onOpenSearch && (
           <button

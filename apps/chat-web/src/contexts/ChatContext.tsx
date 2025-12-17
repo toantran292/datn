@@ -32,6 +32,7 @@ interface ChatContextValue {
   connectionStatus: string;
   usersCache: Map<string, UserInfo>;
   unreadCounts: Map<string, number>;
+  huddleParticipantCounts: Map<string, number>;
 
   // Project context
   currentProjectId: string | null | undefined;
@@ -151,6 +152,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   // Unread counts
   const [unreadCounts, setUnreadCounts] = useState<Map<string, number>>(new Map());
+
+  // Huddle participant counts (roomId -> count)
+  const [huddleParticipantCounts, setHuddleParticipantCounts] = useState<Map<string, number>>(new Map());
 
   // Pending file uploads
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
@@ -299,6 +303,18 @@ export function ChatProvider({ children }: { children: ReactNode }) {
                 return { ...room, members: updatedMembers };
               })
             );
+          },
+          onHuddleParticipantUpdate: (payload) => {
+            console.log("[ChatContext] Huddle participant update:", payload);
+            setHuddleParticipantCounts((prev) => {
+              const newCounts = new Map(prev);
+              if (payload.participantCount > 0) {
+                newCounts.set(payload.roomId, payload.participantCount);
+              } else {
+                newCounts.delete(payload.roomId);
+              }
+              return newCounts;
+            });
           },
         });
 
@@ -994,6 +1010,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     connectionStatus,
     usersCache,
     unreadCounts,
+    huddleParticipantCounts,
 
     // Project context
     currentProjectId,

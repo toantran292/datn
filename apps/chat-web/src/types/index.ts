@@ -17,12 +17,21 @@ export interface Room {
   description?: string | null; // Channel description
 }
 
+export type MessageType = 'text' | 'file' | 'system' | 'huddle_started' | 'huddle_ended';
+
+export interface HuddleMetadata {
+  meetingId: string;
+  meetingRoomId: string;
+  duration?: number; // seconds
+  participantCount?: number;
+}
+
 export interface Message {
   id: string;
   roomId: string;
   userId: string;
   orgId: string;
-  type: string;
+  type: MessageType | string;
   content: string;
   sentAt: string;
   threadId?: string | null; // null = main message, string = reply in thread
@@ -32,6 +41,7 @@ export interface Message {
   isPinned?: boolean; // Whether message is pinned
   reactions?: Reaction[]; // Message reactions
   attachments?: Attachment[]; // File attachments
+  metadata?: HuddleMetadata; // Metadata for huddle messages
 }
 
 // Reaction on a message

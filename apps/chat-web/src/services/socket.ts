@@ -4,6 +4,12 @@ import type { Room, Message, RoomUpdatedPayload } from '../types';
 // Connect through edge (nginx) at port 8080, which proxies /chat to chat service
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:8080';
 
+export type HuddleParticipantUpdatePayload = {
+  roomId: string;
+  meetingId: string;
+  participantCount: number;
+};
+
 export type SocketEventHandlers = {
   onRoomsBootstrap?: (rooms: Room[]) => void;
   onRoomCreated?: (room: Room) => void;
@@ -13,6 +19,7 @@ export type SocketEventHandlers = {
   onJoinedRoom?: (data: { roomId: string; userId: string; joinedAt: number }) => void;
   onUserOnline?: (data: { userId: string; timestamp: string }) => void;
   onUserOffline?: (data: { userId: string; timestamp: string }) => void;
+  onHuddleParticipantUpdate?: (payload: HuddleParticipantUpdatePayload) => void;
   onConnect?: () => void;
   onDisconnect?: () => void;
 };
@@ -90,6 +97,11 @@ class SocketService {
     this.socket.on('user:offline', (data: { userId: string; timestamp: string }) => {
       console.log('[WS] User offline:', data);
       handlers.onUserOffline?.(data);
+    });
+
+    this.socket.on('huddle:participant_update', (payload: HuddleParticipantUpdatePayload) => {
+      console.log('[WS] Huddle participant update:', payload);
+      handlers.onHuddleParticipantUpdate?.(payload);
     });
   }
 

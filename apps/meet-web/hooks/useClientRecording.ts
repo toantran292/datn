@@ -18,7 +18,7 @@ interface UseClientRecordingOptions {
 
 /**
  * Hook for client-side recording using MediaRecorder API
- * Records the meeting from local media streams
+ * Records the current tab (meeting screen) + microphone audio
  */
 export function useClientRecording({
   meetingId,
@@ -52,52 +52,47 @@ export function useClientRecording({
   }, []);
 
   /**
-   * Get combined media stream from screen + audio
+   * Get screen capture stream (preferring current tab)
    */
-  const getCombinedStream = useCallback(async (): Promise<MediaStream> => {
+  const getScreenCaptureStream = useCallback(async (): Promise<MediaStream> => {
     try {
-      // Try to get screen with audio
+      // Request screen capture with preferCurrentTab to auto-select current tab
       const screenStream = await navigator.mediaDevices.getDisplayMedia({
         video: {
           width: { ideal: 1920 },
           height: { ideal: 1080 },
           frameRate: { ideal: 30 },
         },
-        audio: true, // System audio if supported
+        audio: true, // Capture tab audio
+        // @ts-ignore - preferCurrentTab is a newer API
+        preferCurrentTab: true,
+        // @ts-ignore - selfBrowserSurface hints to show current tab first
+        selfBrowserSurface: 'include',
       });
 
-      // Get microphone audio
-      const audioStream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-        },
-      });
+      // Also get microphone audio to mix in
+      try {
+        const micStream = await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true, noiseSuppression: true },
+        });
 
-      // Combine streams
-      const combinedStream = new MediaStream();
+        // Add mic audio track to the stream
+        micStream.getAudioTracks().forEach((track) => {
+          screenStream.addTrack(track);
+        });
+      } catch (micErr) {
+        console.warn('[ClientRecording] Could not get mic audio:', micErr);
+      }
 
-      // Add video tracks from screen
-      screenStream.getVideoTracks().forEach((track) => {
-        combinedStream.addTrack(track);
-      });
-
-      // Add audio tracks (both system and microphone if available)
-      screenStream.getAudioTracks().forEach((track) => {
-        combinedStream.addTrack(track);
-      });
-      audioStream.getAudioTracks().forEach((track) => {
-        combinedStream.addTrack(track);
-      });
-
-      // Handle screen share stop
+      // Handle when user stops sharing
       screenStream.getVideoTracks()[0].onended = () => {
+        console.log('[ClientRecording] Screen share stopped by user');
         stopRecording();
       };
 
-      return combinedStream;
+      return screenStream;
     } catch (err: any) {
-      console.error('[ClientRecording] Failed to get media stream:', err);
+      console.error('[ClientRecording] Failed to get screen capture:', err);
       throw new Error(
         err.name === 'NotAllowedError'
           ? 'Screen sharing permission denied'
@@ -118,8 +113,8 @@ export function useClientRecording({
     try {
       setState((prev) => ({ ...prev, error: null }));
 
-      // Get combined stream
-      const stream = await getCombinedStream();
+      // Get screen capture stream (will prefer current tab)
+      const stream = await getScreenCaptureStream();
       streamRef.current = stream;
 
       // Determine best supported MIME type
@@ -127,7 +122,7 @@ export function useClientRecording({
         'video/webm;codecs=vp9,opus',
         'video/webm;codecs=vp8,opus',
         'video/webm',
-        'video/mp4',
+        'audio/webm', // Fallback for audio-only
       ];
 
       let mimeType = '';
@@ -139,9 +134,10 @@ export function useClientRecording({
       }
 
       if (!mimeType) {
-        throw new Error('No supported video recording format found');
+        throw new Error('No supported recording format found');
       }
 
+      console.log('[ClientRecording] Using MIME type:', mimeType);
 
       // Create MediaRecorder
       const mediaRecorder = new MediaRecorder(stream, {
@@ -158,7 +154,6 @@ export function useClientRecording({
       };
 
       mediaRecorder.onstop = () => {
-
         const blob = new Blob(chunksRef.current, { type: mimeType });
         const duration = Math.floor((Date.now() - startTimeRef.current) / 1000);
 
@@ -169,7 +164,7 @@ export function useClientRecording({
           recordedBlob: blob,
         }));
 
-        // Cleanup stream
+        // Cleanup cloned stream (don't stop original tracks)
         if (streamRef.current) {
           streamRef.current.getTracks().forEach((track) => track.stop());
           streamRef.current = null;
@@ -212,6 +207,8 @@ export function useClientRecording({
         error: null,
       }));
 
+      console.log('[ClientRecording] Recording started');
+
     } catch (err: any) {
       console.error('[ClientRecording] Failed to start recording:', err);
       setState((prev) => ({
@@ -220,7 +217,7 @@ export function useClientRecording({
         isRecording: false,
       }));
     }
-  }, [state.isRecording, getCombinedStream, onRecordingComplete]);
+  }, [state.isRecording, getScreenCaptureStream, onRecordingComplete]);
 
   /**
    * Stop recording
@@ -236,10 +233,7 @@ export function useClientRecording({
       mediaRecorderRef.current = null;
     }
 
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
+    // Don't stop the cloned stream here - it will be stopped in onstop handler
   }, []);
 
   /**

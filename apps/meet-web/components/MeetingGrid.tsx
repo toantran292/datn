@@ -23,13 +23,14 @@ interface MeetingGridProps {
   isLocalSpeaking?: boolean;
   speakingParticipants?: Set<string>;
   virtualBackground?: BackgroundOption;
+  compact?: boolean;
 }
 
 /**
  * Simple meeting grid component.
  * Displays all participants in a responsive grid layout.
  */
-export function MeetingGrid({ participants, localParticipant, isLocalSpeaking = false, speakingParticipants = new Set(), virtualBackground }: MeetingGridProps) {
+export function MeetingGrid({ participants, localParticipant, isLocalSpeaking = false, speakingParticipants = new Set(), virtualBackground, compact = false }: MeetingGridProps) {
   const [currentPage, setCurrentPage] = useState(0);
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
 
@@ -57,6 +58,18 @@ export function MeetingGrid({ participants, localParticipant, isLocalSpeaking = 
   // Grid configuration based on participant count
   const getGridConfig = () => {
     const count = allParticipants.length;
+
+    // Compact mode for embed - smaller sizes
+    if (compact) {
+      if (count === 1) {
+        return { perPage: 1, cols: 1, size: 'small' as const };
+      } else if (count === 2) {
+        return { perPage: 2, cols: 2, size: 'small' as const };
+      } else {
+        return { perPage: 4, cols: 2, size: 'small' as const };
+      }
+    }
+
     if (count === 1) {
       return { perPage: 1, cols: 1, size: 'large' as const };
     } else if (count === 2) {
@@ -114,9 +127,9 @@ export function MeetingGrid({ participants, localParticipant, isLocalSpeaking = 
   }[config.cols];
 
   return (
-    <div className="w-full h-full flex items-center justify-center p-8 relative">
+    <div className={`w-full h-full flex items-center justify-center ${compact ? 'p-2' : 'p-8'} relative`}>
       {/* Main grid container */}
-      <div className="relative w-full max-w-6xl">
+      <div className={`relative w-full ${compact ? '' : 'max-w-6xl'}`}>
         <AnimatePresence mode="wait" custom={slideDirection}>
           <motion.div
             key={currentPage}
@@ -126,7 +139,7 @@ export function MeetingGrid({ participants, localParticipant, isLocalSpeaking = 
             animate="animate"
             exit="exit"
             transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className={`grid ${gridColsClass} gap-8 md:gap-12`}
+            className={`grid ${gridColsClass} ${compact ? 'gap-2' : 'gap-8 md:gap-12'}`}
           >
             {currentParticipants.map((participant, index) => (
               <motion.div

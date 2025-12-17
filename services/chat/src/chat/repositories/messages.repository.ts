@@ -11,6 +11,7 @@ export interface MessageEntity {
   threadId?: string | null;
   type: string;
   content: string;
+  metadata?: Record<string, any> | null;
   createdAt?: Date;
 }
 
@@ -22,6 +23,7 @@ export interface PersistedMessage {
   threadId: string | null;
   type: string;
   content: string;
+  metadata?: Record<string, any> | null;
   createdAt: Date;
 }
 
@@ -40,6 +42,7 @@ export class MessagesRepository {
       threadId: msg.threadId ?? null,
       type: msg.type as any,
       content: msg.content,
+      metadata: msg.metadata ?? null,
     });
 
     const saved = await this.messageRepo.save(entity);
@@ -52,6 +55,7 @@ export class MessagesRepository {
       threadId: saved.threadId,
       type: saved.type,
       content: saved.content,
+      metadata: saved.metadata,
       createdAt: saved.createdAt,
     };
   }
@@ -78,6 +82,7 @@ export class MessagesRepository {
       threadId: row.threadId,
       type: row.type,
       content: row.content,
+      metadata: row.metadata,
       createdAt: row.createdAt,
     }));
 
@@ -113,6 +118,7 @@ export class MessagesRepository {
       threadId: row.threadId,
       type: row.type,
       content: row.content,
+      metadata: row.metadata,
       createdAt: row.createdAt,
     }));
 
@@ -146,6 +152,7 @@ export class MessagesRepository {
       threadId: message.threadId,
       type: message.type,
       content: message.content,
+      metadata: message.metadata,
       createdAt: message.createdAt,
     };
   }
@@ -202,6 +209,7 @@ export class MessagesRepository {
       threadId: message.threadId,
       type: message.type,
       content: message.content,
+      metadata: message.metadata,
       createdAt: message.createdAt,
     };
   }
@@ -244,6 +252,7 @@ export class MessagesRepository {
       threadId: message.threadId,
       type: message.type,
       content: message.content,
+      metadata: message.metadata,
       createdAt: message.createdAt,
     };
   }
@@ -265,6 +274,7 @@ export class MessagesRepository {
         threadId: msg.threadId,
         type: msg.type,
         content: msg.content,
+        metadata: msg.metadata,
         createdAt: msg.createdAt,
       });
     }

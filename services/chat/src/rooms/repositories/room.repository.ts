@@ -170,7 +170,7 @@ export class RoomsRepository {
     const limit = opts.limit ?? 50;
     const offset = opts.pagingState ? parseInt(opts.pagingState, 10) : 0;
 
-    const query = this.memberRepo
+    const [members, total] = await this.memberRepo
       .createQueryBuilder('rm')
       .innerJoinAndSelect('rm.room', 'r')
       .where('rm.userId = :userId', { userId })
@@ -178,9 +178,8 @@ export class RoomsRepository {
       .andWhere('r.status = :status', { status: 'ACTIVE' })
       .orderBy('rm.joinedAt', 'DESC')
       .skip(offset)
-      .take(limit);
-
-    const [members, total] = await query.getManyAndCount();
+      .take(limit)
+      .getManyAndCount();
 
     const items: UserRoomEntity[] = members.map((m) => ({
       userId: m.userId,
@@ -214,7 +213,7 @@ export class RoomsRepository {
     const limit = opts.limit ?? 50;
     const offset = opts.pagingState ? parseInt(opts.pagingState, 10) : 0;
 
-    const query = this.memberRepo
+    const [members, total] = await this.memberRepo
       .createQueryBuilder('rm')
       .innerJoinAndSelect('rm.room', 'r')
       .where('rm.userId = :userId', { userId })
@@ -223,9 +222,8 @@ export class RoomsRepository {
       .andWhere('r.status = :status', { status: 'ACTIVE' })
       .orderBy('rm.joinedAt', 'DESC')
       .skip(offset)
-      .take(limit);
-
-    const [members, total] = await query.getManyAndCount();
+      .take(limit)
+      .getManyAndCount();
 
     const items: UserRoomEntity[] = members.map((m) => ({
       userId: m.userId,
@@ -258,7 +256,7 @@ export class RoomsRepository {
     const limit = opts.limit ?? 50;
     const offset = opts.pagingState ? parseInt(opts.pagingState, 10) : 0;
 
-    const query = this.memberRepo
+    const [members, total] = await this.memberRepo
       .createQueryBuilder('rm')
       .innerJoinAndSelect('rm.room', 'r')
       .where('rm.userId = :userId', { userId })
@@ -267,9 +265,8 @@ export class RoomsRepository {
       .andWhere('r.status = :status', { status: 'ACTIVE' })
       .orderBy('rm.joinedAt', 'DESC')
       .skip(offset)
-      .take(limit);
-
-    const [members, total] = await query.getManyAndCount();
+      .take(limit)
+      .getManyAndCount();
 
     const items: UserRoomEntity[] = members.map((m) => ({
       userId: m.userId,

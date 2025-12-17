@@ -6,13 +6,16 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    // Check if user has userId stored, redirect to meetings list
-    // Otherwise redirect to join page
-    const userId = localStorage.getItem('userId');
-    if (userId) {
-      router.push('/');
+    // Check if user has meeting info stored, redirect to meeting
+    // Otherwise show 404 (meet-web is accessed from chat-web via huddle)
+    const token = localStorage.getItem('jwtToken');
+    const wsUrl = localStorage.getItem('websocketUrl');
+    const roomId = localStorage.getItem('roomId');
+
+    if (token && wsUrl && roomId) {
+      router.push(`/meet/${roomId}`);
     } else {
-      router.push('/join');
+      router.push('/not-found');
     }
   }, [router]);
 

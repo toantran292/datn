@@ -5,6 +5,9 @@ WORKDIR /app
 # Dùng development environment
 ENV NODE_ENV=development
 
+# Install OpenSSL for Prisma binary
+RUN apk add --no-cache openssl openssl-dev libc6-compat
+
 # Bật corepack để dùng pnpm
 RUN corepack enable
 
@@ -13,24 +16,21 @@ COPY package.json pnpm-lock.yaml* ./
 
 # ---- Install deps ----
 FROM base AS deps
+# Copy prisma schema for generate
+COPY prisma ./prisma
 RUN pnpm install
+# Generate Prisma client with correct binary targets
+RUN npx prisma generate
 
 # ---- Runtime with hot reload ----
-FROM node:20-alpine AS dev
+FROM base AS dev
 WORKDIR /app
-ENV NODE_ENV=development
 
-RUN corepack enable
-
-# Copy node_modules từ deps stage
+# Copy node_modules từ deps stage (includes generated Prisma client)
 COPY --from=deps /app/node_modules ./node_modules
 
-# Copy toàn bộ project (optional)
-# Khi chạy với volume mount thì phần này bị override
+# Copy toàn bộ project
 COPY . .
-
-# Generate Prisma client
-RUN npx prisma generate || true
 
 # Expose API port
 EXPOSE 40600 40601

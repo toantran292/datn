@@ -31,6 +31,10 @@ export interface CaptionEvent {
   isFinal: boolean;
 }
 
+interface UseJitsiConferenceOptions {
+  onFinalCaption?: (caption: CaptionEvent) => void;
+}
+
 /**
  * Simplified Jitsi Conference hook following official example.
  * Key principle: Keep it simple, let Jitsi handle the complexity.
@@ -38,7 +42,8 @@ export interface CaptionEvent {
 export function useJitsiConference(
   connection: JitsiConnection | null,
   roomName: string | null,
-  displayName: string
+  displayName: string,
+  options?: UseJitsiConferenceOptions
 ) {
   const [conference, setConference] = useState<JitsiConference | null>(null);
   const [isJoined, setIsJoined] = useState(false);
@@ -59,11 +64,16 @@ export function useJitsiConference(
   const conferenceRef = useRef<JitsiConference | null>(null);
   const initializedRef = useRef(false);
   const displayNameRef = useRef(displayName);
+  const onFinalCaptionRef = useRef(options?.onFinalCaption);
 
-  // Keep displayNameRef in sync
+  // Keep refs in sync
   useEffect(() => {
     displayNameRef.current = displayName;
   }, [displayName]);
+
+  useEffect(() => {
+    onFinalCaptionRef.current = options?.onFinalCaption;
+  }, [options?.onFinalCaption]);
 
   // Simple ID normalization
   const normalizeId = (jid: string): string => {
@@ -338,6 +348,11 @@ export function useJitsiConference(
         // For final captions, just add
         return [...prev.slice(-10), captionEvent]; // Keep last 10 captions
       });
+
+      // Notify callback for final captions (for transcript saving)
+      if (isFinal && onFinalCaptionRef.current) {
+        onFinalCaptionRef.current(captionEvent);
+      }
 
     } catch (err) {
       console.error('[Conference] Error sending caption:', err);
@@ -749,6 +764,11 @@ export function useJitsiConference(
                 }
                 return [...prev.slice(-10), captionEvent];
               });
+
+              // Notify callback for final captions (for transcript saving)
+              if (captionData.isFinal && onFinalCaptionRef.current) {
+                onFinalCaptionRef.current(captionEvent);
+              }
             } catch (err) {
               // Ignore invalid JSON or empty value
             }
