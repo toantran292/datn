@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { EmbeddingService, IndexDocumentDto } from './embedding.service';
 import { DocumentProcessorService } from './document-processor.service';
 import { SearchResult } from './embedding.repository';
@@ -7,6 +7,7 @@ import { AttachmentsRepository } from '../../chat/repositories/attachments.repos
 import { FileStorageClient } from '../../common/file-storage/file-storage.client';
 import { LLMService } from '../llm.service';
 import { ChannelAIConfigRepository } from '../repositories/channel-ai-config.repository';
+import { RoomsRepository } from '../../rooms/repositories/room.repository';
 
 export interface RAGQueryResult {
   answer: string;
@@ -26,8 +27,18 @@ export interface IndexingResult {
   errors: string[];
 }
 
+export interface BulkIndexingResult {
+  totalRooms: number;
+  successfulRooms: number;
+  totalIndexed: number;
+  totalSkipped: number;
+  errors: string[];
+}
+
 @Injectable()
 export class RagService {
+  private readonly logger = new Logger(RagService.name);
+
   constructor(
     private readonly embeddingService: EmbeddingService,
     private readonly documentProcessor: DocumentProcessorService,
@@ -36,6 +47,7 @@ export class RagService {
     private readonly fileStorageClient: FileStorageClient,
     private readonly llmService: LLMService,
     private readonly aiConfigRepo: ChannelAIConfigRepository,
+    private readonly roomsRepo: RoomsRepository,
   ) {}
 
   /**
@@ -237,6 +249,67 @@ export class RagService {
    */
   async getRoomStats(roomId: string): Promise<{ totalEmbeddings: number }> {
     return this.embeddingService.getRoomStats(roomId);
+  }
+
+  /**
+   * Index all rooms in an organization
+   */
+  async indexAllRooms(orgId: string): Promise<BulkIndexingResult> {
+    const result: BulkIndexingResult = {
+      totalRooms: 0,
+      successfulRooms: 0,
+      totalIndexed: 0,
+      totalSkipped: 0,
+      errors: [],
+    };
+
+    this.logger.log(`Starting bulk indexing for org ${orgId}`);
+
+    // Get all rooms in org
+    let pagingState: string | undefined;
+    const allRoomIds: string[] = [];
+
+    do {
+      const roomsResult = await this.roomsRepo.listByOrg(orgId, {
+        limit: 100,
+        pagingState,
+      });
+
+      for (const room of roomsResult.items) {
+        allRoomIds.push(room.id);
+      }
+
+      pagingState = roomsResult.pagingState;
+    } while (pagingState);
+
+    result.totalRooms = allRoomIds.length;
+    this.logger.log(`Found ${allRoomIds.length} rooms to index`);
+
+    // Index each room
+    for (const roomId of allRoomIds) {
+      try {
+        this.logger.log(`Indexing room ${roomId}...`);
+        const roomResult = await this.indexRoom(roomId, orgId);
+
+        result.totalIndexed += roomResult.indexed;
+        result.totalSkipped += roomResult.skipped;
+
+        if (roomResult.errors.length > 0) {
+          result.errors.push(...roomResult.errors.slice(0, 5)); // Limit errors per room
+        }
+
+        result.successfulRooms++;
+        this.logger.log(`Room ${roomId}: indexed ${roomResult.indexed}, skipped ${roomResult.skipped}`);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        result.errors.push(`Room ${roomId}: ${errorMessage}`);
+        this.logger.error(`Failed to index room ${roomId}: ${errorMessage}`);
+      }
+    }
+
+    this.logger.log(`Bulk indexing complete: ${result.successfulRooms}/${result.totalRooms} rooms, ${result.totalIndexed} messages indexed`);
+
+    return result;
   }
 
   /**

@@ -13,6 +13,8 @@ export interface RoomEntity {
   name: string | undefined;
   type: RoomType;
   projectId?: string | null;
+  createdBy?: string | null;
+  description?: string | null;
 }
 
 export interface UserRoomEntity {
@@ -25,6 +27,8 @@ export interface UserRoomEntity {
   projectId?: string | null;
   joinedAt: Date;
   lastSeenMessageId?: string;
+  createdBy?: string | null;
+  description?: string | null;
 }
 
 @Injectable()
@@ -42,6 +46,7 @@ export class RoomsRepository {
     name: string | undefined,
     type: RoomType = 'channel',
     projectId?: string | null,
+    createdBy?: string | null,
   ): Promise<RoomEntity> {
     const entity = this.roomRepo.create({
       orgId,
@@ -49,6 +54,7 @@ export class RoomsRepository {
       name: name ?? null,
       type,
       projectId: projectId ?? null,
+      createdBy: createdBy ?? null,
     });
 
     const saved = await this.roomRepo.save(entity);
@@ -60,6 +66,27 @@ export class RoomsRepository {
       name: saved.name ?? undefined,
       type: saved.type,
       projectId: saved.projectId,
+      createdBy: saved.createdBy,
+      description: saved.description,
+    };
+  }
+
+  async findById(roomId: string): Promise<RoomEntity | null> {
+    const room = await this.roomRepo.findOne({
+      where: { id: roomId, status: 'ACTIVE' },
+    });
+
+    if (!room) return null;
+
+    return {
+      id: room.id,
+      orgId: room.orgId,
+      isPrivate: room.isPrivate,
+      name: room.name ?? undefined,
+      type: room.type,
+      projectId: room.projectId,
+      createdBy: room.createdBy,
+      description: room.description,
     };
   }
 
@@ -77,6 +104,8 @@ export class RoomsRepository {
       name: room.name ?? undefined,
       type: room.type,
       projectId: room.projectId,
+      createdBy: room.createdBy,
+      description: room.description,
     };
   }
 
@@ -94,6 +123,8 @@ export class RoomsRepository {
       name: room.name ?? undefined,
       type: room.type,
       projectId: room.projectId,
+      createdBy: room.createdBy,
+      description: room.description,
     }));
   }
 
@@ -118,6 +149,8 @@ export class RoomsRepository {
       name: room.name ?? undefined,
       type: room.type,
       projectId: room.projectId,
+      createdBy: room.createdBy,
+      description: room.description,
     }));
 
     const nextOffset = offset + rooms.length;
@@ -140,10 +173,10 @@ export class RoomsRepository {
     const query = this.memberRepo
       .createQueryBuilder('rm')
       .innerJoinAndSelect('rm.room', 'r')
-      .where('rm.user_id = :userId', { userId })
-      .andWhere('rm.org_id = :orgId', { orgId })
+      .where('rm.userId = :userId', { userId })
+      .andWhere('rm.orgId = :orgId', { orgId })
       .andWhere('r.status = :status', { status: 'ACTIVE' })
-      .orderBy('rm.joined_at', 'DESC')
+      .orderBy('rm.joinedAt', 'DESC')
       .skip(offset)
       .take(limit);
 
@@ -159,6 +192,8 @@ export class RoomsRepository {
       projectId: m.room.projectId,
       joinedAt: m.joinedAt,
       lastSeenMessageId: m.lastSeenMessageId ?? undefined,
+      createdBy: m.room.createdBy,
+      description: m.room.description,
     }));
 
     const nextOffset = offset + members.length;
@@ -182,11 +217,11 @@ export class RoomsRepository {
     const query = this.memberRepo
       .createQueryBuilder('rm')
       .innerJoinAndSelect('rm.room', 'r')
-      .where('rm.user_id = :userId', { userId })
-      .andWhere('rm.org_id = :orgId', { orgId })
-      .andWhere('r.project_id = :projectId', { projectId })
+      .where('rm.userId = :userId', { userId })
+      .andWhere('rm.orgId = :orgId', { orgId })
+      .andWhere('r.projectId = :projectId', { projectId })
       .andWhere('r.status = :status', { status: 'ACTIVE' })
-      .orderBy('rm.joined_at', 'DESC')
+      .orderBy('rm.joinedAt', 'DESC')
       .skip(offset)
       .take(limit);
 
@@ -202,6 +237,8 @@ export class RoomsRepository {
       projectId: m.room.projectId,
       joinedAt: m.joinedAt,
       lastSeenMessageId: m.lastSeenMessageId ?? undefined,
+      createdBy: m.room.createdBy,
+      description: m.room.description,
     }));
 
     const nextOffset = offset + members.length;
@@ -224,11 +261,11 @@ export class RoomsRepository {
     const query = this.memberRepo
       .createQueryBuilder('rm')
       .innerJoinAndSelect('rm.room', 'r')
-      .where('rm.user_id = :userId', { userId })
-      .andWhere('rm.org_id = :orgId', { orgId })
+      .where('rm.userId = :userId', { userId })
+      .andWhere('rm.orgId = :orgId', { orgId })
       .andWhere('r.type = :type', { type: 'dm' })
       .andWhere('r.status = :status', { status: 'ACTIVE' })
-      .orderBy('rm.joined_at', 'DESC')
+      .orderBy('rm.joinedAt', 'DESC')
       .skip(offset)
       .take(limit);
 
@@ -244,6 +281,8 @@ export class RoomsRepository {
       projectId: null,
       joinedAt: m.joinedAt,
       lastSeenMessageId: m.lastSeenMessageId ?? undefined,
+      createdBy: m.room.createdBy,
+      description: m.room.description,
     }));
 
     const nextOffset = offset + members.length;

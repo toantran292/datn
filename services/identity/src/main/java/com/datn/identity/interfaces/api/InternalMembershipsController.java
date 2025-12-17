@@ -3,6 +3,7 @@ package com.datn.identity.interfaces.api;
 import com.datn.identity.domain.org.MembershipRepository;
 import com.datn.identity.domain.user.UserRepository;
 import com.datn.identity.infrastructure.security.SecurityUtils;
+import com.datn.identity.infrastructure.web.FileStorageClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,10 +15,12 @@ import java.util.stream.Collectors;
 public class InternalMembershipsController {
     private final MembershipRepository memberships;
     private final UserRepository users;
+    private final FileStorageClient fileStorageClient;
 
-    public InternalMembershipsController(MembershipRepository memberships, UserRepository users) {
+    public InternalMembershipsController(MembershipRepository memberships, UserRepository users, FileStorageClient fileStorageClient) {
         this.memberships = memberships;
         this.users = users;
+        this.fileStorageClient = fileStorageClient;
     }
 
     @GetMapping("/memberships")
@@ -93,12 +96,24 @@ public class InternalMembershipsController {
                                     : email;
                         }
 
-                        return Map.of(
-                                "id", user.id().toString(),
-                                "email", user.email().value(),
-                                "display_name", displayName,
-                                "disabled", user.disabled()
-                        );
+                        // Get avatar URL from file storage if asset ID exists
+                        String avatarUrl = null;
+                        if (user.avatarAssetId() != null && !user.avatarAssetId().isBlank()) {
+                            try {
+                                var presignedResponse = fileStorageClient.getPresignedGetUrl(user.avatarAssetId(), 3600);
+                                avatarUrl = presignedResponse.presignedUrl();
+                            } catch (Exception e) {
+                                System.err.println("Failed to get avatar URL for user " + user.id() + ": " + e.getMessage());
+                            }
+                        }
+
+                        Map<String, Object> userMap = new HashMap<>();
+                        userMap.put("id", user.id().toString());
+                        userMap.put("email", user.email().value());
+                        userMap.put("display_name", displayName);
+                        userMap.put("disabled", user.disabled());
+                        userMap.put("avatar_url", avatarUrl);
+                        return userMap;
                     })
                     .collect(Collectors.toList());
 

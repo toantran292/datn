@@ -4,6 +4,7 @@ import {
   Body,
   Get,
   Param,
+  Query,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
@@ -13,6 +14,32 @@ import { SendNotificationDto } from '../dto/send-notification.dto';
 @Controller()
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
+
+  /**
+   * Get online users in an organization
+   */
+  @Get('presence/org/:orgId/online')
+  async getOnlineUsersInOrg(@Param('orgId') orgId: string) {
+    return this.notificationService.getOnlineUsersInOrg(orgId);
+  }
+
+  /**
+   * Get online status for multiple users
+   */
+  @Post('presence/users/status')
+  @HttpCode(HttpStatus.OK)
+  async getUsersOnlineStatus(@Body() data: { userIds: string[] }) {
+    return this.notificationService.getUsersOnlineStatus(data.userIds);
+  }
+
+  /**
+   * Get online status for multiple users (GET with query)
+   */
+  @Get('presence/users/status')
+  async getUsersOnlineStatusGet(@Query('user_ids') userIds: string) {
+    const ids = userIds ? userIds.split(',').map((id) => id.trim()) : [];
+    return this.notificationService.getUsersOnlineStatus(ids);
+  }
 
   /**
    * Send a single notification

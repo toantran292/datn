@@ -108,12 +108,18 @@ class SocketService {
     this.socket.emit('join_room', { roomId });
   }
 
-  sendMessage(roomId: string, content: string, threadId?: string) {
+  sendMessage(
+    roomId: string,
+    content: string,
+    threadId?: string,
+    attachmentIds?: string[],
+    mentionedUserIds?: string[]
+  ) {
     if (!this.socket?.connected) {
       console.error('Socket not connected');
       return;
     }
-    this.socket.emit('send_message', { roomId, content, threadId });
+    this.socket.emit('send_message', { roomId, content, threadId, attachmentIds, mentionedUserIds });
   }
 
   isConnected(): boolean {

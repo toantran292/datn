@@ -10,8 +10,7 @@ interface DangerZoneProps {
 }
 
 export function DangerZone({ isLoading, onDeleteClick }: DangerZoneProps) {
-  const { role } = useCurrentUser();
-  const isOwner = role === "owner";
+  const { isOwner } = useCurrentUser();
 
   if (isLoading) {
     return (

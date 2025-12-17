@@ -229,6 +229,7 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       # File Storage Service
       FILE_STORAGE_URL: http://file-storage-api:3000
+      NOTIFICATION_URL: http://notification-api:3000
     depends_on:
       postgres: { condition: service_healthy }
     healthcheck:

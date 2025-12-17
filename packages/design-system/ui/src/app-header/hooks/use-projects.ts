@@ -29,9 +29,12 @@ export function useProjects(options?: UseProjectsOptions) {
 
       // Filter by workspace if specified
       if (options?.workspaceId) {
-        projects = projects.filter((p) => {
-          // Handle both cases: workspace as string (ID) or workspace as object
-          const workspaceId = typeof p.workspace === 'string' ? p.workspace : p.workspace.id;
+        projects = projects.filter((p: any) => {
+          // Handle multiple cases:
+          // 1. workspace as string (ID)
+          // 2. workspace as object with .id
+          // 3. orgId field (from some APIs)
+          const workspaceId = p.orgId || (typeof p.workspace === 'string' ? p.workspace : p.workspace?.id);
           return workspaceId === options.workspaceId;
         });
       }

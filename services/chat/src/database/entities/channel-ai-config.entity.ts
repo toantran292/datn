@@ -21,7 +21,7 @@ export class ChannelAIConfig {
   @Column('uuid', { name: 'room_id' })
   roomId: string;
 
-  @Column({ name: 'ai_enabled', default: true })
+  @Column({ name: 'ai_enabled', default: false })
   aiEnabled: boolean;
 
   @Column('simple-array', { name: 'enabled_features', default: '' })

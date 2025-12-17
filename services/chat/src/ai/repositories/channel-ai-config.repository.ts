@@ -54,8 +54,8 @@ export class ChannelAIConfigRepository {
     if (!config) {
       config = this.configRepo.create({
         roomId,
-        aiEnabled: true,
-        enabledFeatures: ['summary', 'action_items', 'qa', 'document_summary'],
+        aiEnabled: false, // Default to disabled
+        enabledFeatures: [], // Default to no features enabled
         modelProvider: 'openai',
         modelName: 'gpt-4o-mini',
         temperature: 0.7,
@@ -79,8 +79,8 @@ export class ChannelAIConfigRepository {
     if (!config) {
       config = this.configRepo.create({
         roomId,
-        aiEnabled: data.aiEnabled ?? true,
-        enabledFeatures: data.enabledFeatures ?? ['summary', 'action_items', 'qa', 'document_summary'],
+        aiEnabled: data.aiEnabled ?? false, // Default to disabled
+        enabledFeatures: data.enabledFeatures ?? [], // Default to no features enabled
         modelProvider: data.modelProvider ?? 'openai',
         modelName: data.modelName ?? 'gpt-4o-mini',
         temperature: data.temperature ?? 0.7,
@@ -105,7 +105,7 @@ export class ChannelAIConfigRepository {
 
   async isFeatureEnabled(roomId: string, feature: AIFeature): Promise<boolean> {
     const config = await this.get(roomId);
-    if (!config) return true; // Default to enabled if no config exists
+    if (!config) return false; // Default to disabled if no config exists
     return config.aiEnabled && config.enabledFeatures.includes(feature);
   }
 

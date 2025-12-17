@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { User, LogOut, Settings, ChevronDown } from "lucide-react";
+import { User, LogOut, Settings, Bell, ChevronDown } from "lucide-react";
 import { useOutsideClickDetector } from "@uts/hooks";
 import type { UserMenuProps } from "./types";
 import { cn } from "../utils";
@@ -98,7 +98,8 @@ export const UserMenu: React.FC<UserMenuProps> = ({ className, apiBaseUrl, authW
               <div className="my-1 h-px bg-custom-border-200" />
             </>
           )}
-          <UserMenuItem icon={Settings} label="Settings" onClick={handleSettings} />
+          <UserMenuItem icon={Bell} label="Preferences" onClick={() => window.location.href = "/settings/user"} />
+          <UserMenuItem icon={Settings} label="Account Settings" onClick={handleSettings} />
           <div className="my-1 h-px bg-custom-border-200" />
           <UserMenuItem
             icon={LogOut}

@@ -136,6 +136,35 @@ export class NotificationService {
     };
   }
 
+  /**
+   * Get online users in an organization
+   */
+  getOnlineUsersInOrg(orgId: string) {
+    const users = this.notificationGateway.getOnlineUsersInOrg(orgId);
+    return {
+      orgId,
+      users,
+      count: users.length,
+      timestamp: new Date(),
+    };
+  }
+
+  /**
+   * Get online status for multiple users
+   */
+  getUsersOnlineStatus(userIds: string[]) {
+    const statusMap = this.notificationGateway.getOnlineStatus(userIds);
+    const statuses: Record<string, boolean> = {};
+    statusMap.forEach((isOnline, userId) => {
+      statuses[userId] = isOnline;
+    });
+
+    return {
+      statuses,
+      timestamp: new Date(),
+    };
+  }
+
   private validateRequest(request: NotificationRequest) {
     if (
       (request.type === NotificationType.EMAIL ||

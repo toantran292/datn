@@ -138,6 +138,14 @@ export interface AppHeaderContextValue {
     }
   }, [authError, effectiveAuthWebUrl]);
 
+  // Auto-sync currentWorkspaceId from auth.org_id when auth data is loaded
+  // This ensures presence tracking works correctly across all apps
+  useEffect(() => {
+    if (auth?.org_id && !currentWorkspaceId) {
+      setCurrentWorkspaceId(auth.org_id);
+    }
+  }, [auth?.org_id, currentWorkspaceId]);
+
   const value: AppHeaderContextValue = useMemo(
     () => ({
       currentApp,

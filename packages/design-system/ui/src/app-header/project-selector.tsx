@@ -6,9 +6,14 @@ import type { ProjectSelectorProps } from "./types";
 import { useAppHeaderContext } from "./hooks/app-header-provider";
 
 export const ProjectSelector: React.FC<ProjectSelectorProps> = ({ onCreateProject }) => {
-  const { currentWorkspaceId, currentProjectId, apiBaseUrl, setProjectFromHeader } = useAppHeaderContext();
+  const { currentWorkspaceId, currentProjectId, apiBaseUrl, setProjectFromHeader, auth } = useAppHeaderContext();
 
   const { data: projects, isLoading } = useProjects({ workspaceId: currentWorkspaceId, apiBaseUrl });
+
+  // Check if user is admin or owner - only they can create projects
+  const isAdminOrOwner = auth?.roles?.some((role) =>
+    ["ADMIN", "OWNER"].includes(role.toUpperCase())
+  ) ?? false;
 
   // Track selected project locally cho UI, ưu tiên:
   // 1. selectedProjectId (state tại chỗ)
@@ -67,15 +72,25 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({ onCreateProjec
   }
 
   if (!projects || projects.length === 0) {
+    // Only show create button if user is admin/owner
+    if (isAdminOrOwner) {
+      return (
+        <button
+          type="button"
+          onClick={handleCreateProject}
+          className="flex items-center gap-2 px-3 py-1.5 text-sm text-custom-text-300 rounded-md hover:bg-custom-background-80 transition-colors"
+        >
+          <FolderKanban className="h-4 w-4" />
+          <span>Create project</span>
+        </button>
+      );
+    }
+    // Members see "No projects" text instead
     return (
-      <button
-        type="button"
-        onClick={handleCreateProject}
-        className="flex items-center gap-2 px-3 py-1.5 text-sm text-custom-text-300 rounded-md hover:bg-custom-background-80 transition-colors"
-      >
+      <div className="flex items-center gap-2 px-3 py-1.5 text-sm text-custom-text-300">
         <FolderKanban className="h-4 w-4" />
-        <span>Create project</span>
-      </button>
+        <span>No projects</span>
+      </div>
     );
   }
 
@@ -153,17 +168,19 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({ onCreateProjec
         </>
       )}
 
-      {/* Create Project Button */}
-      <div className="border-t border-custom-border-200 p-2">
-        <button
-          type="button"
-          onClick={handleCreateProject}
-          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-custom-text-200 hover:bg-custom-background-80 rounded-md transition-colors"
-        >
-          <Plus className="h-4 w-4" />
-          <span>Create project</span>
-        </button>
-      </div>
+      {/* Create Project Button - Only shown to Admin/Owner */}
+      {isAdminOrOwner && (
+        <div className="border-t border-custom-border-200 p-2">
+          <button
+            type="button"
+            onClick={handleCreateProject}
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-custom-text-200 hover:bg-custom-background-80 rounded-md transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Create project</span>
+          </button>
+        </div>
+      )}
     </CustomSelect>
   );
 };

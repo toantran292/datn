@@ -10,13 +10,33 @@ export function useChatMessages() {
     messages,
     handleLoadMessages,
     handleSendMessage,
+    handleEditMessage,
+    handleDeleteMessage,
+    handlePinMessage,
+    handleUnpinMessage,
+    handleToggleReaction,
     currentUserId,
+    usersCache,
+    // File upload
+    pendingFiles,
+    handleFilesSelect,
+    handleFileRemove,
   } = useChatContext();
 
   return {
     messages,
     loadMessages: handleLoadMessages,
     sendMessage: handleSendMessage,
+    editMessage: handleEditMessage,
+    deleteMessage: handleDeleteMessage,
+    pinMessage: handlePinMessage,
+    unpinMessage: handleUnpinMessage,
+    toggleReaction: handleToggleReaction,
     currentUserId,
+    usersCache,
+    // File upload
+    pendingFiles,
+    selectFiles: handleFilesSelect,
+    removeFile: handleFileRemove,
   };
 }

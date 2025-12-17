@@ -6,13 +6,18 @@ import { RecentActivity, Activity } from "./components/RecentActivity";
 import { QuickActions } from "./components/QuickActions";
 import { RecentFiles } from "./components/RecentFiles";
 import { AgentChat } from "./components/AgentChat";
+import { MyTasks } from "./components/MyTasks";
 import { InviteMemberModal } from "@/features/members/components/InviteMemberModal";
+import { CreateProjectModal } from "@/features/projects/components/CreateProjectModal";
+import { useProjects } from "@/features/projects/hooks/useProjects";
 import { Users, FolderKanban, HardDrive } from "lucide-react";
 import { toast } from "sonner";
 import { useDashboard } from "./hooks/useDashboard";
 import { useRecentFiles } from "./hooks/useRecentFiles";
+import { useMyTasks } from "./hooks/useMyTasks";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
+import { useAppHeaderContext } from "@uts/design-system/ui";
 
 function mapActionToType(action: string): Activity['type'] {
   switch (action) {
@@ -34,9 +39,18 @@ function mapActionToType(action: string): Activity['type'] {
 
 export function OverviewView() {
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [createProjectModalOpen, setCreateProjectModalOpen] = useState(false);
 
-  const { data: dashboard, isLoading } = useDashboard();
+  const { auth } = useAppHeaderContext();
+  const { data: dashboard, isLoading, refetch: refetchDashboard } = useDashboard();
+  const { createProject } = useProjects();
   const { files: recentFiles, isLoading: isLoadingFiles } = useRecentFiles(5);
+  const { tasks: myTasks, isLoading: isLoadingTasks } = useMyTasks();
+
+  // Check if user is admin or owner
+  const isAdminOrOwner = auth?.roles?.some((role) =>
+    ["ADMIN", "OWNER"].includes(role.toUpperCase())
+  ) ?? false;
 
   const activities: Activity[] = dashboard?.activities.recentActivities.slice(0, 5).map(a => ({
     id: a.id,
@@ -50,14 +64,24 @@ export function OverviewView() {
   const hasMoreActivities = (dashboard?.activities.recentActivities.length || 0) > 5;
 
   const handleCreateProject = () => {
-    toast.success("Create project", {
-      description: "Project creation feature coming soon"
-    });
+    setCreateProjectModalOpen(true);
   };
 
-  const handleInviteMember = (data: { name: string; email: string; role: string; projects: number[] }) => {
+  const handleCreateProjectSubmit = async (data: { name: string; identifier?: string; description?: string }) => {
+    const project = await createProject(data);
+    if (project) {
+      toast.success("Project created", {
+        description: `"${project.name}" has been created successfully.`,
+      });
+      refetchDashboard();
+      // Navigate to project page
+      window.location.href = `/projects/${project.id}/board`;
+    }
+  };
+
+  const handleInviteMember = (data: { email: string; role: string }) => {
     toast.success(`Invitation sent to ${data.email}`, {
-      description: `${data.name} will receive an email to join the organization.`
+      description: `They will receive an email to join the organization.`
     });
   };
 
@@ -77,6 +101,13 @@ export function OverviewView() {
     toast.info("Upload file", {
       description: "File upload feature coming soon"
     });
+  };
+
+  const handleTaskClick = (task: any) => {
+    // Navigate to project board with the task
+    if (task.project?.id) {
+      window.location.href = `/projects/${task.project.id}/board`;
+    }
   };
 
   const generateSparkline = (current: number, changePercent: number): number[] => {
@@ -99,6 +130,59 @@ export function OverviewView() {
   const projectsSparkline = dashboard ? generateSparkline(projectCount, 8) : [];
   const storageSparkline = dashboard ? generateSparkline(storagePercent, 15) : [];
 
+  // Member View - Focus on assigned tasks
+  if (!isAdminOrOwner) {
+    return (
+      <div className="max-w-[1600px] mx-auto px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="mb-2" style={{ fontWeight: 600 }}>
+            My Workspace
+          </h1>
+          <p className="text-muted-foreground">
+            Your tasks and recent activity
+          </p>
+        </div>
+
+        {/* Main Layout for Members */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          {/* Left Column */}
+          <div className="xl:col-span-2 space-y-6">
+            {/* My Tasks - Primary focus for members */}
+            <MyTasks
+              tasks={myTasks}
+              isLoading={isLoadingTasks}
+              onTaskClick={handleTaskClick}
+            />
+
+            {/* Recent Files */}
+            <RecentFiles
+              files={recentFiles}
+              isLoading={isLoadingFiles}
+              onViewAll={handleViewAllFiles}
+            />
+
+            {/* Activity */}
+            <RecentActivity
+              activities={activities}
+              isLoading={isLoading}
+              hasMore={hasMoreActivities}
+              onViewAll={handleViewAllActivity}
+            />
+          </div>
+
+          {/* Right Column: Agent Chat */}
+          <div className="xl:col-span-1">
+            <div className="sticky top-8">
+              <AgentChat />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Admin/Owner View - Full dashboard with KPIs and Quick Actions
   return (
     <>
       <div className="max-w-[1600px] mx-auto px-8 py-8">
@@ -204,6 +288,11 @@ export function OverviewView() {
         open={inviteModalOpen}
         onOpenChange={setInviteModalOpen}
         onInvite={handleInviteMember}
+      />
+      <CreateProjectModal
+        open={createProjectModalOpen}
+        onOpenChange={setCreateProjectModalOpen}
+        onSubmit={handleCreateProjectSubmit}
       />
     </>
   );

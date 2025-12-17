@@ -206,6 +206,34 @@ export class StoredNotificationService {
     });
   }
 
+  async notifyMention(
+    userId: string,
+    orgId: string,
+    data: {
+      messageId: string;
+      roomId: string;
+      roomName: string;
+      senderId: string;
+      senderName: string;
+      messagePreview: string;
+    },
+  ): Promise<NotificationResponseDto> {
+    return this.createNotification({
+      userId,
+      orgId,
+      type: StoredNotificationType.CHAT_MENTION,
+      title: `${data.senderName} mentioned you`,
+      content: data.messagePreview,
+      metadata: {
+        messageId: data.messageId,
+        roomId: data.roomId,
+        roomName: data.roomName,
+        senderId: data.senderId,
+        senderName: data.senderName,
+      },
+    });
+  }
+
   private toResponseDto(entity: NotificationEntity): NotificationResponseDto {
     return {
       id: entity.id,

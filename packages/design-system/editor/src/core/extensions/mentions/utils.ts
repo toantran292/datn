@@ -17,7 +17,7 @@ export const renderMentionsDropdown =
   () => {
     const { searchCallback } = props;
     let component: ReactRenderer<CommandListInstance, MentionsListDropdownProps> | null = null;
-    let popup: Instance | null = null;
+    let popup: Instance[] | null = null;
 
     return {
       onStart: (props: { editor: Editor; clientRect: DOMRect }) => {
@@ -36,19 +36,29 @@ export const renderMentionsDropdown =
         // @ts-expect-error - Tippy types are incorrect
         popup = tippy("body", {
           getReferenceClientRect: props.clientRect,
-          appendTo: () =>
-            document.querySelector(".active-editor") ?? document.querySelector('[id^="editor-container"]'),
+          appendTo: () => document.body,
           content: component.element,
           showOnCreate: true,
           interactive: true,
           trigger: "manual",
-          placement: "bottom-start",
+          placement: "top-start",
+          zIndex: 99999,
+          popperOptions: {
+            modifiers: [
+              {
+                name: "flip",
+                options: {
+                  fallbackPlacements: ["bottom-start"],
+                },
+              },
+            ],
+          },
         });
       },
       onUpdate: (props: { editor: Editor; clientRect: DOMRect }) => {
         component?.updateProps(props);
         popup?.[0]?.setProps({
-          getReferenceClientRect: props.clientRect,
+          getReferenceClientRect: () => props.clientRect,
         });
       },
       onKeyDown: (props: { event: KeyboardEvent }) => {
