@@ -1,0 +1,41 @@
+\subsection{Mô tả chi tiết bài toán}
+
+Các cuộc họp Agile (Sprint Planning, Daily Standup, Sprint Review, Retrospective) đóng vai trò then chốt trong quy trình phát triển phần mềm. Tuy nhiên, các nhóm thường dùng nền tảng họp độc lập (Zoom, Google Meet, Teams) không tích hợp sâu với quản lý dự án, dẫn đến phân mảnh dữ liệu: nội dung họp, recording, transcript và quyết định tách biệt khỏi ngữ cảnh dự án/sprint, khiến việc truy vết quyết định và theo dõi action items khó khăn.
+
+Cần xây dựng phân hệ họp trực tuyến tích hợp sâu với nền tảng SaaS quản lý dự án Agile, cung cấp video conferencing ổn định, recording/transcription tự động, AI tóm tắt nội dung và trích xuất action items theo đặc thù Agile ceremonies, liên kết meeting data với project context, đồng bộ action items với task management, và tra cứu nội dung nhanh chóng.
+
+Đề tài xây dựng \textbf{phân hệ họp trực tuyến (meeting subsystem)} với các chức năng: video conference (Jitsi Meet), recording tự động, transcription, AI tóm tắt và trích xuất action items, quản lý metadata liên kết dự án/sprint, đồng bộ với các phân hệ khác. Phân hệ hoạt động độc lập nhưng tích hợp chặt với nền tảng (authentication, file storage, AI).
+
+Hệ thống theo mô hình huddle (tự phát, không cần lên lịch chính thức), phục vụ 3 nhóm: \textbf{Super Admin} quản lý hạ tầng Jitsi (Videobridge, Jicofo, Prosody, Jibri), giám sát hiệu năng, cấu hình API; \textbf{Workspace Owner} xem tất cả cuộc họp, cấu hình chính sách (auto-record, storage, AI settings), xem thống kê, xuất dữ liệu; \textbf{Member} bắt đầu/tham gia họp từ ngữ cảnh dự án/sprint, chia sẻ màn hình/video/audio, chat, xem recording/transcript/summary. Tất cả members có quyền bình đẳng, không có host, khuyến khích cộng tác tự phát.
+
+Các chức năng cốt lõi:
+
+\textbf{(1) Video conference}: Jitsi Meet self-hosted (Videobridge, Jicofo, Prosody XMPP). Meeting Service (NestJS) quản lý rooms, JWT authentication, participants, status. Meeting Web App (Next.js) embed Jitsi: 2-50 participants, screen sharing, chat, raise hand. Meetings liên kết workspace/project/sprint.
+
+\textbf{(2) Recording và transcription}: Jibri capture video/audio, lưu vào MinIO/S3. Meeting Service quản lý queue, track status và metadata. Transcription Service dùng speech-to-text API (Google Cloud/AWS/Whisper) chuyển audio thành transcript với timestamps, full-text search. Xem recording sync với transcript, jump đến phần cụ thể.
+
+\textbf{(3) AI summary}: AI Service (NestJS) tích hợp LLMs (GPT-4/Claude/Gemini) với prompts cho từng Agile ceremony. Sprint Planning: committed stories, story points; Daily Standup: blockers, progress; Retrospective: "What went well/improve", action items. Xử lý transcript dài bằng chunking/map-reduce. Summary dạng JSON/Markdown: key decisions, action items (assignee, deadline), blockers.
+
+\textbf{(4) Data management}: Meeting metadata (ID, title, start/end time, creator, project/sprint, status, URLs). Database (PostgreSQL): Meeting, Participant, Recording, Transcript, Summary. RESTful APIs, search theo project/sprint/date. Đồng bộ qua webhooks/message queue: notifications, tạo tasks từ action items (context, quote, link), liên kết backlog items, share qua communication channels.
+
+\textbf{(5) Meeting Web App}: Meeting detail (info, participants, context), join button, Jitsi embed; recording player sync transcript (click jump, highlight keywords); summary viewer (structured, action items checkbox, create task, export PDF/Markdown). Responsive, Tailwind CSS, shadcn/ui.
+
+\textbf{(6) Security}: JWT authentication với Account Service. Chỉ workspace/project members join. Huddle model: equal permissions, majority voting cho sensitive actions. Recording/transcript access control qua File-Storage Service. Waiting room, password, SSL/TLS, encrypt at rest, GDPR compliance.
+
+Kiến trúc microservice gồm:
+
+\textbf{Jitsi Meet Server}: Self-hosted, Videobridge (media routing), Jicofo (session management), Prosody XMPP (signaling), JWT authentication.
+
+\textbf{Meeting Service (NestJS)}: Backend quản lý vòng đời họp, RESTful APIs (CRUD meetings, manage rooms/participants/status, control recording), PostgreSQL metadata, tích hợp Jitsi API tạo rooms và join URLs.
+
+\textbf{Jibri Service}: Recording với headless browser, capture video/audio, FFmpeg encoding, upload MinIO/S3, managed qua BullMQ queue (Redis) xử lý đồng thời.
+
+\textbf{Transcription Service (NestJS)}: Speech-to-text API calls, chunking audio dài, lưu transcript với timestamps và full-text search index.
+
+\textbf{AI Service (NestJS)}: LLM APIs với Agile-specific prompts, chunking/map-reduce, lưu structured summary.
+
+\textbf{Meeting Web App (Next.js)}: Embed Jitsi iframe, meeting detail với project/sprint context, recording player sync transcript, AI summary viewer. REST API và WebSocket/Socket.io real-time updates. JWT/HMAC security với Edge Service (Nginx).
+
+Tích hợp nền tảng: Account Service (auth), File-Storage Service (recordings), Notification Service (alerts), AI Platform Service. Đồng bộ project management qua webhooks/message queue liên kết action items với tasks.
+
+Tóm lại, xây dựng phân hệ họp trực tuyến hoàn chỉnh cung cấp video conference ổn định, tự động thu thập/xử lý nội dung, AI trích xuất thông tin hành động, tích hợp liền mạch với quản lý dự án để kết quả họp trở thành tasks và decisions có thể theo dõi.

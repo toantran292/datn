@@ -1,0 +1,37 @@
+\phantomsection
+\subsection*{3. Mục tiêu đề tài}
+\addcontentsline{toc}{subsection}{3. Mục tiêu đề tài}
+\setcounter{subsection}{3}
+\setcounter{subsubsection}{0}
+\setcounter{figure}{0}
+
+\subsubsection{Mục tiêu tổng quát}
+
+Phát triển phân hệ họp trực tuyến cho nền tảng SaaS quản lý dự án Agile tích hợp AI, cung cấp video conference thời gian thực, ghi âm/ghi hình tự động, AI tóm tắt nội dung và trích xuất action items. Phân hệ tích hợp sâu với các phân hệ khác tạo luồng thông tin liền mạch, giảm phân mảnh dữ liệu và hỗ trợ đội ngũ Agile làm việc hiệu quả.
+
+\subsubsection{Mục tiêu cụ thể}
+
+\textbf{Mục tiêu chuyên môn:}
+
+\begin{itemize}
+    \item Thiết kế và triển khai hệ thống video conference WebRTC, nghiên cứu Jitsi Meet và kiến trúc phân tán (signaling server, media server).
+    \item Xây dựng Meeting Service (NestJS) quản lý vòng đời cuộc họp, phòng họp, metadata và liên kết với dự án/sprint.
+    \item Tích hợp Jitsi Meet, cấu hình Jitsi server hỗ trợ video call đa người, chia sẻ màn hình, chat, recording.
+    \item Phát triển recording tự động với Jibri, lưu trữ vào file-storage service, quản lý quyền truy cập.
+    \item Xây dựng transcript tích hợp speech-to-text API (Google Cloud/AWS/Whisper), tạo bản ghi chép tự động.
+    \item Tích hợp AI (GPT-4/Claude/Gemini) tóm tắt nội dung, trích xuất action items và decisions từ transcript.
+    \item Phát triển giao diện Meeting Web App (React/NextJS) tham gia họp, xem recording, transcript và summary.
+    \item Thiết kế cơ chế đồng bộ dữ liệu: thông báo, liên kết action items với tasks, chia sẻ recording.
+\end{itemize}
+
+\textbf{Mục tiêu về sản phẩm:}
+
+\begin{itemize}
+    \item Phân hệ họp trực tuyến hoàn chỉnh tích hợp sâu với quản lý dự án, truyền thông và nền tảng.
+    \item Video conference mượt mà: 2-50 người, chia sẻ màn hình, chat, raise hand, giao diện thân thiện, đa trình duyệt.
+    \item Recording tự động, lưu trữ an toàn, quản lý quyền theo workspace/project/role.
+    \item Transcript tự động có tìm kiếm từ khóa, timeline, tích hợp summary.
+    \item AI summary tự động sau họp: action items, decisions, key points, hiển thị trực quan.
+    \item Đồng bộ với phân hệ khác: tạo task từ action items, gửi thông báo, liên kết với sprint.
+    \item Hệ thống ổn định, scalable, bảo mật, tài liệu triển khai đầy đủ.
+\end{itemize}

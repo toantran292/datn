@@ -107,15 +107,14 @@ export function ScreenShareView({
         className="absolute top-4 left-6 z-20 flex items-center gap-4"
       >
         <div
-          className="px-4 py-2.5 rounded-xl backdrop-blur-md border"
+          className="px-4 py-2.5 rounded-xl backdrop-blur-md border bg-white/95 dark:bg-gray-900/95"
           style={{
-            background: 'rgba(17, 24, 39, 0.95)',
             borderColor: 'var(--ts-border)',
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
           }}
         >
           <div className="flex items-center gap-3">
-            <h3 className="text-white">{roomId}</h3>
+            <h3 className="text-gray-900 dark:text-white">{roomId}</h3>
           </div>
         </div>
       </motion.div>
@@ -186,11 +185,10 @@ export function ScreenShareView({
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => handleScroll('left')}
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-20 p-2 rounded-full backdrop-blur-md border"
+                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-20 p-2 rounded-full backdrop-blur-md border bg-white/95 dark:bg-gray-900/95"
                 style={{
-                  background: 'rgba(17, 24, 39, 0.95)',
                   borderColor: 'var(--ts-border)',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                 }}
               >
                 <ChevronLeft className="w-5 h-5" style={{ color: 'var(--ts-teal)' }} />
@@ -206,11 +204,10 @@ export function ScreenShareView({
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => handleScroll('right')}
-                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-20 p-2 rounded-full backdrop-blur-md border"
+                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-20 p-2 rounded-full backdrop-blur-md border bg-white/95 dark:bg-gray-900/95"
                 style={{
-                  background: 'rgba(17, 24, 39, 0.95)',
                   borderColor: 'var(--ts-border)',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
                 }}
               >
                 <ChevronRight className="w-5 h-5" style={{ color: 'var(--ts-teal)' }} />
@@ -219,11 +216,10 @@ export function ScreenShareView({
 
             {/* Participant strip */}
             <div
-              className="rounded-2xl backdrop-blur-xl border-t-2 overflow-visible"
+              className="rounded-2xl backdrop-blur-xl border-t-2 overflow-visible bg-white/95 dark:bg-gray-900/95"
               style={{
-                background: 'rgba(17, 24, 39, 0.95)',
                 borderTopColor: 'var(--ts-border)',
-                boxShadow: '0 -4px 24px rgba(0, 0, 0, 0.3)',
+                boxShadow: '0 -4px 24px rgba(0, 0, 0, 0.15)',
               }}
             >
               <div

@@ -1,0 +1,49 @@
+\phantomsection
+\subsection*{4. Đối tượng và Phạm vi nghiên cứu}
+\addcontentsline{toc}{subsection}{4. Đối tượng và Phạm vi nghiên cứu}
+\setcounter{subsection}{4}
+\setcounter{subsubsection}{0}
+\setcounter{figure}{0}
+
+\subsubsection{Đối tượng nghiên cứu}
+
+\begin{itemize}
+    \item Vai trò họp trực tuyến trong Agile: Sprint Planning, Daily Standup, Sprint Review, Retrospective.
+    \item Công nghệ WebRTC và kiến trúc video conference: signaling, media server, TURN, tối ưu chất lượng.
+    \item Jitsi Meet: kiến trúc, các thành phần (Videobridge, Jicofo, Prosody, Jibri), triển khai và tích hợp.
+    \item Recording: Jibri, FFmpeg, quản lý file, xử lý đồng thời nhiều cuộc họp.
+    \item Speech-to-text: các API (Google Cloud/AWS/Whisper), độ chính xác, tích hợp hệ thống.
+    \item AI phân tích: LLMs (GPT-4/Claude/Gemini) tóm tắt transcript, trích xuất action items, prompt engineering.
+    \item Bảo mật: encryption, waiting room, password, quyền truy cập recording, GDPR compliance.
+\end{itemize}
+
+\subsubsection{Phạm vi nghiên cứu}
+
+\textbf{Về mặt lý thuyết:}
+
+\begin{itemize}
+    \item Mô hình Agile (Scrum, Kanban) và vai trò các cuộc họp: Sprint Planning, Daily Standup, Sprint Review, Retrospective.
+    \item WebRTC: nguyên lý hoạt động, giao thức (ICE, STUN, TURN, SDP), kiến trúc, NAT traversal, codec.
+    \item Jitsi Meet: kiến trúc (Videobridge, Jicofo, Prosody), tương tác giữa các thành phần, tối ưu hiệu năng.
+    \item Recording: Jibri architecture, headless browser capture, quản lý tài nguyên, cloud recording.
+    \item Speech-to-text: các API cloud và mã nguồn mở (Whisper), độ chính xác, xử lý file dài.
+    \item NLP và LLM: GPT-4/Claude/Gemini tóm tắt văn bản, prompt engineering, xử lý context window.
+    \item NestJS: module, controller, service, database integration, WebSocket, API calls.
+    \item React/Next.js: embed Jitsi, meeting UI, recording player, transcript viewer, real-time updates.
+\end{itemize}
+
+\textbf{Về mặt lập trình:}
+
+\begin{itemize}
+    \item Triển khai Jitsi server: cài đặt components, cấu hình domain/SSL, firewall, TURN server.
+    \item Customize Jitsi Meet UI, tính năng, recording settings, JWT authentication.
+    \item Xây dựng Meeting Service (NestJS): database schema, API CRUD, tích hợp Jitsi, quản lý participants.
+    \item Tích hợp Jibri cho recording: API start/stop, lưu trữ files, metadata, recording queue.
+    \item Tích hợp speech-to-text: chuyển đổi audio, chunking, timestamps, API tìm kiếm transcript.
+    \item Tích hợp AI: prompts trích xuất action items/decisions, chunking strategies, lưu trữ summary.
+    \item Xây dựng Meeting Web App: meeting detail, embed Jitsi, recording player sync transcript, hiển thị summary.
+    \item Đồng bộ dữ liệu: webhooks/message queue, notifications, tạo tasks, chia sẻ recording.
+    \item Database: schema (Meeting, Participant, Recording, Transcript, Summary), indexes, migrations.
+    \item Bảo mật: authentication/authorization, waiting room, password, quyền truy cập, encryption.
+    \item Kiểm thử: unit/integration tests, load testing, triển khai Docker/Kubernetes, tài liệu.
+\end{itemize}

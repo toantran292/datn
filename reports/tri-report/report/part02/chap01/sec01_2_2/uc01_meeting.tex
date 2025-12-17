@@ -1,0 +1,40 @@
+\paragraph{UC01: Bắt đầu cuộc họp nhanh}
+
+\begin{longtable}{|p{4cm}|p{11cm}|}
+\hline
+\textbf{Tên use case} & Bắt đầu cuộc họp nhanh \\
+\hline
+\textbf{Mã use case} & UC01 \\
+\hline
+\textbf{Mô tả} & Khởi tạo cuộc họp video ngay lập tức từ ngữ cảnh dự án hoặc sprint, tự động liên kết với context và tạo JWT token. \\
+\hline
+\textbf{Actor} & Project Member \\
+\hline
+\textbf{Điều kiện tiên quyết} &
+\begin{itemize}[leftmargin=*,noitemsep,topsep=0pt]
+    \item Đã đăng nhập và là thành viên của dự án
+    \item Hệ thống Jitsi đang hoạt động
+\end{itemize} \\
+\hline
+\textbf{Điều kiện kết thúc} &
+\begin{itemize}[leftmargin=*,noitemsep,topsep=0pt]
+    \item Phòng họp được tạo với JWT token moderator
+    \item Meeting record được lưu và liên kết với dự án
+\end{itemize} \\
+\hline
+\textbf{Luồng sự kiện chính} &
+\begin{enumerate}[leftmargin=*,noitemsep,topsep=0pt]
+    \item Project Member nhấn "Bắt đầu cuộc họp" từ trang dự án
+    \item Hệ thống xác thực quyền, tạo phòng họp Jitsi
+    \item Hệ thống tạo JWT token moderator, lưu meeting record
+    \item Hệ thống chuyển vào giao diện Jitsi
+\end{enumerate} \\
+\hline
+\textbf{Luồng thay thế} &
+\textbf{2a. Không có quyền:} Hiển thị lỗi, kết thúc.
+
+\textbf{2b. Jitsi không khả dụng:} Hiển thị lỗi, ghi log, kết thúc. \\
+\hline
+\caption{Đặc tả UC01: Bắt đầu cuộc họp nhanh}
+\label{tab:uc01_meeting}
+\end{longtable}

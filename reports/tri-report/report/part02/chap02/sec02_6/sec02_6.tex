@@ -1,0 +1,27 @@
+\subsection{Giới thiệu về Authentication và Authorization}
+
+\subsubsection{Khái quát}
+
+Authentication (Xác thực) là quá trình xác minh danh tính của user để đảm bảo rằng người dùng đúng là người mà họ claim. Trong web applications hiện đại, authentication thường được thực hiện qua nhiều phương thức: Credentials-based sử dụng username / email và password truyền thống, Token-based với JWT hoặc API keys cho stateless authentication, OAuth/SSO đăng nhập thông qua third-party providers như Google, Face\-book, GitHub giúp cải thiện user experience và bảo mật, và Multi-factor Authentication (MFA) kết hợp nhiều phương thức xác thực để tăng cường bảo mật. Authorization (Phân quyền) là quá trình tiếp theo sau authentication, xác định user có quyền thực hiện một action hay truy cập một resource cụ thể hay không.
+
+\subsubsection{JSON Web Token (JWT)}
+
+JWT là một tiêu chuẩn mở (RFC 7519) để truyền thông tin an toàn giữa các parties dưới dạng JSON object được sign bằng secret key (HMAC) hoặc public/private key pair (RSA, ECDSA). Cấu trúc của JWT gồm 3 phần được encode bằng Base64URL và nối với nhau bằng dấu chấm: Header chứa loại token và thuật toán signing, Payload chứa claims là các statements về user và metadata như user ID, expiration time, issued at, Signature được tạo bằng cách sign header và payload với secret key để đảm bảo token không bị tamper.
+
+JWT mang lại nhiều ưu điểm cho modern web applications: Stateless authentication do server không cần lưu session mà mọi thông tin cần thiết đều nằm trong token, scalability cao vì dễ dàng scale horizontal mà không cần shared session store giữa các server instances, cross-domain capability cho phép token được sử dụng across multiple domains và services, và mobile-friendly phù hợp cho mobile apps và SPAs. Tuy nhiên, JWT cũng có nhược điểm như không thể revoke trước khi expire và token size lớn hơn session ID, do đó cần có chiến lược refresh token và token blacklist để quản lý.
+
+\subsubsection{OAuth 2.0 và OpenID Connect}
+
+OAuth 2.0 là một authorization framework cho phép third-party applications truy cập resources của user mà không cần share credentials, giải quyết vấn đề bảo mật khi user muốn cho phép ứng dụng truy cập tài khoản của họ trên các platforms khác. OpenID Connect (OIDC) là một identity layer được xây dựng trên OAuth 2.0, bổ sung authentication capabilities và standardized user profile information.
+
+OAuth 2.0 Authorization Code Flow hoạt động theo các bước: User click "Login with Google" trên application, application redirect user đến Google Authorization Server với client ID và requested scopes, user đăng nhập Google account và grant permissions cho application, Google redirect về application với authorization code, application excha\-nge code với Google Authorization Server để lấy access token và ID token, và cuối cùng application sử dụng tokens để authenticate user và lấy user profile information. Flow này đảm bảo user credentials không bao giờ được share với third-party application, chỉ có authorization tokens.
+
+\subsubsection{RBAC và phân quyền}
+
+RBAC (Role-Based Access Control) là mô hình phân quyền dựa trên roles, được sử dụng rộng rãi trong enterprise applications để quản lý access control một cách có cấu trúc và dễ bảo trì. Mô hình RBAC bao gồm các thành phần chính: Users là các cá nhân sử dụng hệ thống, Roles là tập hợp các permissions được gán cho users (như Super Admin, Workspace Owner, Member), Permissions là quyền thực hiện các actions cụ thể trên resources (create, read, update, delete), và Resources là các đối tượng cần bảo vệ trong hệ thống (workspaces, files, members). Thay vì gán permissions trực tiếp cho từng user, RBAC gán permissions cho roles và sau đó assign roles cho users, giúp đơn giản hóa quản lý access control đặc biệt khi hệ thống có nhiều users và complex permission requirements.
+
+\subsubsection{Vận dụng vào đề tài}
+
+Hệ thống authentication và authorization được implement trong Account Service với Spring Security. JWT Authentication sử dụng dual-token strategy với Access Token có thời hạn ngắn (15 phút) dùng cho API requests và Refresh Token có thời hạn dài (7 ngày) lưu trong Redis dùng để lấy access token mới khi expired. Access tokens được gửi trong Authorization header với Bearer scheme, trong khi refresh tokens được lưu trong httpOnly cookies để tăng cường bảo mật chống XSS attacks.
+
+Google OAuth 2.0 integration cho phép users đăng nhập hoặc đăng ký bằng Google account, với xử lý conflict khi email đã tồn tại trong hệ thống: nếu user đã có account với email/password thì cần link OAuth account, nếu chưa có thì tự động tạo account mới. RBAC được implement với 3 roles chính có permissions khác nhau: Super Admin quản lý toàn bộ hệ thống và có quyền khóa/mở khóa workspaces, Workspace Owner có toàn quyền trong workspace của mình bao gồm quản lý members, files, settings, Member có quyền hạn tùy theo permissions được Owner gán như read-only, contributor, hoặc custom permissions. Password security được đảm bảo với Bcrypt hashing algorithm sử dụng salt factor 12, đủ mạnh để chống brute-force attacks mà vẫn maintain acceptable performance.

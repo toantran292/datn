@@ -1,0 +1,94 @@
+\subsection{Các yêu cầu phi chức năng}
+
+\subsubsection{Yêu cầu thực thi}
+
+\textbf{Yêu cầu chung:}
+\begin{itemize}
+    \item Thiết bị sử dụng cần kết nối Internet ổn định.
+    \item Thời gian phản hồi yêu cầu không vượt quá 3 giây.
+    \item Kết quả từ chức năng tìm kiếm, xem workspace, xem báo cáo AI đảm bảo chính xác.
+    \item Ứng dụng hoạt động ổn định, không lỗi nghiêm trọng.
+    \item Hỗ trợ tối thiểu 1000 người dùng đồng thời.
+    \item Thời gian xử lý báo cáo AI không quá 30 giây.
+\end{itemize}
+
+\textbf{Yêu cầu đặc thù cho phân hệ họp trực tuyến:}
+\begin{itemize}
+    \item \textbf{Real-time Performance:}
+    \begin{itemize}
+        \item Độ trễ (latency) video/audio tối đa: 150ms (round-trip time).
+        \item Jitter tối đa: 30ms để đảm bảo chất lượng media stream ổn định.
+        \item Packet loss rate tối đa: 1\% trong điều kiện mạng bình thường.
+        \item Thời gian thiết lập kết nối WebRTC: không quá 3 giây.
+        \item Frame rate tối thiểu: 24fps cho video 720p, 30fps cho video 1080p.
+    \end{itemize}
+    \item \textbf{Capacity Requirements:}
+    \begin{itemize}
+        \item Hỗ trợ tối thiểu 100 cuộc họp đồng thời.
+        \item Số participants tối đa mỗi cuộc họp: 50-100 người.
+        \item Băng thông tối thiểu mỗi participant: 1.5 Mbps upload, 2 Mbps download.
+        \item Hỗ trợ adaptive bitrate streaming để tự động điều chỉnh chất lượng theo băng thông.
+    \end{itemize}
+    \item \textbf{Recording \& Processing:}
+    \begin{itemize}
+        \item Thời gian upload recording lên object storage: dưới 2 phút cho file 1GB.
+        \item Thời gian xử lý Speech-to-Text: dưới 5 phút cho 1 giờ audio.
+        \item Thời gian tạo AI summary: dưới 30 giây sau khi có transcript.
+        \item Hỗ trợ ghi hình đồng thời tối thiểu 20 cuộc họp.
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Yêu cầu an toàn}
+
+\textbf{Yêu cầu chung:}
+\begin{itemize}
+    \item Đảm bảo sao lưu và khôi phục dữ liệu an toàn khi nâng cấp hoặc bảo trì.
+    \item Khả năng mở rộng để xử lý lượng lớn dữ liệu workspace, tệp tin, thành viên.
+    \item Hệ thống ổn định, không chứa mã độc hoặc phần mềm độc hại.
+    \item Backup tự động hàng ngày, lưu trữ tối thiểu 30 ngày.
+    \item Mã hóa dữ liệu khi truyền tải (TLS 1.3) và lưu trữ (AES-256).
+\end{itemize}
+
+\textbf{Yêu cầu đặc thù cho phân hệ họp trực tuyến:}
+\begin{itemize}
+    \item \textbf{Media Security:}
+    \begin{itemize}
+        \item Hỗ trợ DTLS-SRTP (Datagram Transport Layer Security - Secure Real-time Transport Protocol) để mã hóa media streams.
+        \item Hỗ trợ End-to-End Encryption (E2EE) tùy chọn cho các cuộc họp nhạy cảm.
+        \item Signaling qua WebSocket Secure (WSS) với TLS 1.3.
+    \end{itemize}
+    \item \textbf{Recording Security:}
+    \begin{itemize}
+        \item Recording files được mã hóa khi lưu trữ trên object storage (AES-256).
+        \item Pre-signed URLs cho recording files có thời hạn tối đa 1 giờ.
+        \item Transcript và AI summary lưu trong database được mã hóa at-rest.
+        \item Access logs ghi lại mọi truy cập vào recording files.
+    \end{itemize}
+    \item \textbf{Infrastructure Reliability:}
+    \begin{itemize}
+        \item Jibri instances có health check mỗi 30 giây để phát hiện sự cố.
+        \item Tự động failover khi Videobridge instance down trong vòng 10 giây.
+        \item Backup recording files trong 24 giờ trước khi xóa local copy trên Jibri.
+        \item Redundancy cho TURN/STUN servers để đảm bảo kết nối ổn định.
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Yêu cầu về giao diện}
+\begin{itemize}
+    \item Giao diện hiện đại, màu sắc hài hòa, phong cách chuyên nghiệp phù hợp doanh nghiệp.
+    \item Bố cục điều hướng, workspace, tệp tin, dashboard, báo cáo AI rõ ràng, dễ thao tác.
+    \item Hiển thị báo cáo AI trực quan với insights, action items và export mượt mà.
+    \item Đảm bảo nhất quán kiểu chữ, biểu tượng và màu sắc.
+    \item Hỗ trợ Dark Mode và Light Mode.
+\end{itemize}
+
+\subsubsection{Yêu cầu về tính bảo mật}
+\begin{itemize}
+    \item Phân quyền theo vai trò (Super Admin, Workspace Owner, Member).
+    \item Mã hóa mật khẩu an toàn (bcrypt với salt) trước khi lưu CSDL.
+    \item Tuân thủ quy định bảo vệ dữ liệu cá nhân như GDPR.
+    \item Hỗ trợ xác thực hai yếu tố (2FA) tùy chọn.
+    \item Tích hợp Google OAuth tuân thủ OAuth 2.0 và OpenID Connect.
+    \item Session token có thời hạn, làm mới định kỳ, hỗ trợ đăng xuất tất cả thiết bị.
+    \item API bảo vệ bằng JWT với thời hạn ngắn và refresh token.
+\end{itemize}

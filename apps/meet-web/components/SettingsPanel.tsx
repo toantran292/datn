@@ -66,10 +66,27 @@ export function SettingsPanel({
   useEffect(() => {
     const getDevices = async () => {
       try {
-        // Request permission first
-        await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        // First try to enumerate devices without requesting new stream
+        // This works if permission was already granted
+        let devices = await navigator.mediaDevices.enumerateDevices();
 
-        const devices = await navigator.mediaDevices.enumerateDevices();
+        // Check if we have labels (indicates permission was granted)
+        const hasLabels = devices.some(d => d.label && d.label.length > 0);
+
+        if (!hasLabels) {
+          // Need to request permission - but only request what we need
+          // and release immediately to avoid conflicts with Jitsi
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            // Stop all tracks immediately to release the devices
+            stream.getTracks().forEach(track => track.stop());
+            // Re-enumerate after getting permission
+            devices = await navigator.mediaDevices.enumerateDevices();
+          } catch (permErr) {
+            console.warn('[Settings] Could not get media permission:', permErr);
+            // Still try to use devices without labels
+          }
+        }
 
         const videoDevices = devices
           .filter(d => d.kind === 'videoinput')

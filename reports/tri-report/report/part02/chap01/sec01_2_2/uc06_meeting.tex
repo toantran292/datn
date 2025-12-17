@@ -1,0 +1,43 @@
+\paragraph{UC06: Cấu hình chính sách workspace}
+
+\begin{longtable}{|p{4cm}|p{11cm}|}
+\hline
+\textbf{Tên use case} & Cấu hình chính sách workspace \\
+\hline
+\textbf{Mã use case} & UC06 \\
+\hline
+\textbf{Mô tả} & Cấu hình chính sách ghi hình, quản lý hạn mức tài nguyên, xem thống kê sử dụng và thiết lập quyền truy cập cho workspace. \\
+\hline
+\textbf{Actor} & Workspace Admin \\
+\hline
+\textbf{Điều kiện tiên quyết} &
+\begin{itemize}[leftmargin=*,noitemsep,topsep=0pt]
+    \item Đã đăng nhập với vai trò Workspace Admin
+    \item Workspace đã được tạo và kích hoạt
+\end{itemize} \\
+\hline
+\textbf{Điều kiện kết thúc} &
+\begin{itemize}[leftmargin=*,noitemsep,topsep=0pt]
+    \item Cài đặt được lưu và áp dụng cho cuộc họp mới
+\end{itemize} \\
+\hline
+\textbf{Luồng sự kiện chính} &
+Admin truy cập "Workspace Settings" và thực hiện:
+\begin{itemize}[leftmargin=*,noitemsep,topsep=0pt]
+    \item \textbf{Chất lượng ghi hình:} Resolution (720p/1080p), bitrate, codec
+    \item \textbf{Tự động ghi hình:} Bật/tắt auto-record, cấu hình transcription và AI summary
+    \item \textbf{Thời gian lưu trữ:} Số ngày lưu file, tự động xóa khi hết hạn
+    \item \textbf{Hạn mức storage:} Dashboard sử dụng, cập nhật quota, threshold cảnh báo
+    \item \textbf{Hạn mức họp:} Số phút/tháng, số cuộc họp đồng thời
+    \item \textbf{Thống kê:} Biểu đồ cuộc họp theo thời gian, theo dự án, export PDF/CSV
+    \item \textbf{Quyền truy cập:} Xác thực, waiting room, quyền xem/download recording
+\end{itemize} \\
+\hline
+\textbf{Luồng thay thế} &
+\textbf{Hạn mức vượt subscription:} Hiển thị link nâng cấp plan.
+
+\textbf{Dữ liệu không hợp lệ:} Hiển thị lỗi validation. \\
+\hline
+\caption{Đặc tả UC06: Cấu hình chính sách workspace}
+\label{tab:uc06_meeting}
+\end{longtable}

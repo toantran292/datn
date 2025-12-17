@@ -1,0 +1,104 @@
+\begin{landscape}
+\pagestyle{lscape}
+
+\phantomsection
+\setsection{Phụ lục C. TÀI LIỆU KIỂM THỬ}
+\setcounter{section}{7}
+\setcounter{table}{0}
+\renewcommand{\thetable}{7.\arabic{table}}
+
+\subsection*{Các trường hợp kiểm thử chức năng phân hệ họp trực tuyến}
+
+Chi tiết các trường hợp kiểm thử cho 6 chức năng cốt lõi của phân hệ họp trực tuyến như sau:
+
+% TC_MEETING_JOIN - Tạo và tham gia cuộc họp
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng tạo và tham gia cuộc họp},
+  label = {tab:tc_meeting_join}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[1,l]X[1.3,l]X[1.2,l]X[1.5,l]X[1.8,l]X[1.8,l]X[0.5,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã KB & Mô tả & Dữ liệu & Các bước & Kết quả mong đợi & Kết quả thực tế & KQ \\
+TC\_JOIN\_01 & TS\_JOIN & Tạo cuộc họp instant & Tên: Sprint Planning, Loại: Instant & 1. Nhấn "Create Meeting"\newline 2. Nhập thông tin\newline 3. Nhấn Tạo & Cuộc họp được tạo, chuyển đến meeting room với Jitsi, user join Moderator & Cuộc họp được tạo, chuyển đến meeting room với Jitsi, user join Moderator & Pass \\
+TC\_JOIN\_02 & TS\_JOIN & Join meeting qua invite link & Meeting đã tạo, Invite link hợp lệ & 1. Copy invite link\newline 2. Mở link\newline 3. Nhập tên\newline 4. Nhấn Join & JWT token generate, join Participant, hiển thị video tiles & JWT token generate, join Participant, hiển thị video tiles & Pass \\
+\end{longtblr}
+
+% TC_MEETING_RECORD - Ghi hình cuộc họp
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng ghi hình cuộc họp},
+  label = {tab:tc_meeting_record}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[1,l]X[1.3,l]X[1.2,l]X[1.5,l]X[1.8,l]X[1.8,l]X[0.5,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã KB & Mô tả & Dữ liệu & Các bước & Kết quả mong đợi & Kết quả thực tế & KQ \\
+TC\_REC\_01 & TS\_REC & Start recording & Meeting active, Jibri available & 1. Nhấn "Start Recording"\newline 2. Xác nhận\newline 3. Chờ allocation & Recording started, indicator hiển thị, status = 'recording' & Recording started, indicator hiển thị, status = 'recording' & Pass \\
+TC\_REC\_02 & TS\_REC & Stop recording và upload & Recording đang active & 1. Nhấn "Stop"\newline 2. Xác nhận\newline 3. Chờ processing & Recording stopped, upload MinIO, status = 'completed' & Recording stopped, upload MinIO, status = 'completed' & Pass \\
+\end{longtblr}
+
+% TC_MEETING_TRANSCRIPT - Tạo transcript và AI summary
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng tạo transcript và tóm tắt AI},
+  label = {tab:tc_meeting_transcript}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[1,l]X[1.3,l]X[1.2,l]X[1.5,l]X[1.8,l]X[1.8,l]X[0.5,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã KB & Mô tả & Dữ liệu & Các bước & Kết quả mong đợi & Kết quả thực tế & KQ \\
+TC\_TRS\_01 & TS\_TRS & Auto generate transcript & Recording uploaded, STT: Google Cloud & 1. Upload trigger\newline 2. Extract audio\newline 3. Call STT\newline 4. Receive response & Transcript tạo, segments có timestamp, status completed & Transcript tạo, segments có timestamp, status completed & Pass \\
+TC\_TRS\_02 & TS\_TRS & Generate AI summary & Transcript done, LLM: GPT-4 & 1. Trigger summary\newline 2. Send to OpenAI\newline 3. Parse response & Summary có action\_items, decisions, tokens tracked & Summary có action\_items, decisions, tokens tracked & Pass \\
+\end{longtblr}
+
+% TC_MEETING_REVIEW - Xem lại cuộc họp
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng xem lại cuộc họp và transcript},
+  label = {tab:tc_meeting_review}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[1,l]X[1.3,l]X[1.2,l]X[1.5,l]X[1.8,l]X[1.8,l]X[0.5,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã KB & Mô tả & Dữ liệu & Các bước & Kết quả mong đợi & Kết quả thực tế & KQ \\
+TC\_REV\_01 & TS\_REV & Playback với sync transcript & Recording và Transcript available & 1. Navigate meeting\newline 2. Click recorded\newline 3. Play video & Player với controls, transcript highlight, auto-scroll & Player với controls, transcript highlight, auto-scroll & Pass \\
+TC\_REV\_02 & TS\_REV & Jump to timestamp & Video playing, Transcript visible & 1. Click segment 05:30\newline 2. Observe player & Video seek 05:30, segment highlight, marker update & Video seek 05:30, segment highlight, marker update & Pass \\
+\end{longtblr}
+
+% TC_MEETING_POLICY - Cấu hình meeting policies
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng cấu hình chính sách meetings},
+  label = {tab:tc_meeting_policy}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[1,l]X[1.3,l]X[1.2,l]X[1.5,l]X[1.8,l]X[1.8,l]X[0.5,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã KB & Mô tả & Dữ liệu & Các bước & Kết quả mong đợi & Kết quả thực tế & KQ \\
+TC\_POL\_01 & TS\_POL & Configure recording settings & Owner, 1080p, Auto: ON, Retention: 60d & 1. Settings > Policies\newline 2. Recording Settings\newline 3. Cấu hình\newline 4. Save & Policies updated, apply cho new meetings & Policies updated, apply cho new meetings & Pass \\
+TC\_POL\_02 & TS\_POL & Member không có quyền & Role: Member & 1. Login Member\newline 2. Navigate Settings\newline 3. Access Policies & Tab không hiển thị, URL return 403 & Tab không hiển thị, URL return 403 & Pass \\
+\end{longtblr}
+
+% TC_MEETING_MONITOR - Giám sát hạ tầng Jitsi
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng giám sát hạ tầng Jitsi},
+  label = {tab:tc_meeting_monitor}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[1,l]X[1.3,l]X[1.2,l]X[1.5,l]X[1.8,l]X[1.8,l]X[0.5,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã KB & Mô tả & Dữ liệu & Các bước & Kết quả mong đợi & Kết quả thực tế & KQ \\
+TC\_MON\_01 & TS\_MON & View real-time metrics & Admin, 5 meetings, JVB: 3, Jibri: 2 & 1. Login Admin\newline 2. Navigate Jitsi\newline 3. Observe dashboard & Overview cards, tables, charts, auto-refresh 10s & Overview cards, tables, charts, auto-refresh 10s & Pass \\
+TC\_MON\_02 & TS\_MON & Alert Jibri pool exhausted & All Jibri busy, 3 queue & 1. Simulate busy\newline 2. Start recording\newline 3. Observe alert & Warning banner, indicator 0/10, alert log created & Warning banner, indicator 0/10, alert log created & Pass \\
+\end{longtblr}
+
+\end{landscape}

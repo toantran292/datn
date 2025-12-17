@@ -43,26 +43,34 @@ export function ControlsToolbar({
   onLeave,
 }: ControlsToolbarProps) {
   const [isVisible, setIsVisible] = useState(true);
-  const [hideTimeout, setHideTimeout] = useState<ReturnType<typeof setTimeout> | null>(null);
+  const [isHoveringToolbar, setIsHoveringToolbar] = useState(false);
+  const hideTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
+      // Don't hide if hovering over toolbar
+      if (isHoveringToolbar) return;
+
       const windowHeight = window.innerHeight;
       const bottomThreshold = windowHeight - 150; // Show when mouse is within 150px of bottom
+
+      // Clear existing timeout
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
+      }
 
       if (e.clientY > bottomThreshold) {
         setIsVisible(true);
 
-        // Clear existing timeout
-        if (hideTimeout) {
-          clearTimeout(hideTimeout);
-        }
-
-        // Set new timeout to hide after 3 seconds
-        const timeout = setTimeout(() => {
-          setIsVisible(false);
-        }, 3000);
-        setHideTimeout(timeout);
+        // Set new timeout to hide after 1.5 seconds of no movement in bottom area
+        hideTimeoutRef.current = setTimeout(() => {
+          if (!isHoveringToolbar) {
+            setIsVisible(false);
+          }
+        }, 1500);
+      } else {
+        // Mouse moved outside bottom area - hide immediately
+        setIsVisible(false);
       }
     };
 
@@ -70,11 +78,11 @@ export function ControlsToolbar({
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
-      if (hideTimeout) {
-        clearTimeout(hideTimeout);
+      if (hideTimeoutRef.current) {
+        clearTimeout(hideTimeoutRef.current);
       }
     };
-  }, [hideTimeout]);
+  }, [isHoveringToolbar]);
 
   return (
     <>
@@ -91,13 +99,14 @@ export function ControlsToolbar({
               left: '40%',
               transform: 'translateX(-50%)',
             }}
+            onMouseEnter={() => setIsHoveringToolbar(true)}
+            onMouseLeave={() => setIsHoveringToolbar(false)}
           >
             <div
-              className="flex items-center gap-3 px-4 py-3 rounded-2xl backdrop-blur-xl border"
+              className="flex items-center gap-3 px-4 py-3 rounded-2xl backdrop-blur-xl border bg-white/90 dark:bg-gray-900/90"
               style={{
-                background: 'rgba(17, 24, 39, 0.9)',
                 borderColor: 'var(--ts-border)',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 196, 171, 0.2)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15), 0 0 20px rgba(0, 196, 171, 0.1)',
               }}
             >
               {/* Mic control */}
@@ -263,7 +272,7 @@ function ControlButton({ icon, active, onClick, activeColor = 'orange', label }:
         onClick={onClick}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
-        className={`p-3 rounded-xl transition-all ${active ? 'text-white' : 'text-[var(--ts-text-secondary)] hover:text-white hover:bg-[var(--ts-card-surface)]'
+        className={`p-3 rounded-xl transition-all ${active ? 'text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800'
           }`}
         style={active ? activeStyles[activeColor] : undefined}
       >

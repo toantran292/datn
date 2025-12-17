@@ -44,7 +44,7 @@ export function ReactionPicker({ onSelectReaction, disabled }: ReactionPickerPro
         disabled={disabled}
         className={`p-3 rounded-xl transition-all ${isOpen
             ? 'bg-[var(--ts-teal)] text-white'
-            : 'text-[var(--ts-text-secondary)] hover:text-white hover:bg-[var(--ts-card-surface)]'
+            : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800'
           } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         style={isOpen ? { boxShadow: '0 0 20px rgba(0, 196, 171, 0.4)' } : undefined}
       >
@@ -59,11 +59,10 @@ export function ReactionPicker({ onSelectReaction, disabled }: ReactionPickerPro
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="fixed bottom-24 left-2 -translate-x-1/2 p-2 rounded-2xl backdrop-blur-xl border z-50"
+            className="fixed bottom-24 left-2 -translate-x-1/2 p-2 rounded-2xl backdrop-blur-xl border z-50 bg-white/95 dark:bg-gray-900/95"
             style={{
-              background: 'rgba(17, 24, 39, 0.95)',
               borderColor: 'var(--ts-border)',
-              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
             }}
           >
             <div className="flex gap-1">
@@ -73,16 +72,15 @@ export function ReactionPicker({ onSelectReaction, disabled }: ReactionPickerPro
                   whileHover={{ scale: 1.3 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={() => handleSelect(reaction.emoji)}
-                  className="p-2 rounded-xl hover:bg-[var(--ts-card-surface)] transition-colors relative group"
+                  className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative group"
                   title={reaction.label}
                 >
                   <span className="text-2xl">{reaction.emoji}</span>
 
                   {/* Tooltip */}
                   <span
-                    className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 rounded text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border"
+                    className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                     style={{
-                      backgroundColor: 'var(--ts-card-surface)',
                       borderColor: 'var(--ts-border)',
                     }}
                   >

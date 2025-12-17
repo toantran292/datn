@@ -94,6 +94,8 @@ export default function MeetingPage() {
     removeReaction,
     toggleCaptions,
     sendCaption,
+    switchCamera,
+    switchMicrophone,
   } = useJitsiConference(
     connection,
     isConnected ? roomId : null,
@@ -117,15 +119,15 @@ export default function MeetingPage() {
 
   const handleCameraChange = useCallback((deviceId: string) => {
     setCurrentCameraId(deviceId);
-    // TODO: Switch camera track in useJitsiConference
+    switchCamera(deviceId);
     console.log('[Settings] Camera changed to:', deviceId);
-  }, []);
+  }, [switchCamera]);
 
   const handleMicChange = useCallback((deviceId: string) => {
     setCurrentMicId(deviceId);
-    // TODO: Switch mic track in useJitsiConference
+    switchMicrophone(deviceId);
     console.log('[Settings] Mic changed to:', deviceId);
-  }, []);
+  }, [switchMicrophone]);
 
   const handleBackgroundChange = useCallback((background: BackgroundOption) => {
     setCurrentBackground(background);

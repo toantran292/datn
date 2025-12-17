@@ -112,6 +112,87 @@ export function useJitsiConference(
     }
   }, [localTracks, isVideoMuted]);
 
+  // Switch camera to a different device
+  const switchCamera = useCallback(async (deviceId: string) => {
+    if (!conferenceRef.current) return;
+
+    const JitsiMeetJS = getJitsiMeetJS();
+    const oldVideoTrack = localTracks.find(t => t.getType() === 'video');
+
+    try {
+      // Create new video track with specified device
+      const newTracks = await JitsiMeetJS.createLocalTracks({
+        devices: ['video'],
+        resolution: 720,
+        constraints: {
+          video: { deviceId: { exact: deviceId } }
+        }
+      } as any);
+
+      const newVideoTrack = newTracks.find((t: JitsiTrack) => t.getType() === 'video');
+      if (!newVideoTrack) return;
+
+      // Remove old track from conference and dispose
+      if (oldVideoTrack) {
+        await conferenceRef.current.removeTrack(oldVideoTrack);
+        oldVideoTrack.dispose();
+      }
+
+      // Add new track to conference
+      await conferenceRef.current.addTrack(newVideoTrack);
+
+      // Update local tracks state
+      setLocalTracks(prev => {
+        const filtered = prev.filter(t => t.getType() !== 'video');
+        return [...filtered, newVideoTrack];
+      });
+
+      console.log('[Conference] Camera switched to:', deviceId);
+    } catch (err) {
+      console.error('[Conference] Error switching camera:', err);
+    }
+  }, [localTracks]);
+
+  // Switch microphone to a different device
+  const switchMicrophone = useCallback(async (deviceId: string) => {
+    if (!conferenceRef.current) return;
+
+    const JitsiMeetJS = getJitsiMeetJS();
+    const oldAudioTrack = localTracks.find(t => t.getType() === 'audio');
+
+    try {
+      // Create new audio track with specified device
+      const newTracks = await JitsiMeetJS.createLocalTracks({
+        devices: ['audio'],
+        constraints: {
+          audio: { deviceId: { exact: deviceId } }
+        }
+      } as any);
+
+      const newAudioTrack = newTracks.find((t: JitsiTrack) => t.getType() === 'audio');
+      if (!newAudioTrack) return;
+
+      // Remove old track from conference and dispose
+      if (oldAudioTrack) {
+        await conferenceRef.current.removeTrack(oldAudioTrack);
+        oldAudioTrack.dispose();
+      }
+
+      // Add new track to conference
+      await conferenceRef.current.addTrack(newAudioTrack);
+
+      // Update local tracks state
+      setLocalTracks(prev => {
+        const filtered = prev.filter(t => t.getType() !== 'audio');
+        return [...filtered, newAudioTrack];
+      });
+
+      console.log('[Conference] Microphone switched to:', deviceId);
+    } catch (err) {
+      console.error('[Conference] Error switching microphone:', err);
+    }
+  }, [localTracks]);
+
   // Toggle screen share
   const toggleScreenShare = useCallback(async () => {
     if (!conferenceRef.current) return;
@@ -882,5 +963,7 @@ export function useJitsiConference(
     removeReaction,
     toggleCaptions,
     sendCaption,
+    switchCamera,
+    switchMicrophone,
   };
 }

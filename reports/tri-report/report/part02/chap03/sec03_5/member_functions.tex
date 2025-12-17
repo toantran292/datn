@@ -1,0 +1,64 @@
+% ==================== NHÓM THÀNH VIÊN ====================
+
+\subsubsection{Chức năng mời thành viên}
+
+\textbf{Mục đích:} Cho phép Owner hoặc Admin gửi lời mời cho người dùng khác tham gia workspace.
+
+\textbf{Dữ liệu được dùng:}
+
+\begin{longtblr}[
+  caption = {Bảng dữ liệu được dùng cho chức năng mời thành viên},
+  label = {tab:func_invite_member}
+]{
+  width=\linewidth, rowhead=2, hlines, vlines,
+  colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
+  rows={m},
+  row{1-2}={font=\bfseries, c, bg=gray9}
+}
+\SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
+& & Thêm & Sửa & Xóa & Truy vấn \\
+1 & Member & & & & X \\
+2 & Invitation & X & & & \\
+3 & Notification & X & & & \\
+4 & AuditLog & X & & & \\
+\end{longtblr}
+
+\textbf{Xử lý:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{images/act_invite_member.png}
+\caption{Sơ đồ hoạt động của chức năng mời thành viên}
+\label{fig:act_invite_member}
+\end{figure}
+
+\subsubsection{Chức năng phân quyền thành viên}
+
+\textbf{Mục đích:} Cho phép Owner hoặc Admin thay đổi vai trò của thành viên trong workspace.
+
+\textbf{Dữ liệu được dùng:}
+
+\begin{longtblr}[
+  caption = {Bảng dữ liệu được dùng cho chức năng phân quyền thành viên},
+  label = {tab:func_change_role}
+]{
+  width=\linewidth, rowhead=2, hlines, vlines,
+  colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
+  rows={m},
+  row{1-2}={font=\bfseries, c, bg=gray9}
+}
+\SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
+& & Thêm & Sửa & Xóa & Truy vấn \\
+1 & Member & & X & & X \\
+2 & Notification & X & & & \\
+3 & AuditLog & X & & & \\
+\end{longtblr}
+
+\textbf{Xử lý:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{images/act_change_role.png}
+\caption{Sơ đồ hoạt động của chức năng phân quyền thành viên}
+\label{fig:act_change_role}
+\end{figure}

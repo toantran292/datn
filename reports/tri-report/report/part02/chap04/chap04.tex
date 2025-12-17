@@ -1,0 +1,174 @@
+\subsection{Giới thiệu}
+
+\subsubsection{Mục tiêu kiểm thử}
+
+Quy trình kiểm thử phân hệ họp trực tuyến nhằm đạt được các mục tiêu sau:
+
+\begin{itemize}
+    \item Phát hiện và xử lý các lỗi phát sinh trong chức năng video conferencing, recording và AI processing, đảm bảo hệ thống hoạt động đúng theo các yêu cầu đã được đặc tả.
+    \item Xác minh và đánh giá mức độ đáp ứng của các chức năng meeting subsystem so với kỳ vọng người dùng và đặc tả kỹ thuật, đặc biệt về real-time communication và transcript accuracy.
+    \item Ghi nhận kết quả kiểm thử để phục vụ công tác phân tích, tối ưu và bảo trì hệ thống về sau, bao gồm performance metrics của Jitsi infrastructure và AI processing pipeline.
+\end{itemize}
+
+\subsubsection{Phạm vi kiểm thử}
+
+Quy trình kiểm thử được thực hiện thông qua các giai đoạn sau:
+
+\begin{itemize}
+    \item Kiểm thử thiết kế: đánh giá giao diện meeting room, meetings list và replay interface, đảm bảo tuân thủ thiết kế UI/UX cho video conferencing và real-time collaboration.
+    \item Kiểm thử chấp nhận: xác nhận hệ thống đáp ứng đúng các chức năng được yêu cầu, bao gồm tạo/join meeting, recording với Jibri, transcript generation và AI summary.
+    \item Kiểm thử chức năng: đảm bảo các chức năng meeting subsystem xử lý đúng dữ liệu đầu vào (video/audio streams, recording files, transcript data) và trả về kết quả chính xác.
+    \item Kiểm thử tích hợp: kiểm tra tích hợp với Jitsi Meet infrastructure (Videobridge, Jicofo, Prosody, Jibri), Speech-to-Text services và LLM providers.
+\end{itemize}
+
+\subsection{Chi tiết kế hoạch kiểm thử}
+
+\subsubsection{Các trường hợp kiểm thử}
+
+Các trường hợp kiểm thử chính được xác định bao gồm 6 chức năng cốt lõi của phân hệ họp trực tuyến:
+
+\begin{itemize}
+    \item Người dùng tạo instant meeting và join với JWT authentication.
+    \item Participant join meeting qua invite link với vai trò được assigned.
+    \item Moderator start recording và allocate Jibri instance.
+    \item Hệ thống stop recording, upload file to MinIO/S3 và update metadata.
+    \item Background job auto generate transcript từ recording audio sử dụng STT service.
+    \item AI Service generate meeting summary với action items và decisions từ transcript.
+    \item User playback recording với synchronized transcript highlighting.
+    \item User jump to timestamp khi click vào transcript segment.
+    \item Workspace Owner configure meeting policies (recording quality, retention, AI processing).
+    \item System Admin view real-time infrastructure metrics (JVB, Jibri, active meetings).
+    \item Alert system generate warning khi Jibri pool exhausted.
+\end{itemize}
+
+\subsubsection{Cách tiếp cận}
+
+Tiến hành kiểm thử theo workflow của meeting lifecycle: Create/Join → Recording → Transcript/Summary Generation → Replay/Review → Policy Management → Infrastructure Monitoring. Kiểm thử từ happy path (normal flow) đến edge cases (error handling, resource exhaustion), đảm bảo không bỏ sót bất kỳ chức năng quan trọng nào của video conferencing system.
+
+\subsubsection{Tiêu chí kiểm thử thành công/thất bại}
+
+\begin{itemize}
+    \item Tiêu chí kiểm thử thành công: Jitsi Meet iframe load successfully, video/audio streams established, recording file uploaded to object storage với correct format (MP4), transcript accuracy > 80\%, AI summary chứa đầy đủ action items và decisions, real-time metrics dashboard update every 10 seconds, không phát sinh lỗi nghiêm trọng và meeting experience mượt mà.
+    \item Tiêu chí kiểm thử thất bại: Jitsi connection failed, recording không được saved hoặc corrupted, transcript generation timeout, AI summary missing key information, infrastructure metrics stale hoặc incorrect, WebSocket connection dropped, database records inconsistent với actual state.
+\end{itemize}
+
+\subsubsection{Tiêu chí đình chỉ và yêu cầu bắt đầu lại}
+
+\begin{itemize}
+    \item Tiêu chí đình chỉ: Jitsi Videobridge offline, tất cả Jibri instances unavailable, STT service API quota exceeded, LLM provider rate limit hit, database connection pool exhausted.
+    \item Tiêu chí yêu cầu bắt đầu lại: Infrastructure components restored (JVB/Jibri back online), API quotas reset, database connections available, đã xây dựng kịch bản kiểm thử và các trường hợp kiểm thử lại cho chức năng bị affected.
+\end{itemize}
+
+\subsubsection{Sản phẩm bàn giao kiểm thử}
+
+\begin{itemize}
+    \item Kế hoạch kiểm thử phân hệ meeting.
+    \item Tài liệu các trường hợp kiểm thử chi tiết (Phụ lục C).
+    \item Infrastructure monitoring dashboards và alert configurations.
+    \item Performance benchmarks cho recording, transcription và summarization.
+\end{itemize}
+
+\subsection{Quản lý kiểm thử}
+
+\subsubsection{Quy trình kiểm thử}
+
+Quá trình kiểm thử các chức năng meeting subsystem sẽ thực hiện như sau:
+
+\begin{itemize}
+    \item Lập kế hoạch tạo các trường hợp kiểm thử covering normal flow và edge cases.
+    \item Setup môi trường kiểm thử với Jitsi infrastructure (Videobridge, Jibri instances).
+    \item Tiến hành kiểm thử từng chức năng theo meeting lifecycle.
+    \item Monitor real-time metrics trong quá trình test (bandwidth, packet loss, CPU/memory).
+    \item Ghi lại các kết quả kiểm thử bao gồm screenshots, video recordings và performance data.
+\end{itemize}
+
+\subsubsection{Môi trường kiểm thử}
+
+Phần cứng:
+
+\begin{itemize}
+    \item Vi xử lý: Intel Core i7 (yêu cầu cao hơn cho video encoding/decoding)
+    \item RAM: 16GB (để chạy Jitsi components và browser simultaneously)
+    \item Ổ cứng: SSD 512GB (fast I/O cho video recording)
+    \item Cấu hình mạng: có kết nối internet tốc độ cao (>= 50 Mbps) cho video streaming
+    \item Webcam và microphone để test audio/video capture
+\end{itemize}
+
+Phần mềm:
+
+\begin{itemize}
+    \item Hệ điều hành: Ubuntu 22.04 LTS / macOS (recommended cho Jitsi deployment)
+    \item Trình duyệt: Google Chrome (primary), Firefox, Safari (cross-browser testing)
+    \item Database: PostgreSQL 15 với TimescaleDB extension cho metrics
+    \item Backend: NestJS meeting service
+    \item Frontend: Next.js với Jitsi Meet External API
+    \item Jitsi Infrastructure: Videobridge (SFU), Jicofo, Prosody XMPP, Jibri (recording)
+    \item Object Storage: MinIO/S3 cho recording files
+    \item AI Services: Google Cloud Speech-to-Text, OpenAI GPT-4 API
+    \item Monitoring: Prometheus, Grafana cho infrastructure metrics
+\end{itemize}
+
+\subsection{Kịch bản kiểm thử}
+
+Các kịch bản kiểm thử cho phân hệ họp trực tuyến bao gồm:
+
+\begin{adjustwidth}{-1.5cm}{-0.5cm}
+\begin{longtblr}[
+  caption = {Bảng kịch bản kiểm thử phân hệ họp trực tuyến},
+  label = {tab:test_scenarios_meeting}
+]{
+  width=1\linewidth, hlines, vlines,
+  colspec={X[1.3,l]X[1.2,l]X[2.8,l]X[0.6,c]X[0.6,c]},
+  row{1}={font=\bfseries, c, bg=gray9},
+  row{2}={font=\bfseries, c, bg=gray9},
+  row{3}={font=\bfseries, c, bg=gray9},
+  row{4}={font=\bfseries, c, bg=gray9}
+}
+\SetCell[c=2]{} Tên dự án & & \SetCell[c=3]{} {Xây dựng Nền tảng SaaS tích hợp AI nhằm\\ Thống nhất Quản lý Dự án Agile - Phân hệ Họp Trực Tuyến} & & \\
+\SetCell[c=2]{} Người thực hiện & & \SetCell[c=3]{} Trần Minh Trí & & \\
+\SetCell[c=2]{} Ngày thực hiện & & \SetCell[c=3]{} 12/12/2025 & & \\
+Mã kịch bản & Mã yêu cầu & Mô tả kịch bản kiểm thử & Ưu tiên & Số TC \\
+TS\_JOIN & RQ\_MTG\_01 & Kiểm tra chức năng tạo và tham gia cuộc họp & P1 & 2 \\
+TS\_REC & RQ\_MTG\_02 & Kiểm tra chức năng ghi hình cuộc họp với Jibri & P1 & 2 \\
+TS\_TRS & RQ\_MTG\_03 & Kiểm tra chức năng tạo transcript và AI summary & P1 & 2 \\
+TS\_REV & RQ\_MTG\_04 & Kiểm tra chức năng xem lại cuộc họp và transcript & P1 & 2 \\
+TS\_POL & RQ\_MTG\_05 & Kiểm tra chức năng cấu hình meeting policies & P2 & 2 \\
+TS\_MON & RQ\_MTG\_06 & Kiểm tra chức năng giám sát hạ tầng Jitsi & P2 & 2 \\
+\end{longtblr}
+\end{adjustwidth}
+
+\subsection{Đánh giá kiểm thử}
+
+\begin{longtblr}[
+  caption = {Bảng đánh giá kiểm thử phân hệ họp trực tuyến},
+  label = {tab:test_evaluation_meeting}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[3,l]X[0.8,c]X[0.8,c]X[0.8,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9},
+  row{8}={font=\bfseries, bg=gray9}
+}
+Mã kịch bản & Mô tả kịch bản kiểm thử & Số TC & Thành công & Thất bại \\
+TS\_JOIN & Kiểm tra chức năng tạo và tham gia cuộc họp & 2 & 2 & 0 \\
+TS\_REC & Kiểm tra chức năng ghi hình cuộc họp với Jibri & 2 & 2 & 0 \\
+TS\_TRS & Kiểm tra chức năng tạo transcript và AI summary & 2 & 2 & 0 \\
+TS\_REV & Kiểm tra chức năng xem lại cuộc họp và transcript & 2 & 2 & 0 \\
+TS\_POL & Kiểm tra chức năng cấu hình meeting policies & 2 & 2 & 0 \\
+TS\_MON & Kiểm tra chức năng giám sát hạ tầng Jitsi & 2 & 2 & 0 \\
+TỔNG CỘNG & & 12 & 12 & 0 \\
+\end{longtblr}
+
+Kết quả kiểm thử được thực hiện trên 6 kịch bản với tổng số trường hợp là 12 (mỗi chức năng 2 test cases). Số trường hợp kiểm thử thành công là 12/12, số trường hợp kiểm thử thất bại là 0/12. Qua kết quả trên, phân hệ họp trực tuyến sau khi trải qua quá trình kiểm thử thì kết quả thành công đạt 100\%.
+
+Kết quả cho thấy các chức năng cốt lõi hoạt động tốt và ổn định:
+\begin{itemize}
+    \item Jitsi Meet integration hoạt động mượt mà với JWT authentication và real-time video/audio streaming.
+    \item Jibri recording infrastructure allocate instances đúng và upload recordings to object storage successfully.
+    \item Speech-to-Text pipeline generate accurate transcripts với timestamped segments và speaker diarization.
+    \item AI summarization pipeline extract action items, decisions và key discussion points correctly.
+    \item Meeting replay interface synchronize video playback với transcript highlighting seamlessly.
+    \item Infrastructure monitoring dashboard provide real-time visibility với WebSocket updates và alert generation.
+\end{itemize}
+
+Chi tiết các trường hợp kiểm thử được trình bày đầy đủ trong Phụ lục C - Tài liệu Kiểm thử.
