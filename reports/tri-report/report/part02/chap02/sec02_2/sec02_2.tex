@@ -1,0 +1,25 @@
+\subsection{Giới thiệu về công nghệ Frontend}
+
+\subsubsection{Khái quát}
+
+React.js là một thư viện JavaScript mã nguồn mở được phát triển bởi Facebook (nay là Meta) vào năm 2013, được sử dụng rộng rãi để xây dựng giao diện người dùng cho các ứng dụng web single-page (SPA) và mobile applications. React sử dụng mô hình component-based, cho phép developers chia nhỏ giao diện thành các thành phần độc lập và tái sử dụng được. Mỗi component quản lý state riêng và có thể được kết hợp để tạo thành giao diện phức tạp, giúp code dễ bảo trì và mở rộng.
+
+Next.js là một React framework được phát triển bởi Vercel, cung cấp các tính năng bổ sung như Server-Side Rendering (SSR), Static Site Generation (SSG), và nhiều tối ưu hóa khác nhằm cải thiện hiệu suất và trải nghiệm người dùng. TypeScript, một superset của JavaScript được phát triển bởi Microsoft, bổ sung hệ thống type checking tĩnh giúp phát hiện lỗi sớm và cải thiện chất lượng code. Sự kết hợp giữa React, Next.js và TypeScript đã trở thành stack frontend phổ biến nhất trong các dự án web hiện đại.
+
+\subsubsection{Nguyên lý hoạt động}
+
+React hoạt động dựa trên các nguyên lý cốt lõi giúp tối ưu hóa hiệu suất và trải nghiệm phát triển. JSX (JavaScript XML) là cú pháp mở rộng của JavaScript cho phép viết HTML trong JavaScript, giúp code dễ đọc và bảo trì hơn. React sử dụng Virtual DOM để tối ưu hiệu suất render: khi state thay đổi, React so sánh Virtual DOM với DOM thật và chỉ cập nhật những phần thay đổi thông qua quá trình reconciliation, giảm thiểu các thao tác DOM tốn kém.
+
+Trong React hiện đại, Functional Components kết hợp với Hooks đã trở thành cách tiếp cận ưu tiên thay cho Class Components. Props và State là hai khái niệm quan trọng: Props là dữ liệu được truyền từ component cha xuống component con (immutable), trong khi State là dữ liệu nội bộ của component, có thể thay đổi và trigger re-render. Hooks như useState, useEffect, useContext, useReducer, useMemo, useCallback cho phép sử dụng state và các tính năng React trong functional components một cách dễ dàng và linh hoạt.
+
+Next.js mở rộng khả năng của React với các chiến lược rendering khác nhau. Server-Side Rendering (SSR) render trang trên server trước khi gửi đến client, cải thiện SEO và thời gian tải trang đầu tiên. Static Site Generation (SSG) pre-render các trang tại build time, phù hợp cho nội dung ít thay đổi, trong khi Incremental Static Regeneration (ISR) kết hợp SSG với khả năng cập nhật trang sau khi deploy. Next.js cũng cung cấp File-based Routing tự động tạo routes dựa trên cấu trúc thư mục, API Routes cho phép tạo backend endpoints ngay trong project, và Image Optimization tự động tối ưu hình ảnh.
+
+TypeScript bổ sung type safety cho JavaScript, phát hiện lỗi tại compile-time thay vì runtime, giúp giảm bugs trong production. Hệ thống type checking cung cấp IntelliSense, autocompletion, và refactoring tools mạnh mẽ trong IDE. Type annotations giúp code tự document, dễ hiểu hơn cho team, đồng thời TypeScript hỗ trợ các tính năng ES6+ và biên dịch xuống các phiên bản JavaScript cũ hơn để đảm bảo tương thích.
+
+\subsubsection{Ứng dụng và hệ sinh thái}
+
+React và Next.js được sử dụng rộng rãi trong các ứng dụng web hiện đại, từ dashboard quản lý, e-commerce platform, social media, đến các ứng dụng SaaS phức tạp. Hệ sinh thái React cung cấp nhiều thư viện và tools hỗ trợ: Tailwind CSS cho styling nhanh và responsive, React Query (TanStack Query) cho quản lý server state và caching, Zustand hoặc Redux cho client state management, React Hook Form cho xử lý form với validation, và các component libraries như Shadcn/ui, Material-UI, Ant Design giúp xây dựng UI nhanh chóng với chất lượng cao.
+
+\subsubsection{Vận dụng vào đề tài}
+
+Frontend của hệ thống được xây dựng bằng Next.js 14 với App Router mới, sử dụng TypeScript để đảm bảo type safety cho toàn bộ codebase. Tailwind CSS được áp dụng làm utility-first CSS framework cho styling nhanh và responsive trên mọi thiết bị. React Query (TanStack Query) quản lý server state, caching, và data fetching với các tính năng như automatic refetching, optimistic updates, và pagination. Zustand được chọn làm state management nhẹ và đơn giản cho client state như UI state, user preferences, và modal management. React Hook Form xử lý form validation với hiệu suất cao, tích hợp với Zod schema validation. Shadcn/ui cung cấp các component UI dựa trên Radix UI primitives, đảm bảo accessibility và tùy biến cao. Toàn bộ frontend được tổ chức theo kiến trúc module hóa với các layer rõ ràng: UI components, hooks, services, và utilities, giúp code dễ bảo trì và mở rộng.

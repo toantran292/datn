@@ -1,0 +1,53 @@
+\subsection{Giới thiệu về WebRTC và Jitsi Meet}
+
+\subsubsection{Khái quát về WebRTC}
+
+WebRTC (Web Real-Time Communication) là một tiêu chuẩn mã nguồn mở được phát triển bởi W3C và IETF, cho phép truyền tải audio, video và data giữa các browsers và mobile applications theo thời gian thực (real-time) mà không cần cài đặt plugins hoặc phần mềm bên thứ ba. WebRTC được hỗ trợ native trong hầu hết các trình duyệt hiện đại như Chrome, Firefox, Safari, Edge, và các mobile browsers trên iOS và Android. Công nghệ này đã trở thành nền tảng cho các ứng dụng video conferencing, voice calls, live streaming và peer-to-peer data sharing trên web.
+
+WebRTC hoạt động theo mô hình peer-to-peer, cho phép hai hoặc nhiều endpoints kết nối trực tiếp với nhau để trao đổi media streams mà không cần relay qua server trung gian (trong trường hợp tối ưu). Tuy nhiên, để thiết lập kết nối peer-to-peer, WebRTC vẫn cần signaling server để trao đổi thông tin metadata như Session Description Protocol (SDP) offers/answers và ICE candidates. WebRTC đảm bảo bảo mật cao thông qua encryption bắt buộc cho tất cả media streams sử dụng DTLS-SRTP protocol.
+
+\subsubsection{Kiến trúc và các thành phần của WebRTC}
+
+WebRTC bao gồm ba API chính cung cấp các chức năng cốt lõi. MediaStream API (getUserMedia) cho phép truy cập camera và microphone của thiết bị để capture audio/video streams. Developers có thể lấy media stream từ user devices, áp dụng constraints để chỉ định resolution, frame rate, audio quality, và thêm/xóa tracks động trong quá trình call.
+
+RTCPeerConnection API là thành phần quan trọng nhất, quản lý kết nối peer-to-peer giữa hai endpoints. API này xử lý việc encode/decode audio và video sử dụng codecs như VP8, VP9, H.264, Opus, implement ICE (Interactive Connectivity Establishment) để tìm đường đi tốt nhất cho media connectivity, tự động adapt bitrate dựa trên bandwidth available để maintain quality, và thực hiện DTLS handshake để thiết lập encrypted connection.
+
+RTCDataChannel API cho phép truyền tải arbitrary data giữa peers như text messages, file transfers, hoặc game state. DataChannel có low latency do không có HTTP overhead, hỗ trợ reliable delivery (giống TCP) hoặc unreliable delivery (giống UDP) tùy theo use case, và có thể ordered hoặc unordered delivery tùy theo requirements.
+
+Signaling là quá trình trao đổi metadata để thiết lập kết nối WebRTC, không được định nghĩa trong WebRTC spec để cho phép developers tự do lựa chọn protocol phù hợp. Thông thường WebSocket, Socket.io, hoặc XMPP được sử dụng cho signaling. Quy trình signaling bao gồm: Offer/Answer exchange (SDP) mô tả media capabilities và preferences, ICE candidate exchange chứa thông tin về các network paths có thể sử dụng, và Session negotiation để đồng ý về codecs, resolution, bandwidth constraints.
+
+NAT Traversal là thách thức lớn trong WebRTC do hầu hết devices nằm phía sau NAT/firewall. WebRTC sử dụng ICE framework kết hợp STUN và TURN để giải quyết vấn đề này. STUN (Session Traversal Utilities for NAT) servers giúp discover public IP address và port của client phía sau NAT. TURN (Traversal Using Relays around NAT) servers relay media streams khi peer-to-peer connection không thể thiết lập được do restrictive NAT/firewall. ICE candidate types bao gồm: host candidate (local IP), server reflexive candidate (public IP discovered via STUN), và relay candidate (TURN server address).
+
+\subsubsection{Jitsi Meet và kiến trúc hạ tầng}
+
+Jitsi Meet là một open-source video conferencing solution được xây dựng trên WebRTC, cung cấp full-featured platform cho video meetings, audio calls, screen sharing và collaboration. Khác với WebRTC peer-to-peer đơn thuần, Jitsi Meet sử dụng kiến trúc SFU (Selective Forwarding Unit) thông qua Jitsi Videobridge để xử lý multi-party conferences hiệu quả.
+
+Trong kiến trúc Jitsi, Videobridge là SFU (Selective Forwarding Unit) component nhận media streams từ participants và forward đến các participants khác mà không decode/re-encode (không giống MCU). Mỗi Videobridge instance có thể handle hàng trăm participants trong multiple conferences, sử dụng simulcast để receive multiple quality layers từ mỗi sender và forward quality phù hợp đến từng receiver dựa trên bandwidth. Videobridge scales horizontally bằng cách thêm instances khi load tăng, với Octo protocol cho phép cascade Videobridges để distribute conferences.
+
+Jicofo (Jitsi Conference Focus) là signaling và control component quản lý conferences lifecycle. Jicofo allocate conferences đến Videobridge instances dựa trên load, manage participants joining/leaving conferences, negotiate media capabilities giữa participants, và handle features như recording, live streaming, SIP gateway integration.
+
+Prosody là XMPP server cung cấp messaging infrastructure cho Jitsi. Prosody handle signaling messages giữa clients và Jitsi components, manage Multi-User Chat (MUC) rooms cho mỗi conference, và authenticate users sử dụng JWT tokens hoặc other authentication methods. XMPP protocol được sử dụng cho reliable messaging, presence information, và conference control commands.
+
+Jibri (Jitsi Broadcasting Infrastructure) là recording và streaming component capture conferences bằng Chrome headless và ffmpeg. Jibri join conference như một hidden participant, capture combined audio/video stream, encode thành video file (MP4/MKV) hoặc stream đến platforms như YouTube/Facebook Live, và upload recording files đến configured storage (S3, local filesystem). Multiple Jibri instances có thể deployed để support concurrent recordings.
+
+\subsubsection{Media codecs và Quality of Service}
+
+WebRTC và Jitsi hỗ trợ nhiều codecs cho audio và video. Opus là codec ưu tiên cho audio, adaptive bitrate từ 6 kbps đến 510 kbps, low latency (5-66.5ms frame size), excellent quality ở mọi bitrate ranges, và support stereo và multiple channels. VP8/VP9 là video codecs mã nguồn mở được Google phát triển, VP8 widely supported và efficient, VP9 better compression hơn VP8 nhưng cần computational power cao hơn. H.264 là video codec phổ biến nhất, hardware acceleration trên hầu hết devices, patent-encumbered nên có licensing concerns, và sử dụng rộng rãi trong WebRTC implementations.
+
+Quality of Service (QoS) mechanisms đảm bảo trải nghiệm tốt trong điều kiện mạng không ổn định. Adaptive Bitrate Streaming tự động điều chỉnh bitrate dựa trên bandwidth estimation và packet loss rate, congestion control algorithms như Google Congestion Control (GCC) monitor network conditions và adjust sending rate. Simulcast cho phép sender gửi multiple quality layers (low, medium, high resolution) đồng thời, receiver chọn layer phù hợp với bandwidth available của mình, giảm load trên server do không cần transcoding. Packet Loss Recovery sử dụng Forward Error Correction (FEC) thêm redundant data để recover lost packets, NACK (Negative Acknowledgement) request retransmission của lost packets, và Jitter Buffer smooth playback bằng cách buffer incoming packets để compensate network jitter.
+
+\subsubsection{Security và encryption}
+
+WebRTC bắt buộc encryption cho tất cả media streams và data channels để đảm bảo privacy và security. DTLS-SRTP được sử dụng cho media streams encryption, DTLS (Datagram Transport Layer Security) establish secure connection tương tự TLS nhưng qua UDP, SRTP (Secure Real-time Transport Protocol) encrypt RTP packets chứa actual media data, và mỗi peer exchange certificates và negotiate encryption keys.
+
+Signaling security thông qua TLS/HTTPS cho signaling channel, authenticate users trước khi cho phép join conferences, và validate permissions cho các actions như mute others, kick participants, start recording. End-to-End Encryption (E2EE) là optional feature trong Jitsi Meet mới, encrypt media ở sender trước khi gửi và decrypt ở receiver sau khi nhận, server (Videobridge) không thể decrypt media content, và sử dụng Insertable Streams API trong modern browsers để implement encryption.
+
+\subsubsection{Vận dụng vào đề tài}
+
+Phân hệ họp trực tuyến của hệ thống được xây dựng dựa trên Jitsi Meet infrastructure với nhiều customizations để tích hợp vào SaaS platform. Jitsi Meet embedded vào Next.js frontend sử dụng Jitsi Meet External API, cho phép control conference lifecycle, customize UI/UX phù hợp với brand, và listen events để synchronize với backend services.
+
+JWT-based authentication tích hợp với Account Service của hệ thống, generate JWT tokens chứa user info và permissions khi user join meeting, Jitsi Videobridge validate tokens và enforce permissions như moderator rights, recording rights, và Prosody sử dụng token authentication module để verify users. Meeting lifecycle được quản lý hoàn toàn qua backend APIs: Meeting Service tạo meeting rooms với unique IDs linked đến projects/sprints, generate meeting URLs và JWT tokens, track participants join/leave events, và store meeting metadata vào PostgreSQL database.
+
+Recording workflow được tự động hóa với Jibri integration: Meeting Service allocate Jibri instance khi user start recording, Jibri join conference và capture streams, upload recorded files đến MinIO/S3 object storage, trigger background jobs để process recordings bao gồm extract audio track sử dụng ffmpeg, send đến Speech-to-Text API (Google Cloud, AWS, Whisper), receive transcript với timestamps, send transcript đến AI Service (OpenAI, Claude, Gemini) để generate summary với action items và key decisions, và store transcript và summary vào database để users có thể review sau meeting.
+
+Scalability được đảm bảo thông qua horizontal scaling của Videobridge instances, load balancing giữa multiple Videobridges dựa trên current load, health monitoring và auto-restart failed instances, và metrics collection sử dụng Prometheus và Grafana để monitor system health, active conferences, concurrent participants, bandwidth usage, và resource utilization.

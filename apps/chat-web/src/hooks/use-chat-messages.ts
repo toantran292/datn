@@ -21,6 +21,8 @@ export function useChatMessages() {
     pendingFiles,
     handleFilesSelect,
     handleFileRemove,
+    // Huddle
+    huddleParticipantCounts,
   } = useChatContext();
 
   return {
@@ -38,5 +40,7 @@ export function useChatMessages() {
     pendingFiles,
     selectFiles: handleFilesSelect,
     removeFile: handleFileRemove,
+    // Huddle
+    huddleParticipantCounts,
   };
 }

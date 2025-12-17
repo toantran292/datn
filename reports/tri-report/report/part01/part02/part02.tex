@@ -1,0 +1,106 @@
+\phantomsection
+\subsection*{2. Lịch sử giải quyết vấn đề}
+\addcontentsline{toc}{subsection}{2. Lịch sử giải quyết vấn đề}
+\setcounter{subsection}{2}
+\setcounter{subsubsection}{0}
+\setcounter{figure}{0}
+
+Nhiều giải pháp video conferencing đã được phát triển để đáp ứng nhu cầu làm việc từ xa. Tuy nhiên, từ góc độ quản lý dự án Agile, các giải pháp hiện có còn nhiều hạn chế về tích hợp project context, tự động hóa quy trình meeting và khai thác dữ liệu cuộc họp thông minh.
+
+\subsubsection{Các giải pháp họp trực tuyến phổ biến}
+
+\textbf{Zoom, Google Meet, Microsoft Teams} là các nền tảng phổ biến với hàng trăm triệu người dùng. Zoom cung cấp chất lượng video/audio ổn định và AI Companion để tóm tắt cuộc họp. Google Meet tích hợp tốt với Google Workspace và có Duet AI. Microsoft Teams kết hợp chat, meetings và có Copilot AI.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/act_zoom.png}
+    \caption{Giao diện Zoom Meeting với tính năng recording và AI Companion}
+    \label{fig:zoom_interface}
+\end{figure}
+
+Tuy nhiên, các giải pháp này có hạn chế chung khi sử dụng cho Agile teams:
+\begin{itemize}
+    \item Recording và transcript lưu trữ độc lập, không liên kết với project/sprint context
+    \item AI summary generic, không nhận diện action items và decisions theo format Agile ceremonies
+    \item Không tự động tạo tasks từ action items, team phải thủ công tạo trong công cụ quản lý dự án
+    \item Tích hợp với project management tools hạn chế, chủ yếu one-way, không có automatic workflow
+\end{itemize}
+
+\subsubsection{Giải pháp mã nguồn mở và các công cụ khác}
+
+\textbf{Jitsi Meet} là nền tảng mã nguồn mở cho phép self-hosted, sử dụng WebRTC, không giới hạn thời gian và có thể customize sâu. Ưu điểm: toàn quyền kiểm soát, Jibri hỗ trợ recording, External API để embed và control conference. Hạn chế: không có meeting management và AI capabilities built-in, cần cấu hình cẩn thận để scale.
+
+\textbf{Jira, Notion, Linear} có integrations với Zoom/Teams nhưng rất shallow - chỉ click để join meeting, không có two-way data flow. Meeting recordings và notes vẫn tách biệt khỏi project context.
+
+\textbf{Parabol, Metro Retro} là specialized tools cho Agile ceremonies nhưng không có video conferencing built-in hoặc chỉ cover một loại meeting.
+
+Tại Việt Nam, thị trường chủ yếu dùng Zoom, Google Meet, Teams. Các nền tảng như Base.vn, MISA AMIS chỉ có calendar scheduling, không có video conferencing riêng.
+
+\subsubsection{Bảng so sánh các giải pháp}
+
+Để có cái nhìn tổng quan và khách quan hơn về các giải pháp hiện có, bảng dưới đây so sánh các tính năng chính giữa các nền tảng phổ biến và giải pháp đề xuất của đề tài.
+
+\begin{table}[H]
+\centering
+\caption{So sánh tính năng giữa các giải pháp họp trực tuyến}
+\label{tab:solution_comparison}
+\small
+\begin{tabular}{|p{3.2cm}|c|c|c|c|c|}
+\hline
+\textbf{Tính năng} & \textbf{Zoom} & \textbf{Teams} & \textbf{Meet} & \textbf{Jitsi} & \textbf{Đề tài} \\
+\hline
+Video conferencing & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
+\hline
+Recording & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
+\hline
+Auto transcription & \checkmark & \checkmark & \checkmark & -- & \checkmark \\
+\hline
+AI Summary & \checkmark & \checkmark & \checkmark & -- & \checkmark \\
+\hline
+Agile-specific AI & -- & -- & -- & -- & \checkmark \\
+\hline
+Project context linking & -- & -- & -- & -- & \checkmark \\
+\hline
+Auto task creation & -- & -- & -- & -- & \checkmark \\
+\hline
+Self-hosted option & -- & -- & -- & \checkmark & \checkmark \\
+\hline
+Open source & -- & -- & -- & \checkmark & \checkmark \\
+\hline
+Custom LLM provider & -- & -- & -- & -- & \checkmark \\
+\hline
+Meeting analytics & Basic & Basic & Basic & -- & \checkmark \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Ghi chú}: \checkmark = Có hỗ trợ, -- = Không hỗ trợ hoặc hạn chế
+
+\textbf{Phân tích chi tiết:}
+
+\begin{itemize}
+    \item \textbf{Zoom AI Companion}: Cung cấp meeting summary và action items, nhưng là generic summary không được tối ưu cho Agile ceremonies. Không tích hợp với project management tools để tự động tạo tasks. Chi phí cao (\$24.99/user/month cho Business plan với AI).
+
+    \item \textbf{Microsoft Teams Copilot}: Tích hợp tốt trong hệ sinh thái Microsoft 365, có thể tóm tắt cuộc họp và tạo action items. Tuy nhiên, yêu cầu license Microsoft 365 E3/E5 và Copilot add-on (\$30/user/month). Không có khả năng customize prompts cho domain cụ thể.
+
+    \item \textbf{Google Meet (Duet AI)}: Tích hợp với Google Workspace, cung cấp meeting notes và summary. Hạn chế về khả năng customize và không có tích hợp sâu với các công cụ quản lý dự án ngoài hệ sinh thái Google.
+
+    \item \textbf{Jitsi Meet}: Giải pháp mã nguồn mở tốt nhất cho self-hosted video conferencing. Tuy nhiên, không có built-in AI capabilities, transcription hay meeting management. Cần đầu tư đáng kể để xây dựng các tính năng này.
+
+    \item \textbf{Giải pháp đề tài}: Kết hợp ưu điểm của Jitsi (self-hosted, open source, customizable) với AI capabilities được thiết kế riêng cho Agile workflows. Cho phép lựa chọn LLM provider (OpenAI, Claude, Gemini) và tích hợp sâu với hệ thống quản lý dự án.
+\end{itemize}
+
+\subsubsection{Khoảng trống cần lấp đầy}
+
+Từ phân tích các giải pháp hiện có, các khoảng trống chính là:
+
+\begin{itemize}
+    \item \textbf{Thiếu project context awareness}: Meetings không được liên kết với sprint/project cụ thể
+    \item \textbf{Generic AI}: Không được thiết kế cho Agile ceremonies, không hiểu structure của Sprint Planning hay Retrospective
+    \item \textbf{No automatic workflow}: Action items không tự động thành tasks trong project management system
+    \item \textbf{Poor data management}: Recordings/transcripts thiếu metadata về decisions, blockers, participants
+    \item \textbf{Lack of analytics}: Không có metrics về meeting effectiveness, correlation với project progress
+    \item \textbf{Self-hosted gap}: Phải chọn giữa Jitsi (infrastructure tốt, thiếu AI) hoặc commercial tools (AI tốt, không control data)
+\end{itemize}
+
+Đề tài này lấp đầy các khoảng trống bằng cách xây dựng meeting subsystem tích hợp sâu với Agile project management, leverage AI với Agile-specific prompts, và kết hợp self-hosted Jitsi với custom intelligence layer.

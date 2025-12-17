@@ -1,0 +1,50 @@
+\paragraph{UC05: Xem lại cuộc họp và bản tóm tắt}
+
+\begin{longtable}{|p{4cm}|p{11cm}|}
+\hline
+\textbf{Tên use case} & Xem lại cuộc họp và bản tóm tắt \\
+\hline
+\textbf{Mã use case} & UC05 \\
+\hline
+\textbf{Mô tả} & Xem file ghi hình, đọc transcript, xem AI summary với action items và key decisions. Hỗ trợ tìm kiếm, export và chia sẻ. \\
+\hline
+\textbf{Actor} & Project Member, Workspace Admin \\
+\hline
+\textbf{Điều kiện tiên quyết} &
+\begin{itemize}[leftmargin=*,noitemsep,topsep=0pt]
+    \item Đã đăng nhập và là thành viên dự án
+    \item Cuộc họp đã kết thúc và có bản ghi hình
+\end{itemize} \\
+\hline
+\textbf{Điều kiện kết thúc} &
+\begin{itemize}[leftmargin=*,noitemsep,topsep=0pt]
+    \item Người dùng xem được nội dung mong muốn
+    \item Lịch sử truy cập được ghi lại
+\end{itemize} \\
+\hline
+\textbf{Luồng sự kiện chính} &
+\begin{enumerate}[leftmargin=*,noitemsep,topsep=0pt]
+    \item Người dùng truy cập danh sách cuộc họp, chọn cuộc họp
+    \item Hệ thống kiểm tra quyền và hiển thị trang chi tiết
+\end{enumerate}
+\textbf{Các tính năng:}
+\begin{itemize}[leftmargin=*,noitemsep,topsep=0pt]
+    \item \textbf{Xem video:} Player với pre-signed URL, hỗ trợ phụ đề đồng bộ
+    \item \textbf{Đọc transcript:} Hiển thị [timestamp] Speaker: nội dung, click để seek video
+    \item \textbf{Tìm kiếm:} Full-text search trong transcript, highlight kết quả
+    \item \textbf{Xem AI summary:} Overview, key topics, action items, key decisions
+    \item \textbf{Tạo task:} Chuyển action item thành task trong project management
+    \item \textbf{Export:} Xuất PDF/Markdown với các tùy chọn nội dung
+    \item \textbf{Chia sẻ:} Gửi link cho thành viên có quyền truy cập
+\end{itemize} \\
+\hline
+\textbf{Luồng thay thế} &
+\textbf{Không có quyền:} Hiển thị thông báo lỗi.
+
+\textbf{Video/Transcript đang xử lý:} Hiển thị trạng thái và progress.
+
+\textbf{AI summary thất bại:} Cung cấp nút "Thử lại" cho admin. \\
+\hline
+\caption{Đặc tả UC05: Xem lại cuộc họp và bản tóm tắt}
+\label{tab:uc05_meeting}
+\end{longtable}

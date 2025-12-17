@@ -1,0 +1,32 @@
+\phantomsection
+\subsection*{1. Đặt vấn đề}
+\addcontentsline{toc}{subsection}{1. Đặt vấn đề}
+\setcounter{subsection}{1}
+\setcounter{subsubsection}{0}
+\setcounter{figure}{0}
+
+Trong bối cảnh làm việc từ xa và hybrid trở thành phổ biến sau đại dịch COVID-19, các cuộc họp trực tuyến đã trở thành phần thiết yếu trong quy trình làm việc hàng ngày. Đối với các đội ngũ phát triển phần mềm áp dụng Agile, họp trực tuyến càng đóng vai trò then chốt khi các cuộc họp như Sprint Planning, Daily Standup, Sprint Review và Retrospective là trụ cột của toàn bộ quy trình.
+
+Tuy nhiên, hiện nay các đội ngũ đang sử dụng các nền tảng họp độc lập như Zoom, Google Meet hoặc Microsoft Teams mà không có sự tích hợp sâu với hệ thống quản lý dự án. Điều này dẫn đến dữ liệu cuộc họp -- bao gồm nội dung thảo luận, quyết định quan trọng và action items -- bị phân tán và tách biệt hoàn toàn khỏi ngữ cảnh dự án và sprint. Sau mỗi cuộc họp, các thành viên phải:
+\begin{itemize}
+    \item Viết lại biên bản họp thủ công từ ghi chú hoặc recording
+    \item Tự tay tạo các task trong hệ thống quản lý dự án
+    \item Chia sẻ link recording, nhưng người vắng mặt phải xem lại toàn bộ video dài
+    \item Tìm kiếm thông tin từ các cuộc họp trước đó trong notes rời rạc
+\end{itemize}
+
+Vấn đề trở nên nghiêm trọng hơn với các cuộc họp Agile. Một Daily Standup chỉ 15 phút nhưng chứa nhiều thông tin quan trọng về blockers và progress. Một Sprint Retrospective sinh ra hàng chục action items cải thiện quy trình. Nếu không có cơ chế ghi chép và liên kết tự động, những insight quý giá này sẽ bị lãng quên hoặc không được thực thi. Theo nghiên cứu, 60-70\% action items từ cuộc họp không được chuyển thành task cụ thể, dẫn đến việc chúng không được hoàn thành.
+
+Sự phát triển của AI, đặc biệt là các Large Language Models như GPT-4, Claude và Gemini, đã mở ra cơ hội giải quyết vấn đề này. Các mô hình này có khả năng tổng hợp thông tin từ hội thoại dài, trích xuất điểm chính và nhận diện action items chính xác. Tuy nhiên, các tính năng AI hiện có trong công cụ họp thương mại (Zoom AI Companion, Google Duet AI, Microsoft Teams Copilot) chỉ hoạt động độc lập và không tích hợp sâu với ngữ cảnh dự án. Chúng tạo bản tóm tắt chung chung, không tự động liên kết action items với tasks trong sprint hay gắn quyết định với user stories.
+
+Với sự phát triển của các API như OpenAI Whisper cho speech-to-text (độ chính xác >95\%) và LLM APIs với context window lớn, việc xây dựng hệ thống meeting intelligence tích hợp sâu với quản lý dự án đã trở nên khả thi. Hệ thống cần có:
+
+\begin{itemize}
+    \item \textbf{Tích hợp sâu với project context}: Mỗi cuộc họp liên kết trực tiếp với project, sprint hoặc backlog items.
+    \item \textbf{Recording và transcription tự động}: Ghi hình tự động, chuyển đổi thành text transcript với timestamps chính xác.
+    \item \textbf{AI-powered summary}: Tự động phân tích transcript với prompts đặc biệt cho từng loại Agile ceremony, tạo bản tóm tắt có cấu trúc: key decisions, action items, blockers.
+    \item \textbf{Automatic task creation}: Action items được AI nhận diện tự động đề xuất chuyển thành tasks kèm context.
+    \item \textbf{Meeting insights}: Metrics về hiệu quả meetings, participation rate, correlation với sprint velocity.
+\end{itemize}
+
+Với ý nghĩa đó, đề tài \textit{``Xây dựng Nền tảng SaaS tích hợp AI nhằm Thống nhất Quản lý Dự án Agile -- Phân hệ Họp trực tuyến''} tập trung xây dựng meeting subsystem hoàn chỉnh với Jitsi Meet, automatic recording/transcription, AI-powered analysis và tích hợp sâu với project management workflows, biến meetings từ "black boxes" rời rạc thành phần tích hợp và actionable của quy trình Agile.

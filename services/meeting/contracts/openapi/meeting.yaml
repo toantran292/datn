@@ -1,0 +1,37 @@
+openapi: 3.0.0
+info:
+  title: Meeting API
+  version: 1.0.0
+
+paths:
+  /rooms:
+    post:
+      summary: Create a new meeting room
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                hostUserId:
+                  type: string
+      responses:
+        "200":
+          description: OK
+
+  /meet/token:
+    post:
+      summary: Request meeting token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                roomId:
+                  type: string
+      responses:
+        "200":
+          description: OK

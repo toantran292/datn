@@ -1,0 +1,324 @@
+% ==================== NHÓM HỌP TRỰC TUYẾN ====================
+
+\subsubsection{Chức năng tạo và tham gia cuộc họp}
+
+\textbf{Mục đích:} Cho phép thành viên workspace tạo phòng họp mới với cấu hình tùy chỉnh và tham gia vào cuộc họp sử dụng Jitsi Meet infrastructure. Hệ thống tích hợp Jitsi Meet External API để embed video conferencing trực tiếp vào giao diện web, sử dụng JWT authentication để xác thực và phân quyền participants.
+
+\textbf{Dữ liệu được dùng:}
+
+\begin{longtblr}[
+  caption = {Bảng dữ liệu được dùng cho chức năng tạo và tham gia cuộc họp},
+  label = {tab:func_meeting_join}
+]{
+  width=\linewidth, rowhead=2, hlines, vlines,
+  colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
+  rows={m},
+  row{1-2}={font=\bfseries, c, bg=gray9}
+}
+\SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
+& & Thêm & Sửa & Xóa & Truy vấn \\
+1 & Meeting & X & & & X \\
+2 & MeetingParticipant & X & X & & X \\
+3 & WorkspaceMember & & & & X \\
+\end{longtblr}
+
+\textbf{Xử lý:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{images/UC01_start_meeting_overview.png}
+\caption{Sơ đồ hoạt động UC01: Bắt đầu cuộc họp nhanh}
+\label{fig:act_meeting_start}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{images/UC02_join_meeting_overview.png}
+\caption{Sơ đồ hoạt động UC02: Tham gia cuộc họp}
+\label{fig:act_meeting_join}
+\end{figure}
+
+\textbf{Mô tả luồng xử lý:}
+
+\begin{enumerate}[leftmargin=*,noitemsep,topsep=0pt]
+    \item User chọn "Create Meeting" và nhập thông tin: tên cuộc họp, mô tả, thời gian bắt đầu (optional).
+    \item Meeting Service validate workspace\_id và user permissions (member phải thuộc workspace).
+    \item Hệ thống tạo meeting record trong database với meeting\_id (UUID), room\_name (unique identifier), và status = "scheduled".
+    \item Meeting Service generate JWT token chứa: user info (name, email, avatar), meeting\_id, role (moderator cho host, participant cho others), permissions (startRecording, moderator rights).
+    \item Frontend nhận JWT token và meeting URL, redirect đến meeting room page.
+    \item Frontend khởi tạo Jitsi Meet iframe sử dụng External API với JWT token cho authentication.
+    \item Jitsi Videobridge validate JWT token với Prosody XMPP server.
+    \item Khi user join thành công, MeetingParticipant record được tạo với joined\_at timestamp.
+    \item WebSocket connection notify các members khác trong workspace về cuộc họp mới.
+\end{enumerate}
+
+\textbf{Kiến trúc tích hợp Jitsi Meet:}
+
+Hệ thống sử dụng Jitsi Meet External API (lib-jitsi-meet) để embed video conferencing vào Next.js frontend. Frontend load Jitsi Meet External API script từ Jitsi server, khởi tạo JitsiMeetExternalAPI object với các parameters: domain, roomName, JWT token, configOverwrite (disable lobby, enable prejoin page), interfaceConfigOverwrite (customize toolbar buttons, hide branding). API cung cấp event listeners cho participantJoined, participantLeft, recordingStatusChanged, audioMuteStatusChanged, videoMuteStatusChanged để synchronize state với backend.
+
+Backend Meeting Service quản lý JWT token generation sử dụng secret key được share với Jitsi server. JWT payload tuân theo Jitsi token format với các fields: context (user: name, email, avatar, id; features: recording true/false, livestreaming), aud (audience - Jitsi domain), iss (issuer - application ID), sub (subject - Jitsi domain), room (meeting room name), exp (expiration time - 2 hours).
+
+\subsubsection{Chức năng ghi hình cuộc họp}
+
+\textbf{Mục đích:} Cho phép moderator bắt đầu và dừng recording cuộc họp, tự động upload recording file lên object storage (MinIO/S3), và trigger background job để xử lý transcription và AI summary. Recording workflow sử dụng Jibri component của Jitsi để capture audio/video streams.
+
+\textbf{Dữ liệu được dùng:}
+
+\begin{longtblr}[
+  caption = {Bảng dữ liệu được dùng cho chức năng ghi hình cuộc họp},
+  label = {tab:func_meeting_record}
+]{
+  width=\linewidth, rowhead=2, hlines, vlines,
+  colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
+  rows={m},
+  row{1-2}={font=\bfseries, c, bg=gray9}
+}
+\SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
+& & Thêm & Sửa & Xóa & Truy vấn \\
+1 & Meeting & & X & & X \\
+2 & Recording & X & X & & X \\
+3 & RecordingJob & X & X & & X \\
+4 & JibriInstance & & & & X \\
+\end{longtblr}
+
+\textbf{Xử lý:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{images/UC04_recording_overview.png}
+\caption{Sơ đồ hoạt động UC04: Quản lý ghi hình cuộc họp}
+\label{fig:act_meeting_record}
+\end{figure}
+
+\textbf{Mô tả luồng xử lý:}
+
+\begin{enumerate}[leftmargin=*,noitemsep,topsep=0pt]
+    \item Moderator nhấn "Start Recording" button trong Jitsi Meet interface.
+    \item Frontend gửi request đến Meeting Service API endpoint POST /meetings/:id/recordings/start.
+    \item Meeting Service validate user có recording permission và allocate available Jibri instance.
+    \item Meeting Service gửi command đến Jibri via REST API để start recording với meeting room name.
+    \item Jibri khởi động Chrome headless instance, join meeting như hidden participant, capture combined audio/video stream.
+    \item Recording record được tạo trong database với status = "recording", jibri\_instance\_id, started\_at timestamp.
+    \item Khi moderator nhấn "Stop Recording", frontend gửi POST /meetings/:id/recordings/stop.
+    \item Meeting Service send stop command đến Jibri, Jibri finalize video file (MP4 format với H.264 video và AAC audio codec).
+    \item Jibri upload file đến MinIO/S3 bucket với key: recordings/\{workspace\_id\}/\{meeting\_id\}/\{timestamp\}.mp4.
+    \item Recording record được update với status = "processing", file\_url, file\_size, duration.
+    \item Background job được trigger để xử lý transcript và summary (described in next function).
+\end{enumerate}
+
+\textbf{Jibri Infrastructure Management:}
+
+Hệ thống deploy multiple Jibri instances để support concurrent recordings. Mỗi Jibri instance có capacity limit (1 concurrent recording per instance). Meeting Service maintain JibriInstance table trong database tracking: instance\_id, hostname, status (available, busy, offline), current\_meeting\_id, last\_heartbeat\_at. Health check service periodically ping Jibri instances và update status. Load balancing strategy chọn available Jibri instance khi start recording (round-robin hoặc least-loaded). Jibri instances chạy trong Docker containers với shared volume cho temporary recording storage trước khi upload.
+
+\subsubsection{Chức năng tạo transcript và tóm tắt AI}
+
+\textbf{Mục đích:} Tự động convert recording audio sang text transcript sử dụng Speech-to-Text API (Google Cloud Speech-to-Text, AWS Transcribe, hoặc Whisper), sau đó gửi transcript đến LLM Provider để generate meeting summary với action items, key decisions, và discussion highlights.
+
+\textbf{Dữ liệu được dùng:}
+
+\begin{longtblr}[
+  caption = {Bảng dữ liệu được dùng cho chức năng tạo transcript và tóm tắt AI},
+  label = {tab:func_meeting_transcript}
+]{
+  width=\linewidth, rowhead=2, hlines, vlines,
+  colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
+  rows={m},
+  row{1-2}={font=\bfseries, c, bg=gray9}
+}
+\SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
+& & Thêm & Sửa & Xóa & Truy vấn \\
+1 & Recording & & X & & X \\
+2 & Transcript & X & & & \\
+3 & MeetingSummary & X & & & \\
+4 & WorkspaceSettings & & & & X \\
+\end{longtblr}
+
+\textbf{Xử lý:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{images/UC03_use_features_overview.png}
+\caption{Sơ đồ hoạt động UC03: Sử dụng tính năng video conference}
+\label{fig:act_meeting_features}
+\end{figure}
+
+\textbf{Mô tả luồng xử lý:}
+
+\begin{enumerate}[leftmargin=*,noitemsep,topsep=0pt]
+    \item Background job được trigger sau khi recording upload hoàn tất (event-driven architecture).
+    \item AI Service fetch recording file từ MinIO/S3 và extract audio track sử dụng ffmpeg: ffmpeg -i recording.mp4 -vn -acodec pcm\_s16le -ar 16000 audio.wav.
+    \item Audio file được upload đến Speech-to-Text service (Google Cloud Speech-to-Text với enhanced video model hoặc Whisper API).
+    \item STT service return transcript với timestamps cho mỗi segment: start\_time, end\_time, text, confidence\_score, speaker\_label (nếu enable speaker diarization).
+    \item Transcript được lưu vào database table Transcript với meeting\_id, full\_text (toàn bộ text), segments (JSONB array chứa timestamped segments).
+    \item AI Service retrieve workspace settings để lấy configured LLM provider (OpenAI GPT-4, Anthropic Claude, Google Gemini).
+    \item Construct prompt cho LLM: "Analyze the following meeting transcript and provide: 1. Executive summary (2-3 sentences), 2. Key discussion points with timestamps, 3. Action items with assigned persons, 4. Important decisions made, 5. Follow-up topics. Transcript: [full transcript text]".
+    \item Send request đến LLM API với prompt và transcript, receive structured response (JSON format).
+    \item Parse LLM response và extract: summary\_text, discussion\_points (array), action\_items (array with title, assigned\_to, due\_date), decisions (array), follow\_up\_topics (array).
+    \item Create MeetingSummary record trong database với meeting\_id, summary\_text, action\_items (JSONB), decisions (JSONB), llm\_provider, tokens\_used, generated\_at.
+    \item Recording status được update thành "completed", trigger WebSocket notification đến meeting participants.
+    \item Users nhận notification "Meeting summary is ready" và có thể view trong meeting details page.
+\end{enumerate}
+
+\textbf{Speech-to-Text Integration Options:}
+
+Hệ thống support multiple STT providers với fallback mechanism. Google Cloud Speech-to-Text với enhanced video model, automatic punctuation, speaker diarization (up to 6 speakers), support Vietnamese và English languages. AWS Transcribe với custom vocabulary cho domain-specific terms, automatic language identification. Whisper API (OpenAI) với high accuracy, multilingual support, no speaker limit. Configuration được lưu trong workspace settings cho phép Owner chọn preferred provider và language.
+
+\textbf{LLM Integration for Summary Generation:}
+
+AI Service sử dụng Workspace settings để determine LLM provider và model. OpenAI GPT-4 Turbo với 128K context window, JSON mode cho structured output, function calling để extract action items. Anthropic Claude 3.5 Sonnet với 200K context window, excellent instruction following, safe output. Google Gemini Pro với multimodal support (có thể analyze video frames), competitive pricing. Prompt engineering được optimize cho meeting summary use case với few-shot examples. Retry logic với exponential backoff cho API failures. Token usage tracking cho billing và cost optimization.
+
+\subsubsection{Chức năng xem lại cuộc họp và bản tóm tắt}
+
+\textbf{Mục đích:} Cho phép workspace members xem lại video recording, đọc transcript với timestamps, review AI-generated summary, và search trong transcript. Giao diện cung cấp synchronized playback giữa video và transcript, highlight segments khi user click vào timestamp.
+
+\textbf{Dữ liệu được dùng:}
+
+\begin{longtblr}[
+  caption = {Bảng dữ liệu được dùng cho chức năng xem lại cuộc họp},
+  label = {tab:func_meeting_review}
+]{
+  width=\linewidth, rowhead=2, hlines, vlines,
+  colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
+  rows={m},
+  row{1-2}={font=\bfseries, c, bg=gray9}
+}
+\SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
+& & Thêm & Sửa & Xóa & Truy vấn \\
+1 & Meeting & & & & X \\
+2 & Recording & & & & X \\
+3 & Transcript & & & & X \\
+4 & MeetingSummary & & & & X \\
+5 & WorkspaceMember & & & & X \\
+\end{longtblr}
+
+\textbf{Xử lý:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{images/UC05_view_recording_overview.png}
+\caption{Sơ đồ hoạt động UC05: Xem lại cuộc họp và bản tóm tắt}
+\label{fig:act_meeting_review}
+\end{figure}
+
+\textbf{Mô tả luồng xử lý:}
+
+\begin{enumerate}[leftmargin=*,noitemsep,topsep=0pt]
+    \item User navigate đến meeting details page từ workspace meetings list.
+    \item Frontend gửi GET /meetings/:id/details request đến Meeting Service.
+    \item Meeting Service validate user permissions (member phải belong to workspace).
+    \item Service fetch meeting metadata, recording info với signed URL từ S3 (presigned URL expires trong 1 hour), transcript segments, và summary data.
+    \item Frontend render video player (HTML5 video element hoặc Video.js) với recording URL.
+    \item Transcript được hiển thị bên cạnh video với scrollable list của segments, mỗi segment có timestamp clickable.
+    \item Khi user click vào transcript segment, video player seek đến corresponding timestamp.
+    \item Video playback progress được sync với transcript: current segment được highlight khi video play.
+    \item Summary section hiển thị: executive summary, discussion points với timestamps (clickable để jump to video), action items với checkboxes, decisions list.
+    \item Search functionality: user nhập keyword, frontend filter transcript segments matching query, highlight matching text.
+    \item Export options: user có thể export transcript (TXT format), summary (PDF format), action items (CSV format).
+\end{enumerate}
+
+\textbf{Frontend Implementation Details:}
+
+Video player component sử dụng HTML5 video element với custom controls hoặc Video.js library. Transcript component được implement với React virtualization (react-window) cho performance với long transcripts. Synchronized scrolling: khi video play, transcript auto-scroll đến current segment. State management sử dụng Zustand store tracking: currentTime, activeSegmentIndex, isPlaying, searchQuery. Search highlighting sử dụng string matching và CSS highlight classes.
+
+\subsubsection{Chức năng cấu hình chính sách workspace cho meetings}
+
+\textbf{Mục đích:} Cho phép Workspace Owner cấu hình các policies cho meeting subsystem: recording quality settings, auto-recording default, retention policies, storage quotas, maximum meeting duration, allowed participant limits, và external access controls.
+
+\textbf{Dữ liệu được dùng:}
+
+\begin{longtblr}[
+  caption = {Bảng dữ liệu được dùng cho chức năng cấu hình chính sách meetings},
+  label = {tab:func_meeting_policy}
+]{
+  width=\linewidth, rowhead=2, hlines, vlines,
+  colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
+  rows={m},
+  row{1-2}={font=\bfseries, c, bg=gray9}
+}
+\SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
+& & Thêm & Sửa & Xóa & Truy vấn \\
+1 & Workspace & & & & X \\
+2 & WorkspaceSettings & & X & & X \\
+3 & MeetingPolicy & & X & & X \\
+\end{longtblr}
+
+\textbf{Xử lý:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{images/UC06_workspace_admin_overview.png}
+\caption{Sơ đồ hoạt động UC06: Cấu hình chính sách workspace}
+\label{fig:act_meeting_policy}
+\end{figure}
+
+\textbf{Mô tả luồng xử lý:}
+
+\begin{enumerate}[leftmargin=*,noitemsep,topsep=0pt]
+    \item Workspace Owner navigate đến Settings > Meeting Policies page.
+    \item Frontend load current policies qua GET /workspaces/:id/meeting-policies.
+    \item Owner có thể configure: Recording quality (720p, 1080p, 1440p), auto-recording enabled/disabled, retention period (30, 60, 90 days, custom), storage quota per workspace, max meeting duration (default 2 hours, max 8 hours), max participants (10, 25, 50, 100), STT provider (Google, AWS, Whisper), transcript language preferences, external guest access (enabled/disabled, require approval).
+    \item Owner submit changes qua PUT /workspaces/:id/meeting-policies.
+    \item Meeting Service validate: storage quota không vượt quá workspace plan limits, retention period tuân theo compliance requirements, participant limit phù hợp với Jitsi infrastructure capacity.
+    \item Policies được lưu vào WorkspaceSettings table (JSONB column meeting\_policies).
+    \item Hệ thống trigger background job để enforce new policies: cleanup recordings vượt retention period, notify nếu storage quota sắp đầy.
+    \item WebSocket notification được send đến workspace members về policy changes.
+\end{enumerate}
+
+\textbf{Policy Enforcement:}
+
+Meeting Service enforce policies khi tạo meeting: check participant count không vượt limit, validate meeting duration không exceed max allowed. Recording workflow apply configured quality settings đến Jibri encoding parameters. Retention policy được enforce bởi scheduled cron job chạy daily: identify recordings older than retention period, soft delete recordings (move to deleted\_at), permanent delete sau grace period thêm 7 ngày. Storage quota được check trước khi start recording: calculate current workspace storage usage, deny recording nếu sắp exceed quota. Metrics được collect và display trong workspace dashboard.
+
+\subsubsection{Chức năng giám sát và quản lý hạ tầng Jitsi}
+
+\textbf{Mục đích:} Cho phép System Admin monitor Jitsi infrastructure health, manage Videobridge instances, Jibri instances, view metrics về active meetings, bandwidth usage, participant counts, và troubleshoot issues. Dashboard cung cấp real-time metrics và alerting.
+
+\textbf{Dữ liệu được dùng:}
+
+\begin{longtblr}[
+  caption = {Bảng dữ liệu được dùng cho chức năng giám sát hạ tầng},
+  label = {tab:func_meeting_monitor}
+]{
+  width=\linewidth, rowhead=2, hlines, vlines,
+  colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
+  rows={m},
+  row{1-2}={font=\bfseries, c, bg=gray9}
+}
+\SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
+& & Thêm & Sửa & Xóa & Truy vấn \\
+1 & VideobridgeInstance & & X & & X \\
+2 & JibriInstance & & X & & X \\
+3 & Meeting & & & & X \\
+4 & SystemMetrics & X & & & X \\
+5 & AlertLog & X & & & X \\
+\end{longtblr}
+
+\textbf{Xử lý:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{images/UC07_system_admin_overview.png}
+\caption{Sơ đồ hoạt động UC07: Giám sát và quản lý hạ tầng}
+\label{fig:act_meeting_monitor}
+\end{figure}
+
+\textbf{Mô tả luồng xử lý:}
+
+\begin{enumerate}[leftmargin=*,noitemsep,topsep=0pt]
+    \item System Admin access Admin Dashboard > Jitsi Infrastructure page.
+    \item Frontend gửi GET /admin/jitsi/status request để fetch real-time metrics.
+    \item Monitoring Service query: Videobridge instances status (online, offline, load percentage), Jibri instances status (available, busy, offline, current recordings), Active meetings count với breakdown by workspace, Total participants currently connected, Bandwidth usage (inbound/outbound) từ Videobridge stats API.
+    \item Videobridge stats được fetch từ Jitsi Videobridge REST API: GET /colibri/stats endpoint return JSON với conferences count, participants count, packet rate, bandwidth, CPU usage, memory usage.
+    \item Jibri status được query từ JibriInstance table với last\_heartbeat\_at check (instance considered offline nếu heartbeat older than 60 seconds).
+    \item Dashboard hiển thị: Summary cards với key metrics, Videobridge instances table (hostname, version, status, load, uptime), Jibri instances table (hostname, status, current meeting), Active meetings table (meeting name, workspace, participant count, duration), Metrics charts (time-series graphs cho participants over time, bandwidth usage).
+    \item Admin có thể perform actions: Restart Videobridge instance, Restart Jibri instance, Force stop recording, View detailed logs cho specific instance.
+    \item Alerting system continuously monitor metrics và trigger alerts: Videobridge offline alert (high priority), High load alert (load > 80\%), Jibri unavailable alert (all busy or offline), Bandwidth threshold exceeded.
+    \item Alerts được lưu vào AlertLog table và send notifications qua email/Slack đến admin team.
+\end{enumerate}
+
+\textbf{Metrics Collection Architecture:}
+
+Monitoring Service chạy scheduled jobs (every 30 seconds) để collect metrics từ Jitsi components. Videobridge metrics collected via REST API và store trong time-series database (InfluxDB hoặc PostgreSQL TimescaleDB extension). Jibri heartbeat mechanism: mỗi Jibri instance send heartbeat HTTP POST request mỗi 30 seconds đến Monitoring Service endpoint, update last\_heartbeat\_at timestamp. Metrics aggregation: calculate averages, peaks, trends cho display trong charts. Historical data retention: keep detailed metrics for 7 days, aggregated metrics for 90 days. Integration với Prometheus và Grafana cho advanced monitoring và custom dashboards.
+
+\textbf{Infrastructure Management Operations:}
+
+Admin có thể scale Jitsi infrastructure theo nhu cầu. Add Videobridge instance: deploy new Docker container với Jitsi Videobridge image, register với Jicofo via XMPP, add instance info vào database. Add Jibri instance: deploy container với Jibri image, configure connection đến Jitsi server, register với Meeting Service API. Remove instance: graceful shutdown (wait cho active conferences/recordings complete), deregister từ Jicofo/Meeting Service, remove container. Load balancing configuration: configure Jicofo để distribute conferences across Videobridges evenly, implement custom load balancing logic trong Meeting Service cho Jibri allocation. Backup và disaster recovery: regular backup của Prosody XMPP data, Meeting database backup daily, documentation cho rebuild procedures.

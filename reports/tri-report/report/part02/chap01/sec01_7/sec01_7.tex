@@ -1,0 +1,104 @@
+\subsection{Các yêu cầu giao tiếp bên ngoài}
+
+\subsubsection{Giao tiếp phần cứng}
+
+\begin{itemize}
+    \item Thiết bị phải có kết nối Internet và cài đặt trình duyệt để truy cập ứng dụng.
+    \item Ứng dụng tương tác với người dùng qua chuột, bàn phím và màn hình.
+    \item Đối với máy vi tính:
+    \begin{itemize}
+        \item Ổ cứng: SSD hoặc HDD đủ dung lượng để lưu cache và ứng dụng.
+        \item RAM: Tối thiểu 4GB (32-bit) hoặc 8GB+ (64-bit).
+        \item Hệ điều hành: Windows 10/11, macOS, hoặc Linux.
+        \item Màn hình: Độ phân giải tối thiểu 1366x768.
+    \end{itemize}
+    \item Đối với thiết bị di động và máy tính bảng:
+    \begin{itemize}
+        \item Hệ điều hành: Android 8.0+ hoặc iOS 13+.
+        \item RAM: Tối thiểu 3GB.
+        \item Màn hình: Đủ độ phân giải để hiển thị nội dung rõ ràng.
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Giao tiếp phần mềm}
+
+\textbf{Giao tiếp phần mềm chung:}
+\begin{itemize}
+    \item Tương thích với Windows, macOS, Linux, iOS, Android.
+    \item Hoạt động ổn định trên Chrome (v90+), Firefox (v88+), Safari (v14+), Edge (v90+).
+    \item Tích hợp LLM Provider: OpenAI API, Anthropic Claude API, Google Gemini API.
+    \item Tích hợp Google OAuth 2.0 để đăng nhập bằng tài khoản Google.
+    \item Tích hợp Email Service (SendGrid, AWS SES) để gửi email thông báo và xác thực.
+    \item Tích hợp Object Storage:
+    \begin{itemize}
+        \item MinIO (Development): S3-compatible storage chạy local trong Docker.
+        \item AWS S3 (Production): Object storage với high durability.
+    \end{itemize}
+\end{itemize}
+
+\textbf{Giao tiếp phần mềm đặc thù cho phân hệ họp trực tuyến:}
+\begin{itemize}
+    \item \textbf{Jitsi Infrastructure Integration:}
+    \begin{itemize}
+        \item Jitsi Meet External API cho client-side integration.
+        \item Jibri HTTP API cho recording management và control.
+        \item Videobridge REST API cho monitoring và configuration.
+    \end{itemize}
+    \item \textbf{Speech-to-Text Services:}
+    \begin{itemize}
+        \item Google Cloud Speech-to-Text API v2 với support cho timestamps.
+        \item AWS Transcribe API với custom vocabulary.
+        \item OpenAI Whisper API (hoặc self-hosted Whisper model).
+    \end{itemize}
+    \item \textbf{AI Analysis Services:}
+    \begin{itemize}
+        \item OpenAI Chat Completions API (GPT-4, GPT-4 Turbo).
+        \item Anthropic Messages API (Claude 3.5 Sonnet).
+        \item Google Gemini API cho AI summarization.
+    \end{itemize}
+    \item \textbf{Object Storage cho Recording Files:}
+    \begin{itemize}
+        \item AWS S3 API hoặc Google Cloud Storage API.
+        \item MinIO S3-compatible API cho development environment.
+        \item Presigned URLs cho secure temporary access.
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Giao tiếp truyền thông}
+
+\textbf{Giao tiếp truyền thông chung:}
+\begin{itemize}
+    \item Sử dụng giao thức HTTPS để đảm bảo bảo mật. Giao tiếp giữa client và server qua HTTP methods (GET, POST, PUT, DELETE) để xử lý dữ liệu người dùng, quản lý workspace, thành viên và tệp tin.
+    \item WebSocket cho tính năng real-time như noti\-fications, cập nhật dashboard và colla\-borative editing.
+    \item API Gateway quản lý, định tuyến và bảo mật API calls.
+    \item Rate limiting bảo vệ hệ thống khỏi tấn công DDoS và đảm bảo công bằng sử dụng tài nguyên.
+    \item CORS (Cross-Origin Resource Sharing) được cấu hình phù hợp để đảm bảo bảo mật khi giao tiếp giữa các domain khác nhau.
+\end{itemize}
+
+\textbf{Giao tiếp truyền thông đặc thù cho phân hệ họp trực tuyến:}
+\begin{itemize}
+    \item \textbf{Real-time Media Protocols:}
+    \begin{itemize}
+        \item \textbf{WebRTC:} Peer-to-peer media streaming cho audio, video và screen sharing.
+        \item \textbf{RTP/RTCP:} Real-time Transport Protocol cho media delivery và control.
+        \item \textbf{DTLS-SRTP:} Encryption cho media streams sử dụng Datagram Transport Layer Security và Secure Real-time Transport Protocol.
+    \end{itemize}
+    \item \textbf{Signaling Protocols:}
+    \begin{itemize}
+        \item \textbf{WebSocket Secure (WSS):} Cho Jitsi signaling qua port 443.
+        \item \textbf{XMPP (Extensible Messaging and Presence Protocol):} Cho chat messages, presence và conference control qua Prosody server.
+    \end{itemize}
+    \item \textbf{NAT Traversal:}
+    \begin{itemize}
+        \item \textbf{STUN (Session Traversal Utilities for NAT):} Để discover public IP address.
+        \item \textbf{TURN (Traversal Using Relays around NAT):} Relay server cho clients phía sau restrictive NAT/firewall.
+        \item \textbf{ICE (Interactive Connectivity Establishment):} Protocol để tìm đường đi tốt nhất cho media connectivity.
+    \end{itemize}
+    \item \textbf{Quality of Service:}
+    \begin{itemize}
+        \item Adaptive bitrate streaming dựa trên bandwidth estimation.
+        \item Simulcast và SVC (Scalable Video Coding) cho multiple quality layers.
+        \item Congestion control và packet loss recovery.
+        \item Jitter buffer để smooth playback.
+    \end{itemize}
+\end{itemize}

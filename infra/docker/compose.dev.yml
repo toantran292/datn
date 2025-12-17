@@ -145,6 +145,7 @@ services:
       REPLAY_TTL_SEC: 60
       # Use identity:3000 if identity runs in Docker, or host.docker.internal:3000 if running locally
       IDENTITY_BASE_URL: ${IDENTITY_BASE_URL:-http://identity:3000}
+      PM_BASE_URL: ${PM_BASE_URL:-http://pm:3000}
       SERVICE_TIMEOUT_MS: 3500
       CACHE_TTL_SEC: 60
       # LLM Configuration for Reports (UC16)
@@ -230,6 +231,8 @@ services:
       # File Storage Service
       FILE_STORAGE_URL: http://file-storage-api:3000
       NOTIFICATION_URL: http://notification-api:3000
+      # Identity Service
+      IDENTITY_SERVICE_URL: ${IDENTITY_SERVICE_URL:-http://identity:3000}
     depends_on:
       postgres: { condition: service_healthy }
     healthcheck:
@@ -321,6 +324,48 @@ services:
       start_period: 15s
     networks: [uts_net]
 
+  meeting-api:
+    build:
+      context: ../../services/meeting/signaling
+      dockerfile: Dockerfile.dev
+    container_name: uts_meeting_api
+    restart: unless-stopped
+    volumes:
+      - ../../services/meeting/signaling/src:/app/src
+      - ../../services/meeting/signaling/prisma:/app/prisma
+      - meeting_api_node_modules:/app/node_modules
+    environment:
+      NODE_ENV: development
+      PORT_HTTP: 40600
+      # Chat service for huddle notifications
+      CHAT_SERVICE_URL: http://chat-api:3000
+      # Prosody WebSocket
+      MEET_WS: ${MEET_WS:-wss://meet.unifiedteamspace.com/xmpp-websocket}
+      # JWT settings
+      MEET_AUD: ${MEET_AUD:-meet}
+      MEET_ISS: ${MEET_ISS:-meet-auth}
+      MEET_SUB: ${MEET_SUB:-meet.unifiedteamspace.com}
+      # TURN / STUN
+      MEET_TURN_HOST: ${MEET_TURN_HOST:-192.168.100.195}
+      MEET_TURN_PORT: ${MEET_TURN_PORT:-40678}
+      MEET_REALM: ${MEET_REALM:-meet.local}
+      TURN_SECRET: ${TURN_SECRET:-turnsharedsecret}
+      # Database
+      DATABASE_URL: postgresql://${PG_USER}:${PG_PASSWORD}@postgres:5432/meeting_db
+      # AI/LLM Configuration
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    depends_on:
+      postgres: { condition: service_healthy }
+    ports:
+      - "40600:40600"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:40600/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 15s
+    networks: [uts_net]
+
   edge:
     # image: openresty/openresty:alpine
     build:
@@ -338,6 +383,7 @@ services:
       chat-api: { condition: service_started }
       notification-api: { condition: service_started }
       file-storage-api: { condition: service_started }
+      meeting-api: { condition: service_started }
     ports: [ "8080:80" ]
     networks: [uts_net]
 
@@ -393,6 +439,7 @@ volumes:
   notification_node_modules:
   tenant_bff_node_modules:
   chat_node_modules:
+  meeting_api_node_modules:
   pg_data:
   redis_data:
   minio_data:

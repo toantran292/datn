@@ -1,0 +1,44 @@
+\paragraph{UC03: Sử dụng tính năng video conference}
+
+\begin{longtable}{|p{4cm}|p{11cm}|}
+\hline
+\textbf{Tên use case} & Sử dụng tính năng video conference \\
+\hline
+\textbf{Mã use case} & UC03 \\
+\hline
+\textbf{Mô tả} & Sử dụng các tính năng giao tiếp trong cuộc họp: điều khiển camera/microphone, chia sẻ màn hình, reactions, giơ tay, xem participants và điều chỉnh layout. \\
+\hline
+\textbf{Actor} & Project Member \\
+\hline
+\textbf{Điều kiện tiên quyết} &
+\begin{itemize}[leftmargin=*,noitemsep,topsep=0pt]
+    \item Đã tham gia cuộc họp thành công
+    \item Kết nối WebRTC đã thiết lập
+\end{itemize} \\
+\hline
+\textbf{Điều kiện kết thúc} &
+\begin{itemize}[leftmargin=*,noitemsep,topsep=0pt]
+    \item Tính năng được thực hiện, trạng thái cập nhật cho tất cả participants
+\end{itemize} \\
+\hline
+\textbf{Luồng sự kiện chính} &
+Người dùng có thể thực hiện các tính năng:
+\begin{itemize}[leftmargin=*,noitemsep,topsep=0pt]
+    \item \textbf{Bật/tắt camera:} Điều khiển video track, cập nhật hiển thị
+    \item \textbf{Bật/tắt microphone:} Điều khiển audio track
+    \item \textbf{Chia sẻ màn hình:} Chọn nguồn, tạo screen sharing track
+    \item \textbf{Gửi reaction:} Gửi emoji qua data channel, hiển thị animation
+    \item \textbf{Giơ tay phát biểu:} Gửi event qua XMPP, hiển thị icon
+    \item \textbf{Xem danh sách participants:} Hiển thị tên, trạng thái thiết bị
+    \item \textbf{Điều chỉnh layout:} Grid view, Speaker view, Tile view
+    \item \textbf{Rời khỏi cuộc họp:} Disconnect, cập nhật trạng thái
+\end{itemize} \\
+\hline
+\textbf{Luồng thay thế} &
+\textbf{Camera/Mic không có quyền:} Yêu cầu cấp quyền từ browser.
+
+\textbf{Lỗi chia sẻ màn hình:} Hiển thị thông báo lỗi. \\
+\hline
+\caption{Đặc tả UC03: Sử dụng tính năng video conference}
+\label{tab:uc03_meeting}
+\end{longtable}

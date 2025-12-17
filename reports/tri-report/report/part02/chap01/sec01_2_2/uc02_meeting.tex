@@ -1,0 +1,46 @@
+\paragraph{UC02: Tham gia cuộc họp}
+
+\begin{longtable}{|p{4cm}|p{11cm}|}
+\hline
+\textbf{Tên use case} & Tham gia cuộc họp \\
+\hline
+\textbf{Mã use case} & UC02 \\
+\hline
+\textbf{Mô tả} & Tham gia cuộc họp đang diễn ra qua đường dẫn hoặc danh sách, xác thực quyền, preview thiết bị và kết nối WebRTC. \\
+\hline
+\textbf{Actor} & Project Member \\
+\hline
+\textbf{Điều kiện tiên quyết} &
+\begin{itemize}[leftmargin=*,noitemsep,topsep=0pt]
+    \item Đã đăng nhập và có quyền truy cập dự án
+    \item Cuộc họp đang hoạt động, trình duyệt hỗ trợ WebRTC
+\end{itemize} \\
+\hline
+\textbf{Điều kiện kết thúc} &
+\begin{itemize}[leftmargin=*,noitemsep,topsep=0pt]
+    \item Kết nối thành công vào phòng họp
+    \item Participant được ghi nhận trong database
+\end{itemize} \\
+\hline
+\textbf{Luồng sự kiện chính} &
+\begin{enumerate}[leftmargin=*,noitemsep,topsep=0pt]
+    \item Project Member nhấn vào link hoặc chọn từ danh sách
+    \item Hệ thống xác thực người dùng và kiểm tra quyền
+    \item Hiển thị preview camera/microphone để chọn thiết bị
+    \item Người dùng xác nhận tham gia
+    \item Thiết lập kết nối WebRTC với Jitsi Videobridge
+    \item Gửi JWT token, tham gia phòng họp, cập nhật participant
+\end{enumerate} \\
+\hline
+\textbf{Luồng thay thế} &
+\textbf{2a. Chưa đăng nhập:} Chuyển trang login, sau đó quay lại.
+
+\textbf{2b. Không có quyền/cuộc họp không tồn tại:} Hiển thị lỗi.
+
+\textbf{3a. Không cấp quyền thiết bị:} Tham gia chế độ xem/nghe only.
+
+\textbf{5a. Lỗi WebRTC:} Retry 3 lần, nếu thất bại hiển thị lỗi. \\
+\hline
+\caption{Đặc tả UC02: Tham gia cuộc họp}
+\label{tab:uc02_meeting}
+\end{longtable}

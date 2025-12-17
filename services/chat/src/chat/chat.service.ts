@@ -26,7 +26,19 @@ export type CreatedMessage = {
   content: string;
   sentAt: string;
   replyCount?: number;
+  metadata?: Record<string, any> | null;
 };
+
+export interface CreateHuddleMessageDto {
+  roomId: string;
+  userId: string;
+  orgId: string;
+  type: 'huddle_started' | 'huddle_ended';
+  meetingId: string;
+  meetingRoomId: string;
+  duration?: number;
+  participantCount?: number;
+}
 
 // Simple UUID validation regex
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -107,6 +119,36 @@ export class ChatsService {
       threadId: entity.threadId ?? null,
       type: entity.type,
       content: entity.content,
+      sentAt: entity.createdAt.toISOString(),
+    };
+  }
+
+  async createHuddleMessage(dto: CreateHuddleMessageDto): Promise<CreatedMessage> {
+    const metadata = {
+      meetingId: dto.meetingId,
+      meetingRoomId: dto.meetingRoomId,
+      duration: dto.duration,
+      participantCount: dto.participantCount,
+    };
+
+    const entity = await this.messagesRepo.create({
+      roomId: dto.roomId,
+      content: '', // Empty content, UI renders based on type
+      userId: dto.userId,
+      orgId: dto.orgId,
+      type: dto.type,
+      metadata,
+    });
+
+    return {
+      id: entity.id,
+      roomId: entity.roomId,
+      userId: entity.userId,
+      orgId: entity.orgId,
+      threadId: null,
+      type: entity.type,
+      content: entity.content,
+      metadata: entity.metadata,
       sentAt: entity.createdAt.toISOString(),
     };
   }
@@ -217,6 +259,7 @@ export class ChatsService {
         threadId: m.threadId ?? null,
         type: m.type,
         content: m.content,
+        metadata: m.metadata,
         sentAt: m.createdAt.toISOString(),
         replyCount: m.threadId ? undefined : (replyCountMap.get(m.id) || 0),
         reactions: reactionsMap.get(m.id) || [],

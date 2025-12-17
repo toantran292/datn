@@ -1,0 +1,76 @@
+\RequirePackage{listings}
+\RequirePackage{xcolor}
+\RequirePackage{tocloft}
+\RequirePackage{hyperref}
+\RequirePackage{caption}
+
+
+%New colors defined below
+\definecolor{bashblue}{rgb}{0.2,0.4,0.8}
+\definecolor{bashgreen}{rgb}{0.2,0.6,0.2}
+\definecolor{bashgray}{rgb}{0.5,0.5,0.5}
+\definecolor{bashpurple}{rgb}{0.6,0.1,0.6}
+\definecolor{bashred}{rgb}{0.6,0.1,0.1}
+\definecolor{verylightgray}{rgb}{0.9,0.9,0.9}
+%Code listing style named "mystyle"
+\lstdefinestyle{bashstyle}{
+  language=bash,
+  basicstyle=\footnotesize\ttfamily,
+  backgroundcolor=\color{verylightgray},
+  keywordstyle=\color{bashblue},
+  commentstyle=\color{bashgreen},
+  stringstyle=\color{bashred},
+  numberstyle=\color{bashgray},
+  rulecolor=\color{black},
+  breakindent=1em,
+  escapeinside={(*@}{@*)},
+  alsoletter={()[].=/-}
+  keepspaces=true,
+  breaklines=true,
+  captionpos=b,
+  keepspaces=true,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  tabsize=2,
+  gobble=2,
+  numbers=left,
+  frame=single,
+  numbersep=8pt, % Space between numbers and code
+}
+
+\lstset{style=bashstyle}
+\lstset{belowskip=\baselineskip}
+
+%Define a new list called List of Code
+\newlistof{code}{loc}{\MakeUppercase{Danh mục Code}}
+
+%Format the title of the list. Center with an \hfill on either side
+\renewcommand{\cftloctitlefont}{\Large\bfseries}
+% \renewcommand{\cftafterloctitle}{\hfill\space}
+
+%set the distance between TOC dots (default 4.5) with the following:
+\renewcommand{\cftcodedotsep}{1.5}
+
+\renewcommand{\cftcodepresnum}{\fontsize{12pt}{0pt}\selectfont Code }
+\newlength{\mylen}
+\settowidth{\mylen}{\cftcodepresnum}
+\addtolength{\cftcodenumwidth}{\mylen}
+
+\lstnewenvironment{coding}[2][]{%
+  \ifthenelse{\equal{#1}{}}{% Check if the optional parameter is empty
+    \lstset{style=bashstyle} % If empty, set only the caption
+  }{%
+    \lstset{style=bashstyle, #1} % If not empty, set the caption and additional options
+  }
+  \refstepcounter{code} %increase the counter.
+  \addcontentsline{loc}{code} %add entry to the list of code
+  {\protect\numberline{\fontsize{12pt}{0pt}\selectfont\thecode}#2}
+  % \center
+  \minipage[t]{.93\linewidth}%
+}{%
+  \vspace*{-1em}
+  \centering{\fontsize{12pt}{0pt}\selectfont Code \thecode: #2}%
+  \endminipage
+  % \endcenter
+}

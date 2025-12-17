@@ -1,0 +1,925 @@
+\subsection{Thiết kế giao diện phân hệ họp trực tuyến}
+
+\subsubsection{Cơ sở thiết kế giao diện}
+
+Giao diện người dùng của phân hệ họp trực tuyến được thiết kế với focus đặc biệt vào trải nghiệm video conferencing, real-time collaboration và accessibility cho môi trường làm việc từ xa. Thiết kế tuân theo các nguyên tắc thiết kế hiện đại được áp dụng bởi các nền tảng hàng đầu như Zoom, Google Meet và Microsoft Teams, đồng thời tích hợp những yếu tố đặc thù cho quản lý dự án Agile.
+
+\textbf{Nguyên tắc thiết kế chính:}
+
+\begin{itemize}
+    \item \textbf{Real-time Communication First}: Giao diện được tối ưu cho việc giao tiếp thời gian thực với immediate feedback và minimal latency. Mọi thao tác của người dùng đều nhận được phản hồi ngay lập tức thông qua visual indicators, animations và sound cues.
+
+    \item \textbf{Video-Centric Layout}: Video streams là trung tâm của giao diện, với layout tự động điều chỉnh để tối ưu hóa không gian hiển thị cho các participants. Các controls và sidebars được thiết kế để có thể thu gọn, nhường không gian tối đa cho video content.
+
+    \item \textbf{Clarity và Readability}: Đặc biệt quan trọng cho transcript và AI summaries. Typography được chọn lựa kỹ lưỡng với line-height và letter-spacing phù hợp để đọc dài mà không mỏi mắt.
+
+    \item \textbf{Intuitive Controls}: Các controls được đặt ở vị trí quen thuộc theo convention của các ứng dụng video call phổ biến, giúp người dùng mới có thể sử dụng ngay mà không cần hướng dẫn.
+
+    \item \textbf{Progressive Disclosure}: Các tính năng nâng cao được ẩn đi và chỉ hiển thị khi cần thiết, giữ cho giao diện chính đơn giản và không overwhelm người dùng.
+\end{itemize}
+
+\textbf{Hệ thống màu sắc (Color System):}
+
+Giao diện meeting sử dụng dark theme làm default để giảm eye strain trong các cuộc họp dài và tăng contrast cho video feeds. Nghiên cứu cho thấy dark mode giúp giảm 30\% mỏi mắt khi sử dụng trong thời gian dài, đặc biệt quan trọng trong môi trường làm việc từ xa với nhiều cuộc họp liên tiếp.
+
+\begin{table}[H]
+\centering
+\caption{Bảng màu sắc giao diện phân hệ họp trực tuyến}
+\label{tab:meeting_colors}
+\begin{tabular}{|l|l|p{7cm}|}
+\hline
+\textbf{Màu} & \textbf{Mã màu} & \textbf{Mục đích sử dụng} \\
+\hline
+Background chính & \#1E1E1E & Nền tổng thể của meeting room \\
+\hline
+Card surfaces & \#2D2D2D & Sidebar, panels, video tiles border \\
+\hline
+Primary accent & \#FF8800 & Active states, important CTAs, recording indicator \\
+\hline
+Success green & \#00C851 & Microphone/camera active, connection good \\
+\hline
+Warning red & \#FF4444 & Mute indicator, stop recording, leave meeting \\
+\hline
+Info blue & \#2196F3 & Speaking indicator, links, info badges \\
+\hline
+Inactive gray & \#9E9E9E & Disabled states, secondary text \\
+\hline
+Text primary & \#FFFFFF & Main text content \\
+\hline
+Text secondary & \#B0B0B0 & Timestamps, labels, descriptions \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Typography System:}
+
+Hệ thống typography được thiết kế với sự ưu tiên cao cho readability, đặc biệt quan trọng khi người dùng cần đọc transcript dài hoặc review AI summaries.
+
+\begin{itemize}
+    \item \textbf{Font family}: Inter - một sans-serif font được thiết kế đặc biệt cho UI/UX với excellent legibility ở mọi kích thước, hỗ trợ đầy đủ Vietnamese characters.
+
+    \item \textbf{Heading hierarchy}:
+    \begin{itemize}
+        \item H1 (24px, Bold): Meeting title, page headers
+        \item H2 (20px, Semibold): Section headers trong sidebar
+        \item H3 (16px, Medium): Subsection headers, participant names
+    \end{itemize}
+
+    \item \textbf{Body text}: 14-16px với line-height 1.6 cho transcript content, đảm bảo comfortable reading trong các sessions dài.
+
+    \item \textbf{Monospace font}: JetBrains Mono cho timestamps, technical info và code snippets trong chat, giúp phân biệt rõ ràng với regular text.
+\end{itemize}
+
+\textbf{Icon System:}
+
+Sử dụng Heroicons (bộ icon của Tailwind CSS) với consistent sizing để đảm bảo visual harmony:
+\begin{itemize}
+    \item 20px: Inline icons trong text, small buttons
+    \item 24px: Toolbar icons, navigation items
+    \item 32px: Primary action buttons, large indicators
+    \item 48px: Empty states, onboarding illustrations
+\end{itemize}
+
+\textbf{Layout Principles:}
+
+Meeting interfaces được thiết kế với các nguyên tắc layout sau:
+
+\begin{itemize}
+    \item \textbf{Adaptive Video Grid}: Layout tự động điều chỉnh theo số lượng participants:
+    \begin{itemize}
+        \item 1 participant: Full-screen single tile
+        \item 2 participants: Side-by-side 50/50 split
+        \item 3-4 participants: 2x2 grid với equal sizing
+        \item 5-9 participants: 3x3 grid
+        \item 10+ participants: Scrollable grid với active speaker spotlight ở center/top
+    \end{itemize}
+
+    \item \textbf{Collapsible Sidebar}: Chat, participants list và meeting info được đặt trong right sidebar có thể collapse để maximize video space. Sidebar width: 320px (expanded), 0px (collapsed).
+
+    \item \textbf{Persistent Bottom Toolbar}: Essential controls (mic, camera, screen share, recording, participants, chat, settings, leave) luôn visible ở bottom của screen với height 64px, dark semi-transparent background (\#1E1E1E với 90\% opacity).
+
+    \item \textbf{Minimal Top Bar}: Chỉ chứa meeting title, timer, participant count và recording status indicator. Height: 48px, auto-hide sau 3 giây không có mouse movement (hiện lại khi hover).
+\end{itemize}
+
+\textbf{Responsive Design:}
+
+Giao diện được thiết kế responsive để hoạt động tốt trên nhiều loại thiết bị:
+
+\begin{itemize}
+    \item \textbf{Desktop (1920x1080, 1440x900)}: Full feature set với multi-column layouts, expanded sidebars, và keyboard shortcuts.
+
+    \item \textbf{Tablets (iPad Pro, Surface)}: Optimized touch controls với larger tap targets (minimum 44x44px), gesture support cho swipe actions, và simplified toolbar.
+
+    \item \textbf{Mobile browsers}: Simplified interface focusing on essential features. Video grid chuyển sang single-column layout, bottom toolbar chỉ hiển thị 4 primary controls với "More" menu cho secondary actions.
+\end{itemize}
+
+\textbf{Accessibility Features:}
+
+Giao diện tuân thủ WCAG 2.1 Level AA guidelines:
+
+\begin{itemize}
+    \item \textbf{Keyboard Navigation}: Tất cả các actions đều có thể thực hiện bằng keyboard. Tab order logic từ trái sang phải, trên xuống dưới. Focus indicators rõ ràng với 2px solid border.
+
+    \item \textbf{Screen Reader Support}: Semantic HTML với proper heading hierarchy, ARIA labels cho interactive elements, và live regions cho real-time updates (new messages, participant joins/leaves).
+
+    \item \textbf{High Contrast Mode}: Optional high contrast theme với increased color contrast ratios (minimum 7:1 cho text), thicker borders và larger fonts.
+
+    \item \textbf{Closed Captions}: Live captions từ speech-to-text integration, hiển thị ở bottom của video với adjustable font size và position.
+
+    \item \textbf{Color Blind Friendly}: Không rely solely on color để convey information. Status indicators sử dụng combination của color + icon + text label.
+\end{itemize}
+
+\textbf{Animation và Transitions:}
+
+Animations được sử dụng có chủ đích để enhance user experience mà không gây distraction:
+
+\begin{itemize}
+    \item \textbf{Participant join/leave}: Subtle fade-in/fade-out (200ms duration) với scale animation cho video tiles.
+
+    \item \textbf{Layout transitions}: Smooth 300ms transitions khi grid layout thay đổi (participants join/leave, screen share start/stop).
+
+    \item \textbf{Control interactions}: Immediate feedback (< 100ms) cho button clicks, toggles với micro-animations (scale 0.95 on press).
+
+    \item \textbf{Loading states}: Skeleton screens cho video loading, pulsing animation cho processing states (recording upload, AI summary generation).
+
+    \item \textbf{Notifications}: Slide-in từ top-right với 300ms ease-out, auto-dismiss sau 5 giây với fade-out.
+\end{itemize}
+
+\subsubsection{Phác thảo thiết kế giao diện}
+
+\textbf{Giao diện danh sách cuộc họp (Meetings List):}
+
+Giao diện danh sách cuộc họp là central hub để quản lý tất cả meetings trong workspace. Thiết kế theo pattern của các ứng dụng productivity hiện đại như Notion, Linear với focus vào scanability và quick actions.
+
+\textit{Header Section:}
+\begin{itemize}
+    \item Page title "Meetings" với breadcrumb navigation
+    \item Primary CTA "Start Instant Meeting" button (orange, prominent)
+    \item Secondary action "Schedule Meeting" (outline style)
+    \item Search bar với placeholder "Search meetings by title, participant, or keyword..."
+    \item Date range picker cho filtering theo thời gian
+    \item Filter tabs: All | Active | Upcoming | Past | Recorded | With Summary
+\end{itemize}
+
+\textit{Meeting Cards Grid:}
+\begin{itemize}
+    \item Grid layout 3 columns (desktop), 2 columns (tablet), 1 column (mobile)
+    \item Card spacing: 16px gap
+    \item Each card hiển thị:
+    \begin{itemize}
+        \item Meeting title (H3, truncate nếu quá dài)
+        \item Status badge (Live - green pulse, Scheduled - blue, Ended - gray)
+        \item Date/time với relative time ("2 hours ago", "Tomorrow at 2pm")
+        \item Duration badge nếu đã kết thúc
+        \item Participant avatars (stack tối đa 4, +N nếu nhiều hơn)
+        \item Recording indicator icon nếu có recording
+        \item AI Summary indicator nếu đã generate
+        \item Context menu (3 dots) cho secondary actions
+    \end{itemize}
+    \item Hover state: subtle shadow elevation, action buttons appear
+    \item Click action: navigate to meeting detail/join meeting
+\end{itemize}
+
+\textit{Empty State:}
+\begin{itemize}
+    \item Illustration với meeting-related imagery
+    \item Heading "No meetings yet"
+    \item Description text hướng dẫn cách tạo meeting đầu tiên
+    \item CTA button "Start Your First Meeting"
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{images/ui_01_meetings_list.png}
+\caption{Giao diện danh sách cuộc họp với meeting cards và filter options}
+\label{fig:ui_meetings_list}
+\end{figure}
+
+\textbf{Giao diện phòng họp (Meeting Room):}
+
+Giao diện phòng họp là core experience của phân hệ, được thiết kế để tạo immersive full-screen video conferencing với tích hợp Jitsi Meet. Design philosophy là "get out of the way" - minimize UI chrome để participants có thể focus vào communication.
+
+\textit{Video Grid Area (Main Content):}
+\begin{itemize}
+    \item Chiếm toàn bộ viewport trừ toolbar areas
+    \item Adaptive grid layout như đã mô tả ở trên
+    \item Each video tile bao gồm:
+    \begin{itemize}
+        \item Video stream hoặc avatar placeholder (nếu camera off)
+        \item Participant name overlay ở bottom-left (semi-transparent background)
+        \item Microphone status icon (muted = red crossed mic)
+        \item Speaking indicator: glowing border animation khi đang nói
+        \item Connection quality indicator (3 bars icon)
+        \item Pin/unpin button on hover
+        \item Context menu on right-click
+    \end{itemize}
+    \item Self-view: nhỏ hơn, có thể drag để reposition, option để hide
+\end{itemize}
+
+\textit{Top Bar (Auto-hide):}
+\begin{itemize}
+    \item Height: 48px, dark semi-transparent background
+    \item Left: Meeting title (editable by moderator), copy link button
+    \item Center: Meeting timer (format HH:MM:SS), participant count
+    \item Right: Recording status (red dot + "Recording"), layout toggle, fullscreen button
+\end{itemize}
+
+\textit{Bottom Toolbar (Persistent):}
+\begin{itemize}
+    \item Height: 64px, centered controls
+    \item Primary controls (large icons, 48px):
+    \begin{itemize}
+        \item Microphone toggle (green when on, red when muted)
+        \item Camera toggle (green when on, gray when off)
+        \item Screen share button (highlight when active)
+        \item Recording button (red when recording, with timer)
+    \end{itemize}
+    \item Secondary controls (medium icons, 40px):
+    \begin{itemize}
+        \item Participants panel toggle (với count badge)
+        \item Chat panel toggle (với unread count badge)
+        \item Reactions menu (emoji picker)
+        \item Raise hand button
+        \item More menu (settings, keyboard shortcuts, report issue)
+    \end{itemize}
+    \item Leave button: Red background, positioned at far right, "Leave Meeting" text
+\end{itemize}
+
+\textit{Right Sidebar (Collapsible, 320px width):}
+\begin{itemize}
+    \item Tab navigation: Participants | Chat | Info
+    \item Participants tab:
+    \begin{itemize}
+        \item Search/filter participants
+        \item List với avatar, name, role badge (Host/Co-host/Guest)
+        \item Status icons (mic, camera, hand raised)
+        \item Context menu for each (mute, make host, remove)
+        \item "Invite" button at bottom
+    \end{itemize}
+    \item Chat tab:
+    \begin{itemize}
+        \item Message thread với timestamps
+        \item Support text, emojis, file sharing
+        \item Reply threading
+        \item Message input at bottom với emoji picker, file attach
+    \end{itemize}
+    \item Info tab:
+    \begin{itemize}
+        \item Meeting details (title, ID, start time)
+        \item Invite link với copy button
+        \item Connected project/sprint info
+        \item Meeting settings quick access
+    \end{itemize}
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{images/ui_02_meeting_room.png}
+\caption{Giao diện phòng họp với video grid, toolbar và sidebar}
+\label{fig:ui_meeting_room}
+\end{figure}
+
+\textbf{Các trạng thái giao diện phòng họp:}
+
+Giao diện phòng họp có nhiều trạng thái khác nhau tùy thuộc vào tình huống sử dụng. Mỗi trạng thái được thiết kế để cung cấp trải nghiệm tối ưu cho context cụ thể, đảm bảo người dùng có thể tập trung vào nội dung cuộc họp mà không bị phân tâm bởi giao diện.
+
+% ============== HUDDLE MODE ==============
+\textbf{1. Huddle Mode - Chế độ cuộc họp nhanh:}
+
+Huddle mode là trạng thái khi cuộc họp nhanh (instant meeting) đang hoạt động. Đây là chế độ mặc định khi người dùng bắt đầu một cuộc họp tức thì từ workspace hoặc project context, được thiết kế theo mô hình "huddle" của Slack - nhấn mạnh vào sự nhanh chóng và tiện lợi.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{images/huddle.png}
+\caption{Giao diện Huddle mode - Cuộc họp nhanh đang hoạt động}
+\label{fig:ui_huddle}
+\end{figure}
+
+\textit{Đặc điểm thiết kế:}
+\begin{itemize}
+    \item \textbf{Compact Layout}: Giao diện được thiết kế tối giản, không chiếm toàn bộ màn hình mà hiển thị dạng floating panel hoặc docked sidebar, cho phép người dùng tiếp tục làm việc trong khi tham gia cuộc họp.
+
+    \item \textbf{Avatar Strip}: Danh sách người tham gia hiển thị dạng horizontal strip với avatar circles (40-48px diameter). Tối đa 5-6 avatars visible, số còn lại hiển thị dưới dạng "+N" badge.
+
+    \item \textbf{Speaking Indicator}: Người đang nói được highlight bằng glowing ring animation màu xanh lá (\#00C851) quanh avatar, với độ dày 3px và subtle pulse animation. Audio waveform mini có thể hiển thị bên dưới avatar.
+
+    \item \textbf{Minimal Controls}: Chỉ hiển thị 3 controls thiết yếu:
+    \begin{itemize}
+        \item Microphone toggle (mặc định unmuted)
+        \item Leave button (icon X hoặc "Leave")
+        \item Expand button để chuyển sang full meeting view
+    \end{itemize}
+
+    \item \textbf{Status Information}: Hiển thị meeting duration timer (format MM:SS) và participant count nhỏ gọn.
+
+    \item \textbf{Quick Actions}: Double-click vào huddle panel để expand sang full meeting room với video grid.
+\end{itemize}
+
+\textit{Use cases phù hợp:}
+\begin{itemize}
+    \item Quick sync-ups giữa 2-4 team members
+    \item Clarification questions ngắn không cần formal meeting
+    \item Pair programming sessions
+    \item Casual discussions trong khi vẫn làm việc khác
+\end{itemize}
+
+% ============== WAITING STATE ==============
+\textbf{2. Waiting State - Trạng thái chờ kết nối:}
+
+Waiting state là giao diện hiển thị khi người dùng đang trong quá trình kết nối vào phòng họp. Đây là trải nghiệm đầu tiên của người dùng khi tham gia meeting, cần thiết kế để giảm perceived waiting time và cung cấp useful feedback.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{images/waiting.png}
+\caption{Giao diện Waiting state - Đang kết nối vào phòng họp}
+\label{fig:ui_waiting}
+\end{figure}
+
+\textit{Đặc điểm thiết kế:}
+\begin{itemize}
+    \item \textbf{Center-focused Layout}: Toàn bộ nội dung quan trọng tập trung ở center của screen với dark overlay background (80\% opacity) để tạo focus.
+
+    \item \textbf{Loading Animation}: Animated spinner hoặc custom loading animation (circular progress với brand colors) kích thước 64-80px. Animation smooth và không gây distraction.
+
+    \item \textbf{Status Messages}: Text messages thay đổi theo connection stages:
+    \begin{itemize}
+        \item "Connecting to meeting..." (initial)
+        \item "Establishing secure connection..." (DTLS handshake)
+        \item "Joining room..." (entering conference)
+        \item "Waiting for host to start..." (nếu là scheduled meeting)
+        \item "Almost there..." (final stage)
+    \end{itemize}
+
+    \item \textbf{Meeting Information}: Hiển thị meeting title, scheduled time (nếu có), và host name để user confirm đúng meeting.
+
+    \item \textbf{Pre-join Preview} (optional expandable section):
+    \begin{itemize}
+        \item Camera preview với self-view
+        \item Microphone level indicator
+        \item Audio/video device selection dropdowns
+        \item "Join with camera off" / "Join muted" toggles
+        \item Background blur/virtual background preview
+    \end{itemize}
+
+    \item \textbf{Cancel Option}: "Cancel" button để abort connection attempt, positioned ở bottom với secondary styling.
+
+    \item \textbf{Error Handling}: Nếu connection failed, hiển thị error message với "Retry" button và troubleshooting tips.
+\end{itemize}
+
+\textit{Transitions:}
+\begin{itemize}
+    \item Fade-in animation khi entering waiting state (300ms)
+    \item Progress indication qua status text changes
+    \item Smooth transition (fade-out + video grid fade-in) khi successfully connected
+\end{itemize}
+
+% ============== GRID VIEW ==============
+\textbf{3. Grid View - Chế độ hiển thị lưới:}
+
+Grid view là layout chính khi cuộc họp có nhiều người tham gia, hiển thị tất cả participants với video tiles có kích thước đều nhau. Đây là chế độ phổ biến nhất trong các cuộc họp team (5-25 người).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{images/grid-view.png}
+\caption{Giao diện Grid view - Hiển thị nhiều người tham gia trong cuộc họp}
+\label{fig:ui_grid_view}
+\end{figure}
+
+\textit{Đặc điểm thiết kế:}
+\begin{itemize}
+    \item \textbf{Adaptive Grid Layout}: Grid tự động điều chỉnh theo số lượng participants:
+    \begin{itemize}
+        \item 2 participants: 2 columns, side-by-side
+        \item 3-4 participants: 2x2 grid
+        \item 5-6 participants: 3x2 grid
+        \item 7-9 participants: 3x3 grid
+        \item 10-16 participants: 4x4 grid
+        \item 17+ participants: Pagination với navigation
+    \end{itemize}
+
+    \item \textbf{Video Tile Components}: Mỗi tile bao gồm:
+    \begin{itemize}
+        \item Video stream (hoặc avatar + name nếu camera off)
+        \item Participant name label ở bottom-left (semi-transparent background \#000000 với 60\% opacity, padding 4px 8px)
+        \item Microphone status icon ở bottom-right (muted = red crossed mic icon)
+        \item Speaking indicator: Blue glowing border (3px, \#2196F3) khi participant đang nói
+        \item Connection quality indicator: 3 bars icon ở top-right (green/yellow/red based on quality)
+        \item Pin button (appears on hover): Cho phép pin participant để luôn visible
+    \end{itemize}
+
+    \item \textbf{Self-view Tile}: Video của current user có thể:
+    \begin{itemize}
+        \item Hiển thị trong grid như các participants khác
+        \item Thu nhỏ thành floating picture-in-picture ở corner
+        \item Ẩn hoàn toàn (user preference)
+    \end{itemize}
+
+    \item \textbf{Pagination} (khi có nhiều participants):
+    \begin{itemize}
+        \item Navigation dots ở bottom center cho biết current page
+        \item Arrow buttons ở left/right edges để switch pages
+        \item Keyboard shortcuts: Page Up/Down hoặc arrow keys
+        \item Swipe gestures trên touch devices
+    \end{itemize}
+
+    \item \textbf{Active Speaker Highlight}: Option để highlight active speaker với larger tile hoặc spotlight effect, có thể toggle on/off.
+
+    \item \textbf{Responsive Behavior}:
+    \begin{itemize}
+        \item Desktop: Full grid với tất cả tiles visible
+        \item Tablet: Reduced grid size, larger tiles
+        \item Mobile: 2x2 grid maximum, swipe để see more
+    \end{itemize}
+\end{itemize}
+
+\textit{Toolbar Integration:}
+\begin{itemize}
+    \item Bottom toolbar với controls luôn visible
+    \item Layout switcher button để toggle giữa Grid/Speaker/Gallery views
+    \item Participants panel button hiển thị full list với search
+\end{itemize}
+
+% ============== SHARE VIEW ==============
+\textbf{4. Share View - Chế độ chia sẻ màn hình:}
+
+Share view (hay Presentation Mode) là layout khi có participant đang chia sẻ màn hình, window, hoặc tab. Shared content trở thành focus chính, trong khi video của participants được thu nhỏ.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{images/share-view.png}
+\caption{Giao diện Share view - Chế độ chia sẻ màn hình với presenter content là focus chính}
+\label{fig:ui_share_view}
+\end{figure}
+
+\textit{Đặc điểm thiết kế:}
+\begin{itemize}
+    \item \textbf{Main Content Area} (75-85\% của screen):
+    \begin{itemize}
+        \item Shared screen/window content displayed at maximum quality
+        \item Aspect ratio preserved (letterboxing với dark background nếu cần)
+        \item Zoom controls: Fit to window / Actual size / Zoom in-out
+        \item Full-screen button để maximize shared content
+    \end{itemize}
+
+    \item \textbf{Presenter Information Overlay}:
+    \begin{itemize}
+        \item Presenter name và "is presenting" label ở top-left
+        \item Semi-transparent background, auto-hide sau 3 giây
+        \item Re-appears on mouse movement
+    \end{itemize}
+
+    \item \textbf{Participants Strip} (15-25\% của screen):
+    \begin{itemize}
+        \item Position: Right side (default) hoặc Bottom (user configurable)
+        \item Scrollable strip với small video thumbnails (120-160px width)
+        \item Active speaker highlighted với border
+        \item Collapsible để maximize shared content space
+        \item Show/hide toggle button
+    \end{itemize}
+
+    \item \textbf{Presenter Video} (special treatment):
+    \begin{itemize}
+        \item Picture-in-picture window ở corner của shared content
+        \item Draggable để reposition
+        \item Resizable (small/medium/large)
+        \item Option để hide presenter video
+    \end{itemize}
+
+    \item \textbf{Annotation Tools} (cho presenter):
+    \begin{itemize}
+        \item Floating toolbar khi hover near top của shared content
+        \item Tools: Pointer/laser, Pen/draw, Highlighter, Text, Shapes, Eraser
+        \item Color picker cho drawing tools
+        \item Clear all annotations button
+        \item Annotations visible to all participants
+    \end{itemize}
+
+    \item \textbf{Viewer Controls}:
+    \begin{itemize}
+        \item "Request control" button để request remote control (nếu presenter allows)
+        \item Zoom controls để magnify portions của shared content
+        \item "Pop out" button để open shared content trong separate window
+    \end{itemize}
+
+    \item \textbf{Screen Share Controls} (cho presenter):
+    \begin{itemize}
+        \item Floating control bar ở bottom của screen
+        \item "Stop sharing" prominent red button
+        \item "Pause sharing" để temporarily hide content
+        \item "Switch source" để change shared window/screen
+        \item Share audio toggle (cho system audio)
+    \end{itemize}
+\end{itemize}
+
+\textit{Transitions:}
+\begin{itemize}
+    \item Smooth transition (500ms) khi entering/exiting share view
+    \item Video tiles animate từ grid positions sang strip positions
+    \item Notification toast khi someone starts/stops sharing
+\end{itemize}
+
+\textit{Multiple Presenters Handling:}
+\begin{itemize}
+    \item Nếu multiple people share simultaneously: Tabbed interface hoặc split view
+    \item "Switch presenter" dropdown nếu có multiple shares
+    \item Host có thể "spotlight" một shared screen cụ thể
+\end{itemize}
+
+\textbf{Giao diện xem lại cuộc họp (Meeting Replay):}
+
+Giao diện xem lại cuộc họp được thiết kế để maximize value extraction từ recorded meetings. Design inspiration từ video learning platforms như Coursera, YouTube với additions cho transcript sync và AI insights.
+
+\textit{Layout Structure:}
+\begin{itemize}
+    \item Split-screen layout: Video player (60\%) | Transcript panel (40\%)
+    \item Collapsible AI Summary panel bên dưới video player
+    \item Responsive: Trên mobile, chuyển sang stacked layout (video trên, transcript dưới)
+\end{itemize}
+
+\textit{Video Player Section:}
+\begin{itemize}
+    \item Custom video player controls:
+    \begin{itemize}
+        \item Play/Pause button (large, center của video on hover)
+        \item Progress bar với buffering indicator
+        \item Timestamp display (current / total)
+        \item Playback speed control (0.5x, 0.75x, 1x, 1.25x, 1.5x, 2x)
+        \item Volume control với mute toggle
+        \item Fullscreen button
+        \item Picture-in-picture button
+        \item Chapters/markers dropdown (nếu có)
+    \end{itemize}
+    \item Timeline scrubber với:
+    \begin{itemize}
+        \item Thumbnail preview on hover
+        \item Speaker change markers (small dots với different colors per speaker)
+        \item Key moments markers (starred timestamps from AI analysis)
+        \item Chapter markers nếu meeting dài
+    \end{itemize}
+    \item Keyboard shortcuts: Space (play/pause), J/L (skip 10s), K (pause), arrow keys (5s skip), number keys (jump to percentage)
+\end{itemize}
+
+\textit{Transcript Panel:}
+\begin{itemize}
+    \item Header với search bar và filter options
+    \item Search functionality:
+    \begin{itemize}
+        \item Full-text search trong transcript
+        \item Highlight matches với jump-to-next/previous
+        \item Filter by speaker
+    \end{itemize}
+    \item Transcript content:
+    \begin{itemize}
+        \item Grouped by speaker với avatar và name
+        \item Clickable timestamps - click để jump video đến position đó
+        \item Current position highlighting (background highlight cho active segment)
+        \item Auto-scroll option (toggle để sync với video playback)
+        \item Copy text option cho each segment
+    \end{itemize}
+    \item Export options: Download as TXT, SRT (subtitles), DOCX
+\end{itemize}
+
+\textit{AI Summary Section (Expandable):}
+\begin{itemize}
+    \item Tabbed interface với 5 tabs:
+    \begin{itemize}
+        \item \textbf{Executive Summary}: 2-3 paragraph tổng hợp main points, auto-generated bởi AI
+        \item \textbf{Key Points}: Bulleted list các điểm quan trọng được thảo luận, với timestamps
+        \item \textbf{Action Items}: Interactive checklist format
+        \begin{itemize}
+            \item Checkbox cho mỗi action item
+            \item Assigned to (mention participant)
+            \item Due date (if mentioned)
+            \item "Create Task" button để link với project management
+            \item Timestamp reference
+        \end{itemize}
+        \item \textbf{Decisions Made}: List các quyết định được đưa ra trong meeting với context
+        \item \textbf{Topics Discussed}: Tag cloud hoặc list các topics, click để filter transcript
+    \end{itemize}
+    \item Regenerate button (với LLM provider selector)
+    \item Export options: PDF report, Markdown, copy to clipboard
+    \item Feedback buttons (thumbs up/down) để improve AI quality
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{images/ui_03_meeting_replay.png}
+\caption{Giao diện xem lại cuộc họp với video player, transcript synchronized và AI summary panel}
+\label{fig:ui_meeting_replay}
+\end{figure}
+
+\textbf{Giao diện cấu hình Meeting Policies:}
+
+Giao diện cấu hình Meeting Policies là settings page dành cho Workspace Owners và Admins để configure meeting-related policies cho toàn workspace. Design theo pattern của settings pages trong enterprise applications với clear organization và immediate feedback.
+
+\textit{Layout Structure:}
+\begin{itemize}
+    \item Left sidebar navigation (240px width) với policy categories
+    \item Main content area với selected policy section
+    \item Sticky save button bar ở bottom
+\end{itemize}
+
+\textit{Sidebar Navigation - Policy Categories:}
+\begin{itemize}
+    \item \textbf{Recording Settings}
+    \begin{itemize}
+        \item Auto-record toggle (all meetings / none / ask host)
+        \item Default recording quality (720p / 1080p / 4K)
+        \item Audio-only option
+        \item Recording consent notification toggle
+    \end{itemize}
+
+    \item \textbf{Meeting Limits}
+    \begin{itemize}
+        \item Maximum meeting duration (unlimited / 1hr / 2hr / 4hr / 8hr)
+        \item Maximum participants per meeting (slider, 2-100)
+        \item Concurrent meetings limit per workspace
+        \item Daily meeting hours limit per user
+    \end{itemize}
+
+    \item \textbf{Security \& Access}
+    \begin{itemize}
+        \item Waiting room enable/disable
+        \item Meeting password requirement
+        \item Allow anonymous guests toggle
+        \item Require authentication to join
+        \item Lock meeting after start toggle
+        \item Allow participants to unmute themselves
+        \item Allow screen sharing (everyone / host only / specific roles)
+    \end{itemize}
+
+    \item \textbf{AI Processing}
+    \begin{itemize}
+        \item Auto-transcription toggle
+        \item Default LLM provider selection (OpenAI / Claude / Gemini)
+        \item Auto-generate summary toggle
+        \item AI analysis opt-out option for sensitive meetings
+        \item Custom prompts configuration
+    \end{itemize}
+
+    \item \textbf{Storage \& Retention}
+    \begin{itemize}
+        \item Recording retention period (30 / 60 / 90 / 180 / 365 days / unlimited)
+        \item Auto-delete policy
+        \item Storage quota per workspace
+        \item Compression settings
+    \end{itemize}
+
+    \item \textbf{Notifications}
+    \begin{itemize}
+        \item Meeting reminder notifications (15min / 30min / 1hr before)
+        \item Recording ready notification
+        \item Summary ready notification
+        \item Daily/weekly meeting digest
+    \end{itemize}
+\end{itemize}
+
+\textit{Main Content Area:}
+\begin{itemize}
+    \item Section header với icon và description
+    \item Form fields với:
+    \begin{itemize}
+        \item Clear labels và help text (info icon với tooltip)
+        \item Appropriate input types (toggles, dropdowns, sliders, number inputs)
+        \item Validation messages (inline, below field)
+        \item Default value indicators
+    \end{itemize}
+    \item Impact indicators: Color-coded badges showing impact
+    \begin{itemize}
+        \item Green: No impact on current usage
+        \item Yellow: May affect some active meetings
+        \item Red: Will immediately affect all meetings
+    \end{itemize}
+    \item Preview/simulation của policy changes trước khi apply
+\end{itemize}
+
+\textit{Action Bar:}
+\begin{itemize}
+    \item "Save Changes" primary button
+    \item "Reset to Defaults" secondary button
+    \item Unsaved changes indicator
+    \item Last saved timestamp
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\textwidth]{images/ui_04_meeting_policies.png}
+\caption{Giao diện cấu hình Meeting Policies với sidebar navigation và form controls}
+\label{fig:ui_meeting_policies}
+\end{figure}
+
+\textbf{Giao diện Jitsi Infrastructure Monitoring:}
+
+Giao diện Jitsi Infrastructure Monitoring là comprehensive admin dashboard dành cho System Administrators. Design theo pattern của DevOps monitoring tools như Grafana, Datadog với focus vào real-time visibility và quick troubleshooting.
+
+\textit{Dashboard Overview (Top Section):}
+\begin{itemize}
+    \item 4 key metrics cards với large numbers và trend indicators:
+    \begin{itemize}
+        \item \textbf{Active Meetings}: Current count, change from 1 hour ago
+        \item \textbf{Total Participants}: Current count across all meetings
+        \item \textbf{Bandwidth Usage}: Current Mbps, with capacity percentage
+        \item \textbf{System Health}: Overall health score (0-100), status color
+    \end{itemize}
+    \item Each card có sparkline chart showing last 24 hours trend
+    \item Hover để see detailed breakdown
+\end{itemize}
+
+\textit{Videobridge Instances Section:}
+\begin{itemize}
+    \item Table với columns:
+    \begin{itemize}
+        \item Instance ID/Name
+        \item Status (Online/Offline/Degraded) với color indicator
+        \item Region/Zone
+        \item Current Load (\% với progress bar)
+        \item Conferences count
+        \item Participants count
+        \item CPU Usage (\%)
+        \item Memory Usage (\%)
+        \item Packet Loss (\%)
+        \item Actions (restart, drain, remove)
+    \end{itemize}
+    \item Sortable columns
+    \item Filter by status, region
+    \item Bulk actions cho multiple instances
+\end{itemize}
+
+\textit{Jibri Instances Pool Section:}
+\begin{itemize}
+    \item Overview: X/Y instances available
+    \item Queue depth indicator nếu có recordings waiting
+    \item Table với:
+    \begin{itemize}
+        \item Instance ID
+        \item Status (Available/Recording/Busy/Offline)
+        \item Current recording (meeting name if recording)
+        \item Duration of current recording
+        \item CPU/Memory usage
+        \item Actions (view logs, force stop, restart)
+    \end{itemize}
+    \item Warning banner nếu pool gần exhausted
+\end{itemize}
+
+\textit{Active Meetings Table:}
+\begin{itemize}
+    \item Columns: Meeting ID, Title, Host, Start Time, Duration, Participants, Videobridge, Quality Score, Recording Status
+    \item Click row để expand với detailed metrics
+    \item Quick actions: End meeting, move to different JVB
+\end{itemize}
+
+\textit{Real-time Metrics Charts:}
+\begin{itemize}
+    \item Time-series graphs với selectable time range (1h, 6h, 24h, 7d)
+    \item Charts include:
+    \begin{itemize}
+        \item Participants over time (line chart)
+        \item Bandwidth usage (area chart)
+        \item Network quality distribution (stacked bar)
+        \item Meeting starts/ends (bar chart)
+    \end{itemize}
+    \item Interactive: hover để see exact values, click to zoom
+\end{itemize}
+
+\textit{System Logs Panel:}
+\begin{itemize}
+    \item Live streaming logs với auto-scroll
+    \item Filter by component (JVB, Jicofo, Prosody, Jibri)
+    \item Filter by severity (Error, Warning, Info, Debug)
+    \item Search trong logs
+    \item Export logs option
+\end{itemize}
+
+\textit{Emergency Controls (Top Action Bar):}
+\begin{itemize}
+    \item "End All Meetings" button (với confirmation modal)
+    \item "Scale Infrastructure" button (trigger auto-scaling)
+    \item "Maintenance Mode" toggle (prevent new meetings)
+    \item "Export Report" dropdown (PDF, CSV, JSON)
+    \item Auto-refresh toggle với interval selector (5s, 10s, 30s, 1m)
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{images/ui_05_jitsi_monitoring.png}
+\caption{Giao diện giám sát hạ tầng Jitsi với metrics cards, instance tables và real-time charts}
+\label{fig:ui_jitsi_monitor}
+\end{figure}
+
+\subsubsection{User Flow và Interaction Patterns}
+
+\textbf{Flow 1: Bắt đầu cuộc họp nhanh (Start Instant Meeting)}
+
+\begin{enumerate}
+    \item User click "Start Meeting" từ meetings list hoặc project context
+    \item System hiển thị pre-join screen với camera/mic preview
+    \item User adjust settings (camera on/off, mic on/off, background blur)
+    \item User click "Join Now" button
+    \item System tạo meeting room, generate JWT token
+    \item User được redirect vào meeting room với Jitsi loaded
+    \item Invite link available để share với participants khác
+\end{enumerate}
+
+\textbf{Flow 2: Xem lại và tạo tasks từ meeting}
+
+\begin{enumerate}
+    \item User navigate đến completed meeting từ list
+    \item System load video player, transcript và AI summary
+    \item User review AI-generated action items trong Summary tab
+    \item User click checkbox hoặc "Create Task" trên action item
+    \item Modal hiển thị với task details pre-filled từ meeting context
+    \item User adjust task details (assignee, due date, priority)
+    \item Click "Create" - task được tạo và linked với meeting
+    \item Confirmation toast và task appears trong project backlog
+\end{enumerate}
+
+\textbf{Flow 3: Admin troubleshoot meeting quality issue}
+
+\begin{enumerate}
+    \item Admin receives alert về high packet loss
+    \item Navigate đến Infrastructure Monitoring dashboard
+    \item Identify affected Videobridge instance từ table
+    \item Click để xem detailed metrics và logs
+    \item Identify root cause (resource exhaustion)
+    \item Take action: drain instance, scale up
+    \item Monitor recovery trong real-time charts
+    \item Close incident khi metrics return to normal
+\end{enumerate}
+
+\subsubsection{Component Library và Design Tokens}
+
+Để ensure consistency across toàn bộ phân hệ meeting, một component library được xây dựng với các reusable components:
+
+\textbf{Button Components:}
+\begin{itemize}
+    \item Primary Button: Orange background, white text, rounded corners
+    \item Secondary Button: Transparent background, orange border
+    \item Danger Button: Red background cho destructive actions
+    \item Icon Button: Circle shape cho toolbar actions
+    \item Toggle Button: For on/off states (mic, camera)
+\end{itemize}
+
+\textbf{Input Components:}
+\begin{itemize}
+    \item Text Input: With label, placeholder, validation states
+    \item Select Dropdown: Single và multi-select variants
+    \item Toggle Switch: For boolean settings
+    \item Slider: For range values (volume, quality)
+    \item Search Input: With clear button và keyboard shortcut hint
+\end{itemize}
+
+\textbf{Display Components:}
+\begin{itemize}
+    \item Video Tile: With participant info overlay
+    \item Avatar: Various sizes, với status indicator
+    \item Badge: Status badges, count badges
+    \item Card: Meeting card, metric card variants
+    \item Table: Sortable, filterable data tables
+    \item Chart: Line, bar, area chart components
+\end{itemize}
+
+\textbf{Feedback Components:}
+\begin{itemize}
+    \item Toast Notification: Success, error, warning, info variants
+    \item Modal Dialog: Confirmation, form, alert variants
+    \item Tooltip: For help text và keyboard shortcuts
+    \item Progress Indicator: Linear và circular variants
+    \item Skeleton Loader: For content loading states
+\end{itemize}
+
+Design tokens được define trong CSS custom properties để ensure theming consistency:
+
+\begin{lstlisting}[caption=Design Tokens cho phân hệ Meeting]
+:root {
+  /* Colors */
+  --color-bg-primary: #1E1E1E;
+  --color-bg-secondary: #2D2D2D;
+  --color-accent-primary: #FF8800;
+  --color-success: #00C851;
+  --color-danger: #FF4444;
+  --color-info: #2196F3;
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* Typography */
+  --font-family: 'Inter', sans-serif;
+  --font-size-sm: 12px;
+  --font-size-md: 14px;
+  --font-size-lg: 16px;
+
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 300ms ease;
+}
+\end{lstlisting}

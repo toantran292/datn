@@ -1,0 +1,38 @@
+\subsection{Môi trường vận hành}
+
+\textbf{Môi trường chung:}
+\begin{itemize}
+    \item Triển khai trên Linux (Ubuntu Server 22.04 LTS) hoặc containerized với Docker.
+    \item Account Service chạy trên JVM (Java Virtual Machine) với Java 17 hoặc cao hơn.
+    \item Các services khác chạy trên Node.js runtime (v18 LTS hoặc cao hơn).
+    \item Web server và Reverse Proxy: Nginx để xử lý SSL termi\-nation, load balancing và routing.
+    \item Object Storage: MinIO (development), AWS S3 (production).
+    \item Trình duyệt hỗ trợ JavaScript và WebSocket: Chrome, Firefox, Edge, Safari.
+    \item Phát triển: IntelliJ IDEA (Account Service) và Visual Studio Code (Frontend, NestJS services).
+    \item Build tools: Maven/Gradle cho Account Service, npm/yarn cho Frontend và NestJS services.
+    \item Kiểm thử trên Postman và testing tự động (JUnit, Jest).
+    \item Kết nối Internet ổn định để gọi API LLM Provider (OpenAI, Anthropic, Google).
+\end{itemize}
+
+\textbf{Môi trường đặc thù cho phân hệ họp trực tuyến:}
+\begin{itemize}
+    \item \textbf{Jitsi Infrastructure:}
+    \begin{itemize}
+        \item Jitsi Meet (Videobridge, Jicofo, Prosody XMPP server) chạy trên Ubuntu Server 22.04 LTS.
+        \item Jibri instances chạy trên Docker containers với Chrome headless và ffmpeg.
+        \item TURN/STUN servers (coturn) để hỗ trợ NAT traversal.
+    \end{itemize}
+    \item \textbf{External Services:}
+    \begin{itemize}
+        \item Speech-to-Text API: Google Cloud Speech-to-Text, AWS Transcribe, hoặc OpenAI Whisper.
+        \item AI Service API: OpenAI GPT-4, Anthropic Claude, hoặc Google Gemini.
+        \item Object Storage: MinIO (development), AWS S3 hoặc Google Cloud Storage (production) cho recording files.
+    \end{itemize}
+    \item \textbf{Network Requirements:}
+    \begin{itemize}
+        \item Trình duyệt hỗ trợ WebRTC: Chrome 90+, Firefox 88+, Safari 14+, Edge 90+.
+        \item UDP ports 10000-20000 mở cho media streams (RTP/RTCP).
+        \item TCP port 443 mở cho signaling (WebSocket Secure).
+        \item TCP port 5222 mở cho XMPP connections (Prosody).
+    \end{itemize}
+\end{itemize}

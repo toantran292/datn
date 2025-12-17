@@ -1,0 +1,39 @@
+# syntax=docker/dockerfile:1
+FROM node:20-alpine AS base
+WORKDIR /app
+
+# Dùng development environment
+ENV NODE_ENV=development
+
+# Install OpenSSL for Prisma binary
+RUN apk add --no-cache openssl openssl-dev libc6-compat
+
+# Bật corepack để dùng pnpm
+RUN corepack enable
+
+# Copy file package để install
+COPY package.json pnpm-lock.yaml* ./
+
+# ---- Install deps ----
+FROM base AS deps
+# Copy prisma schema for generate
+COPY prisma ./prisma
+RUN pnpm install
+# Generate Prisma client with correct binary targets
+RUN npx prisma generate
+
+# ---- Runtime with hot reload ----
+FROM base AS dev
+WORKDIR /app
+
+# Copy node_modules từ deps stage (includes generated Prisma client)
+COPY --from=deps /app/node_modules ./node_modules
+
+# Copy toàn bộ project
+COPY . .
+
+# Expose API port
+EXPOSE 40600 40601
+
+# Default command: run in dev mode with hot reload
+CMD ["pnpm", "run", "dev"]

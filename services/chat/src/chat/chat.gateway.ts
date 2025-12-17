@@ -265,4 +265,48 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   notifyMemberRoleChanged(orgId: string, roomId: string, userId: string, newRole: string) {
     this.io.to(`org:${orgId}`).emit('room:member_role_changed', { roomId, userId, role: newRole });
   }
+
+  /**
+   * Broadcast a huddle message to a room
+   * Called by internal API when meeting service notifies about huddle start/end
+   */
+  broadcastHuddleMessage(orgId: string, roomId: string, message: {
+    id: string;
+    roomId: string;
+    userId: string;
+    orgId: string;
+    type: string;
+    content: string;
+    metadata?: Record<string, any> | null;
+    sentAt: string;
+  }) {
+    const roomChannel = `room:${roomId}`;
+    console.log(`[HuddleBroadcast] Broadcasting to ${roomChannel}:`, message.type, message.id);
+    this.io.to(roomChannel).emit('message:new', message);
+
+    // Also emit room:updated to update the room list
+    this.io.to(`org:${orgId}`).emit('room:updated', {
+      roomId,
+      lastMessage: message,
+      updatedAt: message.sentAt,
+    });
+    console.log(`[HuddleBroadcast] Emitted room:updated to org:${orgId}`);
+  }
+
+  /**
+   * Broadcast huddle participant count update to a room
+   * Called by internal API when meeting service notifies about participant changes
+   */
+  broadcastHuddleParticipantUpdate(orgId: string, roomId: string, data: {
+    meetingId: string;
+    participantCount: number;
+  }) {
+    const roomChannel = `room:${roomId}`;
+    console.log(`[HuddleParticipants] Broadcasting to ${roomChannel}:`, data.participantCount);
+    this.io.to(roomChannel).emit('huddle:participant_update', {
+      roomId,
+      meetingId: data.meetingId,
+      participantCount: data.participantCount,
+    });
+  }
 }

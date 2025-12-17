@@ -1,0 +1,194 @@
+\subsection{Thiết kế cơ sở dữ liệu phân hệ họp trực tuyến}
+
+\subsubsection{Tổng quan thiết kế database}
+
+Cơ sở dữ liệu của phân hệ họp trực tuyến được thiết kế dựa trên PostgreSQL với kiến trúc relational database, tuân theo các nguyên tắc normalization để đảm bảo tính toàn vẹn dữ liệu, minimize redundancy và optimize query performance. Database schema được tổ chức xoay quanh meeting lifecycle từ creation, execution, recording, đến post-meeting analysis với AI-powered insights.
+
+Thiết kế database ưu tiên các yếu tố sau: Data Integrity với foreign key constraints và referential integrity enforcement, Scalability với partitioning strategies cho historical data, Performance với strategic indexing và query optimization, Flexibility với JSONB columns cho semi-structured data (transcript segments, AI-generated summaries), Auditability với comprehensive timestamp tracking và soft delete mechanisms, Security với encryption at rest và access control via application layer.
+
+\subsubsection{Mô tả các nhóm dữ liệu}
+
+Phân hệ Họp trực tuyến (Meeting) quản lý tám nhóm dữ liệu chính được tổ chức theo entities với mục đích và cấu trúc riêng biệt, hỗ trợ toàn bộ meeting workflow từ scheduling đến AI analysis.
+
+\textbf{1. Dữ liệu về cuộc họp (Meeting):}
+
+Entity Meeting là core entity của phân hệ, đại diện cho một video conference session với toàn bộ metadata và configuration. Meeting có thể là instant meeting (tạo và join ngay lập tức) hoặc scheduled meeting (có thời gian bắt đầu định trước).
+
+\begin{itemize}
+    \item meeting\_id (UUID, PK): Mã định danh duy nhất của cuộc họp, sử dụng UUID v4 để tránh enumeration attacks và support distributed ID generation.
+    \item workspace\_id (UUID, FK): Foreign key tham chiếu đến Workspace chứa cuộc họp, enforce workspace isolation và access control.
+    \item created\_by (UUID, FK): User ID của người tạo meeting, default role là moderator với full control permissions.
+    \item room\_name (VARCHAR(100), UNIQUE): Unique identifier cho Jitsi conference room, generated từ UUID và workspace prefix để đảm bảo uniqueness globally.
+    \item title (VARCHAR(255), NOT NULL): Tiêu đề mô tả của cuộc họp, hiển thị trong meeting list và notifications.
+    \item description (TEXT): Mô tả chi tiết về nội dung, mục đích của cuộc họp, agenda items (optional).
+    \item scheduled\_at (TIMESTAMP WITH TIME ZONE): Thời gian dự kiến bắt đầu cuộc họp, nullable cho instant meetings, indexed cho time-based queries.
+    \item started\_at (TIMESTAMP WITH TIME ZONE): Timestamp thực tế khi meeting bắt đầu (first participant joined), dùng để calculate actual duration.
+    \item ended\_at (TIMESTAMP WITH TIME ZONE): Timestamp khi meeting kết thúc (last participant left hoặc manual end), dùng cho analytics.
+    \item status (ENUM): Trạng thái lifecycle của meeting với các giá trị: 'scheduled' (chưa bắt đầu), 'active' (đang diễn ra), 'ended' (đã kết thúc bình thường), 'cancelled' (bị hủy trước khi bắt đầu). Indexed cho filtering queries.
+    \item jwt\_token\_secret (VARCHAR(64)): Secret key riêng cho mỗi meeting, sử dụng để sign JWT tokens cho participants authentication, rotated periodically.
+    \item settings (JSONB): Configuration object chứa meeting-specific settings như: enable\_lobby (bool), enable\_prejoin\_page (bool), enable\_chat (bool), enable\_recording (bool), max\_participants (int), allow\_external\_guests (bool).
+    \item created\_at (TIMESTAMP WITH TIME ZONE, NOT NULL): Timestamp tạo meeting record, auto-populated bởi database trigger.
+    \item updated\_at (TIMESTAMP WITH TIME ZONE, NOT NULL): Timestamp của lần cập nhật cuối, auto-updated on any column change.
+\end{itemize}
+
+\textbf{2. Dữ liệu về người tham gia cuộc họp (MeetingParticipant):}
+
+Entity MeetingParticipant track tất cả users joined vào meeting, bao gồm workspace members và external guests. Mỗi participant record capture participation metadata cho analytics và audit purposes.
+
+\begin{itemize}
+    \item participant\_id (UUID, PK): Mã định danh duy nhất cho participation record, cho phép user join/leave/rejoin multiple times với separate records.
+    \item meeting\_id (UUID, FK, NOT NULL): Foreign key tham chiếu đến Meeting, indexed cho fast lookup của participants list, ON DELETE CASCADE để cleanup khi meeting deleted.
+    \item user\_id (UUID, FK): ID của User trong hệ thống, nullable để support external guests chưa có account, indexed cho user-centric queries.
+    \item display\_name (VARCHAR(100), NOT NULL): Tên hiển thị của participant trong meeting interface, có thể khác với username trong hệ thống, required cho guest identification.
+    \item email (VARCHAR(255)): Email address của participant, mandatory cho external guests để gửi meeting materials, optional cho internal users.
+    \item role (ENUM, NOT NULL): Vai trò trong meeting với values: 'moderator' (full control, có thể mute others, end meeting, start/stop recording), 'participant' (standard permissions). Default 'participant'.
+    \item joined\_at (TIMESTAMP WITH TIME ZONE, NOT NULL): Timestamp chính xác khi participant joined conference, capture từ Jitsi webhook event.
+    \item left\_at (TIMESTAMP WITH TIME ZONE): Timestamp khi participant left conference, nullable nếu still active, capture từ Jitsi participantLeft event.
+    \item duration\_seconds (INTEGER): Calculated field lưu trữ tổng thời gian tham gia (left\_at - joined\_at), computed on participant leave, dùng cho billing và analytics.
+    \item is\_external (BOOLEAN, NOT NULL, DEFAULT FALSE): Flag đánh dấu external guest không thuộc workspace, affect permissions và data retention policies.
+\end{itemize}
+
+\textbf{3. Dữ liệu về bản ghi hình (Recording):}
+
+Entity Recording quản lý video recordings của meetings, capture bởi Jibri instances và stored trong object storage (MinIO/S3). Recordings là foundation cho transcript generation và AI analysis.
+
+\begin{itemize}
+    \item recording\_id (UUID, PK): Mã định danh duy nhất của recording, correlate với filename trong object storage.
+    \item meeting\_id (UUID, FK, NOT NULL): Foreign key đến Meeting được recorded, indexed cho meeting-to-recording lookup, ON DELETE RESTRICT để prevent accidental deletion.
+    \item jibri\_instance\_id (UUID, FK): Reference đến Jibri instance đã thực hiện recording, dùng cho debugging và load balancing analytics, nullable nếu instance already decommissioned.
+    \item file\_url (TEXT): Full URL để access recording file trong object storage, có thể là presigned URL với expiration hoặc CDN URL.
+    \item file\_size (BIGINT): Kích thước file tính bằng bytes, dùng cho storage quota calculation và transfer cost estimation.
+    \item duration\_seconds (INTEGER): Thời lượng video recording tính bằng seconds, extracted từ video metadata sau processing, dùng cho billing.
+    \item format (VARCHAR(10), NOT NULL): Container format của video file, thường là 'MP4' (H.264 + AAC) cho compatibility, có thể support 'MKV' cho lossless.
+    \item resolution (VARCHAR(10), NOT NULL): Video resolution được configured, values: '720p' (1280x720), '1080p' (1920x1080), '1440p' (2560x1440), affect file size và processing time.
+    \item status (ENUM, NOT NULL): Recording lifecycle status với values: 'recording' (đang capture), 'uploading' (đang upload to storage), 'processing' (post-processing), 'completed' (ready for playback), 'failed' (encountered errors). Indexed.
+    \item started\_at (TIMESTAMP WITH TIME ZONE, NOT NULL): Timestamp khi recording started, trigger từ moderator action hoặc auto-record policy.
+    \item stopped\_at (TIMESTAMP WITH TIME ZONE): Timestamp khi recording stopped, manual stop hoặc meeting ended, nullable nếu still recording.
+    \item uploaded\_at (TIMESTAMP WITH TIME ZONE): Timestamp khi file upload to storage completed, trigger TranscriptionQueue job.
+    \item s3\_key (VARCHAR(500), UNIQUE, NOT NULL): Object key trong S3/MinIO bucket, format: recordings/\{workspace\_id\}/\{meeting\_id\}/\{timestamp\}.mp4, ensure uniqueness.
+    \item deleted\_at (TIMESTAMP WITH TIME ZONE): Soft delete timestamp theo retention policy (30/60/90 days configurable), permanent deletion scheduled sau grace period.
+    \item created\_at (TIMESTAMP WITH TIME ZONE, NOT NULL): Record creation time, auto-populated.
+\end{itemize}
+
+\textbf{4. Dữ liệu về transcript (Transcript):}
+
+Entity Transcript lưu trữ text transcription của recording audio, generated bởi Speech-to-Text services. Transcript segments với timestamps cho phép synchronized playback và full-text search.
+
+\begin{itemize}
+    \item transcript\_id (UUID, PK): Mã định danh duy nhất của transcript, one-to-one relationship với Recording.
+    \item recording\_id (UUID, FK, UNIQUE, NOT NULL): Foreign key đến Recording source, ensure mỗi recording chỉ có một transcript, ON DELETE CASCADE.
+    \item meeting\_id (UUID, FK, NOT NULL): Denormalized reference đến Meeting để optimize queries, avoid join qua Recording table.
+    \item stt\_provider (VARCHAR(50), NOT NULL): STT service provider được sử dụng: 'google' (Cloud Speech-to-Text), 'aws' (Transcribe), 'whisper' (OpenAI), cho cost tracking và quality comparison.
+    \item language (VARCHAR(10), NOT NULL): Language code của transcript (ISO 639-1), values: 'vi' (Vietnamese), 'en' (English), auto-detected hoặc user-specified.
+    \item full\_text (TEXT, NOT NULL): Complete transcript text without timestamps, optimize cho full-text search với GIN index và tsvector.
+    \item segments (JSONB, NOT NULL): Array of timestamped segments, mỗi segment: \{start\_time: float, end\_time: float, text: string, confidence: float, speaker\_label: string\}, indexed với GIN cho timestamp queries.
+    \item word\_count (INTEGER): Total word count trong transcript, computed từ full\_text, dùng cho analytics và billing estimation.
+    \item processing\_duration (INTEGER): Thời gian xử lý STT tính bằng seconds, measure từ job start đến completion, track provider performance.
+    \item status (ENUM, NOT NULL): Processing status: 'processing' (STT đang chạy), 'completed' (thành công), 'failed' (errors occurred). Indexed.
+    \item error\_message (TEXT): Chi tiết error nếu status = 'failed', dùng cho debugging và retry logic.
+    \item created\_at (TIMESTAMP WITH TIME ZONE, NOT NULL): Record creation timestamp, auto-populated.
+\end{itemize}
+
+\textbf{5. Dữ liệu về tóm tắt cuộc họp (MeetingSummary):}
+
+Entity MeetingSummary chứa AI-generated insights từ transcript, bao gồm executive summary, action items, decisions và discussion highlights. Data structure được optimize cho presentation và search.
+
+\begin{itemize}
+    \item summary\_id (UUID, PK): Mã định danh duy nhất của summary, support multiple summary versions hoặc styles.
+    \item meeting\_id (UUID, FK, NOT NULL): Foreign key đến Meeting, indexed cho meeting-to-summary lookup, ON DELETE CASCADE.
+    \item transcript\_id (UUID, FK, NOT NULL): Reference đến Transcript source, ensure traceability, nullable nếu summary generated manually.
+    \item llm\_provider (VARCHAR(50), NOT NULL): LLM provider used: 'openai' (GPT models), 'anthropic' (Claude), 'google' (Gemini), cho cost attribution.
+    \item llm\_model (VARCHAR(100), NOT NULL): Specific model version: 'gpt-4-turbo', 'claude-3-5-sonnet-20250512', 'gemini-pro', track quality và cost differences.
+    \item summary\_text (TEXT, NOT NULL): Executive summary text (2-4 paragraphs), highlight main topics và outcomes, optimize cho quick reading.
+    \item discussion\_points (JSONB): Array of key discussion points: [\{topic: string, timestamp: float, description: string\}], clickable timestamps link to video position.
+    \item action\_items (JSONB): Array of extracted action items: [\{title: string, assigned\_to: string, due\_date: date, priority: enum, completed: bool\}], integrate với task management.
+    \item decisions (JSONB): Array of important decisions: [\{decision: string, timestamp: float, context: string, stakeholders: [string]\}], audit trail.
+    \item follow\_up\_topics (JSONB): Array of topics requiring follow-up: [\{topic: string, description: string, priority: enum\}], agenda cho next meeting.
+    \item tokens\_used (INTEGER): Total tokens consumed trong LLM API call (prompt + completion), dùng cho cost calculation.
+    \item processing\_duration (INTEGER): LLM processing time in seconds, measure latency và performance.
+    \item generated\_at (TIMESTAMP WITH TIME ZONE, NOT NULL): Timestamp khi summary generation completed.
+    \item created\_at (TIMESTAMP WITH TIME ZONE, NOT NULL): Record creation time.
+\end{itemize}
+
+\textbf{6. Dữ liệu về Jibri instances (JibriInstance):}
+
+Entity JibriInstance track recording infrastructure components (Jibri servers) với health monitoring và load balancing information. Meeting Service query table này để allocate available instances cho recording requests.
+
+\begin{itemize}
+    \item instance\_id (UUID, PK): Mã định danh duy nhất của Jibri instance, generated khi instance registered vào hệ thống.
+    \item hostname (VARCHAR(255), UNIQUE, NOT NULL): Fully qualified domain name của Jibri server, dùng cho API calls và SSH access.
+    \item ip\_address (INET, NOT NULL): IPv4/IPv6 address của instance, dùng cho network routing và firewall rules.
+    \item port (INTEGER, NOT NULL, DEFAULT 8888): HTTP port cho Jibri API communication, default 8888 theo Jitsi conventions.
+    \item status (ENUM, NOT NULL): Instance availability status: 'available' (ready for new recordings), 'busy' (currently recording), 'offline' (unreachable), 'maintenance' (intentionally disabled). Indexed cho allocation queries.
+    \item current\_meeting\_id (UUID, FK): Foreign key đến Meeting đang được recorded, nullable when status = 'available', ensure consistency với Recording records.
+    \item capacity (INTEGER, NOT NULL, DEFAULT 1): Number of concurrent recordings instance có thể handle, thường 1 cho standard instances, >1 cho high-capacity servers.
+    \item version (VARCHAR(50)): Jibri software version đang chạy, track để ensure compatibility và identify outdated instances.
+    \item last\_heartbeat\_at (TIMESTAMP WITH TIME ZONE): Timestamp của heartbeat gần nhất từ instance, monitor để detect offline instances (heartbeat timeout > 60s).
+    \item total\_recordings (INTEGER, DEFAULT 0): Cumulative count of recordings completed bởi instance, metric cho reliability assessment.
+    \item created\_at (TIMESTAMP WITH TIME ZONE, NOT NULL): Timestamp khi instance added vào pool.
+    \item updated\_at (TIMESTAMP WITH TIME ZONE, NOT NULL): Last update time, auto-updated on status changes.
+\end{itemize}
+
+\textbf{7. Dữ liệu về Videobridge instances (VideobridgeInstance):}
+
+Entity VideobridgeInstance monitor Jitsi Videobridge (SFU) instances handling real-time media forwarding. Metrics từ table này drive load balancing decisions và capacity planning.
+
+\begin{itemize}
+    \item instance\_id (UUID, PK): Unique identifier của Videobridge instance.
+    \item hostname (VARCHAR(255), UNIQUE, NOT NULL): FQDN của Videobridge server, resolve to IP address.
+    \item ip\_address (INET, NOT NULL): Network address cho media streams routing (UDP 10000-20000).
+    \item region (VARCHAR(50)): Geographic region deployment: 'us-east-1', 'eu-west-1', 'asia-southeast-1', optimize cho latency reduction với geo-routing.
+    \item status (ENUM, NOT NULL): Operational status: 'online' (accepting new conferences), 'offline' (unreachable), 'draining' (no new conferences, existing ones continue). Indexed.
+    \item load\_percentage (INTEGER): Current load từ 0-100\%, computed từ active conferences, participants và bandwidth utilization, threshold 80\% trigger scale-up.
+    \item active\_conferences (INTEGER, DEFAULT 0): Number of conferences hiện đang active trên instance, real-time metric updated via Colibri API.
+    \item active\_participants (INTEGER, DEFAULT 0): Total participants across all conferences, correlate với bandwidth usage.
+    \item version (VARCHAR(50)): Jitsi Videobridge version (e.g., '2.3-123-g1a2b3c4'), ensure version compatibility trong cluster.
+    \item stats (JSONB): Detailed statistics object từ Colibri REST API: \{packet\_rate, bit\_rate, rtt, loss\_rate, conferences\_breakdown\}, queried periodically (every 30s).
+    \item last\_stats\_at (TIMESTAMP WITH TIME ZONE): Timestamp của stats refresh gần nhất, stale stats (>2 minutes) indicate instance issues.
+    \item created\_at (TIMESTAMP WITH TIME ZONE, NOT NULL): Instance registration time.
+    \item updated\_at (TIMESTAMP WITH TIME ZONE, NOT NULL): Last modification timestamp.
+\end{itemize}
+
+\textbf{8. Dữ liệu về Workspace (denormalized reference):}
+
+Mặc dù Workspace không phải core entity của meeting subsystem, một số thông tin workspace được denormalize hoặc referenced để enforce access control và resource quotas. Meeting entities có workspace\_id foreign key reference đến Workspace table trong main database schema, enable workspace-scoped queries và multi-tenancy isolation.
+
+\subsubsection{Mô hình dữ liệu và relationships}
+
+Mô hình dữ liệu của phân hệ meeting được thiết kế dựa trên kiến trúc relational database với PostgreSQL, tổ chức theo normalized schema với clear relationships giữa entities. Class diagram dưới đây minh họa các entities chính, attributes và relationships trong phân hệ.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{images/class-diagram-meeting.png}
+\caption{Sơ đồ lớp (Class Diagram) của phân hệ họp trực tuyến}
+\label{fig:class_meeting}
+\end{figure}
+
+\textbf{Relationships giữa các entities:}
+
+\begin{itemize}
+    \item \textbf{Meeting -- MeetingParticipant:} One-to-Many relationship. Một meeting có nhiều participants, mỗi participant record track một user participation session. Composite index trên (meeting\_id, user\_id) optimize participant lookup.
+    \item \textbf{Meeting -- Recording:} One-to-Many relationship. Một meeting có thể có multiple recording segments (pause/resume scenarios), mỗi recording reference back to source meeting. ON DELETE RESTRICT prevent accidental meeting deletion khi có recordings.
+    \item \textbf{Recording -- Transcript:} One-to-One relationship. Mỗi recording generate exactly one transcript. UNIQUE constraint trên recording\_id enforce relationship. ON DELETE CASCADE ensure transcript cleanup khi recording deleted.
+    \item \textbf{Transcript -- MeetingSummary:} One-to-One hoặc One-to-Many. Một transcript có thể generate multiple summary versions (different LLM providers, styles). Foreign key transcript\_id là nullable để support manual summaries.
+    \item \textbf{Recording -- JibriInstance:} Many-to-One relationship. Multiple recordings được thực hiện bởi same Jibri instance over time. Current assignment tracked via JibriInstance.current\_meeting\_id.
+    \item \textbf{Meeting -- VideobridgeInstance:} Implicit Many-to-Many through Jitsi infrastructure. Meetings không directly reference Videobridges (assignment managed by Jicofo), nhưng stats correlate meetings với instances.
+    \item \textbf{Meeting -- Workspace:} Many-to-One relationship. Multiple meetings belong to one workspace. Foreign key workspace\_id with index enable efficient workspace-scoped queries và tenant isolation.
+\end{itemize}
+
+\textbf{Database Design Patterns và Best Practices:}
+
+\begin{itemize}
+    \item \textbf{UUID Primary Keys:} Tất cả entities sử dụng UUID v4 primary keys thay vì auto-increment integers. Benefits: eliminate enumeration attacks, enable distributed ID generation across multiple servers, facilitate data migration và replication, avoid ID collisions khi merge data từ different sources.
+    \item \textbf{Soft Deletes:} Recording entity implement soft delete pattern với deleted\_at timestamp. Recordings không immediately deleted khi user request, instead marked với deleted\_at theo retention policy. Grace period (30 days) cho phép recovery trước permanent deletion. Queries filter deleted records with WHERE deleted\_at IS NULL.
+    \item \textbf{JSONB for Semi-Structured Data:} PostgreSQL JSONB columns cho flexible schema: Meeting.settings store per-meeting configurations, Transcript.segments lưu array of timestamped text với variable structure, MeetingSummary fields (discussion\_points, action\_items, decisions) có nested objects với evolving schemas, VideobridgeInstance.stats capture detailed metrics từ Colibri API. GIN indexes trên JSONB columns enable efficient querying của nested fields.
+    \item \textbf{Comprehensive Timestamps:} Mọi table có created\_at và updated\_at timestamps với TIMESTAMP WITH TIME ZONE type để maintain timezone information. Database triggers auto-populate created\_at on INSERT và auto-update updated\_at on any UPDATE. Business logic timestamps (started\_at, ended\_at, joined\_at, left\_at) track workflow events precisely.
+    \item \textbf{Strategic Indexing:} Indexes được tạo dựa trên query patterns: B-tree indexes trên foreign keys (meeting\_id, workspace\_id, recording\_id) cho joins, indexes trên status columns (Meeting.status, Recording.status, JibriInstance.status) cho filtering, composite index trên (workspace\_id, created\_at) cho time-series queries, GIN indexes trên JSONB columns và full-text search fields (Transcript.full\_text with tsvector).
+    \item \textbf{Foreign Key Constraints:} Enforce referential integrity với carefully chosen ON DELETE behaviors: CASCADE cho dependent data (MeetingParticipant, Transcript xóa khi parent deleted), RESTRICT cho critical data (Meeting không thể xóa nếu có Recordings), SET NULL cho optional references (JibriInstance.current\_meeting\_id). Constraints prevent orphaned records và maintain data consistency.
+    \item \textbf{Partitioning Strategy:} Meeting và Recording tables implement range partitioning by created\_at (monthly partitions) để optimize query performance cho historical data. Recent partitions (last 3 months) trên fast SSD storage, older partitions migrate to slower archival storage. Partition pruning dramatically improve query speed khi filtering by date ranges.
+    \item \textbf{Denormalization for Performance:} Strategic denormalization reduce joins: Transcript.meeting\_id denormalized từ Recording.meeting\_id để avoid join khi query transcripts, VideobridgeInstance.active\_conferences và active\_participants cached thay vì count từ related tables, MeetingParticipant.duration\_seconds computed và stored thay vì calculate on-the-fly.
+\end{itemize}
+
+\subsubsection{Từ điển dữ liệu}
+
+Chi tiết từ điển dữ liệu của toàn bộ các bảng trong hệ thống, bao gồm tên cột, kiểu dữ liệu, mô tả và các ràng buộc, được trình bày đầy đủ trong Phụ lục B.

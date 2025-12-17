@@ -1,0 +1,430 @@
+% Biến kiểm soát
+\newif\iflandscapepage
+\landscapepagefalse
+
+\setlength{\TPHorizModule}{1cm}
+\setlength{\TPVertModule}{1cm}
+
+\fancypagestyle{lscape}{%
+    \fancyhf{}
+    \renewcommand{\headrulewidth}{0pt}
+    \renewcommand{\footrulewidth}{0pt}
+    \fancyhead[C]{%
+        % Header bên trái trang (trên của landscape) - xoay 90 độ
+        \begin{textblock}{1}(1,1)
+            \rotatebox{90}{%
+                \parbox{27.5cm}{%
+                    \fontsize{10pt}{12pt}\selectfont\itshape
+                    Xây dựng Nền tảng SaaS tích hợp AI nhằm Thống nhất Quản lý Dự án Agile - Phân hệ Họp trực tuyến (Meeting)
+                    \vspace{2pt}
+                    \hrule
+                }%
+            }
+        \end{textblock}
+        % Footer bên phải trang (dưới của landscape) - xoay 90 độ
+        \begin{textblock}{1}(20,1)
+            \rotatebox{90}{%
+                \parbox{27.5cm}{%
+                    \hrule
+                    \vspace{2pt}
+                    Trần Minh Trí - B2203536 \hfill Trang \thepage
+                }%
+            }
+        \end{textblock}
+    }
+}
+
+\begin{landscape}
+\pagestyle{lscape}
+
+\phantomsection
+\setsection{Phụ lục B. TỪ ĐIỂN DỮ LIỆU}
+
+Phần này trình bày chi tiết mô tả dữ liệu cho các bảng của phân hệ họp trực tuyến (Meeting) được trình bày ở Phần II - Chương III - Thiết kế cơ sở dữ liệu.
+
+\textbf{Bảng meetings: Lưu trữ thông tin cuộc họp trực tuyến}
+
+\renewcommand{\arraystretch}{1.5}
+\begin{longtable}{|p{3cm}|p{2.5cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{3cm}|p{5cm}|}
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endfirsthead
+
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+meeting\_id & UUID & X & & X & X & & Mã cuộc họp. \\
+\hline
+project\_id & UUID & & X & & X & projects & Dự án chứa cuộc họp. \\
+\hline
+created\_by & UUID & & X & & X & users & User tạo cuộc họp. \\
+\hline
+title & String & & & & X & & Tiêu đề cuộc họp. \\
+\hline
+description & Text & & & & & & Mô tả chi tiết cuộc họp. \\
+\hline
+jitsi\_room\_id & String & & & X & X & & ID phòng họp Jitsi. \\
+\hline
+status & Enum & & & & X & & Trạng thái (scheduled, active, ended). \\
+\hline
+meeting\_type & Enum & & & & X & & Loại họp (instant, scheduled). \\
+\hline
+scheduled\_start & Timestamp & & & & & & Thời gian dự kiến bắt đầu. \\
+\hline
+scheduled\_end & Timestamp & & & & & & Thời gian dự kiến kết thúc. \\
+\hline
+actual\_start & Timestamp & & & & & & Thời gian thực tế bắt đầu. \\
+\hline
+actual\_end & Timestamp & & & & & & Thời gian thực tế kết thúc. \\
+\hline
+settings & JSONB & & & & & & Cấu hình cuộc họp. \\
+\hline
+invite\_token & String & & & X & & & Token mời tham gia. \\
+\hline
+created\_at & Timestamp & & & & X & & Ngày tạo cuộc họp. \\
+\hline
+updated\_at & Timestamp & & & & X & & Ngày cập nhật gần nhất. \\
+\hline
+\end{longtable}
+
+\textbf{Bảng meeting\_participants: Lưu trữ thông tin người tham gia cuộc họp}
+
+\renewcommand{\arraystretch}{1.5}
+\begin{longtable}{|p{3cm}|p{2.5cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{3cm}|p{5cm}|}
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endfirsthead
+
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+participant\_id & UUID & X & & X & X & & Mã người tham gia. \\
+\hline
+meeting\_id & UUID & & X & & X & meetings & Cuộc họp tham gia. \\
+\hline
+user\_id & UUID & & X & & X & users & User tham gia. \\
+\hline
+role & Enum & & & & X & & Vai trò (moderator, participant). \\
+\hline
+display\_name & String & & & & X & & Tên hiển thị trong cuộc họp. \\
+\hline
+joined\_at & Timestamp & & & & & & Thời điểm tham gia. \\
+\hline
+left\_at & Timestamp & & & & & & Thời điểm rời đi. \\
+\hline
+duration\_seconds & Integer & & & & & & Tổng thời gian tham gia (giây). \\
+\hline
+connection\_quality & String & & & & & & Chất lượng kết nối. \\
+\hline
+device\_info & JSONB & & & & & & Thông tin thiết bị. \\
+\hline
+created\_at & Timestamp & & & & X & & Ngày tạo record. \\
+\hline
+updated\_at & Timestamp & & & & X & & Ngày cập nhật gần nhất. \\
+\hline
+\end{longtable}
+
+\textbf{Bảng meeting\_recordings: Lưu trữ thông tin bản ghi hình cuộc họp}
+
+\renewcommand{\arraystretch}{1.5}
+\begin{longtable}{|p{3cm}|p{2.5cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{3cm}|p{5cm}|}
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endfirsthead
+
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+recording\_id & UUID & X & & X & X & & Mã bản ghi hình. \\
+\hline
+meeting\_id & UUID & & X & & X & meetings & Cuộc họp được ghi. \\
+\hline
+started\_by & UUID & & X & & X & users & User bắt đầu ghi. \\
+\hline
+status & Enum & & & & X & & Trạng thái (recording, processing, completed, failed). \\
+\hline
+s3\_key & String & & & X & & & Key file trên MinIO/S3. \\
+\hline
+file\_size & BigInt & & & & & & Kích thước file (bytes). \\
+\hline
+duration\_seconds & Integer & & & & & & Thời lượng video (giây). \\
+\hline
+resolution & String & & & & & & Độ phân giải (720p, 1080p). \\
+\hline
+bitrate & Integer & & & & & & Bitrate video (kbps). \\
+\hline
+mime\_type & String & & & & & & Định dạng file. \\
+\hline
+jibri\_session\_id & String & & & & & & ID session Jibri. \\
+\hline
+started\_at & Timestamp & & & & X & & Thời điểm bắt đầu ghi. \\
+\hline
+ended\_at & Timestamp & & & & & & Thời điểm kết thúc ghi. \\
+\hline
+expires\_at & Timestamp & & & & & & Thời hạn lưu trữ. \\
+\hline
+created\_at & Timestamp & & & & X & & Ngày tạo record. \\
+\hline
+updated\_at & Timestamp & & & & X & & Ngày cập nhật gần nhất. \\
+\hline
+\end{longtable}
+
+\textbf{Bảng meeting\_transcripts: Lưu trữ bản ghi chép văn bản cuộc họp}
+
+\renewcommand{\arraystretch}{1.5}
+\begin{longtable}{|p{3cm}|p{2.5cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{3cm}|p{5cm}|}
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endfirsthead
+
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+transcript\_id & UUID & X & & X & X & & Mã bản ghi chép. \\
+\hline
+recording\_id & UUID & & X & & X & meeting\_recordings & Bản ghi hình liên quan. \\
+\hline
+status & Enum & & & & X & & Trạng thái (processing, completed, failed). \\
+\hline
+stt\_provider & String & & & & X & & Nhà cung cấp STT. \\
+\hline
+language & String & & & & X & & Ngôn ngữ nhận dạng. \\
+\hline
+segments & JSONB & & & & & & Các đoạn văn bản với timestamp. \\
+\hline
+full\_text & Text & & & & & & Toàn bộ nội dung văn bản. \\
+\hline
+word\_count & Integer & & & & & & Số từ trong transcript. \\
+\hline
+confidence\_score & Decimal & & & & & & Độ tin cậy trung bình. \\
+\hline
+processing\_time & Integer & & & & & & Thời gian xử lý (giây). \\
+\hline
+created\_at & Timestamp & & & & X & & Ngày tạo transcript. \\
+\hline
+updated\_at & Timestamp & & & & X & & Ngày cập nhật gần nhất. \\
+\hline
+\end{longtable}
+
+\textbf{Bảng meeting\_summaries: Lưu trữ bản tóm tắt AI của cuộc họp}
+
+\renewcommand{\arraystretch}{1.5}
+\begin{longtable}{|p{3cm}|p{2.5cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{3cm}|p{5cm}|}
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endfirsthead
+
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+summary\_id & UUID & X & & X & X & & Mã bản tóm tắt. \\
+\hline
+transcript\_id & UUID & & X & & X & meeting\_transcripts & Transcript nguồn. \\
+\hline
+status & Enum & & & & X & & Trạng thái (processing, completed, failed). \\
+\hline
+llm\_provider & String & & & & X & & Nhà cung cấp LLM. \\
+\hline
+llm\_model & String & & & & X & & Model LLM sử dụng. \\
+\hline
+overview & Text & & & & & & Tóm tắt tổng quan. \\
+\hline
+key\_points & JSONB & & & & & & Các điểm chính. \\
+\hline
+action\_items & JSONB & & & & & & Các công việc cần làm. \\
+\hline
+decisions & JSONB & & & & & & Các quyết định được đưa ra. \\
+\hline
+participants\_summary & JSONB & & & & & & Tóm tắt theo người tham gia. \\
+\hline
+tokens\_input & Integer & & & & & & Số tokens đầu vào. \\
+\hline
+tokens\_output & Integer & & & & & & Số tokens đầu ra. \\
+\hline
+processing\_time & Integer & & & & & & Thời gian xử lý (ms). \\
+\hline
+created\_at & Timestamp & & & & X & & Ngày tạo summary. \\
+\hline
+updated\_at & Timestamp & & & & X & & Ngày cập nhật gần nhất. \\
+\hline
+\end{longtable}
+
+\textbf{Bảng meeting\_policies: Lưu trữ chính sách cuộc họp của workspace}
+
+\renewcommand{\arraystretch}{1.5}
+\begin{longtable}{|p{3cm}|p{2.5cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{3cm}|p{5cm}|}
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endfirsthead
+
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+policy\_id & UUID & X & & X & X & & Mã chính sách. \\
+\hline
+workspace\_id & UUID & & X & X & X & workspaces & Workspace áp dụng. \\
+\hline
+auto\_record & Boolean & & & & & & Tự động ghi hình. \\
+\hline
+recording\_resolution & String & & & & & & Độ phân giải ghi hình. \\
+\hline
+max\_duration\_minutes & Integer & & & & & & Thời lượng tối đa (phút). \\
+\hline
+max\_participants & Integer & & & & & & Số người tham gia tối đa. \\
+\hline
+retention\_days & Integer & & & & & & Số ngày lưu trữ recording. \\
+\hline
+require\_auth & Boolean & & & & & & Yêu cầu xác thực. \\
+\hline
+enable\_waiting\_room & Boolean & & & & & & Bật phòng chờ. \\
+\hline
+allow\_screen\_share & Boolean & & & & & & Cho phép chia sẻ màn hình. \\
+\hline
+allow\_recording & Boolean & & & & & & Cho phép ghi hình. \\
+\hline
+enable\_transcription & Boolean & & & & & & Bật chuyển đổi văn bản. \\
+\hline
+enable\_ai\_summary & Boolean & & & & & & Bật tóm tắt AI. \\
+\hline
+stt\_provider & String & & & & & & Provider STT mặc định. \\
+\hline
+llm\_provider & String & & & & & & Provider LLM mặc định. \\
+\hline
+created\_at & Timestamp & & & & X & & Ngày tạo policy. \\
+\hline
+updated\_at & Timestamp & & & & X & & Ngày cập nhật gần nhất. \\
+\hline
+\end{longtable}
+
+\end{landscape}
+\pagestyle{fancy}
+
+\phantomsection
+\subsection*{Các yêu cầu ràng buộc dữ liệu phân hệ Meeting}
+
+Phần này mô tả các ràng buộc dữ liệu cần được đảm bảo khi xử lý và lưu trữ thông tin trong phân hệ họp trực tuyến.
+
+\subsubsection*{Ràng buộc dữ liệu cuộc họp (Meetings)}
+
+\begin{itemize}
+    \item Thuộc tính \texttt{title} phải khác rỗng, có độ dài từ 3 đến 200 ký tự.
+    \item Thuộc tính \texttt{jitsi\_room\_id} phải duy nhất trong hệ thống và tuân theo format của Jitsi Meet.
+    \item Thuộc tính \texttt{status} phải có một trong các giá trị: scheduled, active, ended, cancelled.
+    \item Thuộc tính \texttt{meeting\_type} phải có một trong các giá trị: instant, scheduled.
+    \item Thuộc tính \texttt{scheduled\_end} phải lớn hơn \texttt{scheduled\_start} nếu cả hai đều có giá trị.
+    \item Thuộc tính \texttt{settings} phải là dữ liệu JSONB hợp lệ chứa cấu hình video, audio, và quyền participant.
+    \item Thuộc tính \texttt{invite\_token} phải là chuỗi ngẫu nhiên duy nhất, độ dài tối thiểu 32 ký tự.
+\end{itemize}
+
+\subsubsection*{Ràng buộc dữ liệu người tham gia (Meeting Participants)}
+
+\begin{itemize}
+    \item Cặp (\texttt{meeting\_id}, \texttt{user\_id}) phải duy nhất để tránh duplicate participant.
+    \item Thuộc tính \texttt{role} phải có một trong các giá trị: moderator, participant, guest.
+    \item Thuộc tính \texttt{display\_name} phải khác rỗng, có độ dài từ 1 đến 100 ký tự.
+    \item Thuộc tính \texttt{left\_at} phải lớn hơn hoặc bằng \texttt{joined\_at} nếu có giá trị.
+    \item Thuộc tính \texttt{duration\_seconds} phải là số nguyên không âm.
+    \item Thuộc tính \texttt{device\_info} phải là dữ liệu JSONB chứa browser, OS, và device type.
+\end{itemize}
+
+\subsubsection*{Ràng buộc dữ liệu bản ghi hình (Meeting Recordings)}
+
+\begin{itemize}
+    \item Thuộc tính \texttt{status} phải có một trong các giá trị: recording, processing, completed, failed.
+    \item Thuộc tính \texttt{s3\_key} phải là chuỗi duy nhất và tuân theo naming convention của MinIO/S3.
+    \item Thuộc tính \texttt{file\_size} phải là số nguyên dương nếu status là completed.
+    \item Thuộc tính \texttt{resolution} phải có một trong các giá trị: 480p, 720p, 1080p.
+    \item Thuộc tính \texttt{bitrate} phải trong khoảng từ 500 đến 8000 (kbps).
+    \item Thuộc tính \texttt{mime\_type} phải là video/mp4 hoặc video/webm.
+    \item Thuộc tính \texttt{expires\_at} phải lớn hơn \texttt{created\_at} và tuân theo retention policy.
+\end{itemize}
+
+\subsubsection*{Ràng buộc dữ liệu bản ghi chép (Meeting Transcripts)}
+
+\begin{itemize}
+    \item Thuộc tính \texttt{status} phải có một trong các giá trị: processing, completed, failed.
+    \item Thuộc tính \texttt{stt\_provider} phải có một trong các giá trị: google, aws, azure, whisper.
+    \item Thuộc tính \texttt{language} phải tuân theo chuẩn BCP 47 (ví dụ: vi-VN, en-US).
+    \item Thuộc tính \texttt{segments} phải là mảng JSONB với mỗi phần tử chứa: start\_time, end\_time, speaker, text.
+    \item Thuộc tính \texttt{confidence\_score} phải trong khoảng từ 0.0 đến 1.0.
+    \item Thuộc tính \texttt{word\_count} phải là số nguyên không âm.
+\end{itemize}
+
+\subsubsection*{Ràng buộc dữ liệu bản tóm tắt AI (Meeting Summaries)}
+
+\begin{itemize}
+    \item Thuộc tính \texttt{status} phải có một trong các giá trị: processing, completed, failed.
+    \item Thuộc tính \texttt{llm\_provider} phải có một trong các giá trị: openai, anthropic, google.
+    \item Thuộc tính \texttt{llm\_model} phải khớp với provider (ví dụ: gpt-4, claude-3, gemini-pro).
+    \item Thuộc tính \texttt{key\_points} phải là mảng JSONB với mỗi phần tử là chuỗi mô tả điểm chính.
+    \item Thuộc tính \texttt{action\_items} phải là mảng JSONB với mỗi phần tử chứa: task, assignee, deadline.
+    \item Thuộc tính \texttt{decisions} phải là mảng JSONB với mỗi phần tử chứa: decision, context, made\_by.
+    \item Thuộc tính \texttt{tokens\_input} và \texttt{tokens\_output} phải là số nguyên không âm.
+\end{itemize}
+
+\subsubsection*{Ràng buộc dữ liệu chính sách (Meeting Policies)}
+
+\begin{itemize}
+    \item Mỗi workspace chỉ có một bản ghi policy (unique constraint trên \texttt{workspace\_id}).
+    \item Thuộc tính \texttt{recording\_resolution} phải có một trong các giá trị: 480p, 720p, 1080p.
+    \item Thuộc tính \texttt{max\_duration\_minutes} phải trong khoảng từ 15 đến 480 (8 giờ).
+    \item Thuộc tính \texttt{max\_participants} phải trong khoảng từ 2 đến 500.
+    \item Thuộc tính \texttt{retention\_days} phải trong khoảng từ 7 đến 365.
+    \item Thuộc tính \texttt{stt\_provider} phải có một trong các giá trị: google, aws, azure, whisper.
+    \item Thuộc tính \texttt{llm\_provider} phải có một trong các giá trị: openai, anthropic, google.
+    \item Các thuộc tính Boolean phải có giá trị mặc định hợp lý khi tạo mới.
+\end{itemize}
+
+\subsubsection*{Ràng buộc chung cho phân hệ Meeting}
+
+\begin{itemize}
+    \item Mọi bảng phải có primary key là UUID để đảm bảo tính duy nhất và bảo mật.
+    \item Mọi bảng phải có \texttt{created\_at} và \texttt{updated\_at} timestamps để tracking.
+    \item Foreign key constraints phải được enforce với ON DELETE CASCADE cho recordings, transcripts, summaries khi meeting bị xóa.
+    \item Dữ liệu JSONB phải được validate schema trước khi lưu để đảm bảo tính toàn vẹn.
+    \item Recordings phải được xóa khỏi object storage khi bản ghi database bị xóa.
+    \item JWT tokens cho Jitsi phải có thời hạn hợp lệ và được ký bằng secret key bảo mật.
+    \item Tất cả các API endpoint phải kiểm tra quyền truy cập dựa trên project membership.
+\end{itemize}

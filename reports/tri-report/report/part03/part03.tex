@@ -1,0 +1,93 @@
+% !TEX root = ../main.tex
+
+% Reset numbering for Part 3
+\renewcommand{\thesubsection}{\arabic{section}.\arabic{subsection}}
+\setcounter{section}{0}
+\setcounter{subsection}{0}
+
+\phantomsection
+\addcontentsline{toc}{section}{Phần 3: KẾT LUẬN}
+\section*{Phần 3: KẾT LUẬN}
+
+\phantomsection
+\addcontentsline{toc}{subsection}{1. Kết quả đạt được}
+\subsection*{1. Kết quả đạt được}
+
+\subsubsection*{1.1. Về lý thuyết}
+
+\begin{itemize}
+    \item Rèn luyện được kỹ năng giải quyết vấn đề, đọc hiểu tài liệu và tra cứu thông tin kỹ thuật.
+    \item Nâng cao được khả năng tư duy, phân tích và thiết kế cơ sở dữ liệu quan hệ.
+    \item Học hỏi thêm kiến thức về các công nghệ hiện đại như NestJS, Next.js, PostgreSQL, và các dịch vụ cloud như MinIO/S3.
+    \item Hiểu được quy trình phát triển ứng dụng web theo mô hình SaaS (Software as a Service) và kiến trúc multi-tenant.
+    \item Tìm hiểu và áp dụng được các API của các nhà cung cấp LLM như OpenAI, Anthropic, và Google vào việc tạo báo cáo AI tự động.
+    \item Nghiên cứu và hiểu rõ hơn về các phương pháp xác thực và phân quyền trong hệ thống web, bao gồm JWT, OAuth 2.0 và RBAC (Role-Based Access Control).
+\end{itemize}
+
+\subsubsection*{1.2. Về chương trình}
+
+\begin{itemize}
+    \item Phát triển thành công một nền tảng SaaS quản lý dự án hoàn chỉnh trên nền tảng công nghệ NestJS và Next.js, đáp ứng đầy đủ nhu cầu quản lý workspace, thành viên, tệp tin và báo cáo AI. Giao diện được thiết kế trực quan theo phong cách Linear/Stripe, thân thiện, tối ưu cho cả máy tính và thiết bị di động, mang lại trải nghiệm mượt mà cho người dùng.
+    \item Về phía người dùng, hệ thống cho phép thực hiện các thao tác từ đăng ký, đăng nhập, quản lý thông tin cá nhân đến tạo workspace, mời thành viên, upload/download tệp tin và tạo báo cáo AI. Đặc biệt, người dùng có thể tận dụng sức mạnh của các mô hình ngôn ngữ lớn (LLM) để tự động tạo báo cáo tổng hợp hoạt động của workspace.
+    \item Về phía quản trị, ứng dụng hỗ trợ quản lý workspace, thành viên, audit log. Đối với Super Admin, ngoài các quyền của Owner, còn có khả năng quản lý toàn bộ hệ thống, khóa/mở khóa workspace vi phạm chính sách.
+    \item Hệ thống được tích hợp lưu trữ tệp tin qua MinIO/S3, giúp quản lý và phân phối tệp tin an toàn và hiệu quả. Một điểm nổi bật khác là tính năng tạo báo cáo AI, cho phép người dùng chọn LLM Provider (OpenAI, Anthropic, Google) để tạo báo cáo tự động dựa trên dữ liệu hoạt động của workspace. Nhìn chung, ứng dụng không chỉ đáp ứng đầy đủ các chức năng quản lý dự án cơ bản mà còn mang lại những trải nghiệm hiện đại và tiện ích, tạo sự khác biệt so với các nền tảng quản lý dự án truyền thống.
+\end{itemize}
+
+\subsubsection*{1.3. Về vận dụng thực tế}
+
+\begin{itemize}
+    \item Kết quả của quá trình kiểm thử và đánh giá cũng cho thấy, ứng dụng web có khả năng hoạt động một cách ổn định và hiệu quả. Nhìn chung, "Xây dựng Nền tảng SaaS tích hợp AI nhằm Thống nhất Quản lý Dự án Agile" đã được xây dựng thành công và đáp ứng đầy đủ các chức năng cốt lõi của một hệ thống quản lý dự án, bao gồm quản lý workspace, thành viên, tệp tin và báo cáo AI. Bên cạnh đó, giao diện được thiết kế hiện đại, trực quan, giúp người dùng dễ dàng thao tác và quản lý công việc.
+    \item Điểm nổi bật của ứng dụng là tính năng tích hợp AI để tạo báo cáo tự động, cho phép người dùng nhanh chóng có được cái nhìn tổng quan về hoạt động của workspace mà không cần tốn nhiều thời gian tổng hợp thủ công. Ngoài ra, ứng dụng còn được tích hợp các tính năng nâng cao trải nghiệm người dùng như hệ thống thông báo real-time, audit log để theo dõi lịch sử hoạt động, và phân quyền linh hoạt theo vai trò.
+    \item Với những ưu điểm này, hệ thống hoàn toàn có thể triển khai trong thực tế để phục vụ các nhóm làm việc, startup, doanh nghiệp vừa và nhỏ trong việc quản lý dự án và cộng tác nhóm. Hệ thống cũng có thể mở rộng sang các lĩnh vực khác như quản lý tài liệu, quản lý kiến thức nội bộ, tạo ra trải nghiệm thú vị và chuyên nghiệp cho người dùng.
+\end{itemize}
+
+\phantomsection
+\addcontentsline{toc}{subsection}{2. Hạn chế của đề tài}
+\subsection*{2. Hạn chế của đề tài}
+
+Mặc dù đề tài đã đạt được những kết quả nhất định, vẫn còn một số hạn chế cần được nhận diện và cải thiện trong tương lai:
+
+\subsubsection*{2.1. Về khả năng mở rộng và hiệu năng}
+
+\begin{itemize}
+    \item \textbf{Chưa kiểm thử với số lượng lớn người dùng đồng thời}: Hệ thống chỉ được kiểm thử trong môi trường phát triển với số lượng người dùng hạn chế (dưới 50 participants/meeting). Chưa có load testing với hàng trăm cuộc họp đồng thời hoặc stress testing để xác định điểm giới hạn của hệ thống.
+    \item \textbf{Hạn chế về hạ tầng Jibri}: Recording service sử dụng Jibri yêu cầu tài nguyên cao (mỗi instance cần 4GB RAM, 4 CPU cores). Trong môi trường production với nhiều cuộc họp cần ghi hình đồng thời, cần đầu tư đáng kể vào hạ tầng hoặc triển khai auto-scaling phức tạp.
+    \item \textbf{Latency của AI processing pipeline}: Quá trình transcription và summarization có thể mất từ 5-15 phút cho một cuộc họp 1 giờ, chưa đáp ứng được nhu cầu real-time insights ngay sau khi họp kết thúc.
+\end{itemize}
+
+\subsubsection*{2.2. Về độ chính xác của AI}
+
+\begin{itemize}
+    \item \textbf{Speech-to-Text với tiếng Việt}: Các dịch vụ STT như Google Cloud Speech-to-Text và Whisper có độ chính xác cao với tiếng Anh (>95\%) nhưng với tiếng Việt chỉ đạt khoảng 85-90\%, đặc biệt khi có nhiều thuật ngữ chuyên ngành IT, tên riêng hoặc giọng địa phương. Điều này ảnh hưởng trực tiếp đến chất lượng transcript và AI summary.
+    \item \textbf{Context understanding của LLM}: Mặc dù các LLM như GPT-4 và Claude có khả năng tốt trong việc tóm tắt, việc nhận diện chính xác action items, decisions và blockers phụ thuộc nhiều vào chất lượng transcript đầu vào và cách diễn đạt của người tham gia cuộc họp.
+    \item \textbf{Thiếu fine-tuning cho domain cụ thể}: Hệ thống sử dụng các LLM general-purpose với prompt engineering, chưa có model được fine-tune riêng cho Agile ceremonies hoặc ngữ cảnh doanh nghiệp Việt Nam.
+\end{itemize}
+
+\subsubsection*{2.3. Về chi phí vận hành}
+
+\begin{itemize}
+    \item \textbf{Chi phí API của LLM providers}: Việc sử dụng các API như OpenAI GPT-4, Claude hoặc Gemini phát sinh chi phí đáng kể theo số lượng tokens. Ước tính chi phí khoảng \$0.5-1.5 cho mỗi cuộc họp 1 giờ (bao gồm STT và LLM), có thể trở thành gánh nặng tài chính khi scale lên hàng trăm cuộc họp mỗi ngày.
+    \item \textbf{Chi phí lưu trữ recordings}: Video recordings với chất lượng 720p-1080p chiếm khoảng 500MB-1GB mỗi giờ họp. Đối với workspace hoạt động tích cực, chi phí object storage có thể tăng nhanh chóng.
+    \item \textbf{Chưa có cơ chế tối ưu chi phí}: Hệ thống chưa implement các chiến lược như caching LLM responses, compression video trước khi lưu trữ, hoặc tiered storage để giảm chi phí.
+\end{itemize}
+
+\subsubsection*{2.4. Về tính năng và trải nghiệm người dùng}
+
+\begin{itemize}
+    \item \textbf{Chưa hỗ trợ End-to-End Encryption}: Mặc dù communication được mã hóa với DTLS-SRTP, hệ thống chưa implement E2EE thực sự, nghĩa là server vẫn có khả năng truy cập nội dung media streams.
+    \item \textbf{Thiếu tính năng schedule meeting}: Hệ thống hiện chỉ hỗ trợ instant meetings (huddle model), chưa có tính năng lên lịch cuộc họp trước và tích hợp với calendar (Google Calendar, Outlook).
+    \item \textbf{Mobile experience hạn chế}: Giao diện responsive nhưng chưa tối ưu hoàn toàn cho mobile browsers, đặc biệt là các tính năng như screen sharing và recording controls.
+\end{itemize}
+
+\phantomsection
+\addcontentsline{toc}{subsection}{3. Hướng phát triển}
+\subsection*{3. Hướng phát triển}
+
+\begin{itemize}
+    \item Tích hợp thêm các tính năng quản lý dự án Agile như Kanban board, Sprint planning, Backlog management để hỗ trợ đầy đủ quy trình phát triển phần mềm theo phương pháp Agile/Scrum. Trong tương lai, có thể tích hợp các công cụ CI/CD để tự động hóa quy trình deploy và testing.
+    \item Các phương thức thanh toán nội địa như VNPay, MoMo, và ZaloPay sẽ được tích hợp cùng với Stripe nhằm đáp ứng tốt hơn thói quen thanh toán của người dùng Việt Nam. Hệ thống cũng sẽ triển khai tính năng đăng nhập nhanh qua tài khoản Google và GitHub để giúp người dùng đăng ký và truy cập tiện lợi hơn.
+    \item Phát triển thêm các loại báo cáo AI đa dạng hơn như phân tích tiến độ dự án, dự đoán rủi ro, đề xuất cải thiện quy trình làm việc. Tích hợp chatbot AI để hỗ trợ người dùng tương tác và truy vấn thông tin nhanh chóng.
+    \item Xây dựng ứng dụng mobile native cho iOS và Android sử dụng React Native hoặc Flutter để người dùng có thể quản lý công việc mọi lúc mọi nơi.
+    \item Tích hợp với các công cụ phổ biến như Slack, Microsoft Teams, Jira, Trello để đồng bộ dữ liệu và thông báo, giúp người dùng không cần chuyển đổi giữa nhiều ứng dụng.
+    \item Phát triển tính năng Analytics dashboard với các biểu đồ trực quan để theo dõi hiệu suất làm việc của team, thống kê thời gian hoàn thành task, và đánh giá năng suất thành viên.
+\end{itemize}

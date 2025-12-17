@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Sidebar } from './sidebar';
 import { ChatWindow } from './chat';
 import { DetailsPanel, ThreadView, MembersTab, FilesTab, AISettingsTab } from './details';
@@ -15,6 +15,8 @@ import {
   useChatSidebar,
   useChatModals,
 } from '../hooks';
+import { useUserProfile } from '@uts/design-system/ui';
+import { EmbeddedHuddle } from './huddle';
 
 /**
  * Main Chat Application Component - Pure UI Layer
@@ -27,11 +29,15 @@ export function ChatApp() {
   const threads = useChatThreads();
   const sidebar = useChatSidebar();
   const modals = useChatModals();
+  const { data: userProfile } = useUserProfile();
 
   // Message action modals state
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
   const [deletingMessage, setDeletingMessage] = useState<Message | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  // Embedded huddle state
+  const [huddleUrl, setHuddleUrl] = useState<string | null>(null);
 
   // Helper to get DM name
   const getDMName = (room: Room) => room.name || 'Direct Message';
@@ -83,6 +89,85 @@ export function ChatApp() {
   // Search handlers
   const handleOpenSearch = () => setIsSearchOpen(true);
   const handleCloseSearch = () => setIsSearchOpen(false);
+
+  // Meeting handler - opens meet-web with user info
+  const getMeetingUrl = (includeParams = false) => {
+    if (!rooms.selectedRoom) return null;
+    const meetBaseUrl = process.env.NEXT_PUBLIC_MEET_WEB_URL || 'http://localhost:3004';
+    const orgId = rooms.selectedRoom?.orgId || '';
+
+    // Determine subject type based on whether room has projectId
+    const isProjectRoom = !!rooms.selectedRoom.projectId;
+    const subjectType = isProjectRoom ? 'project' : 'chat';
+    const subjectId = isProjectRoom ? rooms.selectedRoom.projectId! : rooms.selectedRoom.id;
+
+    // Get user info from profile hook or messages context
+    const userId = messages.currentUserId || userProfile?.userId || '';
+    const userName = userProfile?.displayName || userProfile?.first_name || userProfile?.email || 'User';
+
+    if (!includeParams) {
+      // Simple URL for copying - recipient needs to auth themselves
+      const params = new URLSearchParams({ subjectType, orgId });
+      if (isProjectRoom) {
+        params.set('projectId', subjectId);
+      } else {
+        params.set('chatId', subjectId);
+      }
+      return `${meetBaseUrl}/meet?${params.toString()}`;
+    }
+
+    // Only include user params if we have valid userId
+    if (!userId) {
+      console.warn('[Meeting] No userId available');
+      return null;
+    }
+
+    // Build URL with params - goes directly to /meet which handles auto-join
+    const params = new URLSearchParams({
+      userId,
+      userName,
+      subjectType,
+      orgId,
+    });
+    if (isProjectRoom) {
+      params.set('projectId', subjectId);
+    } else {
+      params.set('chatId', subjectId);
+    }
+
+    return `${meetBaseUrl}/meet?${params.toString()}`;
+  };
+
+  const handleStartMeeting = useCallback(() => {
+    const url = getMeetingUrl(true); // Include user params for auto-join
+    if (url) {
+      setHuddleUrl(url);
+    }
+  }, [rooms.selectedRoom, messages.currentUserId, userProfile]);
+
+  const handleCloseHuddle = useCallback(() => {
+    setHuddleUrl(null);
+  }, []);
+
+  const handleExpandHuddle = useCallback(() => {
+    if (huddleUrl) {
+      window.open(huddleUrl, '_blank');
+      setHuddleUrl(null);
+    }
+  }, [huddleUrl]);
+
+  const handleCopyMeetingLink = async () => {
+    const url = getMeetingUrl(false); // Simple URL without user info
+    if (url) {
+      try {
+        await navigator.clipboard.writeText(url);
+        // Could add a toast notification here
+      } catch (error) {
+        console.error('Failed to copy meeting link:', error);
+      }
+    }
+  };
+
   const handleNavigateToMessage = (roomId: string, messageId: string) => {
     // Navigate to the room containing the message
     rooms.selectRoom(roomId);
@@ -180,6 +265,9 @@ export function ChatApp() {
             onFilesSelect={messages.selectFiles}
             onFileRemove={messages.removeFile}
             onOpenSearch={handleOpenSearch}
+            onStartMeeting={handleStartMeeting}
+            onCopyMeetingLink={handleCopyMeetingLink}
+            huddleParticipantCounts={messages.huddleParticipantCounts}
           />
         }
         details={
@@ -284,6 +372,15 @@ export function ChatApp() {
         onNavigateToMessage={handleNavigateToMessage}
         usersCache={messages.usersCache}
       />
+
+      {/* Embedded Huddle */}
+      {huddleUrl && (
+        <EmbeddedHuddle
+          meetingUrl={huddleUrl}
+          onClose={handleCloseHuddle}
+          onExpand={handleExpandHuddle}
+        />
+      )}
     </>
   );
 }

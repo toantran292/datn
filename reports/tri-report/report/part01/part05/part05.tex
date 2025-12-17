@@ -1,0 +1,37 @@
+\phantomsection
+\subsection*{5. Quy trình nghiên cứu và Công nghệ sử dụng}
+\addcontentsline{toc}{subsection}{5. Quy trình nghiên cứu và Công nghệ sử dụng}
+\setcounter{subsection}{5}
+\setcounter{subsubsection}{0}
+\setcounter{figure}{0}
+
+\subsubsection{Quy trình nghiên cứu}
+
+\begin{itemize}
+    \item Tìm hiểu lý thuyết Agile và vai trò các cuộc họp trong quy trình.
+    \item Khảo sát giải pháp hiện có (Zoom, Google Meet, Teams, Jitsi), xác định khoảng trống.
+    \item Xác định yêu cầu: video conference, recording, transcription, AI summary, đồng bộ dữ liệu.
+    \item Lựa chọn kiến trúc microservice: Meeting Service, Jitsi Meet, Jibri, Transcription Service, AI Service, Meeting Web App.
+    \item Nghiên cứu WebRTC, Jitsi Meet, recording (Jibri), transcription APIs, LLMs.
+    \item Thiết kế database schema và giao diện người dùng.
+    \item Xây dựng từng giai đoạn: triển khai Jitsi, Meeting Service API, recording, transcription, AI, Web App.
+    \item Thiết kế cơ chế đồng bộ dữ liệu với các phân hệ khác.
+    \item Kiểm thử chức năng, chất lượng video/audio, load testing, đánh giá AI.
+\end{itemize}
+
+\subsubsection{Công nghệ sử dụng}
+
+\begin{itemize}
+    \item \textbf{Jitsi Meet, WebRTC, Jibri}: Video conference mã nguồn mở, self-hosted, recording.
+    \item \textbf{NestJS, PostgreSQL, Redis, BullMQ}: Backend, database, cache, message queue.
+    \item \textbf{MinIO}: Object storage tương thích S3 cho recording files.
+    \item \textbf{Speech-to-text APIs}: Google Cloud/AWS/Whisper cho transcription.
+    \item \textbf{LLMs}: GPT-4/Claude/Gemini phân tích transcript, tạo summary.
+    \item \textbf{Next.js, Tailwind CSS, shadcn/ui}: Frontend, UI components.
+    \item \textbf{Jitsi External API, Socket.io, FFmpeg}: Control conference, real-time, video processing.
+    \item \textbf{Prosody XMPP, Nginx}: Signaling server, reverse proxy.
+\end{itemize}
+
+\subsubsection{Công cụ hỗ trợ}
+
+Visual Studio Code, DataGrip, Postman, Docker, Git, WebRTC internals, Prometheus/Grafana.
