@@ -23,6 +23,14 @@ function MeetPageContent() {
     if (joinTriggered.current) return;
     if (!userId || (!chatId && !projectId)) return;
 
+    // Prevent duplicate joins during React StrictMode double-mount
+    const joinKey = `joining_${chatId || projectId}_${userId}`;
+    if (sessionStorage.getItem(joinKey)) {
+      console.log('[Meet] Join already in progress, skipping duplicate');
+      return;
+    }
+    sessionStorage.setItem(joinKey, 'true');
+
     joinTriggered.current = true;
 
     const joinMeeting = async () => {
@@ -58,11 +66,15 @@ function MeetPageContent() {
         localStorage.setItem('userId', userId);
 
         // Navigate to meeting room - preserve embed mode
+        // Note: Keep joinKey in sessionStorage until meeting room loads
+        // to prevent duplicate join if this page is re-mounted
         const roomUrl = isEmbedMode
           ? `/meet/${response.room_id}?embed=true`
           : `/meet/${response.room_id}`;
         router.push(roomUrl);
       } catch (err: any) {
+        // Clear join lock on error so user can retry
+        sessionStorage.removeItem(joinKey);
         console.error('Failed to join meeting:', err);
         setError(err.message || 'Failed to join meeting. Please try again.');
       }

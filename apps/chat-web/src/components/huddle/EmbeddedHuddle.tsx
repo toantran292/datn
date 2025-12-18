@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, memo, forwardRef } from 'react';
 import { X, Maximize2, GripHorizontal, Mic, MicOff, Video, VideoOff, PhoneOff } from 'lucide-react';
 
 interface EmbeddedHuddleProps {
@@ -8,6 +8,26 @@ interface EmbeddedHuddleProps {
   onClose: () => void;
   onExpand?: () => void;
 }
+
+interface MeetingIframeProps {
+  src: string;
+  onLoad: () => void;
+}
+
+// Memoized iframe with forwardRef to prevent re-renders from causing iframe reload
+const MeetingIframe = memo(forwardRef<HTMLIFrameElement, MeetingIframeProps>(
+  function MeetingIframe({ src, onLoad }, ref) {
+    return (
+      <iframe
+        ref={ref}
+        src={src}
+        className="w-full h-full border-0"
+        allow="camera; microphone; display-capture; autoplay"
+        onLoad={onLoad}
+      />
+    );
+  }
+));
 
 export function EmbeddedHuddle({ meetingUrl, onClose }: EmbeddedHuddleProps) {
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -19,9 +39,17 @@ export function EmbeddedHuddle({ meetingUrl, onClose }: EmbeddedHuddleProps) {
   const dragStartRef = useRef({ x: 0, y: 0 });
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
-  // Add embed parameter to URL
-  const embedUrl = new URL(meetingUrl);
-  embedUrl.searchParams.set('embed', 'true');
+  // Add embed parameter to URL - only compute once
+  const [embedUrl] = useState(() => {
+    const url = new URL(meetingUrl);
+    url.searchParams.set('embed', 'true');
+    return url.toString();
+  });
+
+  // Memoize onLoad callback
+  const handleIframeLoad = useCallback(() => {
+    setIsConnecting(false);
+  }, []);
 
   // Handle messages from iframe
   useEffect(() => {
@@ -176,13 +204,7 @@ export function EmbeddedHuddle({ meetingUrl, onClose }: EmbeddedHuddleProps) {
             </div>
           </div>
         )}
-        <iframe
-          ref={iframeRef}
-          src={embedUrl.toString()}
-          className="w-full h-full border-0"
-          allow="camera; microphone; display-capture; autoplay"
-          onLoad={() => setIsConnecting(false)}
-        />
+        <MeetingIframe ref={iframeRef} src={embedUrl} onLoad={handleIframeLoad} />
       </div>
 
       {/* Control buttons - floating at bottom */}

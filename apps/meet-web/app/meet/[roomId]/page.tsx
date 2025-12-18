@@ -95,6 +95,14 @@ function MeetingPageContent() {
     setMeetingId(mId);
     setIsInitialized(true);
 
+    // Clear any join locks from /meet page to prevent duplicate join protection from blocking future joins
+    // This is safe because we're already in the meeting room
+    Object.keys(sessionStorage).forEach(key => {
+      if (key.startsWith('joining_')) {
+        sessionStorage.removeItem(key);
+      }
+    });
+
     // Handle page unload - notify meeting service using sendBeacon for reliability
     const handleBeforeUnload = () => {
       if (mId && uId) {

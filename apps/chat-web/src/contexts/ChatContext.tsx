@@ -267,8 +267,24 @@ export function ChatProvider({ children }: { children: ReactNode }) {
                   })
                 );
               } else {
-                // Main message - add to messages list
-                setMessages((prev) => [...prev, message]);
+                // Main message - add to messages list (with deduplication)
+                setMessages((prev) => {
+                  // Check if message already exists by ID
+                  if (prev.some((m) => m.id === message.id)) {
+                    return prev;
+                  }
+                  // For huddle messages, also check by meetingId to prevent duplicates
+                  if (message.type === 'huddle_started' && message.metadata?.meetingId) {
+                    const existingHuddle = prev.find(
+                      (m) => m.type === 'huddle_started' && m.metadata?.meetingId === message.metadata?.meetingId
+                    );
+                    if (existingHuddle) {
+                      console.log('[ChatContext] Duplicate huddle message detected, skipping:', message.id);
+                      return prev;
+                    }
+                  }
+                  return [...prev, message];
+                });
               }
             } else {
               // Message in non-active room - increment unread count
