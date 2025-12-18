@@ -1,0 +1,161 @@
+\subsection{Thiết kế cơ sở dữ liệu}
+
+\subsubsection{Mô tả dữ liệu}
+
+Phân hệ quản lý dự án (PM Service) lưu trữ các loại dữ liệu chính được tổ chức theo các nhóm entity với mục đích và cấu trúc riêng biệt, đảm bảo tính toàn vẹn và khả năng mở rộng của cơ sở dữ liệu. PM Service tách biệt với Account Service, chỉ lưu trữ references đến user và organization (org\_id, user\_id) mà không duplicate dữ liệu authentication. Các loại dữ liệu chính bao gồm:
+
+\textbf{Dữ liệu về dự án (Project Data):} Đại diện cho project - đơn vị chứa sprints và issues, bao gồm:
+
+\begin{itemize}
+    \item id: Mã định danh project (UUID primary key).
+    \item org\_id: Organization ID chứa project (VARCHAR 255) - reference đến Account Service.
+    \item identifier: Project identifier unique (ví dụ: "PROJ", "DEMO") dùng cho issue keys như "PROJ-123" (VARCHAR 50, unique).
+    \item name: Tên project (VARCHAR 255).
+    \item project\_lead: User ID của Project Lead (UUID, nullable) - reference đến Account Service.
+    \item default\_assignee: User ID được assign mặc định cho new issues (UUID, nullable).
+    \item created\_at: Timestamp tạo project (TIMESTAMPTZ).
+    \item updated\_at: Timestamp cập nhật gần nhất (TIMESTAMPTZ, auto-updated).
+\end{itemize}
+
+\textbf{Dữ liệu về sprint (Sprint Data):} Đại diện cho sprint - đơn vị thời gian để thực hiện issues, bao gồm:
+
+\begin{itemize}
+    \item id: Mã định danh sprint (UUID primary key).
+    \item project\_id: UUID reference đến project chứa sprint (ON DELETE CASCADE).
+    \item name: Tên sprint (VARCHAR 255), ví dụ: "Sprint 1", "Q1 Sprint".
+    \item status: Enum SprintStatus (FUTURE, ACTIVE, CLOSED) với default FUTURE. Application-level validation đảm bảo chỉ một ACTIVE sprint per project.
+    \item goal: Mục tiêu của sprint (TEXT, nullable).
+    \item start\_date: Ngày bắt đầu sprint (DATE, nullable cho FUTURE sprints).
+    \item end\_date: Ngày kết thúc dự kiến (DATE, nullable).
+    \item created\_at: Timestamp tạo sprint (TIMESTAMPTZ).
+    \item updated\_at: Timestamp cập nhật (TIMESTAMPTZ, auto-updated).
+\end{itemize}
+
+\textbf{Dữ liệu về trạng thái issue (IssueStatus Data):} Đại diện cho custom workflow status của project cho phép teams định nghĩa quy trình làm việc riêng:
+
+\begin{itemize}
+    \item id: Mã định danh status (UUID primary key).
+    \item project\_id: UUID reference đến project chứa status (ON DELETE CASCADE).
+    \item name: Tên status (VARCHAR 100), ví dụ: "To Do", "In Progress", "Code Review", "Done".
+    \item description: Mô tả chi tiết về status (TEXT, nullable).
+    \item color: Mã màu hex cho UI display (VARCHAR 7), ví dụ: "\#3B82F6", "\#EF4444".
+    \item order: Thứ tự hiển thị trong Board view columns (INTEGER, default 0).
+    \item created\_at: Timestamp tạo status (TIMESTAMPTZ).
+    \item updated\_at: Timestamp cập nhật (TIMESTAMPTZ, auto-updated).
+\end{itemize}
+
+Constraints: Unique composite index trên (project\_id, order) đảm bảo không có duplicate order trong cùng project. Index trên project\_id để optimize queries khi load Board view.
+
+\textbf{Dữ liệu về issue (Issue Data):} Đại diện cho work items trong project với các types: Story, Task, Bug, Epic. Issues là core entity của PM service với nhiều fields để track progress:
+
+\begin{itemize}
+    \item id: Mã định danh issue (UUID primary key).
+    \item project\_id: UUID reference đến project (ON DELETE CASCADE).
+    \item sprint\_id: UUID reference đến sprint (nullable cho Backlog issues, ON DELETE SET NULL).
+    \item parent\_id: UUID reference đến parent issue cho sub-issues hierarchy (nullable, ON DELETE SET NULL).
+    \item status\_id: UUID reference đến IssueStatus hiện tại (ON DELETE RESTRICT).
+    \item name: Tên/title của issue (VARCHAR 255).
+    \item description: Mô tả chi tiết Markdown format (TEXT, nullable).
+    \item description\_html: HTML render của description cho display (TEXT, nullable).
+    \item type: Loại issue (VARCHAR 32): STORY, TASK, BUG, EPIC.
+    \item priority: Mức độ ưu tiên (VARCHAR 32): LOW, MEDIUM, HIGH, CRITICAL.
+    \item point: Story points estimate (DECIMAL 5,2, nullable).
+    \item sequence\_id: Sequential ID trong project scope (INTEGER) để generate issue key như "PROJ-123".
+    \item sort\_order: Fractional indexing value (DECIMAL 20,10) cho drag-and-drop reordering trong Board columns.
+    \item start\_date: Ngày bắt đầu (DATE, nullable).
+    \item target\_date: Ngày target deadline (DATE, nullable).
+    \item assignees\_json: Array các assignee user IDs (JSONB default [], format: ["uuid1", "uuid2"]) để support multi-assignment.
+    \item created\_by: UUID người tạo issue (nullable) - reference đến Account Service.
+    \item created\_at: Timestamp tạo issue (TIMESTAMPTZ).
+    \item updated\_at: Timestamp cập nhật (TIMESTAMPTZ, auto-updated).
+\end{itemize}
+
+Constraints: Unique composite index trên (project\_id, sequence\_id) đảm bảo issue keys unique trong project. Indexes trên project\_id, sprint\_id, status\_id, parent\_id, created\_by để optimize queries. Self-referencing relation "IssueHierarchy" cho parent-child relationships.
+
+\textbf{Dữ liệu về comment (IssueComment Data):} Đại diện cho comments/discussions trên issues:
+
+\begin{itemize}
+    \item id: Mã định danh comment (UUID primary key).
+    \item issue\_id: UUID reference đến issue (ON DELETE CASCADE).
+    \item project\_id: UUID reference đến project (ON DELETE CASCADE) để optimize project-level queries.
+    \item comment: Nội dung comment Markdown format (TEXT, nullable).
+    \item comment\_html: HTML render của comment cho display (TEXT, nullable).
+    \item created\_by: UUID user tạo comment - reference đến Account Service.
+    \item updated\_by: UUID user edit comment lần cuối (nullable).
+    \item created\_at: Timestamp tạo comment (TIMESTAMPTZ).
+    \item updated\_at: Timestamp cập nhật (TIMESTAMPTZ, auto-updated).
+\end{itemize}
+
+Indexes trên issue\_id, project\_id, created\_by để optimize queries. Comment supports rich text với HTML rendering tương tự issue description.
+
+\textbf{Dữ liệu về activity (IssueActivity Data):} Đại diện cho audit trail field-level changes của issues, tracking history của mọi thay đổi:
+
+\begin{itemize}
+    \item id: Mã định danh activity (UUID primary key).
+    \item issue\_id: UUID reference đến issue (ON DELETE CASCADE).
+    \item project\_id: UUID reference đến project (ON DELETE CASCADE).
+    \item field: Tên field bị thay đổi (VARCHAR 100), ví dụ: "name", "status", "priority", "assignees", "sprint", etc.
+    \item old\_value: Giá trị cũ (TEXT, nullable) stored as string representation.
+    \item new\_value: Giá trị mới (TEXT, nullable).
+    \item old\_identifier: Display name của old value (VARCHAR 255, nullable), ví dụ: status name "To Do", user name "John Doe".
+    \item new\_identifier: Display name của new value (VARCHAR 255, nullable).
+    \item actor\_id: UUID user thực hiện thay đổi - reference đến Account Service.
+    \item created\_at: Timestamp chính xác của change (TIMESTAMPTZ).
+\end{itemize}
+
+Indexes trên issue\_id, project\_id, actor\_id, created\_at để optimize activity feed queries và filtering. Design pattern: Store both value (UUID/enum) và identifier (human-readable name) để display activity history khi referenced entities bị delete.
+
+
+\subsubsection{Mô hình dữ liệu}
+
+Mô hình dữ liệu của phân hệ quản lý dự án được thiết kế dựa trên kiến trúc relational database với PostgreSQL 16, sử dụng Prisma ORM và các nguyên tắc normalization để đảm bảo tính toàn vẹn dữ liệu và giảm thiểu redundancy. PM Service database bao gồm 5 core tables chính:
+
+\begin{itemize}
+    \item \textbf{Project:} Container chứa sprints và issues, thuộc organization (org\_id reference đến Account Service).
+    \item \textbf{Sprint:} Time-boxed iteration với lifecycle FUTURE → ACTIVE → CLOSED, belongs to Project.
+    \item \textbf{IssueStatus:} Custom workflow statuses định nghĩa bởi project, với order và color configuration.
+    \item \textbf{Issue:} Core work items (STORY/TASK/BUG/EPIC) với support multi-assignment qua assignees\_json, parent-child hierarchy, fractional indexing cho drag-and-drop.
+    \item \textbf{IssueComment:} Discussion threads trên issues với Markdown/HTML support.
+    \item \textbf{IssueActivity:} Audit trail field-level changes cho comprehensive issue history.
+\end{itemize}
+
+Relationships: Project (1) → (N) Sprints, Project (1) → (N) IssueStatuses, Project (1) → (N) Issues, Sprint (1) → (N) Issues (nullable), IssueStatus (1) → (N) Issues, Issue (1) → (N) IssueComments, Issue (1) → (N) IssueActivities, Issue (1) → (N) Issues (self-referencing hierarchy). Tất cả relationships dùng UUID foreign keys với cascade delete policies phù hợp. References đến User và Organization entities lưu dưới dạng UUID/string không có foreign key constraints vì nằm ở Account Service database riêng biệt.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{images/class_diagram.png}
+\caption{Sơ đồ lớp (Class Diagram) của phân hệ quản lý dự án}
+\label{fig:class_diagram}
+\end{figure}
+
+\textbf{Key Design Patterns của PM Service Database:}
+
+\begin{itemize}
+    \item \textbf{UUID Primary Keys:} Tất cả tables sử dụng UUID (@db.Uuid) cho primary keys thay vì auto-increment integers, tránh enumeration attacks và dễ dàng distributed ID generation.
+
+    \item \textbf{Prisma ORM với Type Safety:} Schema-first approach với Prisma generator tạo type-safe client, auto-completion, và compile-time type checking. Migrations managed qua prisma migrate.
+
+    \item \textbf{Enum Types:} SprintStatus enum (FUTURE, ACTIVE, CLOSED) được define tại database level để enforce valid values và optimize storage.
+
+    \item \textbf{JSONB for Flexibility:} Issue.assignees\_json lưu array user UUIDs dưới dạng JSONB với default [] để support multi-assignment mà không cần junction table riêng.
+
+    \item \textbf{Fractional Indexing:} Issue.sort\_order (DECIMAL 20,10) implement fractional indexing algorithm cho drag-and-drop reordering trong Board columns without gaps, không cần reorder entire list.
+
+    \item \textbf{Markdown + HTML Storage:} Issue và IssueComment lưu cả markdown source (description/comment) và rendered HTML (description\_html/comment\_html) để optimize display performance và maintain edit capability.
+
+    \item \textbf{Composite Unique Constraints:} (project\_id, sequence\_id) unique cho issue keys, (project\_id, order) unique cho IssueStatus ordering.
+
+    \item \textbf{Strategic Indexes:} Indexes trên foreign keys (project\_id, sprint\_id, status\_id, parent\_id) và query columns (created\_by, actor\_id, created\_at) để optimize Board/Backlog queries và activity feeds.
+
+    \item \textbf{Cascade Delete Policies:} ON DELETE CASCADE cho Project → Sprints/Issues/IssueStatuses/Comments/Activities. ON DELETE SET NULL cho Sprint → Issues (move to backlog khi delete sprint). ON DELETE RESTRICT cho IssueStatus → Issues (prevent delete status đang được dùng).
+
+    \item \textbf{Self-Referencing Hierarchy:} Issue.parent\_id self-reference với relation name "IssueHierarchy" cho Epic → Sub-tasks tree structure, ON DELETE SET NULL để preserve children khi delete parent.
+
+    \item \textbf{Auto-Updated Timestamps:} Prisma @updatedAt directive tự động update updated\_at timestamp mỗi khi record thay đổi.
+
+    \item \textbf{Cross-Service References:} org\_id, project\_lead, default\_assignee, created\_by, actor\_id lưu UUID/string references đến Account Service entities mà không có foreign key constraints vì cross-database boundaries.
+\end{itemize}
+
+\subsubsection{Từ điển dữ liệu}
+
+Chi tiết từ điển dữ liệu của toàn bộ các bảng trong hệ thống, bao gồm tên cột, kiểu dữ liệu, mô tả và các ràng buộc, được trình bày đầy đủ trong Phụ lục B.

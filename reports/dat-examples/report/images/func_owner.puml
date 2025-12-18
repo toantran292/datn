@@ -1,0 +1,35 @@
+@startuml func_owner
+!theme plain
+skinparam backgroundColor white
+skinparam rectangleBorderThickness 2
+skinparam defaultFontSize 9
+
+title Phân rã chức năng của Workspace Owner
+
+rectangle "Workspace Owner" as Owner {
+    rectangle "Quản lý\nOrganization" as OrgManagement {
+        rectangle "Tạo\norganization" as CreateOrg
+        rectangle "Cập nhật\norganization" as UpdateOrg
+        rectangle "Quản lý\nworkspace members" as ManageMembers
+    }
+
+    rectangle "Quản lý\nProjects" as ProjectManagement {
+        rectangle "Xem tất cả\nprojects" as ViewAllProjects
+        rectangle "Khóa project" as ArchiveProject
+        rectangle "Xóa project" as DeleteProject
+    }
+
+    rectangle "Thống kê &\nBáo cáo" as Analytics {
+        rectangle "Xem thống kê\ntổng hợp" as ViewStatistics
+        rectangle "Báo cáo theo\nproject" as ProjectReports
+        rectangle "Dashboard\norganization" as OrgDashboard
+    }
+
+    rectangle "Quản lý\nChiến lược" as StrategyManagement {
+        rectangle "Quản lý\nEpics" as ManageEpics
+        rectangle "Roadmap\nplanning" as RoadmapPlanning
+        rectangle "Resource\nallocation" as ResourceAllocation
+    }
+}
+
+@enduml

@@ -17,6 +17,7 @@ export interface MessageListProps {
   onUnpinMessage?: (message: Message) => void;
   onAddReaction?: (message: Message) => void;
   onToggleReaction?: (messageId: string, emoji: string) => void;
+  huddleParticipantCount?: number;  // Real-time participant count for active huddle
   lastSeenMessageId?: string | null;
 }
 
@@ -43,6 +44,7 @@ export function MessageList({
   onUnpinMessage,
   onAddReaction,
   onToggleReaction,
+  huddleParticipantCount,
   lastSeenMessageId,
 }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -99,6 +101,14 @@ export function MessageList({
           // Render huddle messages with special component
           if (msg.type === 'huddle_started' || msg.type === 'huddle_ended') {
             return (
+              <HuddleMessage
+                key={msg.id}
+                message={msg}
+                currentUserId={currentUserId}
+                liveParticipantCount={msg.type === 'huddle_started' ? huddleParticipantCount : undefined}
+                onOpenThread={onOpenThread}
+                onToggleReaction={onToggleReaction}
+              />
               <div key={msg.id}>
                 {showUnreadDivider && <UnreadDivider />}
                 <HuddleMessage

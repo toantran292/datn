@@ -240,6 +240,7 @@ export function ChatWindow({
         onAddReaction={onAddReaction}
         onToggleReaction={onToggleReaction}
         lastSeenMessageId={lastSeenMessageId}
+        huddleParticipantCount={huddleParticipantCount}
       />
 
       <MessageComposer

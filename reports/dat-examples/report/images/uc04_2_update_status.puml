@@ -1,0 +1,37 @@
+@startuml
+!theme plain
+skinparam defaultFontSize 11
+skinparam usecaseFontSize 10
+
+left to right direction
+
+actor "Project Lead" as PL
+
+usecase "Cập nhật\ncustom status" as UC_Update
+usecase "Validate\nthay đổi" as UC_Validate
+usecase "Cập nhật\nIssueStatus" as UC_UpdateRecord
+usecase "Cập nhật board\nview real-time" as UC_UpdateBoard
+usecase "Cập nhật badge\ncủa issues" as UC_UpdateBadge
+usecase "Inline edit\ntrên board" as UC_InlineEdit
+
+PL --> UC_Update
+
+UC_Validate .up.> UC_Update : <<include>>
+UC_UpdateRecord .up.> UC_Update : <<include>>
+UC_UpdateBoard .up.> UC_Update : <<include>>
+UC_UpdateBadge .up.> UC_Update : <<include>>
+
+UC_InlineEdit ..> UC_Update : <<extend>>
+
+note right of UC_UpdateBadge
+  Tất cả issue với
+  status này hiển thị
+  màu badge mới
+end note
+
+note bottom of UC_InlineEdit
+  Click vào column header
+  trong board để edit nhanh
+end note
+
+@enduml

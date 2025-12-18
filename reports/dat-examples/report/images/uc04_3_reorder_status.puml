@@ -1,0 +1,38 @@
+@startuml
+!theme plain
+skinparam defaultFontSize 11
+skinparam usecaseFontSize 10
+
+left to right direction
+
+actor "Project Lead" as PL
+
+usecase "Reorder\nstatus columns" as UC_Reorder
+usecase "Kéo thả\ncolumn" as UC_DragDrop
+usecase "Tính lại order\ncho statuses" as UC_RecalcOrder
+usecase "Batch update\ndatabase" as UC_BatchUpdate
+usecase "Reorder board\nview real-time" as UC_UpdateBoard
+usecase "Dùng arrows\nđể reorder" as UC_UseArrows
+
+PL --> UC_Reorder
+
+UC_DragDrop .up.> UC_Reorder : <<include>>
+UC_RecalcOrder .up.> UC_Reorder : <<include>>
+UC_BatchUpdate .up.> UC_Reorder : <<include>>
+UC_UpdateBoard .up.> UC_Reorder : <<include>>
+
+UC_UseArrows ..> UC_Reorder : <<extend>>
+
+note right of UC_RecalcOrder
+  Recalculate order:
+  Affected statuses
+  get new order values
+end note
+
+note bottom of UC_UseArrows
+  Trong settings, có thể
+  dùng up/down arrows
+  thay vì kéo thả
+end note
+
+@enduml

@@ -1,0 +1,48 @@
+@startuml act_complete_sprint
+|Người dùng|
+start
+:Nhấn "Complete Sprint";
+|Giao diện người dùng|
+:Hiển thị Complete Sprint Dialog;
+:Hiển thị summary:
+- Completed issues
+- Incomplete issues;
+|Người dùng|
+:Chọn xử lý incomplete issues:
+- Move to Backlog
+- Move to next sprint;
+:Chọn "Generate AI Summary"
+(default: checked);
+:Nhấn "Complete Sprint";
+|Giao diện người dùng|
+:Gửi request complete sprint;
+|Hệ thống xử lý|
+:Lấy danh sách incomplete issues;
+if (Move to next sprint?) then (có)
+  :Tìm hoặc tạo sprint tiếp theo;
+  :Move incomplete issues
+  sang sprint mới;
+else (không)
+  :Move incomplete issues
+  về Backlog;
+endif
+:Update sprint.status = CLOSED;
+:Update sprint.endDate = now;
+:Tính metrics
+(velocity, completion rate);
+if (Generate AI Summary?) then (có)
+  :Gọi LLM API với
+  sprint data + issues;
+  :Lưu AI summary;
+endif
+:Tạo audit log;
+:Gửi WebSocket notification;
+|Giao diện người dùng|
+:Thông báo complete thành công;
+if (Có AI Summary?) then (có)
+  :Hiển thị Sprint Summary;
+endif
+:Cập nhật sprint list;
+|Người dùng|
+stop
+@enduml

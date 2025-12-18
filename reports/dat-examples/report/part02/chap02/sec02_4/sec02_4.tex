@@ -1,0 +1,37 @@
+\subsection{Giới thiệu về cơ sở dữ liệu}
+
+\subsubsection{Khái quát}
+
+PostgreSQL là một hệ quản trị cơ sở dữ liệu quan hệ (RDBMS) mã nguồn mở mạnh mẽ với hơn 35 năm phát triển, nổi tiếng với độ tin cậy, tính toàn vẹn dữ liệu, và bộ tính năng phong phú. PostgreSQL đảm bảo ACID compliance (Atomicity, Consistency, Isolation, Durability) cho transactions, có tính extensibility cao với khả năng tạo custom functions, data types, operators và extensions, hỗ trợ JSON/JSONB để lưu trữ và query dữ liệu JSON hiệu quả kết hợp ưu điểm của cả SQL và NoSQL, cung cấp built-in full-text search capabilities, hỗ trợ advanced indexing với nhiều loại indexes (B-tree, Hash, GiST, SP-GiST, GIN, BRIN), và sử dụng MVCC (Multi-Version Concurrency Control) cho phép đọc và ghi đồng thời mà không lock dữ liệu.
+
+Redis (Remote Dictionary Server) là một in-memory data structure store được sử dụng như database, cache, và message broker. Redis lưu trữ dữ liệu trong RAM cho phép đọc/ghi cực nhanh với latency dưới millisecond, hỗ trợ nhiều data structures như Strings, Lists, Sets, Sorted Sets, Hashes, và Streams. Sự kết hợp giữa PostgreSQL và Redis trong một hệ thống tạo nên kiến trúc hybrid database mạnh mẽ: PostgreSQL làm persistent storage với ACID guarantees, Redis làm caching layer và real-time data processing.
+
+\subsubsection{Ứng dụng và use cases}
+
+Redis được sử dụng rộng rãi trong các ứng dụng web hiện đại cho nhiều mục đích khác nhau: session storage để lưu trữ user sessions với fast access, caching cho database query results và API responses giúp giảm load lên database chính, rate limiting để kiểm soát số lượng requests từ clients, real-time leaderboards với Sorted Sets, Pub/Sub messaging cho real-time communication giữa các services, và job queues để xử lý background tasks. Trong kiến trúc SaaS, Redis đóng vai trò quan trọng trong việc cải thiện performance và scalability của hệ thống.
+
+\subsubsection{ORM và data access layer}
+
+ORM (Object-Relational Mapping) là kỹ thuật ánh xạ giữa object-oriented program\-ming models và relational database tables, giúp developers làm việc với database thông qua objects thay vì raw SQL queries. Hệ thống sử dụng Prisma ORM cho PM Service (NestJS) và Spring Data JPA cho Account Service (Spring Boot).
+
+Prisma ORM là một modern ORM cho Node.js và TypeScript với type-safe database client, được sử dụng làm data access layer chính cho PM subsystem. Prisma Schema file (schema.prisma) định nghĩa data models và database connection bằng declarative syntax, cho phép define entities với relationships, constraints, và indexes một cách rõ ràng. Prisma Client là auto-generated type-safe database client được generate từ schema, cung cấp type-safe queries và mutations với full IntelliSense support trong TypeScript. Prisma Migrate là database migration tool tự động tạo và apply migrations từ schema changes, hỗ trợ version control cho database schema và rollback khi cần. Prisma Studio cung cấp GUI để browse và edit data trực tiếp trong database, hữu ích cho debugging và data management. Type Safety với full TypeScript support đảm bảo compile-time checking cho database operations, giảm runtime errors và cải thiện developer experience với autocomplete và type inference.
+
+\subsubsection{Vận dụng vào đề tài}
+
+Hệ thống database được thiết kế theo kiến trúc hybrid kết hợp PostgreSQL và Redis để tối ưu cả về performance và data integrity cho phân hệ quản lý dự án.
+
+\paragraph{Database schema design với Prisma}
+
+PostgreSQL đóng vai trò persistent storage chính lưu trữ toàn bộ dữ liệu của PM subsystem. Prisma Schema định nghĩa các core entities với relationships rõ ràng: Project là root entity chứa multiple Sprints và CustomStatuses cho workflow configuration; Sprint có lifecycle (FUTURE/ACTIVE/CLOSED) và chứa multiple Issues; Issue thuộc về Project, có thể assign vào Sprint, link tới CustomStatus, và support nhiều types (STORY/TASK/BUG/EPIC); CustomStatus define workflow columns với category (TODO/IN\_PROGRESS/DONE) và sortOrder cho drag-and-drop; Comment và Activity track collaboration history và audit trail. Dữ liệu được tổ chức theo schema relational với foreign keys đảm bảo referential integrity và cascade operations (xóa project → tự động xóa sprints, issues, custom statuses). Schema sử dụng JSONB columns cho flexible data: issue description lưu markdown content với formatting, sprint goal lưu rich text, và AI-generated content như sprint summary được lưu dưới dạng structured JSON với sections (overview, achievements, issues found, recommendations).
+
+\paragraph{Indexing strategy cho performance}
+
+Các indexes được thiết kế cụ thể cho queries phổ biến trong PM subsystem. Composite index trên (projectId, sprintId, statusId) optimize Board view query khi load tất cả issues của một project theo sprint và status columns. Index trên sortOrder field trong CustomStatus và Issue tables support drag-and-drop operations với fast reordering. GIN index trên JSONB columns (issue description, sprint summary) enable full-text search với performance tốt. Unique constraint trên (projectId, key) trong Issue table đảm bảo issue keys (ví dụ: PROJ-123) là unique trong project. Index trên createdAt và updatedAt fields support sorting và filtering theo timeline.
+
+\paragraph{Redis caching strategy}
+
+Redis được sử dụng làm caching layer với key naming convention rõ ràng: \texttt{project:\{projectId\}} cache project info với members và permissions (TTL 1 giờ), \texttt{sprint:\{sprintId\}} cache active sprint data với issues count (TTL 30 phút), \texttt{statuses:\{projectId\}} cache custom status definitions để tránh query mỗi lần load Board (TTL 1 giờ), và \texttt{user:\{userId\}:permissions:\{projectId\}} cache user permissions cho RBAC checks (TTL 15 phút). Rate limiting sử dụng Redis counters: key \texttt{ratelimit:\{userId\}:\{endpoint\}} với INCR command và TTL 60 seconds, limit 100 requests/phút/user cho API endpoints. Pub/Sub channels được define cho real-time events: channel \texttt{project:\{projectId\}:issues} broadcast issue changes (create/update/delete/reorder), channel \texttt{sprint:\{sprintId\}:progress} broadcast sprint updates (issues completed, burndown changes), giúp WebSocket clients nhận real-time updates mà không cần polling.
+
+\paragraph{Prisma ORM implementation}
+
+Prisma Client cung cấp type-safe database operations cho PM Service. Transaction support cho complex operations như complete sprint: trong một transaction, update sprint status từ ACTIVE → CLOSED, move tất cả incomplete issues về backlog (set sprintId = null), generate AI sprint summary và save vào sprint record, và log activity. Optimistic locking với @updatedAt field và version checking xử lý concurrent updates khi multiple users drag-and-drop issues đồng thời. Cascade delete với onDelete: Cascade trong schema relationships maintain data integrity: xóa project cascade delete sprints, issues, custom statuses; xóa issue cascade delete comments và activities. Prisma Migrate quản lý schema evolution với migration files được version control trong Git, support rollback khi deploy failed.

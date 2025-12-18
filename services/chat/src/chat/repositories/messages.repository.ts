@@ -280,4 +280,88 @@ export class MessagesRepository {
     }
     return result;
   }
+
+  /**
+   * Find huddle message by meetingId
+   * Used to find the thread parent for meeting chat messages
+   */
+  async findHuddleMessageByMeetingId(
+    roomId: string,
+    meetingId: string,
+  ): Promise<PersistedMessage | null> {
+    // Find huddle_started or huddle_ended message with matching meetingId in metadata
+    const message = await this.messageRepo
+      .createQueryBuilder('m')
+      .where('m.room_id = :roomId', { roomId })
+      .andWhere('m.type IN (:...types)', { types: ['huddle_started', 'huddle_ended'] })
+      .andWhere('m.deleted_at IS NULL')
+      .andWhere("m.metadata->>'meetingId' = :meetingId", { meetingId })
+      .orderBy('m.created_at', 'DESC')
+      .getOne();
+
+    if (!message) return null;
+
+    return {
+      id: message.id,
+      roomId: message.roomId,
+      userId: message.userId,
+      orgId: message.orgId,
+      threadId: message.threadId,
+      type: message.type,
+      content: message.content,
+      metadata: message.metadata,
+      createdAt: message.createdAt,
+    };
+  }
+
+  /**
+   * Find huddle_started message by meetingId
+   * Used to update it when huddle ends
+   */
+  async findHuddleStartedMessage(
+    roomId: string,
+    meetingId: string,
+  ): Promise<PersistedMessage | null> {
+    const message = await this.messageRepo
+      .createQueryBuilder('m')
+      .where('m.room_id = :roomId', { roomId })
+      .andWhere('m.type = :type', { type: 'huddle_started' })
+      .andWhere('m.deleted_at IS NULL')
+      .andWhere("m.metadata->>'meetingId' = :meetingId", { meetingId })
+      .getOne();
+
+    if (!message) return null;
+
+    return {
+      id: message.id,
+      roomId: message.roomId,
+      userId: message.userId,
+      orgId: message.orgId,
+      threadId: message.threadId,
+      type: message.type,
+      content: message.content,
+      metadata: message.metadata,
+      createdAt: message.createdAt,
+    };
+  }
+
+  /**
+   * Update huddle message type and metadata
+   * Used when huddle ends to convert huddle_started to huddle_ended
+   */
+  async updateHuddleMessage(
+    id: string,
+    data: {
+      type: string;
+      metadata: Record<string, any>;
+    },
+  ): Promise<PersistedMessage | null> {
+    await this.messageRepo.update(id, {
+      type: data.type as any,
+      metadata: data.metadata,
+      editedAt: new Date(),
+    });
+
+    return this.findById(id);
+  }
 }

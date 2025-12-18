@@ -11,14 +11,15 @@ import {
   IBacklogSectionData,
   StartSprintModal,
 } from "@/core/components/backlog";
-import { CompleteSprintModal } from "@/core/components/sprint/complete-sprint-modal";
 import { ProjectTabs } from "@/core/components/project/project-tabs";
-import { IdentityService } from "@/core/services/identity/identity.service";
-import { ProjectService } from "@/core/services/project/project.service";
+import { SprintRisksDashboard } from "@/core/components/risk-detector";
+import { CompleteSprintModal } from "@/core/components/sprint/complete-sprint-modal";
 import { useIssue } from "@/core/hooks/store/use-issue";
 import { useIssueStatus } from "@/core/hooks/store/use-issue-status";
 import { useProject } from "@/core/hooks/store/use-project";
 import { useSprint } from "@/core/hooks/store/use-sprint";
+import { IdentityService } from "@/core/services/identity/identity.service";
+import { ProjectService } from "@/core/services/project/project.service";
 import { IIssue } from "@/core/types/issue";
 
 const UNIMPLEMENTED_TOAST = () =>
@@ -47,6 +48,7 @@ const ProjectBacklogPage = observer(() => {
   const [isStartModalOpen, setIsStartModalOpen] = useState(false);
   const [completeSprintId, setCompleteSprintId] = useState<string | null>(null);
   const [isCompleteModalOpen, setIsCompleteModalOpen] = useState(false);
+  const [selectedSprintIdForRisk, setSelectedSprintIdForRisk] = useState<string | null>(null);
 
   const {
     fetchIssuesByProject,
@@ -182,6 +184,13 @@ const ProjectBacklogPage = observer(() => {
     () => projectIssues.filter((issue) => !issue.sprintId || visibleSprintIds.has(issue.sprintId)),
     [projectIssues, visibleSprintIds]
   );
+
+  // Set default selected sprint for risk detector
+  useEffect(() => {
+    if (activeSprints.length > 0 && !selectedSprintIdForRisk) {
+      setSelectedSprintIdForRisk(activeSprints[0].id);
+    }
+  }, [activeSprints, selectedSprintIdForRisk]);
 
   const handleUnimplemented = () => UNIMPLEMENTED_TOAST();
 
@@ -376,17 +385,19 @@ const ProjectBacklogPage = observer(() => {
     return grouped;
   }, [visibleIssues]);
 
-  const sprintSections = useMemo(() => {
-    return visibleSprints.map<IBacklogSectionData>((sprint) => ({
-      id: sprint.id,
-      name: sprint.name,
-      type: "sprint",
-      goal: sprint.goal,
-      startDate: sprint.startDate,
-      endDate: sprint.endDate,
-      issues: issuesGroupedBySprint.get(sprint.id) ?? [],
-    }));
-  }, [visibleSprints, issuesGroupedBySprint]);
+  const sprintSections = useMemo(
+    () =>
+      visibleSprints.map<IBacklogSectionData>((sprint) => ({
+        id: sprint.id,
+        name: sprint.name,
+        type: "sprint",
+        goal: sprint.goal,
+        startDate: sprint.startDate,
+        endDate: sprint.endDate,
+        issues: issuesGroupedBySprint.get(sprint.id) ?? [],
+      })),
+    [visibleSprints, issuesGroupedBySprint]
+  );
 
   const backlogSection = useMemo<IBacklogSectionData>(
     () => ({
@@ -442,6 +453,42 @@ const ProjectBacklogPage = observer(() => {
         issueStatuses={issueStatuses}
         sprints={getSprintsForProject(projectId)}
       />
+
+      {/* Sprint Risk Detector Dashboard */}
+      {activeSprints.length > 0 && selectedSprintIdForRisk && (
+        <div className="mt-8 space-y-3">
+          {/* Sprint Selector */}
+          {activeSprints.length > 1 && (
+            <div className="flex items-center gap-3">
+              <label className="text-sm font-medium text-custom-text-200">Phân tích rủi ro cho sprint:</label>
+              <select
+                value={selectedSprintIdForRisk}
+                onChange={(e) => setSelectedSprintIdForRisk(e.target.value)}
+                className="px-3 py-2 text-sm rounded-lg border border-custom-border-200 bg-custom-background-100 text-custom-text-200 hover:border-custom-border-300 focus:outline-none focus:ring-2 focus:ring-custom-primary-100"
+              >
+                {activeSprints.map((sprint) => (
+                  <option key={sprint.id} value={sprint.id}>
+                    {sprint.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* Risk Dashboard */}
+          <SprintRisksDashboard
+            sprintId={selectedSprintIdForRisk}
+            sprintName={activeSprints.find((s) => s.id === selectedSprintIdForRisk)?.name}
+            issues={projectIssues.map((issue) => ({ id: issue.id, name: issue.name }))}
+            onRecommendationApplied={() => {
+              // Refetch issues to update UI after recommendation is applied
+              if (projectId) {
+                fetchIssuesByProject(projectId);
+              }
+            }}
+          />
+        </div>
+      )}
 
       <StartSprintModal
         isOpen={isStartModalOpen && Boolean(sprintToStart)}

@@ -1,0 +1,361 @@
+\phantomsection
+\setsection{Phụ lục A. Hướng dẫn cài đặt và sử dụng phần mềm}
+
+\newcounter{appendixstep}
+\setcounter{appendixstep}{0}
+\renewcommand{\theappendixstep}{\arabic{appendixstep}}
+
+\refstepcounter{appendixstep}
+\subsubsection*{\theappendixstep. Yêu cầu hệ thống}
+
+\textbf{Phần cứng tối thiểu:}
+\begin{itemize}
+    \item Vi xử lý: Intel Core i5 hoặc tương đương
+    \item RAM: 8GB (khuyến nghị 16GB cho môi trường development)
+    \item Ổ cứng: SSD 256GB trở lên (ít nhất 15GB dung lượng trống)
+    \item Kết nối mạng: Băng thông ổn định để tải dependencies và Docker images
+\end{itemize}
+
+\textbf{Phần mềm yêu cầu:}
+\begin{itemize}
+    \item Hệ điều hành: Windows 10/11, macOS 10.15+, hoặc Linux (Ubuntu 20.04+)
+    \item Node.js: phiên bản 20.x (theo file \texttt{.nvmrc})
+    \item pnpm: phiên bản 9.x+ (package manager)
+    \item Docker: phiên bản 20.10+ và Docker Compose v2
+    \item Git: phiên bản 2.30+
+    \item Trình duyệt web: Chrome, Firefox, hoặc Edge (phiên bản mới nhất)
+\end{itemize}
+
+\refstepcounter{appendixstep}
+\subsubsection*{\theappendixstep. Cài đặt các công cụ cần thiết}
+
+\textbf{1. Cài đặt Node.js}
+
+Hệ thống sử dụng Node.js phiên bản 20.x. Khuyến nghị sử dụng Node Version Manager (nvm) để quản lý phiên bản Node.js.
+
+\textbf{Trên macOS/Linux:}
+\begin{lstlisting}
+# Cai dat nvm
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+# Khoi dong lai terminal, sau do:
+nvm install 20 && nvm use 20
+\end{lstlisting}
+
+\textbf{Trên Windows:} Tải và cài đặt nvm-windows từ: \url{https://github.com/coreybutler/nvm-windows}, sau đó chạy lệnh tương tự.
+
+\textbf{2. Cài đặt pnpm và Docker}
+\begin{lstlisting}
+# Cai dat pnpm
+npm install -g pnpm@9
+\end{lstlisting}
+\newpage
+Docker: Tải Docker Desktop từ \url{https://www.docker.com/products/docker-desktop} (Windows/macOS) hoặc cài qua apt trên Ubuntu:
+\begin{lstlisting}
+sudo apt-get update && sudo apt-get install docker.io docker-compose-v2
+sudo usermod -aG docker $USER
+\end{lstlisting}
+
+\refstepcounter{appendixstep}
+\subsubsection*{\theappendixstep. Clone và cấu hình môi trường}
+
+\begin{lstlisting}
+# Clone repository
+git clone <repository-url> pm-system && cd pm-system
+
+# Cai dat dependencies
+pnpm install
+\end{lstlisting}
+
+\textbf{Cấu hình biến môi trường Docker} - Tạo file \texttt{.env} cho infrastructure services:
+\begin{lstlisting}
+# PostgreSQL
+POSTGRES_USER=pm_user
+POSTGRES_PASSWORD=<mat-khau-manh>
+POSTGRES_DB=pm_database
+POSTGRES_PORT=5432
+
+# Redis
+REDIS_PORT=6379
+REDIS_PASSWORD=<mat-khau-redis>
+
+# MinIO S3 Storage
+MINIO_ROOT_USER=minioadmin
+MINIO_ROOT_PASSWORD=<mat-khau-manh>
+MINIO_API_PORT=9000
+MINIO_CONSOLE_PORT=9001
+\end{lstlisting}
+
+\textbf{Cấu hình PM Service} - Tạo file \texttt{.env} cho PM Service (NestJS):
+\begin{lstlisting}
+# Database
+DATABASE_URL=postgresql://pm_user:<password>@localhost:5432/pm_database
+
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=<redis-password>
+
+# MinIO/S3
+S3_ENDPOINT=http://localhost:9000
+S3_ACCESS_KEY=minioadmin
+S3_SECRET_KEY=<minio-password>
+S3_BUCKET=pm-attachments
+
+# LLM Providers
+OPENAI_API_KEY=<your-openai-key>
+ANTHROPIC_API_KEY=<your-anthropic-key>
+GOOGLE_AI_API_KEY=<your-google-key>
+
+# JWT Secret
+JWT_SECRET=<your-jwt-secret-key>
+\end{lstlisting}
+
+\refstepcounter{appendixstep}
+\subsubsection*{\theappendixstep. Khởi động Infrastructure Services}
+
+\begin{lstlisting}
+# Khoi dong PostgreSQL, Redis, MinIO
+docker compose up -d
+
+# Kiem tra trang thai
+docker compose ps
+
+# Xem logs
+docker compose logs -f
+\end{lstlisting}
+
+\textbf{Kiểm tra health:}
+\begin{lstlisting}
+docker exec pm_postgres pg_isready -U pm_user   # PostgreSQL
+docker exec pm_redis redis-cli PING             # Redis
+curl http://localhost:9000/minio/health/live    # MinIO
+\end{lstlisting}
+
+\refstepcounter{appendixstep}
+\subsubsection*{\theappendixstep. Khởi tạo Database và chạy ứng dụng}
+
+\begin{lstlisting}
+# Chay Prisma migrations cho PM Service
+cd services/pm
+pnpm prisma generate
+pnpm prisma migrate dev
+
+# (Tuy chon) Seed du lieu mau
+pnpm prisma db seed
+\end{lstlisting}
+
+\textbf{Chạy Development:}
+\begin{lstlisting}
+# Chay PM Service (NestJS backend)
+cd services/pm
+pnpm start:dev
+
+# Trong terminal khac, chay pm-web (Next.js frontend)
+cd apps/pm-web
+pnpm dev
+\end{lstlisting}
+
+\textbf{Các địa chỉ truy cập:}
+\begin{itemize}
+    \item PM Web (Next.js): \url{http://localhost:3000}
+    \item PM Service API: \url{http://localhost:4000}
+    \item PM Service API Docs: \url{http://localhost:4000/api}
+    \item MinIO Console: \url{http://localhost:9001}
+    \item PostgreSQL: \texttt{localhost:5432}
+    \item Redis: \texttt{localhost:6379}
+\end{itemize}
+
+\refstepcounter{appendixstep}
+\subsubsection*{\theappendixstep. Sử dụng các chức năng chính}
+
+\textbf{1. Tạo Project mới}
+\begin{itemize}
+    \item Đăng nhập vào hệ thống
+    \item Click "Create Project" trên trang Projects
+    \item Nhập tên project, key (ví dụ: PROJ), và mô tả
+    \item Chọn Project Lead và default assignee
+    \item Click "Create" - Bạn sẽ được redirect đến Board view
+\end{itemize}
+
+\textbf{2. Cấu hình Custom Status Workflow}
+\begin{itemize}
+    \item Vào Project Settings > Issue Statuses
+    \item Click "Add Status" để tạo status mới (ví dụ: To Do, In Progress, Code Review, Done)
+    \item Drag-and-drop để reorder status columns
+    \item Mỗi status có thể chọn color và category (TODO/IN\_PROGRESS/DONE)
+\end{itemize}
+
+\textbf{3. Quản lý Sprint}
+\begin{itemize}
+    \item Vào Backlog view
+    \item Click "Create Sprint" để tạo sprint mới
+    \item Drag-and-drop issues từ backlog vào sprint
+    \item Click "Start Sprint" để bắt đầu (sprint chuyển sang ACTIVE)
+    \item Sau khi hoàn thành công việc, click "Complete Sprint"
+    \item Chọn LLM provider và enable "Generate AI Summary" để nhận retrospective
+\end{itemize}
+
+\textbf{4. Quản lý Issues trên Board}
+\begin{itemize}
+    \item Click "Create Issue" để tạo issue mới (STORY/TASK/BUG/EPIC)
+    \item Drag-and-drop issues giữa các status columns
+    \item Click vào issue để xem chi tiết, thêm comments, upload attachments
+    \item Sử dụng "Refine Description with AI" để improve mô tả
+    \item Sử dụng "Auto-generate Tasks" để AI tạo sub-tasks cho EPIC
+\end{itemize}
+
+\textbf{5. Sử dụng AI Features}
+\begin{itemize}
+    \item \textbf{AI Sprint Summary}: Tự động generate khi complete sprint
+    \item \textbf{AI Refine Description}: Click nút "sparkle" trong issue editor
+    \item \textbf{AI Task Breakdown}: Nhập feature description, AI tạo danh sách tasks
+\end{itemize}
+
+\refstepcounter{appendixstep}
+\subsubsection*{\theappendixstep. Build Production}
+
+\begin{lstlisting}
+# Build PM Service (NestJS)
+cd services/pm
+pnpm build
+pnpm start:prod
+
+# Build pm-web (Next.js)
+cd apps/pm-web
+pnpm build
+pnpm start
+\end{lstlisting}
+
+\refstepcounter{appendixstep}
+\subsubsection*{\theappendixstep. Testing và Debugging}
+
+\begin{lstlisting}
+# Unit tests cho PM Service
+cd services/pm
+pnpm test
+pnpm test:cov    # Voi coverage
+
+# E2E tests
+pnpm test:e2e
+
+# Lint va TypeScript check
+pnpm lint
+pnpm typecheck
+
+# Kiem tra Prisma schema
+pnpm prisma validate
+pnpm prisma format
+\end{lstlisting}
+
+\refstepcounter{appendixstep}
+\subsubsection*{\theappendixstep. Troubleshooting}
+
+\textbf{1. Port đã được sử dụng:}
+\begin{lstlisting}
+# MacOS/Linux
+lsof -i :3000        # Kiem tra port 3000
+lsof -i :4000        # Kiem tra port 4000
+kill -9 <PID>        # Kill process
+
+# Windows
+netstat -ano | findstr :3000
+taskkill /PID <PID> /F
+\end{lstlisting}
+
+\textbf{2. Docker container không healthy:}
+\begin{lstlisting}
+docker compose logs pm_postgres    # Xem logs PostgreSQL
+docker compose restart pm_postgres # Restart container
+docker compose down && docker compose up -d  # Restart tat ca
+\end{lstlisting}
+
+\textbf{3. Prisma connection errors:}
+\begin{lstlisting}
+# Kiem tra DATABASE_URL trong .env
+# Reset database
+pnpm prisma migrate reset
+pnpm prisma generate
+pnpm prisma migrate dev
+\end{lstlisting}
+
+\textbf{4. Module not found sau khi install:}
+\begin{lstlisting}
+rm -rf node_modules pnpm-lock.yaml
+pnpm install
+pnpm prisma generate
+\end{lstlisting}
+
+\textbf{5. WebSocket connection failed:}
+\begin{itemize}
+    \item Kiểm tra PM Service đang chạy trên port 4000
+    \item Kiểm tra CORS configuration trong PM Service
+    \item Kiểm tra browser console cho WebSocket errors
+\end{itemize}
+
+\textbf{6. AI features không hoạt động:}
+\begin{itemize}
+    \item Kiểm tra API keys trong \texttt{.env}: OPENAI\_API\_KEY, ANTHROPIC\_API\_KEY
+    \item Kiểm tra network logs để xem API requests đến LLM providers
+    \item Kiểm tra PM Service logs cho errors từ LangChain.js
+\end{itemize}
+
+\refstepcounter{appendixstep}
+\subsubsection*{\theappendixstep. Clean Up}
+
+\begin{lstlisting}
+# Dung services
+docker compose down
+
+# Xoa volumes (MAT DU LIEU!)
+docker compose down -v
+
+# Xoa node_modules va build artifacts
+pnpm clean
+rm -rf node_modules
+\end{lstlisting}
+
+\refstepcounter{appendixstep}
+\subsubsection*{\theappendixstep. Cấu trúc thư mục PM subsystem}
+
+\begin{lstlisting}
+pm-system/
+|-- apps/
+|   |-- pm-web/              # PM Frontend (Next.js 14)
+|       |-- src/
+|           |-- components/  # Board, Backlog, IssueCard components
+|           |-- stores/      # MobX stores
+|           |-- hooks/       # useDragDrop, useRealtime
+|           |-- services/    # API clients
+|-- services/
+|   |-- pm/                  # PM Service (NestJS)
+|       |-- src/
+|           |-- modules/
+|               |-- project/      # ProjectModule
+|               |-- sprint/       # SprintModule
+|               |-- issue/        # IssueModule
+|               |-- issue-status/ # IssueStatusModule
+|               |-- comment/      # CommentModule
+|               |-- activity/     # ActivityModule
+|               |-- ai/           # AIModule (LangChain.js)
+|           |-- prisma/
+|               |-- schema.prisma # Database schema
+|               |-- migrations/   # DB migrations
+|-- docker-compose.yml       # Infrastructure services
+|-- package.json
+|-- pnpm-workspace.yaml
+\end{lstlisting}
+
+\refstepcounter{appendixstep}
+\subsubsection*{\theappendixstep. Kết luận}
+
+Hướng dẫn này cung cấp các bước cơ bản để cài đặt và chạy phân hệ quản lý dự án ở môi trường development. Đối với môi trường production, cần có thêm:
+\begin{itemize}
+    \item SSL/TLS certificates với Let's Encrypt hoặc certificate provider
+    \item Reverse proxy với Nginx hoặc Traefik
+    \item Monitoring với Prometheus + Grafana cho metrics
+    \item Logging centralized với ELK Stack hoặc Loki
+    \item Database backup automation và disaster recovery plan
+    \item CI/CD pipeline với GitHub Actions hoặc GitLab CI
+    \item Container orchestration với Kubernetes cho scalability
+    \item Rate limiting và DDoS protection
+\end{itemize}

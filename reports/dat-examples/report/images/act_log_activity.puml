@@ -1,0 +1,42 @@
+@startuml act_log_activity
+|Người dùng|
+start
+:Thực hiện action
+(vd: create issue,
+change status, add comment);
+|Giao diện người dùng|
+:Gửi request;
+|Hệ thống xử lý|
+:Thực hiện action chính;
+if (Action thành công?) then (không)
+  stop
+else (có)
+  :Xác định activity type:
+  - ISSUE_CREATED
+  - STATUS_CHANGED
+  - COMMENT_ADDED
+  - SPRINT_STARTED
+  - etc;
+  :Chuẩn bị activity data:
+  - userId (who)
+  - entityType (issue/sprint)
+  - entityId (which entity)
+  - actionType (what)
+  - changes (before/after)
+  - metadata (JSON);
+  :Tạo IssueActivity record;
+  :Log vào database;
+  note right
+    Activities dùng
+    cho Activity Feed
+    và Audit Trail
+  end note
+  :Trigger WebSocket broadcast
+  cho project members;
+  |Giao diện người dùng|
+  :Update Activity Feed
+  real-time cho users online;
+  |Người dùng|
+  stop
+endif
+@enduml

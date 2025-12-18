@@ -1,0 +1,75 @@
+@startuml usecase_tongquan
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Project Lead" as lead
+actor "Team Member" as member
+actor "Viewer/Stakeholder" as viewer
+actor "LLM Provider" as llm
+
+rectangle "Phân hệ Quản lý Dự án" {
+  ' Project Lead use cases
+  usecase "Quản lý dự án" as UC1
+  usecase "Quản lý Sprints" as UC2
+  usecase "Quản lý trạng thái\ncông việc" as UC3
+  usecase "AI tổng hợp sprint" as UC4
+
+  ' Team Member use cases
+  usecase "Quản lý công việc" as UC5
+  usecase "Bình luận công việc" as UC6
+  usecase "Xem board view" as UC7
+  usecase "Xem backlog view" as UC8
+  usecase "AI mô tả công việc" as UC9
+
+  ' Viewer use cases
+  usecase "Xem tổng quan dự án" as UC10
+  usecase "Xem chi tiết issue" as UC11
+  usecase "Xem activity log" as UC12
+  usecase "Xem analytics" as UC13
+  usecase "Xem timeline/calendar" as UC14
+}
+
+' Project Lead connections
+lead --> UC1
+lead --> UC2
+lead --> UC3
+lead --> UC4
+
+' Team Member connections
+member --> UC5
+member --> UC6
+member --> UC7
+member --> UC8
+member --> UC9
+
+' Viewer connections
+viewer --> UC10
+viewer --> UC11
+viewer --> UC7
+viewer --> UC8
+viewer --> UC12
+viewer --> UC13
+viewer --> UC14
+
+' LLM connections
+UC4 ..> llm : <<uses>>
+UC9 ..> llm : <<uses>>
+
+note right of lead
+  Toàn quyền quản lý
+  dự án, sprint,
+  custom status
+end note
+
+note right of member
+  Thao tác với
+  issues, board,
+  backlog
+end note
+
+note right of viewer
+  Chỉ xem
+  (read-only)
+end note
+
+@enduml

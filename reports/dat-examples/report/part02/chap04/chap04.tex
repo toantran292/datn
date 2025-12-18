@@ -1,0 +1,164 @@
+\subsection{Giới thiệu}
+
+\subsubsection{Mục tiêu kiểm thử}
+
+Quy trình kiểm thử phân hệ quản lý dự án nhằm đạt được các mục tiêu sau:
+
+\begin{itemize}
+    \item Phát hiện và xử lý các lỗi phát sinh, đảm bảo hệ thống hoạt động đúng theo các yêu cầu đã được đặc tả.
+    \item Xác minh và đánh giá mức độ đáp ứng của các chức năng so với kỳ vọng người dùng và đặc tả kỹ thuật.
+    \item Ghi nhận kết quả kiểm thử để phục vụ công tác phân tích, tối ưu và bảo trì hệ thống về sau.
+\end{itemize}
+
+\subsubsection{Phạm vi kiểm thử}
+
+Quy trình kiểm thử được thực hiện thông qua các giai đoạn sau:
+
+\begin{itemize}
+    \item Kiểm thử thiết kế: đánh giá giao diện website, đảm bảo tuân thủ thiết kế UI/UX và thể hiện đúng mô tả trong đặc tả yêu cầu.
+    \item Kiểm thử chấp nhận: xác nhận phân hệ đáp ứng đúng các chức năng được yêu cầu, bao gồm quản lý Project, Sprint, Issue, Members và Activity Tracking.
+    \item Kiểm thử chức năng: đảm bảo các chức năng xử lý đúng dữ liệu đầu vào và trả về kết quả chính xác.
+    \item Kiểm thử cài đặt và triển khai: phát hiện và xử lý lỗi phát sinh trong quá trình cài đặt, cấu hình và triển khai hệ thống.
+\end{itemize}
+
+\subsection{Chi tiết kế hoạch kiểm thử}
+
+\subsubsection{Các trường hợp kiểm thử}
+
+Các trường hợp kiểm thử chính được xác định bao gồm:
+
+\begin{itemize}
+    \item Project Lead tạo và quản lý Project với custom workflow.
+    \item Project Lead tạo, start và complete Sprint.
+    \item Project Members tạo và quản lý Issues (Story/Task/Bug/Epic).
+    \item Project Members xem và sử dụng Board view với drag-and-drop.
+    \item Project Members quản lý Backlog và sprint planning.
+    \item Project Lead mời và quản lý Project Members với roles.
+    \item Hệ thống tạo AI-generated Sprint Summary khi complete sprint.
+    \item Project Members xem Activity Feed và real-time updates.
+    \item Project Lead định nghĩa Custom Statuses cho workflow.
+    \item Project Members sử dụng AI để generate issue description và breakdown Epic.
+\end{itemize}
+
+\subsubsection{Cách tiếp cận}
+
+Tiến hành kiểm thử theo thứ tự ưu tiên từ các chức năng chính đến các chức năng phụ, kiểm thử theo từ trên xuống và từ trái qua phải, đảm bảo không bỏ sót bất kỳ chức năng quan trọng nào.
+
+\subsubsection{Tiêu chí kiểm thử thành công/thất bại}
+
+\begin{itemize}
+    \item Tiêu chí kiểm thử thành công là kết quả thực thi đúng như mong đợi, phù hợp với đặc tả yêu cầu, không phát sinh lỗi nghiêm trọng và trải nghiệm người dùng mượt mà.
+    \item Tiêu chí kiểm thử thất bại là kết quả không như mong đợi, sai lệch so với đặc tả yêu cầu, phát sinh lỗi chức năng hoặc lỗi hiển thị, gây gián đoạn trải nghiệm người dùng.
+\end{itemize}
+
+\subsubsection{Tiêu chí đình chỉ và yêu cầu bắt đầu lại}
+
+\begin{itemize}
+    \item Tiêu chí đình chỉ: Chức năng thông báo lỗi trong quá trình thực hiện kiểm thử.
+    \item Tiêu chí yêu cầu bắt đầu lại: Chức năng bị đình chỉ đã được sửa lỗi hoàn tất, đã xây dựng kịch bản kiểm thử và các trường hợp kiểm thử lại cho chức năng.
+\end{itemize}
+
+\subsubsection{Sản phẩm bàn giao kiểm thử}
+
+\begin{itemize}
+    \item Kế hoạch kiểm thử.
+    \item Tài liệu các trường hợp kiểm thử.
+\end{itemize}
+
+\subsection{Quản lý kiểm thử}
+
+\subsubsection{Quy trình kiểm thử}
+
+Quá trình kiểm thử các chức năng sẽ thực hiện như sau:
+
+\begin{itemize}
+    \item Lập kế hoạch tạo các trường hợp kiểm thử.
+    \item Tiến hành kiểm thử.
+    \item Ghi lại các kết quả kiểm thử.
+\end{itemize}
+
+\subsubsection{Môi trường kiểm thử}
+
+Phần cứng:
+
+\begin{itemize}
+    \item Vi xử lý: Intel Core i5
+    \item RAM: 8GB
+    \item Ổ cứng: SSD 512GB
+    \item Cấu hình mạng: có kết nối internet
+\end{itemize}
+
+Phần mềm:
+
+\begin{itemize}
+    \item Hệ điều hành: Windows 11 / macOS
+    \item Trình duyệt: Google Chrome, Firefox, Safari
+    \item Database: PostgreSQL
+    \item Backend: NestJS
+    \item Frontend: Next.js
+\end{itemize}
+
+\subsection{Kịch bản kiểm thử}
+
+Các kịch bản kiểm thử bao gồm:
+
+\begin{adjustwidth}{-1.5cm}{-0.5cm}
+\begin{longtblr}[
+  caption = {Bảng kịch bản kiểm thử},
+  label = {tab:test_scenarios}
+]{
+  width=1\linewidth, hlines, vlines,
+  colspec={X[1.5,l]X[0.75,l]X[2.5,l]X[0.8,c]X[1,c]},
+  row{1}={font=\bfseries, c, bg=gray9},
+  row{2}={font=\bfseries, c, bg=gray9},
+  row{3}={font=\bfseries, c, bg=gray9},
+  row{4}={font=\bfseries, c, bg=gray9}
+}
+\SetCell[c=2]{} Tên dự án & & \SetCell[c=3]{} {Phân hệ Quản lý Dự án} & & \\
+\SetCell[c=2]{} Người thực hiện & & \SetCell[c=3]{} Trần Thái Toàn & & \\
+\SetCell[c=2]{} Ngày thực hiện & & \SetCell[c=3]{} 11/12/2025 & & \\
+Mã kịch bản kiểm thử & Mã yêu cầu & Mô tả kịch bản kiểm thử & Độ ưu tiên & Số trường hợp kiểm thử \\
+TS\_CPROJ & RQ01 & Kiểm tra chức năng tạo Project & P1 & 4 \\
+TS\_CSPRINT & RQ02 & Kiểm tra chức năng tạo Sprint & P1 & 4 \\
+TS\_SSPRINT & RQ03 & Kiểm tra chức năng start Sprint & P1 & 3 \\
+TS\_COMPL & RQ04 & Kiểm tra chức năng complete Sprint & P1 & 4 \\
+TS\_CISSUE & RQ05 & Kiểm tra chức năng tạo Issue & P1 & 5 \\
+TS\_BOARD & RQ06 & Kiểm tra Board view và drag-and-drop & P1 & 5 \\
+TS\_BACKLOG & RQ07 & Kiểm tra Backlog view & P2 & 3 \\
+TS\_MEMBER & RQ08 & Kiểm tra quản lý Project Members & P1 & 4 \\
+TS\_STATUS & RQ09 & Kiểm tra Custom Status Management & P2 & 3 \\
+TS\_AISUM & RQ10 & Kiểm tra AI-generated Sprint Summary & P1 & 4 \\
+TS\_AIDESC & RQ11 & Kiểm tra AI generate Issue Description & P2 & 3 \\
+TS\_ACTIVITY & RQ12 & Kiểm tra Activity Feed và real-time updates & P2 & 4 \\
+\end{longtblr}
+\end{adjustwidth}
+
+\subsection{Đánh giá kiểm thử}
+
+\begin{longtblr}[
+  caption = {Bảng đánh giá kiểm thử},
+  label = {tab:test_evaluation}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1.2,l]X[2.5,l]X[1,c]X[1,c]X[1,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9},
+  row{14}={font=\bfseries, bg=gray9}
+}
+Mã kịch bản & Mô tả kịch bản kiểm thử & Số TC & Thành công & Thất bại \\
+TS\_CPROJ & Kiểm tra chức năng tạo Project & 4 & 4 & 0 \\
+TS\_CSPRINT & Kiểm tra chức năng tạo Sprint & 4 & 4 & 0 \\
+TS\_SSPRINT & Kiểm tra chức năng start Sprint & 3 & 3 & 0 \\
+TS\_COMPL & Kiểm tra chức năng complete Sprint & 4 & 4 & 0 \\
+TS\_CISSUE & Kiểm tra chức năng tạo Issue & 5 & 5 & 0 \\
+TS\_BOARD & Kiểm tra Board view và drag-and-drop & 5 & 5 & 0 \\
+TS\_BACKLOG & Kiểm tra Backlog view & 3 & 3 & 0 \\
+TS\_MEMBER & Kiểm tra quản lý Project Members & 4 & 4 & 0 \\
+TS\_STATUS & Kiểm tra Custom Status Management & 3 & 3 & 0 \\
+TS\_AISUM & Kiểm tra AI-generated Sprint Summary & 4 & 4 & 0 \\
+TS\_AIDESC & Kiểm tra AI generate Issue Description & 3 & 3 & 0 \\
+TS\_ACTIVITY & Kiểm tra Activity Feed và real-time updates & 4 & 4 & 0 \\
+TỔNG CỘNG & & 46 & 46 & 0 \\
+\end{longtblr}
+
+Kết quả kiểm thử được thực hiện trên 12 kịch bản với tổng số trường hợp là 46. Số trường hợp kiểm thử thành công là 46/46, số trường hợp kiểm thử thất bại là 0/46. Qua kết quả trên, phân hệ quản lý dự án sau khi trải qua quá trình kiểm thử thì kết quả thành công đạt 100\%. Kết quả cho thấy phân hệ hoạt động tốt, ổn định và đáp ứng đầy đủ các yêu cầu chức năng về quản lý Project, Sprint, Issue cùng với các tính năng AI tích hợp.

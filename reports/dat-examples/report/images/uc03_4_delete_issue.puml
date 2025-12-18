@@ -1,0 +1,36 @@
+@startuml
+!theme plain
+skinparam defaultFontSize 11
+skinparam usecaseFontSize 10
+
+left to right direction
+
+actor "Project Lead" as PL
+
+usecase "Xóa issue" as UC_Delete
+usecase "Kiểm tra\nquyền" as UC_CheckPerm
+usecase "Kiểm tra\nsub-issues" as UC_CheckSub
+usecase "Xác nhận\nxóa" as UC_Confirm
+usecase "Cascade delete\ncomments & activities" as UC_Cascade
+usecase "Xử lý\nsub-issues" as UC_HandleSub
+
+PL --> UC_Delete
+
+UC_CheckPerm .up.> UC_Delete : <<include>>
+UC_CheckSub .up.> UC_Delete : <<include>>
+UC_Confirm .up.> UC_Delete : <<include>>
+UC_Cascade .up.> UC_Delete : <<include>>
+UC_HandleSub .up.> UC_Delete : <<include>>
+
+note right of UC_CheckPerm
+  Chỉ Project Lead
+  mới có quyền xóa issue
+end note
+
+note bottom of UC_HandleSub
+  Nếu có sub-issues:
+  a) Xóa cả sub-issues
+  b) Chuyển thành issue độc lập
+end note
+
+@enduml

@@ -1,0 +1,87 @@
+@startuml ui_project_settings
+!theme plain
+skinparam backgroundColor white
+
+salt
+{+
+  {* Project Settings: PROJ - Project Management System | [Save Changes] [Cancel] }
+  {
+    {
+      General | Workflow | Members | Integrations | Advanced
+    }
+  }
+  ==
+  {SI
+    .
+    {
+      **General Settings**
+
+      Project Key: [PROJ.....] (Cannot be changed)
+
+      Project Name: [Project Management System..................]
+
+      Description: [A comprehensive project management system for teams....]
+                 [...............................................]
+                 [...............................................]
+
+      --
+
+      **Project Lead**
+
+      Current Lead: [John Doe                              v]
+
+      Default Assignee: [John Doe                              v]
+      (New issues will be assigned to this user by default)
+
+      --
+
+      **Sprint Settings**
+
+      Default Sprint Duration: [14] days
+
+      [X] Auto-close sprints when end date is reached
+      [X] Allow issues without story points
+      [ ] Require all issues to have assignees
+
+      --
+
+      **Issue Settings**
+
+      Issue Types:
+      [X] Story
+      [X] Task
+      [X] Bug
+      [X] Epic
+
+      Priority Levels:
+      [X] Low
+      [X] Medium
+      [X] High
+      [X] Critical
+
+      --
+
+      **Notifications**
+
+      [X] Notify on issue assigned to me
+      [X] Notify on issue status changes
+      [X] Notify on new comments
+      [ ] Daily digest emails
+      [X] Sprint start/end notifications
+    }
+    ==
+    {
+      **Danger Zone**
+
+      <color:#EF4444>**Archive Project**
+      Archived projects are read-only and hidden from the main view
+      [Archive This Project]
+
+      <color:#DC2626>**Delete Project**
+      Permanently delete this project and all its data. This cannot be undone.
+      [Delete This Project]
+    }
+    .
+  }
+}
+@enduml

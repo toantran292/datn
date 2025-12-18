@@ -1,0 +1,46 @@
+@startuml
+!theme plain
+skinparam defaultFontSize 11
+skinparam usecaseFontSize 10
+
+left to right direction
+
+actor "Project Lead" as PL
+
+usecase "Hoàn thành sprint" as UC_Complete
+usecase "Validate\ntrạng thái ACTIVE" as UC_ValidateActive
+usecase "Xử lý issue\nchưa hoàn thành" as UC_HandleIssues
+usecase "Chuyển status\nACTIVE→CLOSED" as UC_Close
+usecase "Tính toán\nmetrics" as UC_Metrics
+usecase "Tạo AI Sprint\nSummary" as UC_AISummary
+
+PL --> UC_Complete
+
+UC_ValidateActive .up.> UC_Complete : <<include>>
+UC_HandleIssues .up.> UC_Complete : <<include>>
+UC_Close .up.> UC_Complete : <<include>>
+UC_Metrics .up.> UC_Complete : <<include>>
+
+UC_AISummary ..> UC_Complete : <<extend>>
+
+note right of UC_HandleIssues
+  Hỏi user xử lý:
+  a) Về Backlog
+  b) Sang sprint tiếp
+  c) Giữ nguyên
+end note
+
+note bottom of UC_Metrics
+  Ghi metrics:
+  • Velocity
+  • Story points completed
+  • Completion rate
+end note
+
+note left of UC_AISummary
+  Optional: Gọi
+  AI service tạo
+  Sprint Summary
+end note
+
+@enduml

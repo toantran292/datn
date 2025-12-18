@@ -1,0 +1,45 @@
+@startuml
+!theme plain
+skinparam defaultFontSize 11
+skinparam usecaseFontSize 10
+
+left to right direction
+
+actor "Project Lead" as PL
+actor "Team Member" as TM
+
+usecase "Drag-and-drop\nissues" as UC_DragDrop
+usecase "Hiển thị\ndrag preview" as UC_ShowPreview
+usecase "Hiển thị\ndrop zone" as UC_ShowDropZone
+usecase "Tính lại\nsortOrder" as UC_CalcSortOrder
+usecase "Update statusId\n(board)" as UC_UpdateStatus
+usecase "Update sprintId\n(backlog)" as UC_UpdateSprint
+usecase "Ghi log\nactivity" as UC_LogActivity
+usecase "Gửi\nnotification" as UC_Notify
+usecase "Reorder trong\ncùng column" as UC_Reorder
+
+PL --> UC_DragDrop
+TM --> UC_DragDrop
+
+UC_ShowPreview .up.> UC_DragDrop : <<include>>
+UC_ShowDropZone .up.> UC_DragDrop : <<include>>
+UC_CalcSortOrder .up.> UC_DragDrop : <<include>>
+UC_LogActivity .up.> UC_DragDrop : <<include>>
+UC_Notify .up.> UC_DragDrop : <<include>>
+
+UC_UpdateStatus ..> UC_DragDrop : <<extend>>
+UC_UpdateSprint ..> UC_DragDrop : <<extend>>
+UC_Reorder ..> UC_DragDrop : <<extend>>
+
+note right of UC_CalcSortOrder
+  Tính sortOrder mới
+  dựa trên vị trí drop
+  giữa 2 issues lân cận
+end note
+
+note bottom of UC_DragDrop
+  Board: Drag giữa columns
+  Backlog: Drag giữa sprints
+end note
+
+@enduml

@@ -1,0 +1,42 @@
+@startuml act_change_project_role
+|Người dùng|
+start
+:Chọn member;
+:Nhấn "Change Role";
+|Giao diện người dùng|
+:Hiển thị dialog:
+- Current role
+- New role dropdown;
+|Người dùng|
+:Chọn role mới;
+:Nhấn "Update";
+|Giao diện người dùng|
+:Gửi request update role;
+|Hệ thống xử lý|
+:Kiểm tra permission;
+if (User là Lead?) then (không)
+  |Giao diện người dùng|
+  :Thông báo không có quyền;
+  |Người dùng|
+  stop
+else (có)
+  :Kiểm tra không tự
+  demote mình;
+  if (Demote chính mình?) then (có)
+    |Giao diện người dùng|
+    :Thông báo không thể
+    thay đổi role của mình;
+    |Người dùng|
+    stop
+  else (không)
+    :Update ProjectMember.role;
+    :Tạo activity log;
+    :Gửi notification cho user;
+    |Giao diện người dùng|
+    :Thông báo cập nhật thành công;
+    :Cập nhật UI;
+    |Người dùng|
+    stop
+  endif
+endif
+@enduml

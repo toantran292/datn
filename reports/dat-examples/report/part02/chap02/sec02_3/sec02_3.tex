@@ -1,0 +1,41 @@
+\subsection{Giới thiệu về công nghệ Backend}
+
+\subsubsection{Khái quát}
+
+Phân hệ quản lý dự án được xây dựng dưới dạng một microservice độc lập, tách biệt với các phân hệ khác trong hệ thống. Microservice này chịu trách nhiệm toàn bộ chức năng quản lý dự án Agile bao gồm projects, sprints, issues, và các tính năng liên quan. Kiến trúc microservice mang lại nhiều lợi ích: service có thể deploy độc lập mà không ảnh hưởng đến các phân hệ khác, linh hoạt trong việc chọn tech stack phù hợp nhất, dễ dàng scale theo nhu cầu, và fault isolation đảm bảo lỗi không lan sang toàn hệ thống.
+
+PM Service (Project Management Service) được xây dựng bằng NestJS framework nhờ khả năng phát triển nhanh, kiến trúc modular rõ ràng, và hệ sinh thái TypeScript phong phú. Service tuân thủ nguyên tắc RESTful API design, cung cấp API documentation đầy đủ với Swagger/OpenAPI, và được containerized bằng Docker để dễ dàng deploy và scale.
+
+\subsubsection{NestJS và kiến trúc modular}
+
+NestJS là một framework Node.js tiên tiến để xây dựng các ứng dụng server-side hiệu quả và có khả năng mở rộng. Framework này được thiết kế với modular architecture cho phép tổ chức code thành các modules độc lập dễ maintain và test, built-in Dependency Injection container giúp quản lý dependencies hiệu quả, decorators để định nghĩa routes và middleware một cách declarative, TypeScript native support với type safety out-of-the-box, và hỗ trợ sẵn cho TypeORM/Prisma, WebSockets, microservices. NestJS được lựa chọn cho PM Service do khả năng phát triển nhanh, kiến trúc rõ ràng phù hợp với domain phức tạp của quản lý dự án Agile, và hệ sinh thái TypeScript phong phú.
+
+Kiến trúc của NestJS được xây dựng theo các layer rõ ràng: Controllers xử lý incoming requests và trả về responses, Services (Providers) chứa business logic và được inject vào controllers thông qua Dependency Injection, Modules tổ chức và đóng gói các components liên quan với nhau, Guards xử lý authentication và authorization logic, Interceptors transform data trước hoặc sau khi xử lý request, và Pipes thực hiện validation cũng như transformation của input data. Kiến trúc này đảm bảo separation of concerns và giúp code dễ test với unit testing và integration testing.
+
+\subsubsection{Nguyên tắc RESTful API}
+
+REST (Representational State Transfer) là một kiến trúc thiết kế API sử dụng các HTTP methods để thực hiện CRUD operations trên resources. RESTful API tuân theo các nguyên tắc quan trọng: URL đại diện cho resources (nouns như /users, /projects, /sprints, /issues) chứ không phải actions (verbs), HTTP methods được sử dụng đúng mục đích (GET để lấy dữ liệu, POST để tạo mới, PUT/PATCH để cập nhật, DELETE để xóa), stateless design trong đó mỗi request chứa đầy đủ thông tin cần thiết và server không lưu client state, HTTP status codes phù hợp (200 OK, 201 Created, 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 500 Internal Server Error), và API versioning (v1, v2) để maintain backward compatibility khi có breaking changes.
+
+\subsubsection{Prisma ORM và quản lý dữ liệu}
+
+Prisma là một ORM (Object-Relational Mapping) hiện đại cho Node.js và TypeScript, được sử dụng làm data access layer cho PM Service. Prisma cung cấp schema-first approach với Prisma Schema định nghĩa data models bằng ngôn ngữ declarative, type-safe database client tự động generate từ schema đảm bảo type safety, migration system quản lý schema changes một cách có kiểm soát, và introspection từ existing database. Prisma Client cung cấp API trực quan và type-safe để thực hiện CRUD operations, support relations và eager loading, transaction API cho các thao tác phức tạp cần atomicity, và raw SQL queries khi cần performance tối ưu. PM Service sử dụng PostgreSQL làm database chính với Prisma ORM để quản lý toàn bộ dữ liệu về projects, sprints, issues, custom statuses, comments và activities.
+
+\subsubsection{Vận dụng vào đề tài}
+
+PM Service được xây dựng bằng NestJS với Prisma ORM và PostgreSQL, chịu trách nhiệm toàn bộ chức năng quản lý dự án Agile. Service này được tổ chức thành các modules chính:
+
+\textbf{ProjectModule} quản lý projects với CRUD operations và project-level access control theo organization. Module này đảm bảo mỗi project có identifier duy nhất trong organization, quản lý project lead và default assignee, và cung cấp API endpoints cho việc tạo, cập nhật, xem danh sách và xóa projects.
+
+\textbf{SprintModule} quản lý sprint lifecycle với ba trạng thái: FUTURE (sprint chưa bắt đầu), ACTIVE (sprint đang diễn ra), và CLOSED (sprint đã hoàn thành). Module này thực hiện validation đảm bảo chỉ có tối đa một sprint ACTIVE trong mỗi project tại một thời điểm, quản lý sprint goal và timeline, và hỗ trợ start sprint và complete sprint operations với business logic phức tạp.
+
+\textbf{IssueModule} xử lý issues với bốn loại: STORY (user story), TASK (technical task), BUG (defect), và EPIC (large feature). Module này hỗ trợ drag-and-drop reordering với fractional indexing (sortOrder calculation), quản lý issue hierarchy với parent-child relationships cho sub-tasks, assign multiple users cho mỗi issue, track issue status transitions, và quản lý priority levels (LOW, MEDIUM, HIGH, CRITICAL).
+
+\textbf{IssueStatusModule} quản lý custom status workflow cho phép từng project tự định nghĩa workflow riêng. Module này cho phép create, update, reorder và delete custom statuses, mỗi status có name, color và order, đảm bảo uniqueness của status name trong project.
+
+\textbf{CommentModule} quản lý comments trên issues với rich text support (HTML content), cho phép users thêm, sửa và xóa comments, track comment author và timestamps.
+
+\textbf{ActivityModule} ghi lại audit trail cho mọi thay đổi quan trọng trên issues. Module này track field-level changes với old value và new value, lưu trữ user thực hiện thay đổi và timestamp, cung cấp activity history cho issue detail view.
+
+\textbf{AnalyticsModule} thu thập và cung cấp số liệu thống kê dự án. Module này track daily metrics (issues created, resolved, in progress), cung cấp time-series data cho charts (Created vs Resolved), và tính toán project-level statistics.
+
+PM Service cung cấp RESTful API cho tất cả entities với endpoints như \texttt{/projects}, \texttt{/sprints}, \texttt{/issues}, \texttt{/issue-statuses}, \texttt{/comments}, và \texttt{/analytics}. API được document đầy đủ bằng Swagger/OpenAPI, sử dụng DTOs (Data Transfer Objects) với class-validator để validate input data, implement global exception filters để xử lý errors một cách nhất quán, và sử dụng Prisma transactions cho các thao tác quan trọng như complete sprint (move unfinished issues to backlog) và cascade delete project (xóa toàn bộ sprints, issues, statuses liên quan).

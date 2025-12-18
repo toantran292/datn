@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3.4. Thiết kế giao diện - SaaS Platform</title>
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 13pt;
+            line-height: 1.5;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+            text-align: justify;
+        }
+        h2 {
+            font-size: 14pt;
+            font-weight: bold;
+            margin-top: 24pt;
+            margin-bottom: 12pt;
+        }
+        h3 {
+            font-size: 13pt;
+            font-weight: bold;
+            font-style: italic;
+            margin-top: 18pt;
+            margin-bottom: 10pt;
+        }
+        p {
+            margin-bottom: 12pt;
+            text-indent: 1.27cm;
+        }
+        p.no-indent {
+            text-indent: 0;
+        }
+        .section-number {
+            font-weight: bold;
+        }
+        .figure {
+            text-align: center;
+            margin: 20pt 0;
+            padding: 15px;
+            background-color: #fafafa;
+        }
+        .figure-caption {
+            font-style: italic;
+            font-size: 12pt;
+            margin-top: 12pt;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        /* Wireframe Styles */
+        .wf {
+            background: #F9FAFB;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            margin: 15px auto;
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+            font-size: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .wf-topbar {
+            background: #FFFFFF;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #E5E7EB;
+        }
+        .wf-logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #FF8800, #FF6B00);
+            border-radius: 8px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 11px;
+        }
+        .wf-search {
+            background: #F3F4F6;
+            border: 1px solid #E5E7EB;
+            border-radius: 6px;
+            padding: 8px 14px;
+            color: #9CA3AF;
+            font-size: 12px;
+            width: 200px;
+        }
+        .wf-avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #00C4AB, #00A896);
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 11px;
+        }
+        .wf-notif {
+            position: relative;
+            font-size: 16px;
+        }
+        .wf-notif-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #EF4444;
+            color: white;
+            font-size: 9px;
+            padding: 1px 5px;
+            border-radius: 8px;
+        }
+        .wf-content {
+            padding: 20px;
+            background: #F9FAFB;
+        }
+        .wf-page-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1A1A1A;
+            margin-bottom: 4px;
+        }
+        .wf-page-sub {
+            font-size: 12px;
+            color: #6B7280;
+            margin-bottom: 20px;
+        }
+        .wf-card {
+            background: #FFFFFF;
+            border: 1px solid #E5E7EB;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .wf-btn {
+            background: #1A1A1A;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            display: inline-block;
+        }
+        .wf-btn-primary {
+            background: linear-gradient(135deg, #FF8800, #FF6B00);
+            color: white;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            display: inline-block;
+        }
+        .wf-btn-secondary {
+            background: #FFFFFF;
+            color: #1A1A1A;
+            padding: 8px 14px;
+            border: 1px solid #E5E7EB;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+            display: inline-block;
+        }
+        .wf-input {
+            border: 1px solid #E5E7EB;
+            border-radius: 6px;
+            padding: 10px 12px;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 12px;
+            margin-bottom: 10px;
+            background: #FFFFFF;
+            color: #9CA3AF;
+        }
+        .wf-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .wf-stat {
+            background: #FFFFFF;
+            border: 1px solid #E5E7EB;
+            border-radius: 10px;
+            padding: 14px;
+        }
+        .wf-stat-label {
+            font-size: 11px;
+            color: #6B7280;
+            margin-bottom: 6px;
+        }
+        .wf-stat-num {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1A1A1A;
+        }
+        .wf-stat-change {
+            font-size: 10px;
+            color: #10B981;
+            margin-top: 4px;
+        }
+        .wf-badge {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 500;
+        }
+        .wf-badge-orange { background: #FEF3C7; color: #D97706; }
+        .wf-badge-blue { background: #DBEAFE; color: #2563EB; }
+        .wf-badge-green { background: #D1FAE5; color: #059669; }
+        .wf-badge-gray { background: #F3F4F6; color: #4B5563; }
+        .wf-badge-red { background: #FEE2E2; color: #DC2626; }
+        .wf-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+        .wf-table th {
+            text-align: left;
+            padding: 10px 12px;
+            background: #F9FAFB;
+            color: #6B7280;
+            font-weight: 500;
+            font-size: 10px;
+            border-bottom: 1px solid #E5E7EB;
+        }
+        .wf-table td {
+            padding: 12px;
+            border-bottom: 1px solid #F3F4F6;
+            color: #1A1A1A;
+        }
+        .wf-flex {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .wf-grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .wf-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        .wf-activity {
+            display: flex;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #F3F4F6;
+        }
+        .wf-activity:last-child {
+            border-bottom: none;
+        }
+        .wf-activity-icon {
+            width: 32px;
+            height: 32px;
+            background: #F3F4F6;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .wf-activity-title {
+            font-weight: 500;
+            color: #1A1A1A;
+            font-size: 11px;
+        }
+        .wf-activity-desc {
+            color: #6B7280;
+            font-size: 10px;
+        }
+        .wf-activity-time {
+            color: #9CA3AF;
+            font-size: 9px;
+            margin-top: 2px;
+        }
+        .wf-chart {
+            height: 120px;
+            background: linear-gradient(to top, #FFF7ED 0%, #F9FAFB 100%);
+            border-radius: 6px;
+            display: flex;
+            align-items: flex-end;
+            padding: 12px;
+            gap: 8px;
+        }
+        .wf-chart-bar {
+            flex: 1;
+            background: linear-gradient(to top, #FF8800, #FFB366);
+            border-radius: 3px 3px 0 0;
+        }
+        .wf-ai-card {
+            background: linear-gradient(135deg, #FF8800, #FF6B00);
+            color: white;
+            padding: 18px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<h2><span class="section-number">3.4.</span> Thiết kế giao diện</h2>
+
+<h3><span class="section-number">3.4.1.</span> Cơ sở thiết kế giao diện</h3>
+
+<p>Giao diện người dùng của hệ thống SaaS Platform tích hợp AI được thiết kế hướng đến tính trực quan, thẩm mỹ, hiện đại và dễ sử dụng, đảm bảo UX/UI tốt nhất và đồng bộ với nhận diện thương hiệu doanh nghiệp. Thiết kế lấy cảm hứng từ các nền tảng SaaS hiện đại như Linear và Stripe Dashboard.</p>
+
+<p>Về màu sắc chủ đạo, ứng dụng sử dụng màu cam (Primary Orange - #FF8800) làm màu chủ đạo để tạo cảm giác năng động, sáng tạo và hiện đại. Màu xanh ngọc (Secondary Teal - #00C4AB) được sử dụng cho các điểm nhấn phụ. Màu nền chủ yếu là xám rất nhạt (#F9FAFB) và trắng, kết hợp với chữ màu đen đậm (#1A1A1A) để tạo sự tương phản rõ ràng.</p>
+
+<p>Các thành phần nổi bật như nút hành động (CTA) sử dụng gradient màu cam để thu hút sự chú ý. Hệ thống sử dụng soft shadows, rounded corners (12-16px), và subtle gradients để tạo chiều sâu.</p>
+
+<p>Ở thanh điều hướng (Sidebar), được đặt cố định ở phía trái của trang với màu nền trắng, hiển thị logo workspace, tên và plan. Sidebar giúp người dùng dễ dàng truy cập các chức năng chính như Overview, Members, Files, AI Reports, Audit Logs và Settings.</p>
+
+<p>Về thiết kế các nút chức năng: Nút primary sử dụng gradient cam (#FF8800) cho hành động chính. Nút secondary sử dụng màu trắng với border cho hành động phụ. Nút danger dùng màu đỏ nhạt cho các hành động cảnh báo.</p>
+
+<p>Bố cục tổng thể được chia thành: Sidebar (200px), Top bar với search và user info, và Content area. Sử dụng font Inter hoặc Plus Jakarta Sans. Layout width 1440px với generous spacing và light card separation. Responsive design đảm bảo hiển thị tốt trên các thiết bị.</p>
+
+<h3><span class="section-number">3.4.2.</span> Phác thảo thiết kế giao diện</h3>
+
+<p>Giao diện chức năng đăng ký cho phép người dùng tạo tài khoản để đăng nhập vào hệ thống. Để đăng ký, người dùng cần nhập họ tên, email, mật khẩu và xác nhận mật khẩu. Ngoài ra, người dùng có thể đăng ký nhanh bằng tài khoản Google (Google OAuth).</p>
+
+<p>Giao diện chức năng đăng nhập cho phép người dùng đăng nhập vào hệ thống. Để đăng nhập, người dùng cần nhập email, mật khẩu. Nếu quên mật khẩu, người dùng có thể nhấn vào link "Forgot password?" để được hướng dẫn reset.</p>
+
+<div class="figure">
+    <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+        <!-- Sign Up Form -->
+        <div class="wf" style="width: 280px; padding: 24px;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div class="wf-logo" style="width: 40px; height: 40px; margin: 0 auto 12px; font-size: 13px;">SP</div>
+                <div style="font-size: 16px; font-weight: 600; color: #1A1A1A; margin-bottom: 4px;">Create your account</div>
+                <div style="font-size: 11px; color: #6B7280;">Get started with SaaS Platform</div>
+            </div>
+            <div class="wf-input">Full name</div>
+            <div class="wf-input">Email address</div>
+            <div class="wf-input">Password</div>
+            <div class="wf-input">Confirm password</div>
+            <div class="wf-btn-primary" style="width: 100%; text-align: center; box-sizing: border-box; padding: 10px; margin-top: 4px;">Create Account</div>
+            <div style="text-align: center; margin: 14px 0; color: #9CA3AF; font-size: 10px;">or continue with</div>
+            <div class="wf-btn-secondary" style="width: 100%; text-align: center; box-sizing: border-box;">🔵 Google</div>
+            <div style="text-align: center; font-size: 10px; margin-top: 14px; color: #6B7280;">Already have an account? <span style="color: #FF8800;">Sign in</span></div>
+        </div>
+        <!-- Sign In Form -->
+        <div class="wf" style="width: 280px; padding: 24px;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div class="wf-logo" style="width: 40px; height: 40px; margin: 0 auto 12px; font-size: 13px;">SP</div>
+                <div style="font-size: 16px; font-weight: 600; color: #1A1A1A; margin-bottom: 4px;">Welcome back</div>
+                <div style="font-size: 11px; color: #6B7280;">Sign in to your account</div>
+            </div>
+            <div class="wf-input">Email address</div>
+            <div class="wf-input" style="margin-bottom: 4px;">Password</div>
+            <div style="text-align: right; font-size: 10px; margin-bottom: 12px;"><span style="color: #FF8800;">Forgot password?</span></div>
+            <div class="wf-btn-primary" style="width: 100%; text-align: center; box-sizing: border-box; padding: 10px;">Sign In</div>
+            <div style="text-align: center; margin: 14px 0; color: #9CA3AF; font-size: 10px;">or continue with</div>
+            <div class="wf-btn-secondary" style="width: 100%; text-align: center; box-sizing: border-box;">🔵 Google</div>
+            <div style="text-align: center; font-size: 10px; margin-top: 14px; color: #6B7280;">Don't have an account? <span style="color: #FF8800;">Sign up</span></div>
+        </div>
+    </div>
+    <p class="figure-caption">Hình 3.9. Giao diện phác thảo chức năng đăng ký và chức năng đăng nhập</p>
+</div>
+
+<p>Giao diện trang chủ (Landing Page) được thiết kế với thanh điều hướng ở phía trên, hero section với slogan và nút CTA, và các section giới thiệu tính năng chính của sản phẩm.</p>
+
+<div class="figure">
+    <div class="wf" style="max-width: 600px;">
+        <!-- Navbar -->
+        <div style="background: #FFFFFF; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #E5E7EB;">
+            <div class="wf-flex">
+                <div class="wf-logo" style="width: 28px; height: 28px; font-size: 10px;">SP</div>
+                <span style="font-weight: 600; font-size: 13px; color: #1A1A1A;">SaaS Platform</span>
+            </div>
+            <div class="wf-flex" style="gap: 20px;">
+                <span style="font-size: 11px; color: #4B5563;">Features</span>
+                <span style="font-size: 11px; color: #4B5563;">Pricing</span>
+                <div class="wf-btn-primary" style="padding: 6px 12px;">Get Started</div>
+            </div>
+        </div>
+        <!-- Hero -->
+        <div style="background: linear-gradient(135deg, #FF8800 0%, #FF6B00 100%); padding: 36px 24px; text-align: center; color: white;">
+            <div style="font-size: 22px; font-weight: 700; margin-bottom: 10px;">Smart Workspace Management</div>
+            <div style="font-size: 12px; opacity: 0.9; margin-bottom: 20px;">AI-powered platform to manage workspaces, team members, files and generate intelligent reports.</div>
+            <div class="wf-btn" style="background: white; color: #FF8800; padding: 10px 20px; font-size: 12px;">Start Free Trial</div>
+        </div>
+        <!-- Features -->
+        <div style="padding: 24px; background: #FFFFFF;">
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; text-align: center;">
+                <div style="padding: 12px;">
+                    <div style="font-size: 24px; margin-bottom: 6px;">📊</div>
+                    <div style="font-size: 11px; font-weight: 600;">Dashboard</div>
+                    <div style="font-size: 9px; color: #6B7280;">Visual analytics</div>
+                </div>
+                <div style="padding: 12px;">
+                    <div style="font-size: 24px; margin-bottom: 6px;">🤖</div>
+                    <div style="font-size: 11px; font-weight: 600;">AI Reports</div>
+                    <div style="font-size: 9px; color: #6B7280;">Auto-generated</div>
+                </div>
+                <div style="padding: 12px;">
+                    <div style="font-size: 24px; margin-bottom: 6px;">📁</div>
+                    <div style="font-size: 11px; font-weight: 600;">File Storage</div>
+                    <div style="font-size: 9px; color: #6B7280;">Secure & fast</div>
+                </div>
+                <div style="padding: 12px;">
+                    <div style="font-size: 24px; margin-bottom: 6px;">🔔</div>
+                    <div style="font-size: 11px; font-weight: 600;">Real-time</div>
+                    <div style="font-size: 9px; color: #6B7280;">Instant updates</div>
+                </div>
+            </div>
+        </div>
+        <!-- Footer -->
+        <div style="background: #F9FAFB; padding: 12px; text-align: center; font-size: 9px; color: #6B7280;">
+            © 2025 SaaS Platform. All rights reserved.
+        </div>
+    </div>
+    <p class="figure-caption">Hình 3.10. Giao diện phác thảo trang chủ (Landing Page)</p>
+</div>
+
+<p>Giao diện danh sách Workspaces hiển thị tất cả các workspaces mà người dùng là thành viên. Mỗi workspace được hiển thị dưới dạng card bao gồm: logo, tên workspace, mô tả ngắn, số lượng thành viên và vai trò của người dùng.</p>
+
+<div class="figure">
+    <div class="wf" style="max-width: 550px;">
+        <div class="wf-topbar">
+            <div class="wf-flex">
+                <div class="wf-logo" style="width: 28px; height: 28px; font-size: 10px;">SP</div>
+                <span style="font-weight: 600; font-size: 13px;">Workspaces</span>
+            </div>
+            <div class="wf-flex">
+                <div class="wf-search" style="width: 160px;">🔍 Search...</div>
+                <div class="wf-notif">🔔<span class="wf-notif-badge">5</span></div>
+                <div class="wf-avatar" style="width: 28px; height: 28px; font-size: 10px;">NV</div>
+            </div>
+        </div>
+        <div class="wf-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <div>
+                    <div class="wf-page-title" style="font-size: 16px;">Your Workspaces</div>
+                    <div class="wf-page-sub" style="font-size: 11px;">Manage and access all your workspaces</div>
+                </div>
+                <div class="wf-btn-primary">+ Create Workspace</div>
+            </div>
+            <div class="wf-grid-2">
+                <div class="wf-card" style="padding: 14px;">
+                    <div class="wf-flex" style="margin-bottom: 8px;">
+                        <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #3B82F6, #1D4ED8); border-radius: 8px;"></div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; font-size: 12px;">Marketing Team</div>
+                            <div style="font-size: 9px; color: #6B7280;">12 members</div>
+                        </div>
+                        <span class="wf-badge wf-badge-orange">Owner</span>
+                    </div>
+                    <div style="font-size: 10px; color: #6B7280;">Workspace cho team marketing...</div>
+                </div>
+                <div class="wf-card" style="padding: 14px;">
+                    <div class="wf-flex" style="margin-bottom: 8px;">
+                        <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #10B981, #059669); border-radius: 8px;"></div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; font-size: 12px;">Development</div>
+                            <div style="font-size: 9px; color: #6B7280;">8 members</div>
+                        </div>
+                        <span class="wf-badge wf-badge-blue">Member</span>
+                    </div>
+                    <div style="font-size: 10px; color: #6B7280;">Workspace cho dev team...</div>
+                </div>
+                <div class="wf-card" style="padding: 14px;">
+                    <div class="wf-flex" style="margin-bottom: 8px;">
+                        <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #F59E0B, #D97706); border-radius: 8px;"></div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; font-size: 12px;">HR Department</div>
+                            <div style="font-size: 9px; color: #6B7280;">5 members</div>
+                        </div>
+                        <span class="wf-badge wf-badge-green">Admin</span>
+                    </div>
+                    <div style="font-size: 10px; color: #6B7280;">Workspace cho HR...</div>
+                </div>
+                <div class="wf-card" style="border: 2px dashed #E5E7EB; display: flex; align-items: center; justify-content: center; min-height: 70px; padding: 14px;">
+                    <div style="text-align: center; color: #9CA3AF;">
+                        <div style="font-size: 18px;">+</div>
+                        <div style="font-size: 10px;">Create new</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <p class="figure-caption">Hình 3.11. Giao diện phác thảo danh sách Workspaces</p>
+</div>
+
+<p>Giao diện Dashboard của Workspace hiển thị tổng quan về hoạt động trong workspace. Phần trên cùng gồm các thẻ thống kê (stats cards), bên dưới là biểu đồ Usage Overview và danh sách Recent Activity.</p>
+
+<div class="figure">
+    <div class="wf" style="max-width: 600px;">
+        <div class="wf-topbar">
+            <div class="wf-flex">
+                <div class="wf-logo" style="width: 28px; height: 28px; font-size: 10px;">MT</div>
+                <span style="font-weight: 600; font-size: 13px;">Marketing Team</span>
+                <span style="font-size: 10px; color: #6B7280;">/ Overview</span>
+            </div>
+            <div class="wf-flex">
+                <div class="wf-notif">🔔<span class="wf-notif-badge">3</span></div>
+                <div class="wf-avatar" style="width: 28px; height: 28px; font-size: 10px;">JD</div>
+            </div>
+        </div>
+        <div class="wf-content">
+            <div class="wf-page-title" style="font-size: 16px;">Overview Dashboard</div>
+            <div class="wf-page-sub" style="font-size: 11px;">Welcome back! Here's what's happening.</div>
+            
+            <div class="wf-stats">
+                <div class="wf-stat" style="padding: 12px;">
+                    <div class="wf-stat-label" style="font-size: 10px;">Members</div>
+                    <div class="wf-stat-num" style="font-size: 20px;">124</div>
+                    <div class="wf-stat-change" style="font-size: 9px;">+12.5%</div>
+                </div>
+                <div class="wf-stat" style="padding: 12px;">
+                    <div class="wf-stat-label" style="font-size: 10px;">Files</div>
+                    <div class="wf-stat-num" style="font-size: 20px;">38</div>
+                    <div class="wf-stat-change" style="font-size: 9px;">+8.3%</div>
+                </div>
+                <div class="wf-stat" style="padding: 12px;">
+                    <div class="wf-stat-label" style="font-size: 10px;">AI Reports</div>
+                    <div class="wf-stat-num" style="font-size: 20px;">15</div>
+                    <div class="wf-stat-change" style="font-size: 9px;">+15.2%</div>
+                </div>
+                <div class="wf-stat" style="padding: 12px;">
+                    <div class="wf-stat-label" style="font-size: 10px;">Activities</div>
+                    <div class="wf-stat-num" style="font-size: 20px;">127</div>
+                    <div class="wf-stat-change" style="font-size: 9px; color: #EF4444;">-2.1%</div>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1.3fr 1fr; gap: 12px;">
+                <div class="wf-card" style="padding: 14px;">
+                    <div style="font-weight: 600; font-size: 12px; margin-bottom: 4px;">Usage Overview</div>
+                    <div style="font-size: 9px; color: #6B7280; margin-bottom: 10px;">Activity trends - last 7 months</div>
+                    <div class="wf-chart" style="height: 100px;">
+                        <div class="wf-chart-bar" style="height: 30%;"></div>
+                        <div class="wf-chart-bar" style="height: 45%;"></div>
+                        <div class="wf-chart-bar" style="height: 55%;"></div>
+                        <div class="wf-chart-bar" style="height: 70%;"></div>
+                        <div class="wf-chart-bar" style="height: 65%;"></div>
+                        <div class="wf-chart-bar" style="height: 85%;"></div>
+                        <div class="wf-chart-bar" style="height: 100%;"></div>
+                    </div>
+                </div>
+                <div class="wf-card" style="padding: 14px;">
+                    <div style="font-weight: 600; font-size: 12px; margin-bottom: 8px;">Recent Activity</div>
+                    <div class="wf-activity" style="padding: 8px 0;">
+                        <div class="wf-activity-icon" style="width: 28px; height: 28px; font-size: 12px;">👤</div>
+                        <div>
+                            <div class="wf-activity-title" style="font-size: 10px;">New member invited</div>
+                            <div class="wf-activity-time" style="font-size: 8px;">2 hours ago</div>
+                        </div>
+                    </div>
+                    <div class="wf-activity" style="padding: 8px 0;">
+                        <div class="wf-activity-icon" style="width: 28px; height: 28px; font-size: 12px;">📁</div>
+                        <div>
+                            <div class="wf-activity-title" style="font-size: 10px;">File uploaded</div>
+                            <div class="wf-activity-time" style="font-size: 8px;">5 hours ago</div>
+                        </div>
+                    </div>
+                    <div class="wf-activity" style="padding: 8px 0; border-bottom: none;">
+                        <div class="wf-activity-icon" style="width: 28px; height: 28px; font-size: 12px;">🤖</div>
+                        <div>
+                            <div class="wf-activity-title" style="font-size: 10px;">AI Report generated</div>
+                            <div class="wf-activity-time" style="font-size: 8px;">Yesterday</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <p class="figure-caption">Hình 3.12. Giao diện phác thảo Dashboard của Workspace</p>
+</div>
+
+<p>Giao diện quản lý thành viên (Members) hiển thị danh sách tất cả thành viên trong workspace với thông tin: họ tên, email, vai trò, trạng thái và ngày tham gia.</p>
+
+<div class="figure">
+    <div class="wf" style="max-width: 600px;">
+        <div class="wf-topbar">
+            <div class="wf-flex">
+                <div class="wf-logo" style="width: 28px; height: 28px; font-size: 10px;">MT</div>
+                <span style="font-weight: 600; font-size: 13px;">Marketing Team</span>
+                <span style="font-size: 10px; color: #6B7280;">/ Members</span>
+            </div>
+            <div class="wf-flex">
+                <div class="wf-avatar" style="width: 28px; height: 28px; font-size: 10px;">JD</div>
+            </div>
+        </div>
+        <div class="wf-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <div>
+                    <div class="wf-page-title" style="font-size: 16px;">Members</div>
+                    <div class="wf-page-sub" style="font-size: 11px;">Manage your workspace team</div>
+                </div>
+                <div class="wf-flex">
+                    <div class="wf-search" style="width: 140px;">🔍 Search...</div>
+                    <div class="wf-btn-primary">+ Invite</div>
+                </div>
+            </div>
+            
+            <div class="wf-card" style="padding: 0; overflow: hidden;">
+                <table class="wf-table">
+                    <thead>
+                        <tr>
+                            <th>Member</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="wf-flex">
+                                    <div class="wf-avatar" style="width: 26px; height: 26px; font-size: 9px;">NV</div>
+                                    <div>
+                                        <div style="font-weight: 500; font-size: 11px;">Nguyễn Văn A</div>
+                                        <div style="font-size: 9px; color: #6B7280;">nguyenvana@gmail.com</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="wf-badge wf-badge-orange">Owner</span></td>
+                            <td><span style="color: #10B981; font-size: 10px;">● Online</span></td>
+                            <td style="color: #6B7280; font-size: 10px;">Jan 01</td>
+                            <td style="font-size: 12px;">👁️ ✏️</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="wf-flex">
+                                    <div class="wf-avatar" style="width: 26px; height: 26px; font-size: 9px;">TT</div>
+                                    <div>
+                                        <div style="font-weight: 500; font-size: 11px;">Trần Thị B</div>
+                                        <div style="font-size: 9px; color: #6B7280;">tranthib@gmail.com</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="wf-badge wf-badge-blue">Admin</span></td>
+                            <td><span style="color: #10B981; font-size: 10px;">● Online</span></td>
+                            <td style="color: #6B7280; font-size: 10px;">Jan 05</td>
+                            <td style="font-size: 12px;">👁️ ✏️ 🗑️</td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="wf-flex">
+                                    <div class="wf-avatar" style="width: 26px; height: 26px; font-size: 9px;">LV</div>
+                                    <div>
+                                        <div style="font-weight: 500; font-size: 11px;">Lê Văn C</div>
+                                        <div style="font-size: 9px; color: #6B7280;">levanc@gmail.com</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><span class="wf-badge wf-badge-gray">Member</span></td>
+                            <td><span style="color: #9CA3AF; font-size: 10px;">● Offline</span></td>
+                            <td style="color: #6B7280; font-size: 10px;">Jan 10</td>
+                            <td style="font-size: 12px;">👁️ ✏️ 🗑️</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div style="text-align: center; color: #6B7280; font-size: 9px; margin-top: 10px;">Showing 1-3 of 12 members</div>
+        </div>
+    </div>
+    <p class="figure-caption">Hình 3.13. Giao diện phác thảo chức năng quản lý thành viên</p>
+</div>
+
+<p>Giao diện biểu mẫu mời thành viên cho phép Owner/Admin nhập email của người muốn mời, chọn vai trò dự kiến và gửi lời mời.</p>
+
+<div class="figure">
+    <div class="wf" style="width: 320px; padding: 20px;">
+        <div style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Invite new member</div>
+        <div style="font-size: 10px; color: #6B7280; margin-bottom: 16px;">Add team members to your workspace</div>
+        
+        <div style="font-size: 10px; font-weight: 500; margin-bottom: 4px;">Email address(es)</div>
+        <textarea style="width: 100%; box-sizing: border-box; border: 1px solid #E5E7EB; border-radius: 6px; padding: 8px; font-size: 10px; height: 60px; resize: none; margin-bottom: 4px;" placeholder="email1@example.com, email2@example.com"></textarea>
+        <div style="font-size: 8px; color: #9CA3AF; margin-bottom: 12px;">Separate multiple emails with commas</div>
+        
+        <div style="font-size: 10px; font-weight: 500; margin-bottom: 4px;">Role</div>
+        <select style="width: 100%; padding: 8px; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 10px; margin-bottom: 12px; background: white;">
+            <option>Member</option>
+            <option>Admin</option>
+            <option>Viewer</option>
+        </select>
+        
+        <div style="font-size: 10px; font-weight: 500; margin-bottom: 4px;">Message (optional)</div>
+        <textarea style="width: 100%; box-sizing: border-box; border: 1px solid #E5E7EB; border-radius: 6px; padding: 8px; font-size: 10px; height: 50px; resize: none; margin-bottom: 16px;" placeholder="Add a personal message..."></textarea>
+        
+        <div style="display: flex; gap: 10px;">
+            <div class="wf-btn-secondary" style="flex: 1; text-align: center;">Cancel</div>
+            <div class="wf-btn-primary" style="flex: 1; text-align: center;">Send Invite</div>
+        </div>
+    </div>
+    <p class="figure-caption">Hình 3.14. Giao diện phác thảo biểu mẫu mời thành viên</p>
+</div>
+
+<p>Giao diện quản lý tệp tin (Files) hiển thị danh sách tất cả tệp tin đã upload trong workspace với các chức năng upload, download, xem và xóa.</p>
+
+<div class="figure">
+    <div class="wf" style="max-width: 600px;">
+        <div class="wf-topbar">
+            <div class="wf-flex">
+                <div class="wf-logo" style="width: 28px; height: 28px; font-size: 10px;">MT</div>
+                <span style="font-weight: 600; font-size: 13px;">Marketing Team</span>
+                <span style="font-size: 10px; color: #6B7280;">/ Files</span>
+            </div>
+            <div class="wf-flex">
+                <div class="wf-avatar" style="width: 28px; height: 28px; font-size: 10px;">JD</div>
+            </div>
+        </div>
+        <div class="wf-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <div>
+                    <div class="wf-page-title" style="font-size: 16px;">Files</div>
+                    <div class="wf-page-sub" style="font-size: 11px;">Manage your workspace files</div>
+                </div>
+                <div class="wf-btn-primary">📤 Upload</div>
+            </div>
+            
+            <div class="wf-card" style="padding: 0; overflow: hidden;">
+                <table class="wf-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Size</th>
+                            <th>Uploaded by</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span style="color: #DC2626;">📄</span> Báo cáo Q4 2024.pdf</td>
+                            <td style="color: #6B7280;">2.5 MB</td>
+                            <td>Nguyễn Văn A</td>
+                            <td style="color: #6B7280;">Jan 15</td>
+                            <td style="font-size: 12px;">⬇️ 👁️ 🗑️</td>
+                        </tr>
+                        <tr>
+                            <td><span style="color: #059669;">📊</span> Thống kê doanh thu.xlsx</td>
+                            <td style="color: #6B7280;">1.2 MB</td>
+                            <td>Trần Thị B</td>
+                            <td style="color: #6B7280;">Jan 14</td>
+                            <td style="font-size: 12px;">⬇️ 👁️ 🗑️</td>
+                        </tr>
+                        <tr>
+                            <td><span style="color: #7C3AED;">🖼️</span> Banner campaign.png</td>
+                            <td style="color: #6B7280;">850 KB</td>
+                            <td>Lê Văn C</td>
+                            <td style="color: #6B7280;">Jan 13</td>
+                            <td style="font-size: 12px;">⬇️ 👁️ 🗑️</td>
+                        </tr>
+                        <tr>
+                            <td><span style="color: #2563EB;">📝</span> Meeting notes.docx</td>
+                            <td style="color: #6B7280;">125 KB</td>
+                            <td>Nguyễn Văn A</td>
+                            <td style="color: #6B7280;">Jan 12</td>
+                            <td style="font-size: 12px;">⬇️ 👁️ 🗑️</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div style="text-align: center; color: #6B7280; font-size: 9px; margin-top: 10px;">Showing 1-4 of 48 files</div>
+        </div>
+    </div>
+    <p class="figure-caption">Hình 3.15. Giao diện phác thảo chức năng quản lý tệp tin</p>
+</div>
+
+<p>Giao diện Báo cáo AI (AI Reports) hiển thị danh sách các báo cáo đã được tạo bởi AI với các loại: Daily Summary, Weekly Digest, Custom.</p>
+
+<div class="figure">
+    <div class="wf" style="max-width: 550px;">
+        <div class="wf-topbar">
+            <div class="wf-flex">
+                <div class="wf-logo" style="width: 28px; height: 28px; font-size: 10px;">MT</div>
+                <span style="font-weight: 600; font-size: 13px;">Marketing Team</span>
+                <span style="font-size: 10px; color: #6B7280;">/ AI Reports</span>
+            </div>
+            <div class="wf-flex">
+                <div class="wf-avatar" style="width: 28px; height: 28px; font-size: 10px;">JD</div>
+            </div>
+        </div>
+        <div class="wf-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <div>
+                    <div class="wf-page-title" style="font-size: 16px;">AI Reports</div>
+                    <div class="wf-page-sub" style="font-size: 11px;">AI-generated insights and summaries</div>
+                </div>
+                <div class="wf-btn-primary" style="background: linear-gradient(135deg, #8B5CF6, #7C3AED);">🤖 Generate</div>
+            </div>
+            
+            <!-- Featured Report -->
+            <div class="wf-ai-card" style="padding: 16px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <div>
+                        <span style="background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 10px; font-size: 9px;">Weekly Digest</span>
+                        <div style="font-size: 14px; font-weight: 600; margin: 8px 0 4px;">Weekly Report: Jan 15 - 21, 2025</div>
+                        <div style="font-size: 10px; opacity: 0.85;">Comprehensive summary of workspace activities...</div>
+                    </div>
+                    <div style="text-align: right; font-size: 9px; opacity: 0.8;">
+                        <div>OpenAI GPT-4</div>
+                        <div>Jan 21, 2025</div>
+                    </div>
+                </div>
+                <div style="margin-top: 12px;">
+                    <span class="wf-btn" style="background: rgba(255,255,255,0.2); padding: 6px 12px; font-size: 10px;">View</span>
+                    <span class="wf-btn" style="background: transparent; border: 1px solid rgba(255,255,255,0.3); padding: 6px 12px; font-size: 10px; margin-left: 6px;">📥 Export</span>
+                </div>
+            </div>
+            
+            <!-- Report List -->
+            <div class="wf-card" style="padding: 12px;">
+                <div class="wf-activity" style="padding: 8px 0;">
+                    <div class="wf-activity-icon" style="background: #DBEAFE; width: 28px; height: 28px; font-size: 12px;">📊</div>
+                    <div style="flex: 1;">
+                        <div class="wf-activity-title" style="font-size: 11px;">Daily Summary: Jan 20</div>
+                        <div class="wf-activity-desc" style="font-size: 9px;">Anthropic Claude • 1 day ago</div>
+                    </div>
+                    <span class="wf-badge wf-badge-blue">Daily</span>
+                </div>
+                <div class="wf-activity" style="padding: 8px 0;">
+                    <div class="wf-activity-icon" style="background: #FEF3C7; width: 28px; height: 28px; font-size: 12px;">📝</div>
+                    <div style="flex: 1;">
+                        <div class="wf-activity-title" style="font-size: 11px;">Q4 Performance Analysis</div>
+                        <div class="wf-activity-desc" style="font-size: 9px;">OpenAI GPT-4 • 3 days ago</div>
+                    </div>
+                    <span class="wf-badge wf-badge-orange">Custom</span>
+                </div>
+                <div class="wf-activity" style="padding: 8px 0; border-bottom: none;">
+                    <div class="wf-activity-icon" style="background: #D1FAE5; width: 28px; height: 28px; font-size: 12px;">📈</div>
+                    <div style="flex: 1;">
+                        <div class="wf-activity-title" style="font-size: 11px;">Weekly Digest: Jan 8 - 14</div>
+                        <div class="wf-activity-desc" style="font-size: 9px;">Google Gemini • 1 week ago</div>
+                    </div>
+                    <span class="wf-badge wf-badge-green">Weekly</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <p class="figure-caption">Hình 3.16. Giao diện phác thảo chức năng xem Báo cáo AI</p>
+</div>
+
+<p>Giao diện tạo báo cáo AI tùy chỉnh cho phép Workspace Owner chọn nguồn dữ liệu, khoảng thời gian, LLM Provider và nhập prompt.</p>
+
+<div class="figure">
+    <div class="wf" style="width: 340px; padding: 20px;">
+        <div style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">🤖 Generate AI Report</div>
+        <div style="font-size: 10px; color: #6B7280; margin-bottom: 16px;">Create custom reports with AI</div>
+        
+        <div style="font-size: 10px; font-weight: 500; margin-bottom: 4px;">Report Type</div>
+        <select style="width: 100%; padding: 8px; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 10px; margin-bottom: 12px; background: white;">
+            <option>Custom Report</option>
+            <option>Daily Summary</option>
+            <option>Weekly Digest</option>
+        </select>
+        
+        <div style="font-size: 10px; font-weight: 500; margin-bottom: 4px;">Data Sources</div>
+        <div style="margin-bottom: 12px; font-size: 10px;">
+            <label style="display: block; margin-bottom: 3px;"><input type="checkbox" checked> Files & Documents</label>
+            <label style="display: block; margin-bottom: 3px;"><input type="checkbox" checked> Activities & Logs</label>
+            <label style="display: block;"><input type="checkbox"> Member Statistics</label>
+        </div>
+        
+        <div style="font-size: 10px; font-weight: 500; margin-bottom: 4px;">Date Range</div>
+        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <input type="date" style="flex: 1; padding: 6px; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 9px;">
+            <input type="date" style="flex: 1; padding: 6px; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 9px;">
+        </div>
+        
+        <div style="font-size: 10px; font-weight: 500; margin-bottom: 4px;">LLM Provider</div>
+        <select style="width: 100%; padding: 8px; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 10px; margin-bottom: 12px; background: white;">
+            <option>OpenAI (GPT-4)</option>
+            <option>Anthropic (Claude)</option>
+            <option>Google (Gemini)</option>
+        </select>
+        
+        <div style="font-size: 10px; font-weight: 500; margin-bottom: 4px;">Prompt / Instructions</div>
+        <textarea style="width: 100%; box-sizing: border-box; border: 1px solid #E5E7EB; border-radius: 6px; padding: 8px; font-size: 10px; height: 60px; resize: none; margin-bottom: 16px;" placeholder="Describe what you want..."></textarea>
+        
+        <div style="display: flex; gap: 10px;">
+            <div class="wf-btn-secondary" style="flex: 1; text-align: center;">Cancel</div>
+            <div class="wf-btn-primary" style="flex: 1; text-align: center; background: linear-gradient(135deg, #8B5CF6, #7C3AED);">🚀 Generate</div>
+        </div>
+    </div>
+    <p class="figure-caption">Hình 3.17. Giao diện phác thảo biểu mẫu tạo báo cáo AI</p>
+</div>
+
+<p>Giao diện Thông báo (Notifications) hiển thị danh sách tất cả thông báo của người dùng với các loại: invitation, file upload, AI report ready, settings update.</p>
+
+<div class="figure">
+    <div class="wf" style="width: 320px;">
+        <div style="padding: 14px 16px; border-bottom: 1px solid #E5E7EB; display: flex; justify-content: space-between; align-items: center;">
+            <div style="font-weight: 600; font-size: 13px;">🔔 Notifications</div>
+            <div style="font-size: 10px; color: #FF8800;">Mark all read</div>
+        </div>
+        <div style="max-height: 280px; overflow-y: auto;">
+            <div style="padding: 12px 16px; background: #FFFBEB; border-bottom: 1px solid #F3F4F6; display: flex; gap: 10px;">
+                <div class="wf-activity-icon" style="width: 28px; height: 28px; font-size: 12px;">👤</div>
+                <div style="flex: 1;">
+                    <div class="wf-activity-title" style="font-size: 11px;">Workspace invitation</div>
+                    <div class="wf-activity-desc" style="font-size: 9px;">You're invited to "Dev Team"</div>
+                    <div class="wf-activity-time" style="font-size: 8px;">5 min ago</div>
+                </div>
+                <div style="width: 6px; height: 6px; background: #FF8800; border-radius: 50%; margin-top: 4px;"></div>
+            </div>
+            <div style="padding: 12px 16px; background: #FFFBEB; border-bottom: 1px solid #F3F4F6; display: flex; gap: 10px;">
+                <div class="wf-activity-icon" style="width: 28px; height: 28px; font-size: 12px;">📁</div>
+                <div style="flex: 1;">
+                    <div class="wf-activity-title" style="font-size: 11px;">New file uploaded</div>
+                    <div class="wf-activity-desc" style="font-size: 9px;">Report.pdf by Nguyễn Văn A</div>
+                    <div class="wf-activity-time" style="font-size: 8px;">30 min ago</div>
+                </div>
+                <div style="width: 6px; height: 6px; background: #FF8800; border-radius: 50%; margin-top: 4px;"></div>
+            </div>
+            <div style="padding: 12px 16px; border-bottom: 1px solid #F3F4F6; display: flex; gap: 10px;">
+                <div class="wf-activity-icon" style="width: 28px; height: 28px; font-size: 12px;">🤖</div>
+                <div style="flex: 1;">
+                    <div class="wf-activity-title" style="font-size: 11px;">AI Report ready</div>
+                    <div class="wf-activity-desc" style="font-size: 9px;">Weekly report generated</div>
+                    <div class="wf-activity-time" style="font-size: 8px;">2 hours ago</div>
+                </div>
+            </div>
+            <div style="padding: 12px 16px; display: flex; gap: 10px;">
+                <div class="wf-activity-icon" style="width: 28px; height: 28px; font-size: 12px;">⚙️</div>
+                <div style="flex: 1;">
+                    <div class="wf-activity-title" style="font-size: 11px;">Settings updated</div>
+                    <div class="wf-activity-desc" style="font-size: 9px;">2FA enabled for account</div>
+                    <div class="wf-activity-time" style="font-size: 8px;">2 days ago</div>
+                </div>
+            </div>
+        </div>
+        <div style="padding: 10px; text-align: center; border-top: 1px solid #E5E7EB;">
+            <span style="font-size: 10px; color: #FF8800;">View all notifications</span>
+        </div>
+    </div>
+    <p class="figure-caption">Hình 3.18. Giao diện phác thảo trang thông báo</p>
+</div>
+
+<p>Giao diện Cài đặt Workspace cho phép Owner cấu hình thông tin cơ bản, LLM provider mặc định và các cài đặt nâng cao.</p>
+
+<div class="figure">
+    <div class="wf" style="max-width: 500px;">
+        <div class="wf-topbar">
+            <div class="wf-flex">
+                <div class="wf-logo" style="width: 28px; height: 28px; font-size: 10px;">MT</div>
+                <span style="font-weight: 600; font-size: 13px;">Marketing Team</span>
+                <span style="font-size: 10px; color: #6B7280;">/ Settings</span>
+            </div>
+            <div class="wf-avatar" style="width: 28px; height: 28px; font-size: 10px;">JD</div>
+        </div>
+        <div class="wf-content">
+            <div class="wf-page-title" style="font-size: 16px;">Settings</div>
+            <div class="wf-page-sub" style="font-size: 11px;">Manage workspace configuration</div>
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 16px; border-bottom: 1px solid #E5E7EB; padding-bottom: 10px;">
+                <span style="padding: 6px 12px; background: #FF8800; color: white; border-radius: 6px; font-size: 10px; font-weight: 500;">General</span>
+                <span style="padding: 6px 12px; font-size: 10px; color: #6B7280;">AI Settings</span>
+                <span style="padding: 6px 12px; font-size: 10px; color: #6B7280;">Permissions</span>
+                <span style="padding: 6px 12px; font-size: 10px; color: #DC2626;">Danger</span>
+            </div>
+            
+            <div class="wf-card" style="padding: 14px;">
+                <div style="font-weight: 600; font-size: 12px; margin-bottom: 12px;">Basic Information</div>
+                <div style="display: flex; gap: 16px;">
+                    <div style="text-align: center;">
+                        <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #3B82F6, #1D4ED8); border-radius: 10px; margin-bottom: 6px;"></div>
+                        <span style="font-size: 9px; color: #FF8800;">Change</span>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-size: 10px; font-weight: 500; margin-bottom: 3px;">Workspace Name</div>
+                        <div class="wf-input" style="color: #1A1A1A; margin-bottom: 8px;">Marketing Team</div>
+                        <div style="font-size: 10px; font-weight: 500; margin-bottom: 3px;">Slug</div>
+                        <div class="wf-input" style="color: #1A1A1A;">marketing-team</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="wf-card" style="padding: 14px;">
+                <div style="font-weight: 600; font-size: 12px; margin-bottom: 8px;">Default LLM Provider</div>
+                <select style="width: 100%; padding: 8px; border: 1px solid #E5E7EB; border-radius: 6px; font-size: 10px; background: white;">
+                    <option>OpenAI (GPT-4) - Default</option>
+                </select>
+                <div style="font-size: 9px; color: #6B7280; margin-top: 4px;">Used for AI report generation</div>
+            </div>
+            
+            <div style="text-align: right; margin-top: 12px;">
+                <span class="wf-btn-secondary" style="margin-right: 6px;">Cancel</span>
+                <span class="wf-btn-primary">Save</span>
+            </div>
+        </div>
+    </div>
+    <p class="figure-caption">Hình 3.19. Giao diện phác thảo chức năng cài đặt Workspace</p>
+</div>
+
+<p>Giao diện trang cá nhân của người dùng hiển thị thông tin tài khoản và các tùy chọn quản lý như đổi mật khẩu, cài đặt thông báo.</p>
+
+<div class="figure">
+    <div class="wf" style="max-width: 500px;">
+        <div class="wf-topbar">
+            <div class="wf-flex">
+                <div class="wf-logo" style="width: 28px; height: 28px; font-size: 10px;">SP</div>
+                <span style="font-weight: 600; font-size: 13px;">Profile</span>
+            </div>
+            <div class="wf-flex">
+                <div class="wf-notif">🔔</div>
+                <div class="wf-avatar" style="width: 28px; height: 28px; font-size: 10px;">NV</div>
+            </div>
+        </div>
+        <div class="wf-content">
+            <div style="display: flex; gap: 16px;">
+                <div style="width: 140px;">
+                    <div class="wf-card" style="text-align: center; padding: 16px;">
+                        <div class="wf-avatar" style="width: 60px; height: 60px; font-size: 20px; margin: 0 auto 10px;">NV</div>
+                        <div style="font-weight: 600; font-size: 13px;">Nguyễn Văn A</div>
+                        <div style="font-size: 10px; color: #6B7280; margin-bottom: 6px;">nguyenvana@gmail.com</div>
+                        <span style="display: inline-block; background: #D1FAE5; color: #059669; padding: 2px 8px; border-radius: 10px; font-size: 9px;">● Online</span>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 11px;">
+                        <div style="padding: 8px 10px; background: #FFF7ED; color: #FF8800; border-radius: 6px; margin-bottom: 4px;">👤 Personal Info</div>
+                        <div style="padding: 8px 10px; color: #4B5563;">🔐 Password</div>
+                        <div style="padding: 8px 10px; color: #4B5563;">🔔 Notifications</div>
+                        <div style="padding: 8px 10px; color: #4B5563;">📱 Sessions</div>
+                    </div>
+                </div>
+                <div style="flex: 1;">
+                    <div class="wf-card" style="padding: 14px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <div style="font-weight: 600; font-size: 12px;">Personal Information</div>
+                            <span style="font-size: 10px; color: #FF8800;">✏️ Edit</span>
+                        </div>
+                        <table style="width: 100%; font-size: 11px;">
+                            <tr><td style="padding: 6px 0; color: #6B7280; width: 90px;">Full name:</td><td style="font-weight: 500;">Nguyễn Văn A</td></tr>
+                            <tr><td style="padding: 6px 0; color: #6B7280;">Email:</td><td>nguyenvana@gmail.com</td></tr>
+                            <tr><td style="padding: 6px 0; color: #6B7280;">Phone:</td><td>0901234567</td></tr>
+                            <tr><td style="padding: 6px 0; color: #6B7280;">Role:</td><td><span class="wf-badge wf-badge-gray">User</span></td></tr>
+                            <tr><td style="padding: 6px 0; color: #6B7280;">Verified:</td><td style="color: #059669;">✓ Email verified</td></tr>
+                            <tr><td style="padding: 6px 0; color: #6B7280;">Joined:</td><td>January 01, 2025</td></tr>
+                        </table>
+                    </div>
+                    <div class="wf-card" style="padding: 14px;">
+                        <div style="font-weight: 600; font-size: 12px; margin-bottom: 10px;">Linked Accounts</div>
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px; background: #F9FAFB; border-radius: 6px;">
+                            <div class="wf-flex">
+                                <span style="font-size: 16px;">🔵</span>
+                                <div>
+                                    <div style="font-weight: 500; font-size: 11px;">Google</div>
+                                    <div style="font-size: 9px; color: #6B7280;">nguyenvana@gmail.com</div>
+                                </div>
+                            </div>
+                            <span style="color: #059669; font-size: 10px;">✓ Connected</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <p class="figure-caption">Hình 3.20. Giao diện phác thảo trang cá nhân của người dùng</p>
+</div>
+
+<p>Giao diện Admin Dashboard (dành cho Super Admin) hiển thị tổng quan toàn bộ hệ thống với khả năng quản lý users và workspaces.</p>
+
+<div class="figure">
+    <div class="wf" style="max-width: 600px;">
+        <div class="wf-topbar" style="background: #1E1B4B;">
+            <div class="wf-flex">
+                <div class="wf-logo" style="background: linear-gradient(135deg, #8B5CF6, #7C3AED); width: 28px; height: 28px; font-size: 10px;">🛡️</div>
+                <span style="font-weight: 600; font-size: 13px; color: white;">Admin Panel</span>
+            </div>
+            <div class="wf-avatar" style="background: linear-gradient(135deg, #8B5CF6, #7C3AED); width: 28px; height: 28px; font-size: 10px;">SA</div>
+        </div>
+        <div class="wf-content">
+            <div class="wf-page-title" style="font-size: 16px;">System Overview</div>
+            <div class="wf-page-sub" style="font-size: 11px;">Monitor and manage the entire platform</div>
+            
+            <div class="wf-stats">
+                <div class="wf-stat" style="padding: 12px;">
+                    <div class="wf-stat-label" style="font-size: 10px;">Total Users</div>
+                    <div class="wf-stat-num" style="font-size: 20px; color: #7C3AED;">156</div>
+                </div>
+                <div class="wf-stat" style="padding: 12px;">
+                    <div class="wf-stat-label" style="font-size: 10px;">Workspaces</div>
+                    <div class="wf-stat-num" style="font-size: 20px; color: #7C3AED;">42</div>
+                </div>
+                <div class="wf-stat" style="padding: 12px;">
+                    <div class="wf-stat-label" style="font-size: 10px;">Active</div>
+                    <div class="wf-stat-num" style="font-size: 20px; color: #10B981;">40</div>
+                </div>
+                <div class="wf-stat" style="padding: 12px;">
+                    <div class="wf-stat-label" style="font-size: 10px;">Locked</div>
+                    <div class="wf-stat-num" style="font-size: 20px; color: #EF4444;">2</div>
+                </div>
+            </div>
+            
+            <div class="wf-card" style="padding: 0; overflow: hidden;">
+                <div style="padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #E5E7EB;">
+                    <span style="font-weight: 600; font-size: 12px;">Recent Workspaces</span>
+                    <span style="font-size: 10px; color: #7C3AED;">View all →</span>
+                </div>
+                <table class="wf-table">
+                    <thead>
+                        <tr>
+                            <th>Workspace</th>
+                            <th>Owner</th>
+                            <th>Members</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="font-weight: 500;">Marketing Team</td>
+                            <td>Nguyễn Văn A</td>
+                            <td>12</td>
+                            <td><span style="color: #10B981; font-size: 10px;">Active</span></td>
+                            <td><span class="wf-badge wf-badge-red" style="cursor: pointer;">Lock</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 500;">Development</td>
+                            <td>Trần Thị B</td>
+                            <td>8</td>
+                            <td><span style="color: #10B981; font-size: 10px;">Active</span></td>
+                            <td><span class="wf-badge wf-badge-red" style="cursor: pointer;">Lock</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 500;">Old Project</td>
+                            <td>Lê Văn C</td>
+                            <td>3</td>
+                            <td><span style="color: #EF4444; font-size: 10px;">Locked</span></td>
+                            <td><span class="wf-badge wf-badge-green" style="cursor: pointer;">Unlock</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <p class="figure-caption">Hình 3.21. Giao diện phác thảo Admin Dashboard</p>
+</div>
+
+</body>
+</html>

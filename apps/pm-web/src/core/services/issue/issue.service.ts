@@ -99,6 +99,14 @@ export class IssueService extends APIService {
     });
   }
 
+  async deleteIssue(issueId: string): Promise<void> {
+    return this.delete(`/api/issues/${issueId}`)
+      .then(() => undefined)
+      .catch((error) => {
+        throw error?.response?.data ?? error;
+      });
+  }
+
   private normalizeIssue(rawIssue: unknown): IIssue {
     const issue = rawIssue as Record<string, unknown>;
 

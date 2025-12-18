@@ -1,0 +1,43 @@
+@startuml
+!theme plain
+skinparam defaultFontSize 11
+skinparam usecaseFontSize 10
+
+left to right direction
+
+actor "Project Lead" as PL
+actor "Team Member" as TM
+actor "Viewer/Stakeholder" as VS
+
+usecase "Xem Timeline\nview" as UC_Timeline
+usecase "Load issues\ntheo khoảng thời gian" as UC_LoadRange
+usecase "Hiển thị issue\ntrên timeline" as UC_DisplayTimeline
+usecase "Zoom in/out\ntimeline" as UC_Zoom
+usecase "Filter theo\nfilter criteria" as UC_FilterTimeline
+
+PL --> UC_Timeline
+TM --> UC_Timeline
+VS --> UC_Timeline
+
+UC_LoadRange .up.> UC_Timeline : <<include>>
+UC_DisplayTimeline .up.> UC_Timeline : <<include>>
+UC_Zoom .up.> UC_Timeline : <<extend>>
+UC_FilterTimeline .up.> UC_Timeline : <<extend>>
+
+note right of UC_DisplayTimeline
+  Issues hiển thị dưới dạng
+  horizontal bars với:
+  - Issue key và title
+  - Start date và due date
+  - Progress indicator
+  - Dependencies giữa issues
+end note
+
+note bottom of UC_Zoom
+  Users có thể:
+  - Zoom để xem theo ngày/tuần/tháng
+  - Scroll timeline ngang
+  - Drag to pan
+end note
+
+@enduml

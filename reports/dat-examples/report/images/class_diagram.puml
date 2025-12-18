@@ -1,0 +1,122 @@
+@startuml class_diagram
+!theme plain
+skinparam backgroundColor white
+skinparam classAttributeFontSize 9
+skinparam classFontSize 10
+skinparam linetype polyline
+skinparam nodesep 80
+skinparam ranksep 100
+
+' Enum
+enum SprintStatus {
+  FUTURE
+  ACTIVE
+  CLOSED
+}
+
+SprintStatus -[hidden]down- Project
+
+' Main Entities
+class Project {
+  + id: UUID <<PK>>
+  + orgId: String
+  + identifier: String <<unique>>
+  + name: String
+  + projectLead: UUID
+  + defaultAssignee: UUID
+  + createdAt: Timestamp
+  + updatedAt: Timestamp
+}
+
+class Sprint {
+  + id: UUID <<PK>>
+  + projectId: UUID <<FK>>
+  + name: String
+  + status: SprintStatus
+  + goal: String
+  + startDate: Date
+  + endDate: Date
+  + createdAt: Timestamp
+  + updatedAt: Timestamp
+}
+
+class IssueStatus {
+  + id: UUID <<PK>>
+  + projectId: UUID <<FK>>
+  + name: String
+  + description: String
+  + color: String
+  + order: Integer
+  + createdAt: Timestamp
+  + updatedAt: Timestamp
+}
+
+class Issue {
+  + id: UUID <<PK>>
+  + projectId: UUID <<FK>>
+  + sprintId: UUID <<FK>>
+  + parentId: UUID <<FK>>
+  + statusId: UUID <<FK>>
+  + name: String
+  + description: Text
+  + descriptionHtml: Text
+  + type: String
+  + priority: String
+  + point: Decimal(5,2)
+  + sequenceId: Integer
+  + sortOrder: Decimal(20,10)
+  + startDate: Date
+  + targetDate: Date
+  + assigneesJson: JSONB
+  + createdBy: UUID
+  + createdAt: Timestamp
+  + updatedAt: Timestamp
+}
+
+class IssueComment {
+  + id: UUID <<PK>>
+  + issueId: UUID <<FK>>
+  + projectId: UUID <<FK>>
+  + comment: Text
+  + commentHtml: Text
+  + createdBy: UUID
+  + updatedBy: UUID
+  + createdAt: Timestamp
+  + updatedAt: Timestamp
+}
+
+class IssueActivity {
+  + id: UUID <<PK>>
+  + issueId: UUID <<FK>>
+  + projectId: UUID <<FK>>
+  + field: String
+  + oldValue: Text
+  + newValue: Text
+  + oldIdentifier: String
+  + newIdentifier: String
+  + actorId: UUID
+  + createdAt: Timestamp
+}
+
+' Layout hints
+Project -[hidden]right- IssueStatus
+Sprint -[hidden]right- Issue
+IssueComment -[hidden]right- IssueActivity
+
+' Relationships
+Project "1" -down-> "0..*" Sprint : contains
+Project "1" -down-> "0..*" IssueStatus : defines
+Project "1" -down-> "0..*" Issue : contains
+Project "1" -down-> "0..*" IssueComment : has
+Project "1" -down-> "0..*" IssueActivity : tracks
+
+Sprint "1" o-down- "0..*" Issue : includes
+Sprint .up.> SprintStatus : uses
+
+IssueStatus "1" -down-> "0..*" Issue : categorizes
+
+Issue "1" -down-> "0..*" IssueComment : discussed in
+Issue "1" -down-> "0..*" IssueActivity : history of
+Issue "0..1" o-left- "0..*" Issue : parent-child
+
+@enduml

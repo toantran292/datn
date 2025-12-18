@@ -1,0 +1,44 @@
+@startuml act_create_project
+|Người dùng|
+start
+:Chọn chức năng tạo Project;
+|Giao diện người dùng|
+:Hiển thị form tạo Project;
+|Người dùng|
+:Nhập thông tin Project
+(tên, key, mô tả);
+:Nhấn nút "Create Project";
+|Giao diện người dùng|
+:Gửi dữ liệu đến server;
+|Hệ thống xử lý|
+:Kiểm tra dữ liệu hợp lệ;
+if (Dữ liệu hợp lệ?) then (không)
+  |Giao diện người dùng|
+  :Hiển thị thông báo lỗi;
+  |Người dùng|
+  :Sửa thông tin;
+  stop
+else (có)
+  :Kiểm tra project key
+  đã tồn tại;
+  if (Key đã tồn tại?) then (có)
+    |Giao diện người dùng|
+    :Thông báo key đã được sử dụng;
+    |Người dùng|
+    :Sửa thông tin;
+    stop
+  else (không)
+    :Tạo project mới;
+    :Tạo default statuses
+    (To Do, In Progress, Done);
+    :Thêm người tạo
+    làm Project Lead;
+    :Tạo audit log;
+    |Giao diện người dùng|
+    :Thông báo tạo thành công;
+    :Chuyển đến trang project;
+    |Người dùng|
+    stop
+  endif
+endif
+@enduml

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sprint Summary</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #1976d2;
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        .header-actions button {
+            background: transparent;
+            border: 1px solid white;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            margin-left: 8px;
+        }
+        .info {
+            padding: 16px 24px;
+            background: #f5f5f5;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .info div {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        .info div strong {
+            color: #333;
+        }
+        .content {
+            padding: 24px;
+        }
+        .section {
+            margin-bottom: 32px;
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+        }
+        th {
+            background: #f5f5f5;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 13px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #66bb6a);
+        }
+        .issues-section {
+            padding: 16px;
+            background: #fafafa;
+            border-radius: 4px;
+            margin-bottom: 16px;
+        }
+        .status-group {
+            margin-bottom: 16px;
+        }
+        .status-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        .status-title.done { color: #2e7d32; }
+        .status-title.review { color: #388e3c; }
+        .status-title.progress { color: #f57c00; }
+        .status-title.todo { color: #1976d2; }
+        .issue-list {
+            list-style: none;
+            padding-left: 16px;
+        }
+        .issue-list li {
+            font-size: 13px;
+            color: #444;
+            margin-bottom: 4px;
+        }
+        .issue-list li::before {
+            content: "• ";
+            color: #999;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Sprint 3 Report</h1>
+            <div class="header-actions">
+                <button>Export PDF</button>
+                <button>Close</button>
+            </div>
+        </div>
+
+        <div class="info">
+            <div><strong>Project:</strong> PROJ - Project Management System</div>
+            <div><strong>Sprint Period:</strong> 2025-12-01 - 2025-12-14</div>
+            <div><strong>Status:</strong> Active (3 days remaining)</div>
+            <div><strong>Goal:</strong> Implement core database layer and API endpoints for issue management</div>
+        </div>
+
+        <div class="content">
+            <div class="section">
+                <div class="section-title">Overview</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>METRIC</th>
+                            <th>VALUE</th>
+                            <th>TARGET</th>
+                            <th>PROGRESS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Issues Completed</td>
+                            <td>6</td>
+                            <td>15</td>
+                            <td>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 40%;"></div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Story Points</td>
+                            <td>12</td>
+                            <td>30</td>
+                            <td>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 40%;"></div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Days Elapsed</td>
+                            <td>10</td>
+                            <td>14</td>
+                            <td>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 71%;"></div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Team Velocity</td>
+                            <td>1.2 pts/day</td>
+                            <td>2.1 pts/day</td>
+                            <td style="color: #d32f2f;">Below target</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Issues by Status</div>
+                <div class="issues-section">
+                    <div class="status-group">
+                        <div class="status-title done">Done (6 issues, 12 points)</div>
+                        <ul class="issue-list">
+                            <li>PROJ-35: Update documentation (1 pt)</li>
+                            <li>PROJ-36: Deploy to staging (3 pts)</li>
+                            <li>PROJ-37: Setup CI/CD pipeline (5 pts)</li>
+                            <li>PROJ-38: Fix login bug (2 pts)</li>
+                            <li>PROJ-39: Performance optimization (8 pts)</li>
+                            <li>PROJ-40: Integration testing (3 pts)</li>
+                        </ul>
+                    </div>
+
+                    <div class="status-group">
+                        <div class="status-title review">Code Review (1 issue, 4 points)</div>
+                        <ul class="issue-list">
+                            <li>PROJ-40: Database integration tests (3 pts)</li>
+                        </ul>
+                    </div>
+
+                    <div class="status-group">
+                        <div class="status-title progress">In Progress (2 issues, 5 points)</div>
+                        <ul class="issue-list">
+                            <li>PROJ-41: User acceptance testing (8 pts)</li>
+                            <li>PROJ-42: REST API endpoints (5 pts)</li>
+                        </ul>
+                    </div>
+
+                    <div class="status-group">
+                        <div class="status-title todo">To Do (3 issues, 9 points)</div>
+                        <ul class="issue-list">
+                            <li>PROJ-43: Code refactoring (2 pts)</li>
+                            <li>PROJ-44: Design mockups (5 pts)</li>
+                            <li>PROJ-45: Setup database schema (3 pts)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Team Contributions</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>MEMBER</th>
+                            <th>COMPLETED</th>
+                            <th>IN PROGRESS</th>
+                            <th>TOTAL POINTS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>John Doe</td>
+                            <td>3 issues</td>
+                            <td>1 issue</td>
+                            <td>11 pts</td>
+                        </tr>
+                        <tr>
+                            <td>Jane Smith</td>
+                            <td>2 issues</td>
+                            <td>1 issue</td>
+                            <td>8 pts</td>
+                        </tr>
+                        <tr>
+                            <td>Mike Johnson</td>
+                            <td>1 issue</td>
+                            <td>0 issues</td>
+                            <td>8 pts</td>
+                        </tr>
+                        <tr>
+                            <td>Sarah Lee</td>
+                            <td>0 issues</td>
+                            <td>0 issues</td>
+                            <td>3 pts</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -3,6 +3,7 @@ import { MessageSquare } from 'lucide-react';
 import type { Message } from '../../types';
 import type { UserInfo } from '../../contexts/ChatContext';
 import { MessageItem } from '../chat/MessageItem';
+import { HuddleMessage } from '../chat/HuddleMessage';
 import { MessageComposer } from '../chat/MessageComposer';
 
 interface ThreadViewProps {
@@ -66,22 +67,30 @@ export function ThreadView({
       <div className="flex-1 overflow-y-auto p-3 space-y-2 vertical-scrollbar scrollbar-sm">
         {/* Parent Message - highlighted */}
         <div className="border-l-4 border-custom-primary-100 bg-custom-background-90/50 rounded-r-lg -mx-3 px-3">
-          <MessageItem
-            message={parentMessage}
-            isOwn={parentMessage.userId === currentUserId}
-            onOpenThread={() => {}} // Already in thread view
-            senderName={parentUserInfo?.displayName}
-            senderAvatarUrl={parentUserInfo?.avatarUrl}
-            onEdit={onEditMessage}
-            onDelete={onDeleteMessage}
-            onPin={onPinMessage}
-            onUnpin={onUnpinMessage}
-            onToggleReaction={onToggleReaction}
-            hideThreadAction // Hide "Reply in thread" - already in thread
-            hideReplyCount // Hide reply count - already in thread
-            usersCache={usersCache}
-            roomId={roomId}
-          />
+          {parentMessage.type === 'huddle_started' || parentMessage.type === 'huddle_ended' ? (
+            <HuddleMessage
+              message={parentMessage}
+              currentUserId={currentUserId}
+              onToggleReaction={onToggleReaction}
+            />
+          ) : (
+            <MessageItem
+              message={parentMessage}
+              isOwn={parentMessage.userId === currentUserId}
+              onOpenThread={() => {}} // Already in thread view
+              senderName={parentUserInfo?.displayName}
+              senderAvatarUrl={parentUserInfo?.avatarUrl}
+              onEdit={onEditMessage}
+              onDelete={onDeleteMessage}
+              onPin={onPinMessage}
+              onUnpin={onUnpinMessage}
+              onToggleReaction={onToggleReaction}
+              hideThreadAction // Hide "Reply in thread" - already in thread
+              hideReplyCount // Hide reply count - already in thread
+              usersCache={usersCache}
+              roomId={roomId}
+            />
+          )}
         </div>
 
         {/* Replies */}

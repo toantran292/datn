@@ -178,6 +178,8 @@ services:
       dockerfile: Dockerfile.dev
     container_name: uts_pm
     restart: unless-stopped
+    env_file:
+      - .env.dev
     volumes:
       - ../../services/pm:/app
       - pm_node_modules:/app/node_modules
@@ -190,6 +192,10 @@ services:
       DATABASE_PASSWORD: ${PM_DATABASE_PASSWORD}
       DATABASE_NAME: ${PM_DATABASE_NAME}
       DATABASE_URL: ${PM_DATABASE_URL}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      FILE_STORAGE_URL: http://file-storage-api:3000
+    ports:
+      - "41003:${PM_PORT}"
     healthcheck:
       test:
         [
@@ -328,7 +334,7 @@ services:
     build:
       context: ../../services/meeting/signaling
       dockerfile: Dockerfile.dev
-    container_name: uts_meeting_api
+    container_name: uts_meet_api
     restart: unless-stopped
     volumes:
       - ../../services/meeting/signaling/src:/app/src
@@ -336,7 +342,7 @@ services:
       - meeting_api_node_modules:/app/node_modules
     environment:
       NODE_ENV: development
-      PORT_HTTP: 40600
+      PORT_HTTP: 3000
       # Chat service for huddle notifications
       CHAT_SERVICE_URL: http://chat-api:3000
       # Prosody WebSocket
@@ -357,9 +363,9 @@ services:
     depends_on:
       postgres: { condition: service_healthy }
     ports:
-      - "40600:40600"
+      - "40600:3000"
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:40600/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
       interval: 30s
       timeout: 10s
       retries: 10

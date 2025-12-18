@@ -40,6 +40,15 @@ export interface CreateHuddleMessageDto {
   participantCount?: number;
 }
 
+export interface CreateMeetingChatMessageDto {
+  roomId: string;
+  userId: string;
+  orgId: string;
+  meetingId: string;
+  content: string;
+  senderName?: string;
+}
+
 // Simple UUID validation regex
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -156,6 +165,122 @@ export class ChatsService {
       metadata: entity.metadata,
       sentAt: entity.createdAt.toISOString(),
     };
+  }
+
+  /**
+   * Update existing huddle_started message to huddle_ended
+   * Returns the updated message, or null if no huddle_started message found
+   */
+  async updateHuddleToEnded(dto: CreateHuddleMessageDto): Promise<CreatedMessage | null> {
+    // Find the existing huddle_started message
+    const existingMessage = await this.messagesRepo.findHuddleStartedMessage(
+      dto.roomId,
+      dto.meetingId,
+    );
+
+    if (!existingMessage) {
+      this.logger.warn(`No huddle_started message found for meeting ${dto.meetingId} in room ${dto.roomId}`);
+      return null;
+    }
+
+    const metadata = {
+      meetingId: dto.meetingId,
+      meetingRoomId: dto.meetingRoomId,
+      duration: dto.duration,
+      participantCount: dto.participantCount,
+    };
+
+    const updated = await this.messagesRepo.updateHuddleMessage(existingMessage.id, {
+      type: 'huddle_ended',
+      metadata,
+    });
+
+    if (!updated) {
+      return null;
+    }
+
+    return {
+      id: updated.id,
+      roomId: updated.roomId,
+      userId: updated.userId,
+      orgId: updated.orgId,
+      threadId: null,
+      type: updated.type,
+      content: updated.content,
+      metadata: updated.metadata,
+      sentAt: updated.createdAt.toISOString(),
+    };
+  }
+
+  /**
+   * Create a meeting chat message as a thread reply under the huddle message
+   */
+  async createMeetingChatMessage(dto: CreateMeetingChatMessageDto): Promise<CreatedMessage | null> {
+    // Find the huddle message for this meeting
+    const huddleMessage = await this.messagesRepo.findHuddleMessageByMeetingId(
+      dto.roomId,
+      dto.meetingId,
+    );
+
+    if (!huddleMessage) {
+      this.logger.warn(`No huddle message found for meeting ${dto.meetingId} in room ${dto.roomId}`);
+      return null;
+    }
+
+    // Create the message as a thread reply
+    const entity = await this.messagesRepo.create({
+      roomId: dto.roomId,
+      content: dto.content,
+      userId: dto.userId,
+      orgId: dto.orgId,
+      threadId: huddleMessage.id, // Thread under the huddle message
+      type: 'meeting_chat',
+      metadata: {
+        meetingId: dto.meetingId,
+        senderName: dto.senderName,
+      },
+    });
+
+    return {
+      id: entity.id,
+      roomId: entity.roomId,
+      userId: entity.userId,
+      orgId: entity.orgId,
+      threadId: entity.threadId,
+      type: entity.type,
+      content: entity.content,
+      metadata: entity.metadata,
+      sentAt: entity.createdAt.toISOString(),
+    };
+  }
+
+  /**
+   * Get meeting chat messages for a specific meeting
+   * Returns all thread replies under the huddle message
+   */
+  async getMeetingChatMessages(roomId: string, meetingId: string): Promise<CreatedMessage[]> {
+    // Find the huddle message for this meeting
+    const huddleMessage = await this.messagesRepo.findHuddleMessageByMeetingId(roomId, meetingId);
+
+    if (!huddleMessage) {
+      this.logger.warn(`No huddle message found for meeting ${meetingId} in room ${roomId}`);
+      return [];
+    }
+
+    // Get all thread replies (meeting chat messages)
+    const rs = await this.messagesRepo.listByThread(roomId, huddleMessage.id, { pageSize: 100 });
+
+    return rs.items.map(m => ({
+      id: m.id,
+      roomId: m.roomId,
+      userId: m.userId,
+      orgId: m.orgId,
+      threadId: m.threadId ?? null,
+      type: m.type,
+      content: m.content,
+      metadata: m.metadata,
+      sentAt: m.createdAt.toISOString(),
+    }));
   }
 
   async listMessages(roomId: string, userId?: string, paging?: { pageSize?: number; pageState?: string }) {

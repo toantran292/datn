@@ -167,9 +167,12 @@ export interface AppHeaderContextValue {
         setCurrentProjectId(project?.id);
 
         // Điều hướng theo project cho các app Next:
-        // - Có project => /project/:id
-        // - Không có => "/"
-        const targetPath = project ? `/project/${project.id}` : "/";
+        // - Có project => /{workspaceSlug}/project/:id (nếu có workspaceSlug) hoặc /project/:id
+        // - Không có => /{workspaceSlug} (nếu có workspaceSlug) hoặc "/"
+        const workspacePrefix = workspaceSlug ? `/${workspaceSlug}` : "";
+        const targetPath = project
+          ? `${workspacePrefix}/project/${project.id}`
+          : workspacePrefix || "/";
 
         // Ưu tiên dùng hàm navigateTo do app cung cấp (vd: Next.js router.push)
         if (navigateTo) {
