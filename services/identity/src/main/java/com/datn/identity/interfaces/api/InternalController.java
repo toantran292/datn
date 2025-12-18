@@ -280,7 +280,7 @@ public class InternalController {
 
     /**
      * Check if a user is a system admin (ROOT or SYS_ADMIN role).
-     * Used by meeting-api for admin meeting management.
+     * Used by meet-api for admin meeting management.
      * GET /internal/users/{userId}/is-system-admin
      */
     @GetMapping("/users/{userId}/is-system-admin")

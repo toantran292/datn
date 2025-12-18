@@ -26,7 +26,7 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
       <AppHeader className="z-[9999]" />
       <div className="relative flex h-full w-full overflow-hidden">
         <main className="relative flex flex-1 w-full flex-col overflow-hidden bg-custom-background-100">
-          <div className="flex-1 overflow-hidden">{children}</div>
+          <div className="h-full w-full overflow-hidden">{children}</div>
         </main>
       </div>
     </div>

@@ -47,6 +47,7 @@ async function clearIdentityService() {
 
   try {
     // Delete in order of dependencies
+    await client.query(`DELETE FROM audit_logs`);
     await client.query(`DELETE FROM role_bindings WHERE scope = 'ORG'`);
     await client.query(`DELETE FROM memberships`);
     await client.query(`DELETE FROM invitations`);

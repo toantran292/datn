@@ -63,7 +63,7 @@ export function MessageList({
   }
 
   return (
-    <div className="flex-1 overflow-y-auto px-5 py-4 vertical-scrollbar scrollbar-sm">
+    <div className="flex-1 min-h-0 overflow-y-auto px-3 md:px-5 py-4 vertical-scrollbar scrollbar-sm">
       <div className="space-y-0.5">
         {mainMessages.map((msg) => {
           // Render huddle messages with special component

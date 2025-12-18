@@ -324,7 +324,7 @@ services:
       start_period: 15s
     networks: [uts_net]
 
-  meeting-api:
+  meet-api:
     build:
       context: ../../services/meeting/signaling
       dockerfile: Dockerfile.dev
@@ -383,7 +383,7 @@ services:
       chat-api: { condition: service_started }
       notification-api: { condition: service_started }
       file-storage-api: { condition: service_started }
-      meeting-api: { condition: service_started }
+      meet-api: { condition: service_started }
     ports: [ "8080:80" ]
     networks: [uts_net]
 
