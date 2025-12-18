@@ -277,6 +277,17 @@ export function ChatProvider({ children }: { children: ReactNode }) {
               }
             }
           },
+          onMessageUpdated: (message) => {
+            console.log('[ChatContext] onMessageUpdated:', message.id, 'roomId:', message.roomId, 'type:', message.type);
+            if (message.roomId === selectedRoomIdRef.current) {
+              // Update existing message in messages list
+              setMessages((prev) =>
+                prev.map((msg) =>
+                  msg.id === message.id ? { ...msg, ...message } : msg
+                )
+              );
+            }
+          },
           onJoinedRoom: (data) => {
             console.log("Joined room:", data);
           },

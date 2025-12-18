@@ -76,6 +76,7 @@ export class InternalController {
   /**
    * Create a huddle message in a chat room
    * Called by meeting service when huddle starts/ends
+   * For huddle_ended: updates existing huddle_started message instead of creating new one
    */
   @SkipContext()
   @Post('rooms/:roomId/huddle')
@@ -83,6 +84,28 @@ export class InternalController {
     @Param('roomId') roomId: string,
     @Body() body: CreateHuddleMessageBody,
   ) {
+    // For huddle_ended, try to update existing huddle_started message
+    if (body.type === 'huddle_ended') {
+      const updatedMessage = await this.chatsService.updateHuddleToEnded({
+        roomId,
+        userId: body.userId,
+        orgId: body.orgId,
+        type: body.type,
+        meetingId: body.meetingId,
+        meetingRoomId: body.meetingRoomId,
+        duration: body.duration,
+        participantCount: body.participantCount,
+      });
+
+      if (updatedMessage) {
+        // Broadcast update via WebSocket (message:updated event)
+        this.chatsGateway.broadcastHuddleMessageUpdate(body.orgId, roomId, updatedMessage);
+        return updatedMessage;
+      }
+      // If no huddle_started message found, fall through to create new one
+    }
+
+    // Create new message for huddle_started (or huddle_ended if no existing message)
     const message = await this.chatsService.createHuddleMessage({
       roomId,
       userId: body.userId,

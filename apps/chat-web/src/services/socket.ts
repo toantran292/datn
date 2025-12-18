@@ -24,6 +24,7 @@ export type SocketEventHandlers = {
   onRoomMemberJoined?: (data: { id: string; name?: string | null; orgId: string; isPrivate: boolean; userId: string }) => void;
   onRoomUpdated?: (payload: RoomUpdatedPayload) => void;
   onMessageNew?: (message: Message) => void;
+  onMessageUpdated?: (message: Message) => void;
   onJoinedRoom?: (data: { roomId: string; userId: string; joinedAt: number }) => void;
   onUserOnline?: (data: { userId: string; timestamp: string }) => void;
   onUserOffline?: (data: { userId: string; timestamp: string }) => void;
@@ -91,6 +92,11 @@ class SocketService {
     this.socket.on('message:new', (message: Message) => {
       console.log('[WS] New message:', message);
       handlers.onMessageNew?.(message);
+    });
+
+    this.socket.on('message:updated', (message: Message) => {
+      console.log('[WS] Message updated:', message);
+      handlers.onMessageUpdated?.(message);
     });
 
     this.socket.on('joined_room', (data) => {

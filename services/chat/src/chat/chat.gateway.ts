@@ -281,8 +281,14 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     sentAt: string;
   }) {
     const roomChannel = `room:${roomId}`;
-    console.log(`[HuddleBroadcast] Broadcasting to ${roomChannel}:`, message.type, message.id);
+    console.log(`[HuddleBroadcast] Broadcasting to ${roomChannel} and org:${orgId}:`, message.type, message.id);
+
+    // Emit to room channel (for users who have joined the room)
     this.io.to(roomChannel).emit('message:new', message);
+
+    // Also emit to org channel so all users in org receive the message
+    // This ensures users who haven't joined the room channel yet still see the huddle message
+    this.io.to(`org:${orgId}`).emit('message:new', message);
 
     // Emit huddle:started event for notification sound when huddle starts
     // Emit to org so all users in org receive notification (not just room members who joined the channel)
@@ -306,6 +312,38 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       updatedAt: message.sentAt,
     });
     console.log(`[HuddleBroadcast] Emitted room:updated to org:${orgId}`);
+  }
+
+  /**
+   * Broadcast huddle message update (when huddle_started is edited to huddle_ended)
+   * Called by internal API when meeting service notifies about huddle end
+   */
+  broadcastHuddleMessageUpdate(orgId: string, roomId: string, message: {
+    id: string;
+    roomId: string;
+    userId: string;
+    orgId: string;
+    type: string;
+    content: string;
+    metadata?: Record<string, any> | null;
+    sentAt: string;
+  }) {
+    const roomChannel = `room:${roomId}`;
+    console.log(`[HuddleBroadcast] Broadcasting update to ${roomChannel} and org:${orgId}:`, message.type, message.id);
+
+    // Emit message:updated to room channel (for users viewing the room)
+    this.io.to(roomChannel).emit('message:updated', message);
+
+    // Also emit to org channel (for users who may not have joined room but need update)
+    this.io.to(`org:${orgId}`).emit('message:updated', message);
+
+    // Also emit room:updated to update the room list
+    this.io.to(`org:${orgId}`).emit('room:updated', {
+      roomId,
+      lastMessage: message,
+      updatedAt: new Date().toISOString(),
+    });
+    console.log(`[HuddleBroadcast] Emitted message:updated to room and org, plus room:updated`);
   }
 
   /**

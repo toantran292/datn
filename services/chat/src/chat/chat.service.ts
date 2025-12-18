@@ -163,6 +163,51 @@ export class ChatsService {
   }
 
   /**
+   * Update existing huddle_started message to huddle_ended
+   * Returns the updated message, or null if no huddle_started message found
+   */
+  async updateHuddleToEnded(dto: CreateHuddleMessageDto): Promise<CreatedMessage | null> {
+    // Find the existing huddle_started message
+    const existingMessage = await this.messagesRepo.findHuddleStartedMessage(
+      dto.roomId,
+      dto.meetingId,
+    );
+
+    if (!existingMessage) {
+      this.logger.warn(`No huddle_started message found for meeting ${dto.meetingId} in room ${dto.roomId}`);
+      return null;
+    }
+
+    const metadata = {
+      meetingId: dto.meetingId,
+      meetingRoomId: dto.meetingRoomId,
+      duration: dto.duration,
+      participantCount: dto.participantCount,
+    };
+
+    const updated = await this.messagesRepo.updateHuddleMessage(existingMessage.id, {
+      type: 'huddle_ended',
+      metadata,
+    });
+
+    if (!updated) {
+      return null;
+    }
+
+    return {
+      id: updated.id,
+      roomId: updated.roomId,
+      userId: updated.userId,
+      orgId: updated.orgId,
+      threadId: null,
+      type: updated.type,
+      content: updated.content,
+      metadata: updated.metadata,
+      sentAt: updated.createdAt.toISOString(),
+    };
+  }
+
+  /**
    * Create a meeting chat message as a thread reply under the huddle message
    */
   async createMeetingChatMessage(dto: CreateMeetingChatMessageDto): Promise<CreatedMessage | null> {
