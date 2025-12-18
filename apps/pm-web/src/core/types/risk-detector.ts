@@ -20,6 +20,11 @@ export interface RiskRecommendation {
   expectedImpact: string;
   effortEstimate?: string;
   suggestedIssues?: string[];
+  suggestedIssuesDetails?: Array<{
+    id: string;
+    name: string;
+    type: string;
+  }>;
   status?: RecommendationStatus;
   appliedAt?: string;
 }
@@ -33,6 +38,7 @@ export interface RiskAlert {
   title: string;
   description: string;
   impactScore?: number;
+  confidence?: number; // AI confidence score (0-1)
   status: RiskAlertStatus;
   affectedIssues?: string[];
   metadata?: Record<string, any>;
@@ -56,12 +62,41 @@ export interface GetSprintRisksResponse {
   summary: RiskSummary;
 }
 
+export type AIInsightType = 'POSITIVE' | 'CONCERN' | 'TREND';
+
+export interface AIInsight {
+  type: AIInsightType;
+  message: string;
+}
+
 export interface DetectRisksResponse {
   success: boolean;
   detectedRisks: number;
   risks: RiskAlert[];
   totalChecked?: number; // Total number of checks performed
   message?: string; // Optional message about the detection
+  overallHealthScore?: number; // 0-100
+  healthGrade?: 'A' | 'B' | 'C' | 'D' | 'F';
+  healthStatus?: 'HEALTHY' | 'AT_RISK' | 'CRITICAL';
+  summary?: string; // AI-generated summary
+  insights?: AIInsight[]; // AI insights and observations
+  analysis?: {
+    avgVelocity?: number;
+    committedPoints?: number;
+    capacityStatus?: 'UNDER' | 'OPTIMAL' | 'OVER';
+    blockedIssuesCount?: number;
+    totalIssuesCount?: number;
+    workloadDistribution?: Array<{
+      memberId: string;
+      memberName?: string;
+      points: number;
+      percentage: number;
+    }>;
+    missingEstimatesCount?: number;
+    processingTime?: number;
+    tokensUsed?: number;
+    aiModel?: string;
+  };
 }
 
 export interface AcknowledgeRiskRequest {

@@ -7,6 +7,7 @@ import {
 import { PrismaService } from '../../prisma/prisma.service';
 import { RagService } from '../rag/rag.service';
 import { SimilarIssueDto } from '../rag/dto/rag.dto';
+import { AIRiskAnalyzerService, AIRiskAnalysisResult, SprintAnalysisContext } from './ai-risk-analyzer.service';
 import { OvercommitmentRule, BlockedIssuesRule } from './rules';
 import {
   IRiskRule,
@@ -14,6 +15,7 @@ import {
   SprintData,
   IssueData,
   SprintHistoryData,
+  RiskResult,
 } from './interfaces/risk-rule.interface';
 import {
   RiskAlertDto,
@@ -21,6 +23,7 @@ import {
   RiskSeverity,
   RiskAlertStatus,
   GetSprintRisksQueryDto,
+  DetectRisksResponseDto,
 } from './dto';
 
 @Injectable()
@@ -31,115 +34,82 @@ export class RiskDetectorService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly ragService: RagService,
+    private readonly aiRiskAnalyzer: AIRiskAnalyzerService, // AI-primary engine
+    // Keep rules for fallback
     private readonly overcommitmentRule: OvercommitmentRule,
     private readonly blockedIssuesRule: BlockedIssuesRule,
-    // TODO: Inject other rules when implemented
   ) {
-    // Register all risk detection rules
+    // Register all risk detection rules (for fallback)
     this.rules = [
       this.overcommitmentRule,
       this.blockedIssuesRule,
-      // TODO: Add other rules
     ];
 
-    this.logger.log(`Initialized with ${this.rules.length} risk detection rules`);
+    this.logger.log(`Initialized with AI-primary risk detection + ${this.rules.length} fallback rules`);
   }
 
   /**
-   * Detect all risks for a sprint
+   * Detect all risks for a sprint using AI-primary approach
    */
-  async detectRisksForSprint(sprintId: string): Promise<RiskAlertDto[]> {
-    this.logger.log(`Detecting risks for sprint ${sprintId}`);
+  async detectRisksForSprint(sprintId: string): Promise<DetectRisksResponseDto> {
+    this.logger.log(`Detecting risks for sprint ${sprintId} (AI-primary approach)`);
 
-    // Build sprint context
+    const startTime = Date.now();
+
+    // Step 1: Build sprint context with RAG
     const context = await this.buildSprintContext(sprintId);
-
     if (!context) {
       throw new NotFoundException(`Sprint ${sprintId} not found`);
     }
 
-    // Run all rules
-    const detectedRisks: RiskAlertDto[] = [];
+    // Build analysis context for AI
+    const analysisContext = await this.buildAnalysisContext(context);
 
-    for (const rule of this.rules) {
-      try {
-        const result = await rule.check(context);
-
-        if (result) {
-          // Check if this risk already exists (avoid duplicates)
-          const existingRisk = await this.prisma.riskAlert.findFirst({
-            where: {
-              sprintId,
-              riskType: result.type,
-              status: {
-                in: ['ACTIVE', 'ACKNOWLEDGED'],
-              },
-            },
-          });
-
-          if (!existingRisk) {
-            // Create new risk alert
-            const savedRisk = await this.prisma.riskAlert.create({
-              data: {
-                sprintId: context.sprint.id,
-                projectId: context.sprint.projectId,
-                riskType: result.type,
-                severity: result.severity,
-                title: result.title,
-                description: result.description,
-                impactScore: result.impactScore,
-                affectedIssues: result.affectedIssues || [],
-                metadata: result.metadata || {},
-              },
-            });
-
-            // Save recommendations if provided
-            if (result.recommendations && result.recommendations.length > 0) {
-              await this.prisma.riskRecommendation.createMany({
-                data: result.recommendations.map((rec) => ({
-                  alertId: savedRisk.id,
-                  priority: rec.priority,
-                  action: rec.action,
-                  expectedImpact: rec.expectedImpact,
-                  effortEstimate: rec.effortEstimate,
-                  suggestedIssues: rec.suggestedIssues || [],
-                })),
-              });
-            }
-
-            // Fetch with recommendations
-            const riskWithRecommendations =
-              await this.prisma.riskAlert.findUnique({
-                where: { id: savedRisk.id },
-                include: {
-                  recommendations: {
-                    orderBy: { priority: 'asc' },
-                  },
-                },
-              });
-
-            detectedRisks.push(
-              this.mapRiskAlertToDto(riskWithRecommendations!),
-            );
-
-            this.logger.log(
-              `New risk detected: ${result.type} (${result.severity})`,
-            );
-          } else {
-            this.logger.debug(
-              `Risk ${result.type} already exists for sprint ${sprintId}`,
-            );
-          }
-        }
-      } catch (error) {
-        this.logger.error(
-          `Error running rule ${rule.id}: ${error.message}`,
-          error.stack,
-        );
-      }
+    // Step 2: Try AI analysis FIRST (PRIMARY)
+    let aiResult: AIRiskAnalysisResult | null = null;
+    try {
+      aiResult = await this.aiRiskAnalyzer.analyzeSprintRisks(analysisContext);
+      this.logger.log(`AI analysis successful - Found ${aiResult.risks.length} risks`);
+    } catch (error) {
+      this.logger.warn(`AI analysis failed: ${error.message}, falling back to rules`);
     }
 
-    return detectedRisks;
+    // Step 3: If AI succeeded, use AI results
+    if (aiResult) {
+      const savedRisks = await this.saveAIRisks(sprintId, aiResult, context);
+
+      const processingTime = Date.now() - startTime;
+
+      return {
+        success: true,
+        detectedRisks: savedRisks.length,
+        risks: savedRisks,
+        totalChecked: 5, // All 5 risk types checked by AI
+        message: 'AI analysis completed successfully',
+        overallHealthScore: aiResult.overallHealthScore,
+        healthGrade: aiResult.healthGrade,
+        healthStatus: aiResult.healthStatus,
+        summary: aiResult.summary,
+        insights: aiResult.insights,
+        analysis: this.buildAnalysisMetadata(context, aiResult, processingTime),
+      };
+    }
+
+    // Step 4: FALLBACK - Use rule-based detection
+    this.logger.warn('Using rule-based fallback detection');
+    const ruleBasedRisks = await this.runRuleBasedDetection(context);
+    const savedRisks = await this.saveRuleRisks(ruleBasedRisks, context);
+
+    const processingTime = Date.now() - startTime;
+
+    return {
+      success: true,
+      detectedRisks: savedRisks.length,
+      risks: savedRisks,
+      totalChecked: this.rules.length,
+      message: 'Rule-based detection (AI unavailable)',
+      analysis: this.buildBasicAnalysisMetadata(context, processingTime),
+    };
   }
 
   /**
@@ -177,8 +147,13 @@ export class RiskDetectorService {
     // Calculate summary
     const summary = this.calculateRiskSummary(risks);
 
+    // Map risks to DTOs (async now because we fetch issue details)
+    const mappedRisks = await Promise.all(
+      risks.map((r) => this.mapRiskAlertToDto(r))
+    );
+
     return {
-      risks: risks.map((r) => this.mapRiskAlertToDto(r)),
+      risks: mappedRisks,
       summary,
     };
   }
@@ -222,7 +197,7 @@ export class RiskDetectorService {
 
     this.logger.log(`Risk ${riskId} acknowledged by user ${userId}`);
 
-    return this.mapRiskAlertToDto(updated);
+    return await this.mapRiskAlertToDto(updated);
   }
 
   /**
@@ -261,7 +236,7 @@ export class RiskDetectorService {
 
     this.logger.log(`Risk ${riskId} resolved`);
 
-    return this.mapRiskAlertToDto(updated);
+    return await this.mapRiskAlertToDto(updated);
   }
 
   /**
@@ -294,7 +269,7 @@ export class RiskDetectorService {
 
     this.logger.log(`Risk ${riskId} dismissed: ${reason}`);
 
-    return this.mapRiskAlertToDto(updated);
+    return await this.mapRiskAlertToDto(updated);
   }
 
   /**
@@ -337,7 +312,14 @@ export class RiskDetectorService {
       for (const issueId of suggestedIssues) {
         // Validate that issueId is a string
         if (typeof issueId !== 'string') {
-          this.logger.warn(`Invalid issue ID: ${issueId}`);
+          this.logger.warn(`Invalid issue ID type: ${issueId}`);
+          continue;
+        }
+
+        // Validate UUID format (36 characters with dashes)
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(issueId)) {
+          this.logger.warn(`Invalid UUID format for issue ID: ${issueId}`);
           continue;
         }
 
@@ -496,7 +478,47 @@ export class RiskDetectorService {
     };
   }
 
-  private mapRiskAlertToDto(alert: any): RiskAlertDto {
+  private async mapRiskAlertToDto(alert: any): Promise<RiskAlertDto> {
+    // Fetch issue details for recommendations if they have suggestedIssues
+    const recommendations = alert.recommendations
+      ? await Promise.all(
+          alert.recommendations.map(async (rec: any) => {
+            const suggestedIssues = Array.isArray(rec.suggestedIssues)
+              ? rec.suggestedIssues
+              : [];
+
+            // Fetch issue details for valid UUIDs
+            let suggestedIssuesDetails: Array<{ id: string; name: string; type: string }> = [];
+            if (suggestedIssues.length > 0) {
+              const validIssueIds = this.validateUUIDs(suggestedIssues);
+              if (validIssueIds.length > 0) {
+                try {
+                  const issues = await this.prisma.issue.findMany({
+                    where: { id: { in: validIssueIds } },
+                    select: { id: true, name: true, type: true },
+                  });
+                  suggestedIssuesDetails = issues;
+                } catch (error) {
+                  this.logger.warn(`Failed to fetch issue details: ${error.message}`);
+                }
+              }
+            }
+
+            return {
+              id: rec.id,
+              priority: rec.priority,
+              action: rec.action,
+              expectedImpact: rec.expectedImpact,
+              effortEstimate: rec.effortEstimate,
+              suggestedIssues,
+              suggestedIssuesDetails,
+              status: rec.status,
+              appliedAt: rec.appliedAt?.toISOString(),
+            };
+          })
+        )
+      : undefined;
+
     return {
       id: alert.id,
       sprintId: alert.sprintId,
@@ -512,18 +534,7 @@ export class RiskDetectorService {
         : [],
       metadata: alert.metadata as any,
       detectedAt: alert.detectedAt.toISOString(),
-      recommendations: alert.recommendations?.map((rec: any) => ({
-        id: rec.id,
-        priority: rec.priority,
-        action: rec.action,
-        expectedImpact: rec.expectedImpact,
-        effortEstimate: rec.effortEstimate,
-        suggestedIssues: Array.isArray(rec.suggestedIssues)
-          ? rec.suggestedIssues
-          : [],
-        status: rec.status,
-        appliedAt: rec.appliedAt?.toISOString(),
-      })),
+      recommendations,
     };
   }
 
@@ -533,6 +544,342 @@ export class RiskDetectorService {
       critical: risks.filter((r) => r.severity === 'CRITICAL').length,
       medium: risks.filter((r) => r.severity === 'MEDIUM').length,
       low: risks.filter((r) => r.severity === 'LOW').length,
+    };
+  }
+
+  /**
+   * Build analysis context for AI service
+   */
+  private async buildAnalysisContext(context: SprintContext): Promise<SprintAnalysisContext> {
+    const { sprint, issues, sprintHistory } = context;
+
+    // Map sprint history to simpler format
+    const historyData = sprintHistory.map((h) => ({
+      sprintName: `Sprint ${h.id.substring(0, 8)}`,
+      velocity: h.velocity,
+      completionRate: h.completedPoints > 0
+        ? Math.round((h.completedPoints / h.committedPoints) * 100)
+        : 0,
+    }));
+
+    // Map issues to simpler format for AI
+    const issuesData = issues.map((i) => ({
+      id: i.id,
+      name: i.name,
+      type: i.type,
+      priority: i.priority,
+      statusName: i.state,
+      point: i.point,
+      assignees: i.assignees,
+      createdAt: i.createdAt?.toISOString(),
+      updatedAt: i.updatedAt?.toISOString(),
+    }));
+
+    return {
+      sprint: {
+        id: sprint.id,
+        projectId: sprint.projectId,
+        name: sprint.name,
+        status: sprint.status,
+        startDate: sprint.startDate?.toISOString() || new Date().toISOString(),
+        endDate: sprint.endDate?.toISOString() || new Date().toISOString(),
+      },
+      issues: issuesData,
+      sprintHistory: historyData,
+      teamMembers: [], // TODO: Get from project members
+    };
+  }
+
+  /**
+   * Validate and filter valid UUIDs from array
+   */
+  private validateUUIDs(ids: string[]): string[] {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    return ids.filter((id) => {
+      if (typeof id !== 'string' || !uuidRegex.test(id)) {
+        this.logger.warn(`Filtered out invalid UUID: ${id}`);
+        return false;
+      }
+      return true;
+    });
+  }
+
+  /**
+   * Save AI-detected risks to database
+   */
+  private async saveAIRisks(
+    sprintId: string,
+    aiResult: AIRiskAnalysisResult,
+    context: SprintContext,
+  ): Promise<RiskAlertDto[]> {
+    const savedRisks: RiskAlertDto[] = [];
+
+    for (const aiRisk of aiResult.risks) {
+      try {
+        // Check if this risk already exists
+        const existingRisk = await this.prisma.riskAlert.findFirst({
+          where: {
+            sprintId,
+            riskType: aiRisk.type,
+            status: { in: ['ACTIVE', 'ACKNOWLEDGED'] },
+          },
+        });
+
+        if (!existingRisk) {
+          // Create new risk alert (validate UUIDs first)
+          const savedRisk = await this.prisma.riskAlert.create({
+            data: {
+              sprintId,
+              projectId: context.sprint.projectId,
+              riskType: aiRisk.type,
+              severity: aiRisk.severity as RiskSeverity,
+              title: aiRisk.title,
+              description: aiRisk.description,
+              impactScore: aiRisk.impactScore,
+              affectedIssues: this.validateUUIDs(aiRisk.affectedIssues || []),
+              metadata: {
+                confidence: aiRisk.confidence,
+                aiGenerated: true,
+                tokensUsed: aiResult.metadata?.tokensUsed,
+                model: aiResult.metadata?.model,
+              },
+            },
+          });
+
+          // Save recommendations (validate UUIDs first)
+          if (aiRisk.recommendations && aiRisk.recommendations.length > 0) {
+            await this.prisma.riskRecommendation.createMany({
+              data: aiRisk.recommendations.map((rec) => ({
+                alertId: savedRisk.id,
+                priority: rec.priority,
+                action: rec.action,
+                expectedImpact: rec.expectedImpact,
+                effortEstimate: rec.effortEstimate,
+                suggestedIssues: this.validateUUIDs(rec.suggestedIssues || []),
+              })),
+            });
+          }
+
+          // Fetch with recommendations
+          const riskWithRecommendations = await this.prisma.riskAlert.findUnique({
+            where: { id: savedRisk.id },
+            include: {
+              recommendations: { orderBy: { priority: 'asc' } },
+            },
+          });
+
+          savedRisks.push(await this.mapRiskAlertToDto(riskWithRecommendations!));
+          this.logger.log(`Saved AI risk: ${aiRisk.type} (${aiRisk.severity})`);
+        }
+      } catch (error) {
+        this.logger.error(`Failed to save AI risk ${aiRisk.type}: ${error.message}`);
+      }
+    }
+
+    return savedRisks;
+  }
+
+  /**
+   * Run rule-based detection (fallback)
+   */
+  private async runRuleBasedDetection(context: SprintContext): Promise<RiskResult[]> {
+    const results: RiskResult[] = [];
+
+    for (const rule of this.rules) {
+      try {
+        const result = await rule.check(context);
+        if (result) {
+          results.push(result);
+        }
+      } catch (error) {
+        this.logger.error(`Error running rule ${rule.id}: ${error.message}`);
+      }
+    }
+
+    return results;
+  }
+
+  /**
+   * Save rule-detected risks to database
+   */
+  private async saveRuleRisks(
+    ruleResults: RiskResult[],
+    context: SprintContext,
+  ): Promise<RiskAlertDto[]> {
+    const savedRisks: RiskAlertDto[] = [];
+
+    for (const result of ruleResults) {
+      try {
+        // Check if this risk already exists
+        const existingRisk = await this.prisma.riskAlert.findFirst({
+          where: {
+            sprintId: context.sprint.id,
+            riskType: result.type,
+            status: { in: ['ACTIVE', 'ACKNOWLEDGED'] },
+          },
+        });
+
+        if (!existingRisk) {
+          const savedRisk = await this.prisma.riskAlert.create({
+            data: {
+              sprintId: context.sprint.id,
+              projectId: context.sprint.projectId,
+              riskType: result.type,
+              severity: result.severity,
+              title: result.title,
+              description: result.description,
+              impactScore: result.impactScore,
+              affectedIssues: result.affectedIssues || [],
+              metadata: result.metadata || {},
+            },
+          });
+
+          // Save recommendations
+          if (result.recommendations && result.recommendations.length > 0) {
+            await this.prisma.riskRecommendation.createMany({
+              data: result.recommendations.map((rec) => ({
+                alertId: savedRisk.id,
+                priority: rec.priority,
+                action: rec.action,
+                expectedImpact: rec.expectedImpact,
+                effortEstimate: rec.effortEstimate,
+                suggestedIssues: rec.suggestedIssues || [],
+              })),
+            });
+          }
+
+          const riskWithRecommendations = await this.prisma.riskAlert.findUnique({
+            where: { id: savedRisk.id },
+            include: {
+              recommendations: { orderBy: { priority: 'asc' } },
+            },
+          });
+
+          savedRisks.push(await this.mapRiskAlertToDto(riskWithRecommendations!));
+        }
+      } catch (error) {
+        this.logger.error(`Failed to save rule risk ${result.type}: ${error.message}`);
+      }
+    }
+
+    return savedRisks;
+  }
+
+  /**
+   * Calculate workload distribution
+   */
+  private calculateWorkloadDistribution(context: SprintContext): Array<{
+    memberId: string;
+    points: number;
+    percentage: number;
+  }> {
+    const { issues } = context;
+    const totalPoints = issues.reduce((sum, i) => sum + (i.point || 0), 0);
+
+    const workloadMap = new Map<string, number>();
+
+    issues.forEach((issue) => {
+      if (issue.point && issue.assignees.length > 0) {
+        const pointsPerAssignee = issue.point / issue.assignees.length;
+        issue.assignees.forEach((userId) => {
+          workloadMap.set(userId, (workloadMap.get(userId) || 0) + pointsPerAssignee);
+        });
+      }
+    });
+
+    return Array.from(workloadMap.entries())
+      .map(([memberId, points]) => ({
+        memberId,
+        points: Math.round(points * 10) / 10,
+        percentage: totalPoints > 0 ? Math.round((points / totalPoints) * 1000) / 10 : 0,
+      }))
+      .sort((a, b) => b.points - a.points);
+  }
+
+  /**
+   * Build analysis metadata with AI fields
+   */
+  private buildAnalysisMetadata(
+    context: SprintContext,
+    aiResult: AIRiskAnalysisResult,
+    processingTime: number,
+  ): any {
+    const { issues, sprintHistory } = context;
+
+    const totalPoints = issues.reduce((sum, i) => sum + (i.point || 0), 0);
+    const avgVelocity =
+      sprintHistory.length > 0
+        ? sprintHistory.slice(-3).reduce((sum, s) => sum + s.velocity, 0) /
+          Math.min(3, sprintHistory.length)
+        : 0;
+
+    const blockedCount = issues.filter((i) =>
+      i.state?.toLowerCase().includes('blocked')
+    ).length;
+    const missingEstimates = issues.filter((i) => !i.point || i.point === 0).length;
+
+    const capacityStatus: 'UNDER' | 'OPTIMAL' | 'OVER' =
+      avgVelocity === 0
+        ? 'OPTIMAL'
+        : totalPoints < avgVelocity * 0.9
+          ? 'UNDER'
+          : totalPoints > avgVelocity * 1.1
+            ? 'OVER'
+            : 'OPTIMAL';
+
+    return {
+      avgVelocity: Math.round(avgVelocity * 10) / 10,
+      committedPoints: totalPoints,
+      capacityStatus,
+      blockedIssuesCount: blockedCount,
+      totalIssuesCount: issues.length,
+      workloadDistribution: this.calculateWorkloadDistribution(context),
+      missingEstimatesCount: missingEstimates,
+      processingTime,
+      tokensUsed: aiResult.metadata?.tokensUsed,
+      aiModel: aiResult.metadata?.model,
+    };
+  }
+
+  /**
+   * Build basic analysis metadata (no AI fields)
+   */
+  private buildBasicAnalysisMetadata(
+    context: SprintContext,
+    processingTime: number,
+  ): any {
+    const { issues, sprintHistory } = context;
+
+    const totalPoints = issues.reduce((sum, i) => sum + (i.point || 0), 0);
+    const avgVelocity =
+      sprintHistory.length > 0
+        ? sprintHistory.slice(-3).reduce((sum, s) => sum + s.velocity, 0) /
+          Math.min(3, sprintHistory.length)
+        : 0;
+
+    const blockedCount = issues.filter((i) =>
+      i.state?.toLowerCase().includes('blocked')
+    ).length;
+    const missingEstimates = issues.filter((i) => !i.point || i.point === 0).length;
+
+    const capacityStatus: 'UNDER' | 'OPTIMAL' | 'OVER' =
+      avgVelocity === 0
+        ? 'OPTIMAL'
+        : totalPoints < avgVelocity * 0.9
+          ? 'UNDER'
+          : totalPoints > avgVelocity * 1.1
+            ? 'OVER'
+            : 'OPTIMAL';
+
+    return {
+      avgVelocity: Math.round(avgVelocity * 10) / 10,
+      committedPoints: totalPoints,
+      capacityStatus,
+      blockedIssuesCount: blockedCount,
+      totalIssuesCount: issues.length,
+      workloadDistribution: this.calculateWorkloadDistribution(context),
+      missingEstimatesCount: missingEstimates,
+      processingTime,
     };
   }
 }

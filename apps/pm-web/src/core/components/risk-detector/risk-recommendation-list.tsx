@@ -83,23 +83,33 @@ export const RiskRecommendationList: React.FC<RiskRecommendationListProps> = ({
 
           {/* Suggested Issues */}
           {recommendation.suggestedIssues && recommendation.suggestedIssues.length > 0 && (
-            <div className="ml-8 mt-2 pt-2 border-t border-custom-border-200">
+            <div className="ml-8 mt-2 pt-2 border-custom-border-200">
               <p className="text-xs font-medium text-custom-text-300 mb-1.5">
                 Issues được đề xuất:
               </p>
               <div className="flex flex-wrap gap-1.5">
-                {recommendation.suggestedIssues.map((issueId) => {
-                  const issueName = issueNameLookup[issueId];
-                  return (
-                    <span
-                      key={issueId}
-                      className="text-xs px-2 py-1 rounded bg-custom-primary-100/10 text-custom-primary-100"
-                      title={issueName ? `${issueName} (${issueId})` : issueId}
-                    >
-                      {issueName || `${issueId.slice(0, 8)}...`}
-                    </span>
-                  );
-                })}
+                {recommendation.suggestedIssuesDetails && recommendation.suggestedIssuesDetails.length > 0
+                  ? recommendation.suggestedIssuesDetails.map((issue) => (
+                      <span
+                        key={issue.id}
+                        className="text-xs px-2 py-1 rounded bg-custom-primary-100/10 text-custom-primary-100"
+                        title={`${issue.name} (${issue.type})`}
+                      >
+                        {issue.name}
+                      </span>
+                    ))
+                  : recommendation.suggestedIssues.map((issueId) => {
+                      const issueName = issueNameLookup[issueId];
+                      return (
+                        <span
+                          key={issueId}
+                          className="text-xs px-2 py-1 rounded bg-custom-primary-100/10 text-custom-primary-100"
+                          title={issueName ? `${issueName} (${issueId})` : issueId}
+                        >
+                          {issueName || `${issueId.slice(0, 8)}...`}
+                        </span>
+                      );
+                    })}
               </div>
             </div>
           )}

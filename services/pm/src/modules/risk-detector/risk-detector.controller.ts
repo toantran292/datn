@@ -73,13 +73,8 @@ export class RiskDetectorController {
   async detectSprintRisks(
     @Param('sprintId') sprintId: string,
   ): Promise<DetectRisksResponseDto> {
-    const risks = await this.riskDetectorService.detectRisksForSprint(sprintId);
-
-    return {
-      success: true,
-      detectedRisks: risks.length,
-      risks,
-    };
+    // Service now returns complete response with AI analysis
+    return await this.riskDetectorService.detectRisksForSprint(sprintId);
   }
 
   /**
