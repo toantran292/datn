@@ -233,9 +233,8 @@ export function MessageInput({
 
   const computedPlaceholder = useMemo(() => {
     if (placeholder) return placeholder;
-    if (!room) return "Write a message...";
-    return `Message ${room.type === "channel" ? "#" + (room.name || "channel") : room.name || "conversation"}`;
-  }, [placeholder, room]);
+    return "Message";
+  }, [placeholder]);
 
   const hasContent = !!(value.trim() || pendingFiles.length > 0);
   const isUploading = pendingFiles.some((f) => f.status === "uploading");

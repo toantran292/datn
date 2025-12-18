@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Sidebar } from './sidebar';
 import { ChatWindow } from './chat';
-import { DetailsPanel, ThreadView, MembersTab, FilesTab, AISettingsTab } from './details';
+import { DetailsPanel, ThreadView, MembersTab, FilesTab, PinnedTab, AISettingsTab } from './details';
 import { BrowseChannelsModal, CreateChannelModal, CreateDMModal, EditMessageModal, ConfirmDeleteModal, SearchModal } from './modals';
 import { ChatLayout } from './layout';
 import { api } from '../services/api';
@@ -17,6 +17,7 @@ import {
 } from '../hooks';
 import { useUserProfile } from '@uts/design-system/ui';
 import { EmbeddedHuddle } from './huddle';
+import { useResponsive } from '../hooks/useResponsive';
 
 /**
  * Main Chat Application Component - Pure UI Layer
@@ -30,6 +31,7 @@ export function ChatApp() {
   const sidebar = useChatSidebar();
   const modals = useChatModals();
   const { data: userProfile } = useUserProfile();
+  const { detailsPanelOpen, closeDetailsPanel, openDetailsPanel } = useResponsive();
 
   // Message action modals state
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
@@ -51,6 +53,7 @@ export function ChatApp() {
         displayName: m.displayName,
         avatarUrl: m.avatarUrl,
         status: m.isOnline ? 'online' as const : 'offline' as const,
+        role: m.role,
       }));
     } catch (error) {
       console.error('Failed to load members:', error);
@@ -58,8 +61,45 @@ export function ChatApp() {
     }
   };
 
+  // Check if current user is channel admin
+  const [isChannelAdmin, setIsChannelAdmin] = useState(false);
+
+  useEffect(() => {
+    const checkChannelAdmin = async () => {
+      if (!rooms.selectedRoom || rooms.selectedRoom.type === 'dm') {
+        setIsChannelAdmin(false);
+        return;
+      }
+      try {
+        const members = await api.listRoomMembers(rooms.selectedRoom.id);
+        const currentMember = members.find(m => m.userId === messages.currentUserId);
+        setIsChannelAdmin(currentMember?.role === 'ADMIN');
+      } catch (error) {
+        console.error('Failed to check admin status:', error);
+        setIsChannelAdmin(false);
+      }
+    };
+    checkChannelAdmin();
+  }, [rooms.selectedRoom?.id, messages.currentUserId]);
+
   // Helper to load files
   const loadFiles = async () => [];
+
+  // Helper to load pinned messages
+  const loadPinnedMessages = async (roomId: string) => {
+    try {
+      return await api.getPinnedMessages(roomId);
+    } catch (error) {
+      console.error('Failed to load pinned messages:', error);
+      return [];
+    }
+  };
+
+  // Thread handler - opens thread and details panel
+  const handleOpenThread = useCallback((message: Message) => {
+    threads.openThread(message);
+    openDetailsPanel();
+  }, [threads, openDetailsPanel]);
 
   // Message action handlers
   const handleEditMessage = (message: Message) => {
@@ -244,7 +284,7 @@ export function ChatApp() {
             currentUserId={messages.currentUserId}
             onSendMessage={messages.sendMessage}
             onLoadMessages={messages.loadMessages}
-            onOpenThread={threads.openThread}
+            onOpenThread={handleOpenThread}
             onToggleSidebar={sidebar.toggle}
             sidebarOpen={sidebar.isOpen}
             usersCache={messages.usersCache}
@@ -268,15 +308,16 @@ export function ChatApp() {
             onStartMeeting={handleStartMeeting}
             onCopyMeetingLink={handleCopyMeetingLink}
             huddleParticipantCounts={messages.huddleParticipantCounts}
+            lastSeenMessageId={messages.lastSeenMessageId}
           />
         }
         details={
-          sidebar.isOpen && rooms.selectedRoom && (
+          rooms.selectedRoom && (
             <DetailsPanel
               room={rooms.selectedRoom}
               activeTab={sidebar.activeTab}
               onTabChange={sidebar.setTab}
-              onClose={sidebar.close}
+              onClose={closeDetailsPanel}
               threadContent={
                 threads.activeThread ? (
                   <ThreadView
@@ -284,7 +325,7 @@ export function ChatApp() {
                     threadMessages={threads.threadMessages}
                     currentUserId={messages.currentUserId}
                     onSendReply={threads.sendReply}
-                    onClose={sidebar.close}
+                    onClose={closeDetailsPanel}
                     onLoadThread={threads.loadThread}
                     usersCache={messages.usersCache}
                     onEditMessage={handleEditMessage}
@@ -296,13 +337,16 @@ export function ChatApp() {
                   />
                 ) : (
                   <div style={{ padding: '32px', textAlign: 'center', color: '#999' }}>
-                    Click &quot;Reply&quot; on a message to start a thread
+                    Nhấn &quot;Trả lời&quot; trên tin nhắn để bắt đầu thread
                   </div>
                 )
               }
               membersContent={
                 <MembersTab
                   roomId={rooms.selectedRoom.id}
+                  roomName={rooms.selectedRoom.name || undefined}
+                  currentUserId={messages.currentUserId}
+                  canManageRoles={rooms.isOrgOwner || isChannelAdmin}
                   onLoadMembers={() => loadMembers(rooms.selectedRoom!.id)}
                 />
               }
@@ -312,12 +356,24 @@ export function ChatApp() {
                   onLoadFiles={loadFiles}
                 />
               }
-              aiContent={
-                <AISettingsTab
+              pinnedContent={
+                <PinnedTab
                   roomId={rooms.selectedRoom.id}
-                  canConfigure={rooms.isOrgOwner}
-                  onNavigateToMessage={scrollToMessage}
+                  currentUserId={messages.currentUserId}
+                  usersCache={messages.usersCache}
+                  onLoadPinnedMessages={() => loadPinnedMessages(rooms.selectedRoom!.id)}
+                  onUnpinMessage={handleUnpinMessage}
+                  onScrollToMessage={scrollToMessage}
                 />
+              }
+              aiContent={
+                rooms.selectedRoom.type === 'channel' ? (
+                  <AISettingsTab
+                    roomId={rooms.selectedRoom.id}
+                    canConfigure={rooms.isOrgOwner || isChannelAdmin}
+                    onNavigateToMessage={scrollToMessage}
+                  />
+                ) : null
               }
             />
           )

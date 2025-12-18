@@ -156,7 +156,7 @@ export function ComposeHeader({
               setShowDropdown(true);
             }}
             onFocus={() => setShowDropdown(true)}
-            placeholder={selectedUsers.length === 0 ? "Search people..." : "Add more..."}
+            placeholder={selectedUsers.length === 0 ? "Tìm kiếm..." : "Thêm..."}
             className="w-full bg-transparent border-none outline-none text-custom-text-100 placeholder:text-custom-text-400 text-sm py-1"
           />
 
@@ -170,7 +170,7 @@ export function ComposeHeader({
               ) : filteredUsers.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-8 text-custom-text-300">
                   <Search size={24} className="mb-2" />
-                  <p className="text-sm">No users found</p>
+                  <p className="text-sm">Không tìm thấy người dùng</p>
                 </div>
               ) : (
                 <div className="py-1">

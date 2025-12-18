@@ -132,9 +132,8 @@ export function MessageComposer({
 
   const computedPlaceholder = useMemo(() => {
     if (placeholder) return placeholder;
-    if (!room) return "Write a message...";
-    return `Message ${room.type === "channel" ? "#" + (room.name || "channel") : room.name || "conversation"}`;
-  }, [placeholder, room]);
+    return "Tin nhắn";
+  }, [placeholder]);
 
   const isUploading = pendingFiles.some((f) => f.status === "uploading");
   const canSend = hasContent || pendingFiles.length > 0;
@@ -189,12 +188,12 @@ export function MessageComposer({
           <kbd className="px-1 py-0.5 bg-custom-background-80 rounded text-[10px]">
             Enter
           </kbd>{" "}
-          to send{" "}
+          để gửi{" "}
           <span className="mx-1 text-custom-text-300">•</span>{" "}
           <kbd className="px-1 py-0.5 bg-custom-background-80 rounded text-[10px]">
             Shift+Enter
           </kbd>{" "}
-          for new line
+          để xuống dòng
         </span>
       </div>
     </div>

@@ -142,12 +142,12 @@ export function MessageItem({
             {timestamp}
           </span>
           {isEdited && (
-            <span className="text-xs text-custom-text-400">(edited)</span>
+            <span className="text-xs text-custom-text-400">(đã sửa)</span>
           )}
           {isPinned && (
             <span className="flex items-center gap-1 text-xs text-amber-500">
               <Pin size={12} />
-              Pinned
+              Đã ghim
             </span>
           )}
         </div>
@@ -187,7 +187,7 @@ export function MessageItem({
             className="mt-1 flex items-center gap-1.5 text-custom-primary-100 text-xs font-medium hover:underline"
           >
             <MessageSquare size={14} />
-            {message.replyCount} {message.replyCount === 1 ? 'reply' : 'replies'}
+            {message.replyCount} phản hồi
           </button>
         )}
       </div>

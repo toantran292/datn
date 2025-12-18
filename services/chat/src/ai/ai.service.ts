@@ -546,6 +546,7 @@ export class AIService {
   async *streamSummarizeConversation(
     roomId: string,
     userId: string,
+    orgId: string,
     options?: {
       messageCount?: number;
       threadId?: string;
@@ -573,8 +574,13 @@ export class AIService {
 
     messages.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
+    // Get display names for all users in the conversation
+    const userIds = [...new Set(messages.map(m => m.userId))] as string[];
+    const displayNames = await this.getUserDisplayNames(userIds);
+
     const conversationMessages: ConversationMessage[] = messages.map(m => ({
       userId: m.userId,
+      displayName: displayNames.get(m.userId),
       content: m.content,
       createdAt: m.createdAt,
     }));
@@ -607,6 +613,7 @@ export class AIService {
   async *streamExtractActionItems(
     roomId: string,
     userId: string,
+    orgId: string,
     options?: {
       messageCount?: number;
       threadId?: string;
@@ -634,8 +641,13 @@ export class AIService {
 
     messages.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
+    // Get display names for all users in the conversation
+    const userIds = [...new Set(messages.map(m => m.userId))] as string[];
+    const displayNames = await this.getUserDisplayNames(userIds);
+
     const conversationMessages: ConversationMessage[] = messages.map(m => ({
       userId: m.userId,
+      displayName: displayNames.get(m.userId),
       content: m.content,
       createdAt: m.createdAt,
     }));
@@ -670,6 +682,7 @@ export class AIService {
   async *streamAskQuestion(
     roomId: string,
     userId: string,
+    orgId: string,
     question: string,
     options?: {
       contextMessageCount?: number;
@@ -678,7 +691,7 @@ export class AIService {
   ): AsyncGenerator<{
     type: 'sources' | 'chunk' | 'done' | 'error';
     data: string;
-    sources?: Array<{ messageId: string; content: string; userId: string; createdAt: string }>;
+    sources?: Array<{ messageId: string; content: string; userId: string; displayName?: string; createdAt: string }>;
   }> {
     await this.checkMembership(roomId, userId);
     await this.checkFeatureEnabled(roomId, 'qa');
@@ -776,8 +789,12 @@ export class AIService {
         }));
       }
 
+      // Get display names for all users in context messages
+      const userIdsInContext = [...new Set(contextMessages.map(m => m.userId))] as string[];
+      const displayNames = await this.getUserDisplayNames(userIdsInContext);
+
       // Get relevant sources (for display)
-      let sources: Array<{ messageId: string; content: string; userId: string; createdAt: string }>;
+      let sources: Array<{ messageId: string; content: string; userId: string; displayName?: string; createdAt: string }>;
 
       if (usedRAG) {
         // Use RAG results as sources directly
@@ -785,11 +802,12 @@ export class AIService {
           messageId: m.id,
           content: m.content,
           userId: m.userId,
+          displayName: displayNames.get(m.userId),
           createdAt: m.createdAt.toISOString(),
         }));
       } else {
         // Use LLM to find relevant sources
-        sources = await this.llmService.getRelevantSources(
+        const rawSources = await this.llmService.getRelevantSources(
           question,
           contextMessages,
           {
@@ -799,6 +817,11 @@ export class AIService {
             modelProvider: config.modelProvider,
           },
         );
+        // Add display names to sources
+        sources = rawSources.map(s => ({
+          ...s,
+          displayName: displayNames.get(s.userId),
+        }));
       }
 
       // Send sources first
@@ -877,5 +900,34 @@ export class AIService {
       configuredBy: config.configuredBy,
       updatedAt: config.updatedAt?.toISOString(),
     };
+  }
+
+  /**
+   * Helper to get display names for a list of user IDs
+   * Returns a map of userId -> displayName
+   */
+  private async getUserDisplayNames(userIds: string[]): Promise<Map<string, string>> {
+    const displayNames = new Map<string, string>();
+
+    if (userIds.length === 0) return displayNames;
+
+    try {
+      const uniqueUserIds = [...new Set(userIds)] as string[];
+      const usersInfo = await this.identityService.getUsersInfo(uniqueUserIds);
+
+      for (const [userId, info] of usersInfo) {
+        displayNames.set(userId, info.display_name || `User ${userId.slice(0, 8)}`);
+      }
+    } catch (error) {
+      this.logger.warn(`Failed to fetch user display names: ${error}`);
+      // Fallback: use truncated user IDs
+      for (const userId of userIds) {
+        if (!displayNames.has(userId)) {
+          displayNames.set(userId, `User ${userId.slice(0, 8)}`);
+        }
+      }
+    }
+
+    return displayNames;
   }
 }

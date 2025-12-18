@@ -47,7 +47,7 @@ export function AIAssistantTab({ roomId, aiConfig, threadId }: AIAssistantTabPro
       setSummaryResult(result);
     } catch (err) {
       console.error('Failed to summarize:', err);
-      setError(err instanceof Error ? err.message : 'Failed to generate summary');
+      setError(err instanceof Error ? err.message : 'Không thể tạo tóm tắt');
     } finally {
       setLoading(false);
     }
@@ -69,7 +69,7 @@ export function AIAssistantTab({ roomId, aiConfig, threadId }: AIAssistantTabPro
       setActionItemsResult(result);
     } catch (err) {
       console.error('Failed to extract action items:', err);
-      setError(err instanceof Error ? err.message : 'Failed to extract action items');
+      setError(err instanceof Error ? err.message : 'Không thể trích xuất công việc');
     } finally {
       setLoading(false);
     }
@@ -91,7 +91,7 @@ export function AIAssistantTab({ roomId, aiConfig, threadId }: AIAssistantTabPro
       setQAResult(result);
     } catch (err) {
       console.error('Failed to ask question:', err);
-      setError(err instanceof Error ? err.message : 'Failed to get answer');
+      setError(err instanceof Error ? err.message : 'Không thể lấy câu trả lời');
     } finally {
       setLoading(false);
     }
@@ -110,19 +110,19 @@ export function AIAssistantTab({ roomId, aiConfig, threadId }: AIAssistantTabPro
         disabled={!isFeatureEnabled('summary') || loading}
         className={`
           flex flex-col items-center gap-2 p-4 rounded-lg border transition-colors
-          ${isFeatureEnabled('summary')
-            ? 'border-custom-border-200 hover:bg-custom-background-80 hover:border-custom-primary-100/50'
-            : 'border-custom-border-100 opacity-50 cursor-not-allowed'
+          ${!isFeatureEnabled('summary') || loading
+            ? 'border-custom-border-100 opacity-50 cursor-not-allowed'
+            : 'border-custom-border-200 hover:bg-custom-background-80 hover:border-custom-primary-100/50'
           }
         `}
       >
         <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-          isFeatureEnabled('summary') ? 'bg-amber-500/10' : 'bg-custom-background-80'
+          isFeatureEnabled('summary') && !loading ? 'bg-amber-500/10' : 'bg-custom-background-80'
         }`}>
-          <Sparkles size={20} className={isFeatureEnabled('summary') ? 'text-amber-500' : 'text-custom-text-400'} />
+          <Sparkles size={20} className={isFeatureEnabled('summary') && !loading ? 'text-amber-500' : 'text-custom-text-400'} />
         </div>
-        <span className="text-sm font-medium text-custom-text-100">Summarize</span>
-        <span className="text-xs text-custom-text-400">Get conversation summary</span>
+        <span className="text-sm font-medium text-custom-text-100">Tóm tắt</span>
+        <span className="text-xs text-custom-text-400">Tóm tắt cuộc hội thoại</span>
       </button>
 
       <button
@@ -130,19 +130,19 @@ export function AIAssistantTab({ roomId, aiConfig, threadId }: AIAssistantTabPro
         disabled={!isFeatureEnabled('action_items') || loading}
         className={`
           flex flex-col items-center gap-2 p-4 rounded-lg border transition-colors
-          ${isFeatureEnabled('action_items')
-            ? 'border-custom-border-200 hover:bg-custom-background-80 hover:border-custom-primary-100/50'
-            : 'border-custom-border-100 opacity-50 cursor-not-allowed'
+          ${!isFeatureEnabled('action_items') || loading
+            ? 'border-custom-border-100 opacity-50 cursor-not-allowed'
+            : 'border-custom-border-200 hover:bg-custom-background-80 hover:border-custom-primary-100/50'
           }
         `}
       >
         <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-          isFeatureEnabled('action_items') ? 'bg-blue-500/10' : 'bg-custom-background-80'
+          isFeatureEnabled('action_items') && !loading ? 'bg-blue-500/10' : 'bg-custom-background-80'
         }`}>
-          <ListTodo size={20} className={isFeatureEnabled('action_items') ? 'text-blue-500' : 'text-custom-text-400'} />
+          <ListTodo size={20} className={isFeatureEnabled('action_items') && !loading ? 'text-blue-500' : 'text-custom-text-400'} />
         </div>
-        <span className="text-sm font-medium text-custom-text-100">Action Items</span>
-        <span className="text-xs text-custom-text-400">Extract tasks & to-dos</span>
+        <span className="text-sm font-medium text-custom-text-100">Công việc</span>
+        <span className="text-xs text-custom-text-400">Trích xuất công việc cần làm</span>
       </button>
     </div>
   );
@@ -150,15 +150,15 @@ export function AIAssistantTab({ roomId, aiConfig, threadId }: AIAssistantTabPro
   const renderQASection = () => (
     <div className="mt-4 p-4 rounded-lg border border-custom-border-200 bg-custom-background-90">
       <div className="flex items-center gap-2 mb-3">
-        <MessageSquare size={16} className="text-green-500" />
-        <span className="text-sm font-medium text-custom-text-100">Ask a Question</span>
+        <MessageSquare size={16} className={loading ? 'text-custom-text-400' : 'text-green-500'} />
+        <span className="text-sm font-medium text-custom-text-100">Đặt câu hỏi</span>
       </div>
       <div className="flex gap-2">
         <input
           type="text"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
-          placeholder="Ask about the conversation..."
+          placeholder="Hỏi về cuộc hội thoại..."
           disabled={!isFeatureEnabled('qa') || loading}
           className="flex-1 px-3 py-2 rounded-lg bg-custom-background-100 border border-custom-border-200 text-sm text-custom-text-100 placeholder:text-custom-text-400 focus:outline-none focus:border-custom-primary-100 disabled:opacity-50"
           onKeyDown={(e) => {
@@ -173,7 +173,7 @@ export function AIAssistantTab({ roomId, aiConfig, threadId }: AIAssistantTabPro
           disabled={!isFeatureEnabled('qa') || !question.trim() || loading}
           className="px-4 py-2 rounded-lg bg-custom-primary-100 text-white text-sm font-medium hover:bg-custom-primary-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          Ask
+          Hỏi
         </button>
       </div>
     </div>
@@ -185,9 +185,9 @@ export function AIAssistantTab({ roomId, aiConfig, threadId }: AIAssistantTabPro
         <div className="flex flex-col items-center justify-center py-8">
           <Loader2 size={32} className="text-custom-primary-100 animate-spin mb-3" />
           <p className="text-sm text-custom-text-400">
-            {activeAction === 'summary' && 'Generating summary...'}
-            {activeAction === 'action_items' && 'Extracting action items...'}
-            {activeAction === 'qa' && 'Thinking...'}
+            {activeAction === 'summary' && 'Đang tạo tóm tắt...'}
+            {activeAction === 'action_items' && 'Đang trích xuất công việc...'}
+            {activeAction === 'qa' && 'Đang suy nghĩ...'}
           </p>
         </div>
       );
@@ -199,7 +199,7 @@ export function AIAssistantTab({ roomId, aiConfig, threadId }: AIAssistantTabPro
           <div className="flex items-start gap-2">
             <AlertCircle size={18} className="text-red-500 flex-shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-medium text-red-500">Error</p>
+              <p className="text-sm font-medium text-red-500">Lỗi</p>
               <p className="text-sm text-custom-text-300 mt-1">{error}</p>
             </div>
           </div>
@@ -214,19 +214,19 @@ export function AIAssistantTab({ roomId, aiConfig, threadId }: AIAssistantTabPro
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <Sparkles size={16} className="text-amber-500" />
-              <span className="text-sm font-medium text-custom-text-100">Summary</span>
+              <span className="text-sm font-medium text-custom-text-100">Tóm tắt</span>
             </div>
             <button
               onClick={() => handleCopy(summaryResult.summary)}
               className="p-1.5 rounded hover:bg-custom-background-90 text-custom-text-400 hover:text-custom-text-100 transition-colors"
-              title="Copy to clipboard"
+              title="Sao chép"
             >
               {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
             </button>
           </div>
           <p className="text-sm text-custom-text-200 whitespace-pre-wrap">{summaryResult.summary}</p>
           <p className="text-xs text-custom-text-400 mt-3">
-            Based on {summaryResult.messageCount} messages
+            Dựa trên {summaryResult.messageCount} tin nhắn
           </p>
         </div>
       );
@@ -239,18 +239,18 @@ export function AIAssistantTab({ roomId, aiConfig, threadId }: AIAssistantTabPro
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <ListTodo size={16} className="text-blue-500" />
-              <span className="text-sm font-medium text-custom-text-100">Action Items</span>
+              <span className="text-sm font-medium text-custom-text-100">Công việc cần làm</span>
             </div>
             <button
               onClick={() => handleCopy(actionItemsResult.items.map(i => `- ${i.task}`).join('\n'))}
               className="p-1.5 rounded hover:bg-custom-background-90 text-custom-text-400 hover:text-custom-text-100 transition-colors"
-              title="Copy to clipboard"
+              title="Sao chép"
             >
               {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
             </button>
           </div>
           {actionItemsResult.items.length === 0 ? (
-            <p className="text-sm text-custom-text-400">No action items found in the conversation.</p>
+            <p className="text-sm text-custom-text-400">Không tìm thấy công việc nào trong cuộc hội thoại.</p>
           ) : (
             <ul className="space-y-2">
               {actionItemsResult.items.map((item, index) => (
@@ -282,7 +282,7 @@ export function AIAssistantTab({ roomId, aiConfig, threadId }: AIAssistantTabPro
             </ul>
           )}
           <p className="text-xs text-custom-text-400 mt-3">
-            Based on {actionItemsResult.messageCount} messages
+            Dựa trên {actionItemsResult.messageCount} tin nhắn
           </p>
         </div>
       );
@@ -295,12 +295,12 @@ export function AIAssistantTab({ roomId, aiConfig, threadId }: AIAssistantTabPro
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <MessageSquare size={16} className="text-green-500" />
-              <span className="text-sm font-medium text-custom-text-100">Answer</span>
+              <span className="text-sm font-medium text-custom-text-100">Câu trả lời</span>
             </div>
             <button
               onClick={() => handleCopy(qaResult.answer)}
               className="p-1.5 rounded hover:bg-custom-background-90 text-custom-text-400 hover:text-custom-text-100 transition-colors"
-              title="Copy to clipboard"
+              title="Sao chép"
             >
               {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
             </button>
@@ -308,7 +308,7 @@ export function AIAssistantTab({ roomId, aiConfig, threadId }: AIAssistantTabPro
           <p className="text-sm text-custom-text-200 whitespace-pre-wrap">{qaResult.answer}</p>
           {qaResult.sources && qaResult.sources.length > 0 && (
             <div className="mt-3 pt-3 border-t border-custom-border-200">
-              <p className="text-xs text-custom-text-400 mb-2">Sources:</p>
+              <p className="text-xs text-custom-text-400 mb-2">Nguồn:</p>
               <div className="space-y-1">
                 {qaResult.sources.slice(0, 3).map((source, index) => (
                   <p key={index} className="text-xs text-custom-text-300 truncate">
@@ -332,9 +332,9 @@ export function AIAssistantTab({ roomId, aiConfig, threadId }: AIAssistantTabPro
         <div className="w-16 h-16 mb-4 rounded-2xl bg-custom-background-80 flex items-center justify-center">
           <Sparkles size={32} className="text-custom-text-300" />
         </div>
-        <p className="text-sm font-medium text-custom-text-200 mb-1">AI Assistant Disabled</p>
+        <p className="text-sm font-medium text-custom-text-200 mb-1">Trợ lý AI đã tắt</p>
         <p className="text-xs text-custom-text-400 text-center max-w-xs">
-          AI features are not enabled for this channel. Contact a workspace admin to enable them.
+          Tính năng AI chưa được bật cho kênh này. Liên hệ quản trị viên để bật.
         </p>
       </div>
     );
@@ -346,7 +346,7 @@ export function AIAssistantTab({ roomId, aiConfig, threadId }: AIAssistantTabPro
       <div className="px-4 py-3 border-b border-custom-border-200 bg-custom-background-90">
         <div className="flex items-center gap-2 text-sm text-custom-text-300">
           <Sparkles size={14} />
-          <span>AI Assistant</span>
+          <span>Trợ lý AI</span>
         </div>
       </div>
 
@@ -366,10 +366,10 @@ export function AIAssistantTab({ roomId, aiConfig, threadId }: AIAssistantTabPro
         {aiConfig && (
           <div className="mt-4 p-3 rounded-lg bg-custom-background-80">
             <p className="text-xs text-custom-text-400">
-              <span className="font-medium">Enabled features: </span>
+              <span className="font-medium">Tính năng đã bật: </span>
               {aiConfig.enabledFeatures.length > 0
                 ? aiConfig.enabledFeatures.join(', ')
-                : 'None - contact admin to enable'}
+                : 'Chưa có - liên hệ admin để bật'}
             </p>
           </div>
         )}

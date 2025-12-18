@@ -55,7 +55,7 @@ export function SidebarCategory({
                 onMoreClick();
               }}
               className="p-1 rounded hover:bg-custom-background-90 text-custom-text-300 hover:text-custom-text-100"
-              title="More options"
+              title="Thêm tùy chọn"
             >
               <MoreHorizontal size={14} />
             </button>
@@ -67,7 +67,7 @@ export function SidebarCategory({
                 onAddClick();
               }}
               className="p-1 rounded hover:bg-custom-background-90 text-custom-text-300 hover:text-custom-text-100"
-              title="Add"
+              title="Thêm"
             >
               <Plus size={14} />
             </button>
@@ -90,7 +90,7 @@ export function SidebarCategory({
         <div className="mt-0.5">
           {isEmpty ? (
             <p className="text-custom-text-400 text-xs px-3 py-2 italic">
-              {emptyMessage || 'No items'}
+              {emptyMessage || 'Không có mục nào'}
             </p>
           ) : (
             children

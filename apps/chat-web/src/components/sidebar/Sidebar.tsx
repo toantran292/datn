@@ -84,7 +84,7 @@ export function Sidebar({
         <div className="flex items-center justify-between px-4 py-3 border-b border-custom-border-200 bg-custom-background-100 flex-shrink-0">
           <div className="flex items-center gap-2">
             <MessageSquare size={20} className="text-custom-primary-100" />
-            <span className="font-semibold text-custom-text-100">Messages</span>
+            <span className="font-semibold text-custom-text-100">Tin nhắn</span>
           </div>
           <button
             onClick={closeSidebar}
@@ -112,18 +112,18 @@ export function Sidebar({
                   onCreateProjectChannel();
                   setProjectMenuOpen(false);
                 }}>
-                  Create channel
+                  Tạo kênh
                 </MenuItem>
                 <MenuItem onClick={() => {
                   onBrowseProjectChannels();
                   setProjectMenuOpen(false);
                 }}>
-                  Browse channels
+                  Duyệt kênh
                 </MenuItem>
               </>
             }
             isEmpty={projectChannels.length === 0}
-            emptyMessage="No project channels"
+            emptyMessage="Chưa có kênh dự án"
           >
             {projectChannels.map((room) => (
               <ChannelItem
@@ -131,7 +131,7 @@ export function Sidebar({
                 room={room}
                 selected={selectedRoomId === room.id}
                 onClick={() => handleSelectRoom(room.id)}
-                displayName={room.name || 'Unnamed Channel'}
+                displayName={room.name || 'Kênh chưa đặt tên'}
                 unreadCount={getUnreadCount?.(room.id)}
                 isOwner={room.createdBy === currentUserId || isOrgOwner}
                 onRoomUpdated={onRoomUpdated}
@@ -157,18 +157,18 @@ export function Sidebar({
                 onCreateOrgChannel();
                 setOrgMenuOpen(false);
               }}>
-                Create channel
+                Tạo kênh
               </MenuItem>
               <MenuItem onClick={() => {
                 onBrowseOrgChannels();
                 setOrgMenuOpen(false);
               }}>
-                Browse channels
+                Duyệt kênh
               </MenuItem>
             </>
           }
           isEmpty={orgChannels.length === 0}
-          emptyMessage="No workspace channels"
+          emptyMessage="Chưa có kênh"
         >
           {orgChannels.map((room) => (
             <ChannelItem
@@ -189,12 +189,12 @@ export function Sidebar({
 
         {/* Direct Messages */}
         <SidebarCategory
-          title="Direct Messages"
+          title="Tin nhắn riêng"
           icon={<Users size={14} />}
           defaultExpanded={true}
           onAddClick={onStartComposeDM || onCreateDM}
           isEmpty={dms.length === 0}
-          emptyMessage="No conversations yet"
+          emptyMessage="Chưa có cuộc trò chuyện"
         >
           {/* Show "New Message" item when composing */}
           {isComposingDM && (
@@ -203,7 +203,7 @@ export function Sidebar({
                 <div className="w-5 h-5 rounded bg-custom-primary-100/20 flex items-center justify-center">
                   <span className="text-custom-primary-100 text-xs">+</span>
                 </div>
-                <span className="text-sm font-medium text-custom-primary-100">New Message</span>
+                <span className="text-sm font-medium text-custom-primary-100">Tin nhắn mới</span>
               </div>
             </div>
           )}

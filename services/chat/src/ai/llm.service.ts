@@ -14,6 +14,7 @@ export interface LLMConfig {
 
 export interface ConversationMessage {
   userId: string;
+  displayName?: string; // User display name for better AI responses
   content: string;
   createdAt: Date;
 }
@@ -85,7 +86,7 @@ export class LLMService implements OnModuleInit {
     const model = this.getModel(config);
 
     const formattedMessages = messages
-      .map(m => `[${m.createdAt.toISOString()}] User ${m.userId}: ${m.content}`)
+      .map(m => `[${m.createdAt.toISOString()}] ${m.displayName || 'User'}: ${m.content}`)
       .join('\n');
 
     const systemPrompt = customPrompt || `Bạn là trợ lý AI chuyên tóm tắt hội thoại. Hãy tóm tắt cuộc hội thoại sau một cách ngắn gọn, súc tích nhưng đầy đủ các điểm chính.
@@ -134,7 +135,7 @@ Cuộc hội thoại chủ yếu thảo luận về...
     const model = this.getModel(config);
 
     const formattedMessages = messages
-      .map(m => `[${m.createdAt.toISOString()}] User ${m.userId}: ${m.content}`)
+      .map(m => `[${m.createdAt.toISOString()}] ${m.displayName || 'User'}: ${m.content}`)
       .join('\n');
 
     const systemPrompt = customPrompt || `Bạn là trợ lý AI chuyên trích xuất các công việc cần làm (action items) từ hội thoại.
@@ -193,7 +194,7 @@ Trả về JSON với format:
     const model = this.getModel(config);
 
     const formattedContext = contextMessages
-      .map(m => `[MSG_ID: ${m.id}] [${m.createdAt.toISOString()}] User ${m.userId}: ${m.content}`)
+      .map(m => `[MSG_ID: ${m.id}] [${m.createdAt.toISOString()}] ${m.displayName || 'User'}: ${m.content}`)
       .join('\n');
 
     const systemPrompt = customPrompt || `Bạn là trợ lý AI giúp trả lời câu hỏi dựa trên ngữ cảnh hội thoại.
@@ -383,7 +384,7 @@ Tài liệu này trình bày về...
     const model = this.getModel(config);
 
     const formattedMessages = messages
-      .map(m => `[${m.createdAt.toISOString()}] User ${m.userId}: ${m.content}`)
+      .map(m => `[${m.createdAt.toISOString()}] ${m.displayName || 'User'}: ${m.content}`)
       .join('\n');
 
     const systemPrompt = customPrompt || `Bạn là trợ lý AI chuyên tóm tắt hội thoại. Hãy tóm tắt cuộc hội thoại sau một cách ngắn gọn, súc tích nhưng đầy đủ các điểm chính.
@@ -485,7 +486,7 @@ Format câu trả lời bằng Markdown:
     const model = this.getModel(config);
 
     const formattedMessages = messages
-      .map(m => `[${m.createdAt.toISOString()}] User ${m.userId}: ${m.content}`)
+      .map(m => `[${m.createdAt.toISOString()}] ${m.displayName || 'User'}: ${m.content}`)
       .join('\n');
 
     const systemPrompt = customPrompt || `Bạn là trợ lý AI chuyên trích xuất các công việc cần làm (action items) từ hội thoại.

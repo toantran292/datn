@@ -66,7 +66,7 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({ onCreateProjec
     return (
       <div className="flex items-center gap-2 px-3 py-1.5 text-sm text-custom-text-200">
         <FolderKanban className="h-4 w-4" />
-        <span>Loading...</span>
+        <span>Đang tải...</span>
       </div>
     );
   }
@@ -81,7 +81,7 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({ onCreateProjec
           className="flex items-center gap-2 px-3 py-1.5 text-sm text-custom-text-300 rounded-md hover:bg-custom-background-80 transition-colors"
         >
           <FolderKanban className="h-4 w-4" />
-          <span>Create project</span>
+          <span>Tạo project</span>
         </button>
       );
     }
@@ -89,7 +89,7 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({ onCreateProjec
     return (
       <div className="flex items-center gap-2 px-3 py-1.5 text-sm text-custom-text-300">
         <FolderKanban className="h-4 w-4" />
-        <span>No projects</span>
+        <span>Chưa có project</span>
       </div>
     );
   }
@@ -101,7 +101,7 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({ onCreateProjec
       customButton={
         <div className="flex items-center gap-2 px-3 py-1.5">
           <FolderKanban className="h-4 w-4 flex-shrink-0" />
-          <span className="text-sm font-medium truncate max-w-[150px]">{currentProject?.name || "Select project"}</span>
+          <span className="text-sm font-medium truncate max-w-[150px]">{currentProject?.name || "Chọn project"}</span>
           <ChevronDown className="h-3.5 w-3.5 flex-shrink-0" />
         </div>
       }
@@ -139,7 +139,7 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({ onCreateProjec
           `}
         >
           <Home className="h-4 w-4 flex-shrink-0" />
-          <span className="font-medium text-sm">Home</span>
+          <span className="font-medium text-sm">Trang chủ</span>
         </button>
       </div>
 
@@ -177,7 +177,7 @@ export const ProjectSelector: React.FC<ProjectSelectorProps> = ({ onCreateProjec
             className="w-full flex items-center gap-2 px-3 py-2 text-sm text-custom-text-200 hover:bg-custom-background-80 rounded-md transition-colors"
           >
             <Plus className="h-4 w-4" />
-            <span>Create project</span>
+            <span>Tạo project</span>
           </button>
         </div>
       )}

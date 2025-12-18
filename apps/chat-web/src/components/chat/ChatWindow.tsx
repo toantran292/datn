@@ -43,6 +43,8 @@ export interface ChatWindowProps {
   onCopyMeetingLink?: () => void;
   // Huddle participant count (real-time from WebSocket)
   huddleParticipantCounts?: Map<string, number>;
+  // Unread divider
+  lastSeenMessageId?: string | null;
 }
 
 export function ChatWindow({
@@ -73,6 +75,7 @@ export function ChatWindow({
   onStartMeeting,
   onCopyMeetingLink,
   huddleParticipantCounts,
+  lastSeenMessageId,
 }: ChatWindowProps) {
   const { isMobile, toggleSidebar } = useResponsive();
 
@@ -134,6 +137,7 @@ export function ChatWindow({
             onUnpinMessage={onUnpinMessage}
             onAddReaction={onAddReaction}
             onToggleReaction={onToggleReaction}
+            lastSeenMessageId={lastSeenMessageId}
           />
         ) : composeUsers.length > 0 ? (
           // Show "beginning" message when users are selected but no messages
@@ -142,10 +146,10 @@ export function ChatWindow({
               <Sparkles size={32} className="text-custom-primary-100" />
             </div>
             <h3 className="text-lg font-semibold text-custom-text-100 mb-2">
-              This is the very beginning
+              Đây là khởi đầu
             </h3>
             <p className="text-sm text-custom-text-300 text-center max-w-sm">
-              Start a new conversation with {composeUsers.map(u => u.displayName).join(', ')}
+              Bắt đầu cuộc trò chuyện mới với {composeUsers.map(u => u.displayName).join(', ')}
             </p>
           </div>
         ) : (
@@ -155,10 +159,10 @@ export function ChatWindow({
               <MessageSquare size={32} className="text-custom-text-300" />
             </div>
             <h3 className="text-lg font-semibold text-custom-text-100 mb-1">
-              New message
+              Tin nhắn mới
             </h3>
             <p className="text-sm text-custom-text-300 text-center">
-              Search for people to start a conversation
+              Tìm kiếm người để bắt đầu cuộc trò chuyện
             </p>
           </div>
         )}
@@ -168,7 +172,7 @@ export function ChatWindow({
           <MessageComposer
             room={room}
             onSendMessage={handleSendMessage}
-            placeholder="Write a message..."
+            placeholder="Viết tin nhắn..."
             members={usersCache}
             currentUserId={currentUserId}
           />
@@ -187,11 +191,11 @@ export function ChatWindow({
             <button
               onClick={toggleSidebar}
               className="p-2 rounded-lg text-custom-text-300 hover:text-custom-text-100 hover:bg-custom-background-80 transition-colors"
-              title="Open menu"
+              title="Mở menu"
             >
               <Menu size={20} />
             </button>
-            <span className="ml-2 font-semibold text-custom-text-100">Messages</span>
+            <span className="ml-2 font-semibold text-custom-text-100">Tin nhắn</span>
           </div>
         )}
         <div className="flex-1 flex items-center justify-center">
@@ -200,10 +204,10 @@ export function ChatWindow({
               <MessageSquare size={32} className="text-custom-text-300" />
             </div>
             <h3 className="text-lg font-semibold text-custom-text-100 mb-1">
-              Select a conversation
+              Chọn cuộc trò chuyện
             </h3>
             <p className="text-sm text-custom-text-300">
-              Choose a channel or direct message to start chatting
+              Chọn kênh hoặc tin nhắn riêng để bắt đầu trò chuyện
             </p>
           </div>
         </div>
@@ -235,6 +239,7 @@ export function ChatWindow({
         onUnpinMessage={onUnpinMessage}
         onAddReaction={onAddReaction}
         onToggleReaction={onToggleReaction}
+        lastSeenMessageId={lastSeenMessageId}
       />
 
       <MessageComposer

@@ -23,6 +23,8 @@ export function useChatMessages() {
     handleFileRemove,
     // Huddle
     huddleParticipantCounts,
+    // Unread divider
+    lastSeenMessageId,
   } = useChatContext();
 
   return {
@@ -42,5 +44,7 @@ export function useChatMessages() {
     removeFile: handleFileRemove,
     // Huddle
     huddleParticipantCounts,
+    // Unread divider
+    lastSeenMessageId,
   };
 }

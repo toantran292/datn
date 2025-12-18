@@ -8,12 +8,13 @@ export class ChatsController {
 
   @Get()
   async list(
+    @Ctx() ctx: RequestContext,
     @Query("roomId") roomId: string,
     @Query("pageSize") pageSize?: string,
     @Query("pageState") pageState?: string,
   ) {
     const size = pageSize ? Number(pageSize) : undefined;
-    return this.chats.listMessages(roomId, { pageSize: size, pageState });
+    return this.chats.listMessages(roomId, ctx.userId, { pageSize: size, pageState });
   }
 
   @Get("thread")

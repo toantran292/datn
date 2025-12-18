@@ -32,6 +32,7 @@ interface ChatContextValue {
   connectionStatus: string;
   usersCache: Map<string, UserInfo>;
   unreadCounts: Map<string, number>;
+  lastSeenMessageId: string | null;
   huddleParticipantCounts: Map<string, number>;
 
   // Project context
@@ -153,6 +154,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   // Unread counts
   const [unreadCounts, setUnreadCounts] = useState<Map<string, number>>(new Map());
 
+  // Last seen message ID for unread divider (per room)
+  const [lastSeenMessageId, setLastSeenMessageId] = useState<string | null>(null);
+
   // Huddle participant counts (roomId -> count)
   const [huddleParticipantCounts, setHuddleParticipantCounts] = useState<Map<string, number>>(new Map());
 
@@ -163,6 +167,8 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const selectedRoomIdRef = useRef<string | null>(null);
   const activeThreadRef = useRef<Message | null>(null);
   const userIdRef = useRef<string>("");
+  // Track processed message IDs to prevent duplicates (since we emit to both room and org channels)
+  const processedMessageIdsRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     selectedRoomIdRef.current = selectedRoomId;
@@ -221,7 +227,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
                 name: data.name || null,
                 orgId: data.orgId,
                 isPrivate: data.isPrivate,
-                type: "channel",
+                type: data.type || "channel",
               };
               setRooms((prev) => {
                 if (prev.some((r) => r.id === room.id)) return prev;
@@ -238,8 +244,33 @@ export function ChatProvider({ children }: { children: ReactNode }) {
             });
           },
           onMessageNew: (message) => {
-            console.log('[ChatContext] onMessageNew:', message.id, 'roomId:', message.roomId, 'selectedRoomIdRef:', selectedRoomIdRef.current);
-            if (message.roomId === selectedRoomIdRef.current) {
+            // Check for duplicate using ref (synchronous check before any state updates)
+            // This prevents duplicates when message arrives from both room and org channels
+            if (processedMessageIdsRef.current.has(message.id)) {
+              console.log('[ChatContext] Duplicate message detected via ref, skipping:', message.id);
+              return;
+            }
+            // Mark as processed immediately (synchronous)
+            processedMessageIdsRef.current.add(message.id);
+            // Clean up old message IDs to prevent memory leak (keep last 1000)
+            if (processedMessageIdsRef.current.size > 1000) {
+              const idsArray = Array.from(processedMessageIdsRef.current);
+              processedMessageIdsRef.current = new Set(idsArray.slice(-500));
+            }
+
+            const isCurrentRoom = message.roomId === selectedRoomIdRef.current;
+            const isOwnMessage = message.userId === userIdRef.current;
+            console.log('[ChatContext] onMessageNew:', {
+              messageId: message.id,
+              messageRoomId: message.roomId,
+              selectedRoomId: selectedRoomIdRef.current,
+              isCurrentRoom,
+              messageUserId: message.userId,
+              currentUserId: userIdRef.current,
+              isOwnMessage,
+            });
+
+            if (isCurrentRoom) {
               if (message.threadId) {
                 // Update thread messages if thread is currently open
                 if (activeThreadRef.current?.id === message.threadId) {
@@ -260,18 +291,34 @@ export function ChatProvider({ children }: { children: ReactNode }) {
                 );
               } else {
                 // Main message - add to messages list
+                console.log('[ChatContext] Adding message to current room');
                 setMessages((prev) => [...prev, message]);
+
+                // User is viewing this room, so mark message as seen (update lastSeenMessageId)
+                // This applies to both own messages and messages from others
+                setLastSeenMessageId(message.id);
+
+                // Also update backend for messages from others (fire and forget)
+                if (!isOwnMessage) {
+                  api.markAllAsRead(message.roomId).catch((error) => {
+                    console.error("[ChatContext] Failed to mark message as read:", error);
+                  });
+                }
               }
             } else {
               // Message in non-active room - increment unread count
               // Don't count messages from current user
-              if (message.userId !== userIdRef.current) {
+              if (!isOwnMessage) {
+                console.log('[ChatContext] Incrementing unread count for room:', message.roomId);
                 setUnreadCounts((prev) => {
                   const newCounts = new Map(prev);
                   const currentCount = newCounts.get(message.roomId) || 0;
                   newCounts.set(message.roomId, currentCount + 1);
+                  console.log('[ChatContext] New unread count:', currentCount + 1, 'for room:', message.roomId);
                   return newCounts;
                 });
+              } else {
+                console.log('[ChatContext] Skipping unread increment - own message');
               }
             }
           },
@@ -343,6 +390,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       // When no room is selected, also clear thread state
       setActiveThread(null);
       setThreadMessages([]);
+      setLastSeenMessageId(null);
       return;
     }
 
@@ -362,6 +410,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         // Set messages (reactions are already included from backend)
         setMessages(messagesResult.items);
 
+        // Set last seen message ID for unread divider (will show "New" divider if there are unread messages)
+        setLastSeenMessageId(messagesResult.lastSeenMessageId);
+
         // Cache user info from room members
         setUsersCache((prev) => {
           const newCache = new Map(prev);
@@ -375,6 +426,23 @@ export function ChatProvider({ children }: { children: ReactNode }) {
           });
           return newCache;
         });
+
+        // After loading messages, mark all as read (user is now viewing the channel)
+        // This updates lastSeenMessageId in backend to the latest message
+        const lastMessage = messagesResult.items[messagesResult.items.length - 1];
+        if (lastMessage && lastMessage.id !== messagesResult.lastSeenMessageId) {
+          // There are unread messages, mark them as read after a short delay
+          // The delay allows user to see the "New" divider before it disappears
+          setTimeout(() => {
+            api.markAllAsRead(selectedRoomId).then(() => {
+              // Update local lastSeenMessageId to latest message
+              // This will hide the "New" divider
+              setLastSeenMessageId(lastMessage.id);
+            }).catch((error) => {
+              console.error("[ChatContext] Failed to mark room as read:", error);
+            });
+          }, 2000); // 2 second delay to show "New" divider
+        }
       } catch (error) {
         console.error("Failed to load messages or members:", error);
       }
@@ -612,31 +680,42 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   };
 
   const handleSelectRoom = async (roomId: string) => {
+    console.log('[ChatContext] handleSelectRoom:', roomId, 'unreadCounts:', Array.from(unreadCounts.entries()));
+
     // If user selects the same room again, do nothing to avoid clearing messages
     setSelectedRoomId((prev) => {
       if (prev === roomId) {
+        console.log('[ChatContext] Same room selected, skipping');
         return prev;
       }
 
       // Switch to a different room: clear messages and join new room
+      console.log('[ChatContext] Switching to new room, clearing messages');
       setMessages([]);
       socketService.joinRoom(roomId);
       return roomId;
     });
 
-    // Mark room as read and clear unread count
-    if (unreadCounts.has(roomId)) {
-      try {
-        await api.markAsRead(roomId);
-        setUnreadCounts((prev) => {
-          const newCounts = new Map(prev);
-          newCounts.delete(roomId);
-          return newCounts;
+    // Always clear unread count immediately (optimistic update)
+    // Use functional update to get latest state and avoid stale closure
+    setUnreadCounts((prev) => {
+      const hasUnread = prev.has(roomId);
+      console.log('[ChatContext] hasUnread (from state):', hasUnread, 'for roomId:', roomId);
+
+      if (hasUnread) {
+        console.log('[ChatContext] Clearing unread count for:', roomId);
+        const newCounts = new Map(prev);
+        newCounts.delete(roomId);
+
+        // Call API to mark all messages as read (fire and forget, don't block UI)
+        api.markAllAsRead(roomId).catch((error) => {
+          console.error("[ChatContext] Failed to mark room as read:", error);
         });
-      } catch (error) {
-        console.error("[ChatContext] Failed to mark room as read:", error);
+
+        return newCounts;
       }
-    }
+      return prev;
+    });
   };
 
   // ===== Actions - Room Management =====
@@ -1010,6 +1089,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     connectionStatus,
     usersCache,
     unreadCounts,
+    lastSeenMessageId,
     huddleParticipantCounts,
 
     // Project context

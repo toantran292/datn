@@ -58,7 +58,7 @@ export function FilesTab({ roomId, onLoadFiles }: FilesTabProps) {
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 mx-auto mb-2 border-2 border-custom-primary-100/20 border-t-custom-primary-100 rounded-full animate-spin" />
-          <p className="text-sm text-custom-text-400">Loading files...</p>
+          <p className="text-sm text-custom-text-400">Đang tải tệp...</p>
         </div>
       </div>
     );
@@ -71,7 +71,7 @@ export function FilesTab({ roomId, onLoadFiles }: FilesTabProps) {
         <div className="flex items-center gap-2 text-sm text-custom-text-300">
           <Paperclip size={14} />
           <span>
-            {files.length} {files.length === 1 ? 'file' : 'files'} shared
+            {files.length} tệp đã chia sẻ
           </span>
         </div>
       </div>
@@ -83,9 +83,9 @@ export function FilesTab({ roomId, onLoadFiles }: FilesTabProps) {
             <div className="w-12 h-12 mb-3 rounded-xl bg-custom-background-80 flex items-center justify-center">
               <Paperclip size={24} className="text-custom-text-300" />
             </div>
-            <p className="text-sm font-medium text-custom-text-200 mb-1">No files shared yet</p>
+            <p className="text-sm font-medium text-custom-text-200 mb-1">Chưa có tệp nào được chia sẻ</p>
             <p className="text-xs text-custom-text-400">
-              Files shared in this channel will appear here
+              Các tệp được chia sẻ trong kênh này sẽ xuất hiện ở đây
             </p>
           </div>
         ) : (
@@ -118,7 +118,7 @@ export function FilesTab({ roomId, onLoadFiles }: FilesTabProps) {
                     e.stopPropagation();
                     file.url && window.open(file.url, '_blank');
                   }}
-                  title="Download"
+                  title="Tải xuống"
                 >
                   <Download size={16} />
                 </button>
@@ -136,7 +136,7 @@ export function FilesTab({ roomId, onLoadFiles }: FilesTabProps) {
           onClick={() => alert('Upload file functionality - TODO')}
         >
           <Upload size={16} />
-          Upload File
+          Tải lên tệp
         </button>
       </div>
     </div>

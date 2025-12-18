@@ -50,15 +50,15 @@ export function HuddleMessage({ message, currentUserId }: HuddleMessageProps) {
               <span className="font-semibold text-gray-900 dark:text-white">
                 {isStarted
                   ? isOwn
-                    ? 'You joined the huddle'
-                    : 'A huddle started'
-                  : 'A huddle happened'}
+                    ? 'Bạn đã tham gia cuộc họp'
+                    : 'Cuộc họp đã bắt đầu'
+                  : 'Đã có cuộc họp'}
               </span>
 
               {/* LIVE badge for active huddle */}
               {isStarted && (
                 <span className="px-2 py-0.5 rounded text-xs font-bold bg-green-500 text-white uppercase">
-                  Live
+                  Trực tiếp
                 </span>
               )}
 
@@ -69,19 +69,19 @@ export function HuddleMessage({ message, currentUserId }: HuddleMessageProps) {
             <p className="text-sm text-gray-600 dark:text-gray-300">
               {isStarted ? (
                 <>
-                  You're the only one here. Enjoy the tranquility, or{' '}
+                  Bạn là người duy nhất ở đây. Tận hưởng sự yên tĩnh, hoặc{' '}
                   <button className="text-teal-600 dark:text-teal-400 hover:underline">
-                    invite someone
+                    mời ai đó
                   </button>
                   .
                 </>
               ) : (
                 <>
                   {participantCount === 1
-                    ? 'You were in the huddle by yourself'
-                    : `${participantCount} people were in the huddle`}{' '}
-                  for {formatDuration(duration)}.
-                  {duration < 60 && ' A nice, meditative session '}
+                    ? 'Bạn đã ở trong cuộc họp một mình'
+                    : `${participantCount} người đã trong cuộc họp`}{' '}
+                  trong {formatDuration(duration)}.
+                  {duration < 60 && ' Một phiên thiền ngắn '}
                 </>
               )}
             </p>

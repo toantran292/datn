@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { MessageSquare, Search, X, Check } from 'lucide-react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { UserPlus, Search, X, Check } from 'lucide-react';
 import { ModalCore, EModalPosition, EModalWidth, Button, Input } from '@uts/design-system/ui';
 import { api } from '../../services/api';
 
@@ -10,14 +10,16 @@ interface User {
   disabled: boolean;
 }
 
-interface CreateDMModalProps {
+interface AddMembersModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (userIds: string[]) => Promise<void>;
+  roomId: string;
+  roomName?: string;
   currentUserId: string;
+  existingMemberIds: string[];
+  onMembersAdded?: () => void;
 }
 
-// Avatar component
 function Avatar({ name }: { name: string }) {
   const getAvatarColor = (str: string) => {
     const colors = [
@@ -38,44 +40,83 @@ function Avatar({ name }: { name: string }) {
   );
 }
 
-export function CreateDMModal({ isOpen, onClose, onCreate, currentUserId }: CreateDMModalProps) {
-  const [users, setUsers] = useState<User[]>([]);
+export function AddMembersModal({
+  isOpen,
+  onClose,
+  roomId,
+  roomName,
+  currentUserId,
+  existingMemberIds,
+  onMembersAdded,
+}: AddMembersModalProps) {
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [isCreating, setIsCreating] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (isOpen) {
-      loadUsers();
-    }
-  }, [isOpen]);
-
-  const loadUsers = async () => {
+  // Load all users once when modal opens
+  const loadUsers = useCallback(async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const orgUsers = await api.listOrgUsers();
-      // Filter out current user and disabled users
+      // Filter out current user and existing members
       const filteredUsers = orgUsers.filter(
-        (u) => u.userId !== currentUserId && !u.disabled
+        (u) => u.userId !== currentUserId && !existingMemberIds.includes(u.userId)
       );
-      setUsers(filteredUsers);
-    } catch (err) {
+      setAllUsers(filteredUsers);
+    } catch {
       setError('Không thể tải danh sách người dùng');
+      setAllUsers([]);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentUserId, existingMemberIds]);
 
-  const toggleUser = (userId: string) => {
+  // Client-side filtering based on search term
+  const filteredUsers = useMemo(() => {
+    if (!searchTerm.trim()) {
+      return allUsers;
+    }
+    const searchLower = searchTerm.toLowerCase().trim();
+    return allUsers.filter(
+      (user) =>
+        user.displayName.toLowerCase().includes(searchLower) ||
+        user.email.toLowerCase().includes(searchLower)
+    );
+  }, [allUsers, searchTerm]);
+
+  // Reset state when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedUserIds(new Set());
+      setSelectedUsers([]);
+      setSearchTerm('');
+      setError(null);
+      loadUsers();
+    }
+  }, [isOpen, loadUsers]);
+
+  const toggleUser = (user: User) => {
     const newSelected = new Set(selectedUserIds);
-    if (newSelected.has(userId)) {
-      newSelected.delete(userId);
+    if (newSelected.has(user.userId)) {
+      newSelected.delete(user.userId);
+      setSelectedUsers(prev => prev.filter(u => u.userId !== user.userId));
     } else {
-      newSelected.add(userId);
+      newSelected.add(user.userId);
+      setSelectedUsers(prev => [...prev, user]);
     }
     setSelectedUserIds(newSelected);
+  };
+
+  const removeSelectedUser = (userId: string) => {
+    const newSelected = new Set(selectedUserIds);
+    newSelected.delete(userId);
+    setSelectedUserIds(newSelected);
+    setSelectedUsers(prev => prev.filter(u => u.userId !== userId));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -85,33 +126,30 @@ export function CreateDMModal({ isOpen, onClose, onCreate, currentUserId }: Crea
       return;
     }
 
-    setIsCreating(true);
+    setIsAdding(true);
     setError(null);
 
     try {
-      await onCreate(Array.from(selectedUserIds));
-      handleClose();
+      // TODO: API invite members chưa được implement
+      // Tạm thời chỉ log và đóng modal
+      console.log('Selected users to invite:', Array.from(selectedUserIds));
+      setError('Tính năng này chưa có sẵn. Sắp ra mắt!');
+      // onMembersAdded?.();
+      // handleClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể tạo cuộc trò chuyện');
+      setError(err instanceof Error ? err.message : 'Không thể thêm thành viên');
     } finally {
-      setIsCreating(false);
+      setIsAdding(false);
     }
   };
 
   const handleClose = () => {
     setSearchTerm('');
     setSelectedUserIds(new Set());
+    setSelectedUsers([]);
     setError(null);
     onClose();
   };
-
-  const filteredUsers = users.filter(
-    (user) =>
-      user.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const selectedUsers = users.filter((u) => selectedUserIds.has(u.userId));
 
   if (!isOpen) return null;
 
@@ -127,12 +165,12 @@ export function CreateDMModal({ isOpen, onClose, onCreate, currentUserId }: Crea
         <div className="p-5 border-b border-custom-border-200">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-lg bg-custom-primary-100/10 flex items-center justify-center">
-              <MessageSquare size={20} className="text-custom-primary-100" />
+              <UserPlus size={20} className="text-custom-primary-100" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-custom-text-100">Tin nhắn mới</h2>
+              <h2 className="text-lg font-semibold text-custom-text-100">Thêm thành viên</h2>
               <p className="text-sm text-custom-text-400">
-                Bắt đầu cuộc trò chuyện với thành viên
+                Thêm người vào {roomName ? `#${roomName}` : 'kênh này'}
               </p>
             </div>
           </div>
@@ -148,7 +186,7 @@ export function CreateDMModal({ isOpen, onClose, onCreate, currentUserId }: Crea
                   {user.displayName}
                   <button
                     type="button"
-                    onClick={() => toggleUser(user.userId)}
+                    onClick={() => removeSelectedUser(user.userId)}
                     className="hover:text-custom-primary-200 transition-colors"
                   >
                     <X size={14} />
@@ -165,16 +203,16 @@ export function CreateDMModal({ isOpen, onClose, onCreate, currentUserId }: Crea
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Tìm kiếm..."
+              placeholder="Tìm kiếm theo tên hoặc email..."
               className="w-full pl-10"
-              disabled={isCreating || isLoading}
+              disabled={isAdding}
               autoFocus
             />
           </div>
         </div>
 
         {/* User List */}
-        <div className="flex-1 overflow-y-auto vertical-scrollbar scrollbar-sm">
+        <div className="flex-1 overflow-y-auto vertical-scrollbar scrollbar-sm min-h-[200px]">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-12">
               <div className="w-8 h-8 mb-3 border-2 border-custom-primary-100/20 border-t-custom-primary-100 rounded-full animate-spin" />
@@ -185,9 +223,11 @@ export function CreateDMModal({ isOpen, onClose, onCreate, currentUserId }: Crea
               <div className="w-12 h-12 mb-3 rounded-xl bg-custom-background-80 flex items-center justify-center">
                 <Search size={24} className="text-custom-text-300" />
               </div>
-              <p className="text-sm font-medium text-custom-text-200 mb-1">Không tìm thấy người dùng</p>
+              <p className="text-sm font-medium text-custom-text-200 mb-1">
+                {searchTerm ? 'Không tìm thấy người dùng' : 'Tất cả đều đã là thành viên'}
+              </p>
               <p className="text-xs text-custom-text-400">
-                Thử điều chỉnh từ khóa tìm kiếm
+                {searchTerm ? 'Thử điều chỉnh từ khóa tìm kiếm' : 'Mọi người trong tổ chức đều đã ở trong kênh này'}
               </p>
             </div>
           ) : (
@@ -198,7 +238,7 @@ export function CreateDMModal({ isOpen, onClose, onCreate, currentUserId }: Crea
                   <button
                     key={user.userId}
                     type="button"
-                    onClick={() => toggleUser(user.userId)}
+                    onClick={() => toggleUser(user)}
                     className={`
                       w-full flex items-center gap-3 p-3 rounded-lg transition-colors text-left
                       ${isSelected
@@ -246,7 +286,7 @@ export function CreateDMModal({ isOpen, onClose, onCreate, currentUserId }: Crea
               variant="neutral-primary"
               size="sm"
               onClick={handleClose}
-              disabled={isCreating}
+              disabled={isAdding}
             >
               Hủy
             </Button>
@@ -254,10 +294,10 @@ export function CreateDMModal({ isOpen, onClose, onCreate, currentUserId }: Crea
               variant="primary"
               size="sm"
               onClick={handleSubmit}
-              loading={isCreating}
+              loading={isAdding}
               disabled={selectedUserIds.size === 0}
             >
-              {isCreating ? 'Đang tạo...' : 'Bắt đầu trò chuyện'}
+              {isAdding ? 'Đang thêm...' : `Thêm ${selectedUserIds.size > 0 ? selectedUserIds.size : ''} thành viên`}
             </Button>
           </div>
         </div>

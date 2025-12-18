@@ -49,7 +49,7 @@ export function ChatHeader({ room, sidebarOpen, onToggleSidebar, onJumpToMessage
           <button
             onClick={toggleSidebar}
             className="p-2 rounded-lg text-custom-text-300 hover:text-custom-text-100 hover:bg-custom-background-80 transition-colors flex-shrink-0"
-            title="Open menu"
+            title="Mở menu"
           >
             <Menu size={20} />
           </button>
@@ -61,7 +61,7 @@ export function ChatHeader({ room, sidebarOpen, onToggleSidebar, onJumpToMessage
             {room.type === 'dm' ? null : (room.isPrivate ? <Lock size={isMobile ? 16 : 18} /> : <Hash size={isMobile ? 16 : 18} />)}
           </span>
           <h2 className="font-semibold text-base md:text-lg text-custom-text-100 truncate">
-            {room.name || 'Direct Message'}
+            {room.name || 'Tin nhắn riêng'}
           </h2>
         </div>
 
@@ -88,7 +88,7 @@ export function ChatHeader({ room, sidebarOpen, onToggleSidebar, onJumpToMessage
                 {/* Dropdown */}
                 <div className="absolute top-full left-0 mt-1 w-72 md:w-80 max-h-96 overflow-y-auto bg-custom-background-100 border border-custom-border-200 rounded-lg shadow-lg z-50">
                   <div className="flex items-center justify-between px-3 py-2 border-b border-custom-border-200">
-                    <span className="text-sm font-medium text-custom-text-100">Pinned messages</span>
+                    <span className="text-sm font-medium text-custom-text-100">Tin nhắn đã ghim</span>
                     <button
                       onClick={() => setShowPinnedDropdown(false)}
                       className="p-1 rounded hover:bg-custom-background-80 text-custom-text-300"
@@ -130,7 +130,7 @@ export function ChatHeader({ room, sidebarOpen, onToggleSidebar, onJumpToMessage
                 ? 'text-teal-500 bg-teal-500/10 hover:bg-teal-500/20'
                 : 'text-custom-text-400 hover:text-custom-text-100 hover:bg-custom-background-80'
             }`}
-            title={isHuddleActive ? "Join Huddle" : "Start Huddle"}
+            title={isHuddleActive ? "Tham gia cuộc họp" : "Bắt đầu cuộc họp"}
           >
             <Headphones size={isMobile ? 18 : 18} />
             {isHuddleActive && huddleParticipantCount > 0 && (
@@ -144,10 +144,10 @@ export function ChatHeader({ room, sidebarOpen, onToggleSidebar, onJumpToMessage
           <button
             onClick={onOpenSearch}
             className="flex items-center gap-1.5 md:gap-2 p-2 md:px-3 md:py-1.5 rounded-lg text-custom-text-400 hover:text-custom-text-100 hover:bg-custom-background-80 transition-colors text-sm"
-            title="Search messages (⌘K)"
+            title="Tìm kiếm tin nhắn (⌘K)"
           >
             <Search size={16} />
-            <span className="hidden md:inline">Search</span>
+            <span className="hidden md:inline">Tìm kiếm</span>
             <kbd className="hidden lg:inline px-1.5 py-0.5 rounded bg-custom-background-80 text-xs font-mono">⌘K</kbd>
           </button>
         )}
@@ -162,7 +162,7 @@ export function ChatHeader({ room, sidebarOpen, onToggleSidebar, onJumpToMessage
               : 'text-custom-text-300 hover:text-custom-text-100 hover:bg-custom-background-80'
             }
           `}
-          title="Channel details"
+          title="Chi tiết kênh"
         >
           <Info size={18} />
         </button>

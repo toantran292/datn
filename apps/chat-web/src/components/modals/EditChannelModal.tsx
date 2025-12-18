@@ -32,7 +32,7 @@ export function EditChannelModal({ isOpen, onClose, channel, onUpdate }: EditCha
     if (!channel) return;
 
     if (!name.trim()) {
-      setError('Channel name is required');
+      setError('Tên kênh là bắt buộc');
       return;
     }
 
@@ -47,7 +47,7 @@ export function EditChannelModal({ isOpen, onClose, channel, onUpdate }: EditCha
       });
       handleClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update channel');
+      setError(err instanceof Error ? err.message : 'Không thể cập nhật kênh');
     } finally {
       setIsUpdating(false);
     }
@@ -82,9 +82,9 @@ export function EditChannelModal({ isOpen, onClose, channel, onUpdate }: EditCha
             <Settings size={20} className="text-custom-primary-100" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-custom-text-100">Edit Channel</h2>
+            <h2 className="text-lg font-semibold text-custom-text-100">Chỉnh sửa kênh</h2>
             <p className="text-sm text-custom-text-400">
-              Update channel settings
+              Cập nhật cài đặt kênh
             </p>
           </div>
         </div>
@@ -93,7 +93,7 @@ export function EditChannelModal({ isOpen, onClose, channel, onUpdate }: EditCha
           {/* Channel Name */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-custom-text-200 mb-2">
-              Channel Name
+              Tên kênh
             </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-custom-text-400">
@@ -103,7 +103,7 @@ export function EditChannelModal({ isOpen, onClose, channel, onUpdate }: EditCha
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. marketing"
+                placeholder="vd: marketing"
                 className="w-full pl-10"
                 disabled={isUpdating}
                 autoFocus
@@ -115,12 +115,12 @@ export function EditChannelModal({ isOpen, onClose, channel, onUpdate }: EditCha
           {/* Description */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-custom-text-200 mb-2">
-              Description <span className="text-custom-text-400 font-normal">(optional)</span>
+              Mô tả <span className="text-custom-text-400 font-normal">(tùy chọn)</span>
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="What's this channel about?"
+              placeholder="Kênh này về gì?"
               className="w-full px-3 py-2 bg-custom-background-100 border border-custom-border-200 rounded-md text-sm text-custom-text-100 placeholder-custom-text-400 focus:outline-none focus:border-custom-primary-100 focus:ring-1 focus:ring-custom-primary-100/20 resize-none"
               rows={3}
               disabled={isUpdating}
@@ -139,13 +139,13 @@ export function EditChannelModal({ isOpen, onClose, channel, onUpdate }: EditCha
               />
               <div className="flex items-center gap-2">
                 <Lock size={16} className="text-custom-text-300" />
-                <span className="text-sm font-medium text-custom-text-200">Private channel</span>
+                <span className="text-sm font-medium text-custom-text-200">Kênh riêng tư</span>
               </div>
             </label>
             <p className="text-xs text-custom-text-400 mt-2 ml-7">
               {isPrivate
-                ? 'Only invited members can access this channel'
-                : 'Anyone in the organization can find and join this channel'}
+                ? 'Chỉ các thành viên được mời mới có thể truy cập kênh này'
+                : 'Bất kỳ ai trong tổ chức đều có thể tìm và tham gia kênh này'}
             </p>
           </div>
 
@@ -164,7 +164,7 @@ export function EditChannelModal({ isOpen, onClose, channel, onUpdate }: EditCha
               onClick={handleClose}
               disabled={isUpdating}
             >
-              Cancel
+              Hủy
             </Button>
             <Button
               variant="primary"
@@ -173,7 +173,7 @@ export function EditChannelModal({ isOpen, onClose, channel, onUpdate }: EditCha
               loading={isUpdating}
               disabled={!name.trim() || !hasChanges}
             >
-              {isUpdating ? 'Saving...' : 'Save Changes'}
+              {isUpdating ? 'Đang lưu...' : 'Lưu thay đổi'}
             </Button>
           </div>
         </form>

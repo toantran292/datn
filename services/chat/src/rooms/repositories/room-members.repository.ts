@@ -210,6 +210,62 @@ export class RoomMembersRepository {
     });
   }
 
+  /**
+   * Find the oldest non-admin member in a room (excluding a specific user)
+   * Used for transferring admin when the last admin leaves
+   */
+  async findOldestNonAdminMember(roomId: string, excludeUserId: string): Promise<RoomMemberEntity | null> {
+    const member = await this.memberRepo.findOne({
+      where: {
+        roomId,
+        role: 'MEMBER',
+      },
+      order: { joinedAt: 'ASC' },
+    });
+
+    // If the oldest member is the one being excluded, find the next one
+    if (member && member.userId === excludeUserId) {
+      const members = await this.memberRepo.find({
+        where: {
+          roomId,
+          role: 'MEMBER',
+        },
+        order: { joinedAt: 'ASC' },
+        take: 2,
+      });
+      const nextMember = members.find(m => m.userId !== excludeUserId);
+      if (!nextMember) return null;
+      return {
+        roomId: nextMember.roomId,
+        userId: nextMember.userId,
+        orgId: nextMember.orgId,
+        role: nextMember.role,
+        lastSeenMessageId: nextMember.lastSeenMessageId ?? undefined,
+        joinedAt: nextMember.joinedAt,
+      };
+    }
+
+    if (!member) return null;
+
+    return {
+      roomId: member.roomId,
+      userId: member.userId,
+      orgId: member.orgId,
+      role: member.role,
+      lastSeenMessageId: member.lastSeenMessageId ?? undefined,
+      joinedAt: member.joinedAt,
+    };
+  }
+
+  /**
+   * Count total members in a room
+   */
+  async countMembers(roomId: string): Promise<number> {
+    return this.memberRepo.count({
+      where: { roomId },
+    });
+  }
+
   async findRoomIdsByUser(userId: string, orgId: string): Promise<string[]> {
     const members = await this.memberRepo.find({
       where: { userId, orgId },

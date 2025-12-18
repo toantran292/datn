@@ -76,4 +76,16 @@ export class PinnedMessagesRepository {
       total,
     };
   }
+
+  /**
+   * Get all pinned message IDs for a room
+   * Used to check isPinned status when listing messages
+   */
+  async getPinnedMessageIds(roomId: string): Promise<Set<string>> {
+    const items = await this.pinnedRepo.find({
+      where: { roomId },
+      select: ['messageId'],
+    });
+    return new Set(items.map(p => p.messageId));
+  }
 }

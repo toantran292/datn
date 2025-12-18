@@ -13,7 +13,7 @@ export type HuddleParticipantUpdatePayload = {
 export type SocketEventHandlers = {
   onRoomsBootstrap?: (rooms: Room[]) => void;
   onRoomCreated?: (room: Room) => void;
-  onRoomMemberJoined?: (data: { id: string; name?: string | null; orgId: string; isPrivate: boolean; userId: string }) => void;
+  onRoomMemberJoined?: (data: { id: string; name?: string | null; orgId: string; isPrivate: boolean; userId: string; type?: 'channel' | 'dm' }) => void;
   onRoomUpdated?: (payload: RoomUpdatedPayload) => void;
   onMessageNew?: (message: Message) => void;
   onJoinedRoom?: (data: { roomId: string; userId: string; joinedAt: number }) => void;
@@ -69,7 +69,7 @@ class SocketService {
       handlers.onRoomCreated?.(room);
     });
 
-    this.socket.on('room:member_joined', (data: { id: string; name?: string | null; orgId: string; isPrivate: boolean; userId: string }) => {
+    this.socket.on('room:member_joined', (data: { id: string; name?: string | null; orgId: string; isPrivate: boolean; userId: string; type?: 'channel' | 'dm' }) => {
       console.log('[WS] Member joined room:', data);
       handlers.onRoomMemberJoined?.(data);
     });
