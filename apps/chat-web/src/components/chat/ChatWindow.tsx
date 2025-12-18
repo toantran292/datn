@@ -14,6 +14,9 @@ export interface ChatWindowProps {
   currentUserId: string;
   onSendMessage: (html: string, mentionedUserIds?: string[]) => void;
   onLoadMessages: () => void;
+  onLoadMoreMessages?: () => void;
+  hasMoreMessages?: boolean;
+  isLoadingMoreMessages?: boolean;
   onOpenThread: (message: Message) => void;
   onToggleSidebar?: () => void;
   sidebarOpen?: boolean;
@@ -50,6 +53,9 @@ export function ChatWindow({
   currentUserId,
   onSendMessage,
   onLoadMessages,
+  onLoadMoreMessages,
+  hasMoreMessages,
+  isLoadingMoreMessages,
   onOpenThread,
   onToggleSidebar,
   sidebarOpen,
@@ -218,6 +224,9 @@ export function ChatWindow({
         onAddReaction={onAddReaction}
         onToggleReaction={onToggleReaction}
         huddleParticipantCount={huddleParticipantCount}
+        onLoadMore={onLoadMoreMessages}
+        hasMore={hasMoreMessages}
+        isLoadingMore={isLoadingMoreMessages}
       />
 
       <MessageComposer

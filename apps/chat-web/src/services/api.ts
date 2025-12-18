@@ -288,9 +288,10 @@ class ApiService {
     return response.json();
   }
 
-  async listMessages(roomId: string, pageSize?: number): Promise<{ items: Message[]; pageState: string | null }> {
+  async listMessages(roomId: string, pageSize?: number, pageState?: string): Promise<{ items: Message[]; pageState: string | null }> {
     const params = new URLSearchParams({ roomId });
     if (pageSize) params.append('pageSize', pageSize.toString());
+    if (pageState) params.append('pageState', pageState);
 
     const response = await fetch(`${this.baseURL}/messages?${params}`, {
       method: 'GET',

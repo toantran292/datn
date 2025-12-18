@@ -76,6 +76,9 @@ interface ChatContextValue {
 
   // Actions - Messages
   handleLoadMessages: () => Promise<void>;
+  handleLoadMoreMessages: () => Promise<void>;
+  hasMoreMessages: boolean;
+  isLoadingMoreMessages: boolean;
   handleSendMessage: (content: string, mentionedUserIds?: string[]) => void;
   handleEditMessage: (messageId: string, content: string) => Promise<void>;
   handleDeleteMessage: (messageId: string) => Promise<void>;
@@ -131,6 +134,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [messagesPageState, setMessagesPageState] = useState<string | null>(null);
+  const [hasMoreMessages, setHasMoreMessages] = useState(false);
+  const [isLoadingMoreMessages, setIsLoadingMoreMessages] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState("disconnected");
   const [usersCache, setUsersCache] = useState<Map<string, UserInfo>>(new Map());
 
@@ -373,6 +379,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
     const loadMessagesAndMembers = async () => {
       try {
+        // Reset pagination state for new room
+        setMessagesPageState(null);
+        setHasMoreMessages(false);
+
         // Load messages and members in parallel
         // Backend now returns reactions embedded in each message
         const [messagesResult, members] = await Promise.all([
@@ -382,6 +392,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
         // Set messages (reactions are already included from backend)
         setMessages(messagesResult.items);
+
+        // Save pageState for pagination
+        setMessagesPageState(messagesResult.pageState);
+        setHasMoreMessages(!!messagesResult.pageState);
 
         // Cache user info from room members
         setUsersCache((prev) => {
@@ -701,8 +715,26 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     try {
       const result = await api.listMessages(selectedRoomId, 50);
       setMessages(result.items);
+      setMessagesPageState(result.pageState);
+      setHasMoreMessages(!!result.pageState);
     } catch (error) {
       console.error("Failed to load messages:", error);
+    }
+  };
+
+  const handleLoadMoreMessages = async () => {
+    if (!selectedRoomId || !messagesPageState || isLoadingMoreMessages) return;
+    try {
+      setIsLoadingMoreMessages(true);
+      const result = await api.listMessages(selectedRoomId, 50, messagesPageState);
+      // Append newer messages to the end
+      setMessages((prev) => [...prev, ...result.items]);
+      setMessagesPageState(result.pageState);
+      setHasMoreMessages(!!result.pageState);
+    } catch (error) {
+      console.error("Failed to load more messages:", error);
+    } finally {
+      setIsLoadingMoreMessages(false);
     }
   };
 
@@ -1073,6 +1105,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
     // Actions - Messages
     handleLoadMessages,
+    handleLoadMoreMessages,
+    hasMoreMessages,
+    isLoadingMoreMessages,
     handleSendMessage,
     handleEditMessage,
     handleDeleteMessage,

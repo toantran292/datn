@@ -19,7 +19,8 @@ import { RecordingIndicator } from '@/components/RecordingIndicator';
 import { useClientRecording } from '@/hooks/useClientRecording';
 import { SettingsPanel, BackgroundOption } from '@/components/SettingsPanel';
 import { MeetingExports } from '@/components/MeetingExports';
-import { MeetingChatPanel } from '@/components/MeetingChatPanel';
+import { MeetingSidePanel } from '@/components/MeetingSidePanel';
+import type { CaptionEvent } from '@/hooks/useJitsiConference';
 import type { JitsiTrack } from '@/types/jitsi';
 import { Video } from 'lucide-react';
 import { useCallback } from 'react';
@@ -60,9 +61,11 @@ function MeetingPageContent() {
   // Exports panel state
   const [isExportsOpen, setIsExportsOpen] = useState(false);
 
-  // Chat panel state
-  const [isChatOpen, setIsChatOpen] = useState(false);
+  // Side panel state (Chat + Captions tabs)
+  const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
+  const [sidePanelTab, setSidePanelTab] = useState<'chat' | 'captions'>('chat');
   const [chatUnreadCount, setChatUnreadCount] = useState(0);
+
 
   // Initialize Jitsi and load meeting data from localStorage
   useEffect(() => {
@@ -125,6 +128,11 @@ function MeetingPageContent() {
     currentUserId: userId, // Replace 'local' with real userId
   });
 
+  // Callback to save final captions to database
+  const handleFinalCaption = useCallback((caption: CaptionEvent) => {
+    saveCaption(caption);
+  }, [saveCaption]);
+
   // Jitsi conference - simplified hook with transcript callback
   const {
     isJoined,
@@ -153,7 +161,7 @@ function MeetingPageContent() {
     connection,
     isConnected ? roomId : null,
     displayName,
-    { onFinalCaption: saveCaption }
+    { onFinalCaption: handleFinalCaption }
   );
 
   // Embed mode: Notify parent when connected
@@ -540,14 +548,14 @@ function MeetingPageContent() {
         isScreenSharing={isScreenSharing}
         isRecording={isRecording}
         isCaptionsOn={isCaptionsEnabled}
-        isChatOpen={isChatOpen}
+        isChatOpen={isSidePanelOpen}
         unreadCount={chatUnreadCount}
         onToggleMic={toggleAudio}
         onToggleVideo={toggleVideo}
         onToggleScreenShare={toggleScreenShare}
         onToggleRecording={toggleRecording}
         onToggleCaptions={toggleCaptions}
-        onToggleChat={() => setIsChatOpen(!isChatOpen)}
+        onToggleChat={() => setIsSidePanelOpen(!isSidePanelOpen)}
         onSendReaction={sendReaction}
         onShowSettings={handleShowSettings}
         onShowExports={() => setIsExportsOpen(true)}
@@ -582,15 +590,18 @@ function MeetingPageContent() {
         />
       )}
 
-      {/* Chat Panel */}
-      <MeetingChatPanel
-        isOpen={isChatOpen}
-        onClose={() => setIsChatOpen(false)}
+      {/* Side Panel (Chat + Captions) */}
+      <MeetingSidePanel
+        isOpen={isSidePanelOpen}
+        onClose={() => setIsSidePanelOpen(false)}
         meetingId={meetingId}
         roomId={roomId}
         userId={userId}
         userName={displayName}
+        captions={captions}
         onUnreadCountChange={setChatUnreadCount}
+        activeTab={sidePanelTab}
+        onTabChange={setSidePanelTab}
       />
     </div>
   );

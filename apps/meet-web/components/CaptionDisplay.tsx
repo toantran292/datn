@@ -440,6 +440,11 @@ export function useSpeechRecognition(
   const retryCountRef = useRef(0);
   const lastSuccessRef = useRef(0);
 
+  // Auto-finalize interim captions after timeout
+  const lastInterimRef = useRef<{ text: string; timestamp: number } | null>(null);
+  const autoFinalizeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const AUTO_FINALIZE_DELAY = 1500; // 1.5 seconds without new speech = finalize
+
   // Keep ref in sync
   useEffect(() => {
     isEnabledRef.current = isEnabled;
@@ -586,12 +591,29 @@ export function useSpeechRecognition(
         }
       }
 
+      // Clear any pending auto-finalize timeout
+      if (autoFinalizeTimeoutRef.current) {
+        clearTimeout(autoFinalizeTimeoutRef.current);
+        autoFinalizeTimeoutRef.current = null;
+      }
+
       if (finalTranscript) {
         console.log('[Caption] Final transcript:', finalTranscript);
+        lastInterimRef.current = null;
         onResult(finalTranscript, true);
       } else if (interimTranscript) {
         console.log('[Caption] Interim transcript:', interimTranscript);
+        lastInterimRef.current = { text: interimTranscript, timestamp: Date.now() };
         onResult(interimTranscript, false);
+
+        // Auto-finalize after timeout if no new speech
+        autoFinalizeTimeoutRef.current = setTimeout(() => {
+          if (lastInterimRef.current && lastInterimRef.current.text === interimTranscript) {
+            console.log('[Caption] Auto-finalizing after timeout:', interimTranscript);
+            lastInterimRef.current = null;
+            onResult(interimTranscript, true);
+          }
+        }, AUTO_FINALIZE_DELAY);
       }
     };
 
@@ -611,6 +633,10 @@ export function useSpeechRecognition(
       if (restartTimeoutRef.current) {
         clearTimeout(restartTimeoutRef.current);
         restartTimeoutRef.current = null;
+      }
+      if (autoFinalizeTimeoutRef.current) {
+        clearTimeout(autoFinalizeTimeoutRef.current);
+        autoFinalizeTimeoutRef.current = null;
       }
       if (recognitionRef.current) {
         recognitionRef.current.stop();

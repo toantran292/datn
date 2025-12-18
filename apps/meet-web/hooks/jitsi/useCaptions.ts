@@ -67,14 +67,24 @@ export function useCaptions({
 
       setCaptions(prev => {
         if (!isFinal) {
-          // Remove previous interim captions from local
+          // For interim: remove old interim from local, add new interim
           const filtered = prev.filter(c =>
             !(c.participantId === 'local' && !c.isFinal)
           );
           return [...filtered, captionEvent];
         }
-        // For final captions, just add (keep last 10)
-        return [...prev.slice(-10), captionEvent];
+        // For final: find matching interim and replace it, or add new
+        const interimIndex = prev.findIndex(c =>
+          c.participantId === 'local' && !c.isFinal
+        );
+        if (interimIndex !== -1) {
+          // Replace interim with final (same position)
+          const newCaptions = [...prev];
+          newCaptions[interimIndex] = captionEvent;
+          return newCaptions.slice(-20);
+        }
+        // No interim found, just add final
+        return [...prev.slice(-20), captionEvent];
       });
 
       // Notify callback for final captions (for transcript saving)
@@ -89,13 +99,24 @@ export function useCaptions({
   const addRemoteCaption = useCallback((caption: CaptionEvent) => {
     setCaptions(prev => {
       if (!caption.isFinal) {
-        // Remove previous interim captions from this participant
+        // For interim: remove old interim from this participant, add new interim
         const filtered = prev.filter(c =>
           !(c.participantId === caption.participantId && !c.isFinal)
         );
         return [...filtered, caption];
       }
-      return [...prev.slice(-10), caption];
+      // For final: find matching interim and replace it, or add new
+      const interimIndex = prev.findIndex(c =>
+        c.participantId === caption.participantId && !c.isFinal
+      );
+      if (interimIndex !== -1) {
+        // Replace interim with final (same position)
+        const newCaptions = [...prev];
+        newCaptions[interimIndex] = caption;
+        return newCaptions.slice(-20);
+      }
+      // No interim found, just add final
+      return [...prev.slice(-20), caption];
     });
 
     // Notify callback for final captions (for transcript saving)
