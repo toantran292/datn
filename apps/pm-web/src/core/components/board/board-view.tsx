@@ -40,6 +40,7 @@ import { formatIssueKey } from "@/core/components/backlog/utils";
 import { CreateStatusModal } from "@/core/components/issue-status";
 import { CompleteSprintModal } from "@/core/components/sprint/complete-sprint-modal";
 import { useIssueStatus } from "@/core/hooks/store/use-issue-status";
+import { useSearch } from "@/core/hooks/store/use-search";
 import { IdentityService } from "@/core/services/identity/identity.service";
 import { ProjectService } from "@/core/services/project/project.service";
 
@@ -471,18 +472,23 @@ export const BoardView = memo(function BoardView({
 const BoardToolbar: React.FC<{ onCompleteSprint?: () => void; canComplete?: boolean }> = ({
   onCompleteSprint,
   canComplete = false,
-}) => (
-  <div className="flex flex-wrap items-center justify-between gap-3 bg-custom-background-100 rounded-lg p-4 border border-custom-border-200">
-    <div className="flex items-center gap-2">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-custom-text-300" />
-        <Input
-          placeholder="Tìm kiếm công việc..."
-          className="w-72 pl-9 border-custom-border-200 bg-custom-background-90"
-          disabled
-        />
-      </div>
-      <div className="h-6 w-px bg-custom-border-200" />
+}) => {
+  const searchStore = useSearch();
+
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 bg-custom-background-100 rounded-lg p-4 border border-custom-border-200">
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => searchStore.setModalOpen(true)}
+          className="relative flex items-center gap-2 w-72 px-3 py-2 rounded-md border border-custom-border-200 bg-custom-background-90 hover:bg-custom-background-80 transition-colors text-left"
+        >
+          <Search className="size-4 text-custom-text-300" />
+          <span className="text-sm text-custom-text-300">Tìm kiếm công việc...</span>
+          <kbd className="ml-auto hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-custom-background-100 border border-custom-border-300 rounded text-[10px] font-mono text-custom-text-400">
+            ⌘K
+          </kbd>
+        </button>
+        <div className="h-6 w-px bg-custom-border-200" />
       <Button variant="neutral-primary" size="sm" disabled className="gap-2">
         <Users2 className="size-4" />
         Thành viên
@@ -502,7 +508,8 @@ const BoardToolbar: React.FC<{ onCompleteSprint?: () => void; canComplete?: bool
       </Button>
     </div>
   </div>
-);
+  );
+};
 
 const SprintSummary: React.FC<{ sprint: ISprint; issueCount: number }> = ({ sprint, issueCount }) => {
   const calculateProgress = () => {
