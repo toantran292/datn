@@ -24,6 +24,7 @@ export interface HuddleMetadata {
   meetingRoomId: string;
   duration?: number; // seconds
   participantCount?: number;
+  hasTranscript?: boolean; // Whether meeting has transcript/captions
 }
 
 export interface Message {

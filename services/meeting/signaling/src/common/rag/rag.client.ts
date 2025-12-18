@@ -171,4 +171,128 @@ export class RagClient implements OnModuleInit {
       }
     }
   }
+
+  /**
+   * Summarize meeting transcript
+   * Returns a concise summary of the meeting discussion
+   * Uses RAG service's /llm/summarize/transcription endpoint
+   */
+  async summarizeMeeting(
+    transcript: string,
+    options?: {
+      language?: LanguageCode;
+      maxLength?: number;
+      includeActionItems?: boolean;
+    },
+  ): Promise<string> {
+    if (!transcript.trim()) {
+      return '';
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/llm/summarize/transcription`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          transcription: transcript,
+          fileName: 'meeting-transcript',
+          config: {
+            temperature: 0.3,
+            maxTokens: 1000,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`RAG API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.summary || '';
+    } catch (error) {
+      this.logger.error(`Summarization failed: ${error}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Stream meeting summary
+   * Returns SSE stream URL for client to connect
+   */
+  getSummaryStreamUrl(meetingId: string, language?: LanguageCode): string {
+    const langParam = language ? `&lang=${language}` : '';
+    return `${this.baseUrl}/llm/summarize/stream?meetingId=${meetingId}${langParam}`;
+  }
+
+  /**
+   * Stream meeting summary using async generator
+   * Uses RAG service's /llm/summarize/transcription endpoint with stream=true
+   */
+  async *summarizeMeetingStream(
+    transcript: string,
+    options?: {
+      language?: LanguageCode;
+      maxLength?: number;
+      includeActionItems?: boolean;
+    },
+  ): AsyncGenerator<string, void, unknown> {
+    if (!transcript.trim()) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/llm/summarize/transcription`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          transcription: transcript,
+          fileName: 'meeting-transcript',
+          stream: true,
+          config: {
+            temperature: 0.3,
+            maxTokens: 1000,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`RAG API error: ${response.status}`);
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('No response body');
+      }
+
+      const decoder = new TextDecoder();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value, { stream: true });
+        // Parse SSE format
+        const lines = chunk.split('\n');
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            if (data && data !== '[DONE]') {
+              try {
+                const parsed = JSON.parse(data);
+                if (parsed.text) {
+                  yield parsed.text;
+                }
+              } catch {
+                // Not JSON, yield raw data
+                yield data;
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      this.logger.error(`Streaming summarization failed: ${error}`);
+      throw error;
+    }
+  }
+
 }

@@ -9,6 +9,7 @@ import {
   HttpStatus,
   Sse,
 } from '@nestjs/common';
+import { Observable } from 'rxjs';
 import { RagClient, SUPPORTED_LANGUAGES, type LanguageCode, type MeetingContext } from '../common/rag';
 import { TranscriptService, SaveTranscriptDto } from './transcript.service';
 
@@ -77,6 +78,48 @@ export class AIController {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  /**
+   * Stream translation (SSE) - for real-time caption translation
+   */
+  @Sse('translate/stream')
+  streamTranslate(
+    @Query('text') text: string,
+    @Query('targetLang') targetLang: LanguageCode,
+    @Query('sourceLang') sourceLang?: LanguageCode,
+    @Query('meetingId') meetingId?: string,
+  ): Observable<SSEMessage> {
+    return new Observable(subscriber => {
+      (async () => {
+        try {
+          if (!text || !targetLang) {
+            subscriber.next({ data: JSON.stringify({ type: 'error', error: 'Missing required fields: text and targetLang' }) });
+            subscriber.complete();
+            return;
+          }
+
+          if (!SUPPORTED_LANGUAGES[targetLang]) {
+            subscriber.next({ data: JSON.stringify({ type: 'error', error: `Unsupported target language: ${targetLang}` }) });
+            subscriber.complete();
+            return;
+          }
+
+          const result = await this.ragClient.translate(text, targetLang, sourceLang, { meetingId });
+          // Return 'done' type to match frontend expectation
+          subscriber.next({ data: JSON.stringify({ type: 'done', translation: result.translation, cached: result.cached }) });
+          subscriber.complete();
+        } catch (error) {
+          subscriber.next({
+            data: JSON.stringify({
+              type: 'error',
+              error: error instanceof Error ? error.message : 'Translation failed',
+            }),
+          });
+          subscriber.complete();
+        }
+      })();
+    });
   }
 
   /**
@@ -202,5 +245,102 @@ export class AIController {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  // ==================== SUMMARY ENDPOINTS ====================
+
+  /**
+   * Get AI summary of meeting transcript
+   */
+  @Get('meetings/:meetingId/summary')
+  async getMeetingSummary(
+    @Param('meetingId') meetingId: string,
+    @Query('lang') lang?: LanguageCode,
+  ) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new HttpException(
+        'AI service not configured',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
+    }
+
+    try {
+      // Get transcript text first
+      const transcript = await this.transcriptService.getTranscriptText(meetingId);
+
+      if (!transcript || transcript.trim() === '') {
+        throw new HttpException(
+          'No transcript available for this meeting',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      // Generate summary
+      const summary = await this.ragClient.summarizeMeeting(transcript, {
+        language: lang,
+        includeActionItems: true,
+      });
+
+      return { summary, meetingId };
+    } catch (error: any) {
+      if (error instanceof HttpException) throw error;
+      throw new HttpException(
+        error.message || 'Failed to generate summary',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Stream AI summary of meeting transcript (SSE)
+   */
+  @Sse('meetings/:meetingId/summary/stream')
+  streamMeetingSummary(
+    @Param('meetingId') meetingId: string,
+    @Query('lang') lang?: LanguageCode,
+  ): Observable<SSEMessage> {
+    if (!process.env.OPENAI_API_KEY) {
+      return new Observable(subscriber => {
+        subscriber.next({ data: JSON.stringify({ type: 'error', error: 'AI service not configured' }) });
+        subscriber.complete();
+      });
+    }
+
+    return new Observable(subscriber => {
+      (async () => {
+        try {
+          // Get transcript text first
+          const transcript = await this.transcriptService.getTranscriptText(meetingId);
+
+          if (!transcript || transcript.trim() === '') {
+            subscriber.next({ data: JSON.stringify({ type: 'error', error: 'No transcript available for this meeting' }) });
+            subscriber.complete();
+            return;
+          }
+
+          // Stream summary
+          const generator = this.ragClient.summarizeMeetingStream(transcript, {
+            language: lang,
+            includeActionItems: true,
+          });
+
+          let fullSummary = '';
+          for await (const token of generator) {
+            fullSummary += token;
+            subscriber.next({ data: JSON.stringify({ type: 'token', token }) });
+          }
+          subscriber.next({ data: JSON.stringify({ type: 'done', summary: fullSummary }) });
+          subscriber.complete();
+        } catch (error) {
+          subscriber.next({
+            data: JSON.stringify({
+              type: 'error',
+              error: error instanceof Error ? error.message : 'Failed to generate summary',
+            }),
+          });
+          subscriber.complete();
+        }
+      })();
+    });
   }
 }
