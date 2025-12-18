@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException, Inject, forwardRef, Optional, Logger } from "@nestjs/common";
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException, Logger } from "@nestjs/common";
 import { HttpService } from "@nestjs/axios";
 import { Namespace } from "socket.io";
 import { firstValueFrom } from "rxjs";
@@ -12,7 +12,6 @@ import { RoomsRepository } from "../rooms/repositories/room.repository";
 import { RoomMembersRepository } from "../rooms/repositories/room-members.repository";
 import { FileStorageClient } from "../common/file-storage/file-storage.client";
 import { NotificationLevel } from "../database/entities/channel-notification-setting.entity";
-import type { RagService } from "../ai/rag/rag.service";
 
 const NOTIFICATION_SERVICE_URL = process.env.NOTIFICATION_URL || 'http://notification-api:3000';
 
@@ -62,8 +61,6 @@ export class ChatsService {
     private readonly roomMembersRepo: RoomMembersRepository,
     private readonly fileStorageClient: FileStorageClient,
     private readonly httpService: HttpService,
-    @Optional() @Inject(forwardRef(() => 'RagService'))
-    private readonly ragService?: RagService,
   ) { }
 
   applyAuthMiddleware(nsp: Namespace) {
@@ -103,13 +100,6 @@ export class ChatsService {
       threadId: body.threadId,
       type: "text",
     });
-
-    // Auto-index message for RAG (fire and forget)
-    if (this.ragService) {
-      this.ragService.indexMessage(entity).catch(err => {
-        console.error('Failed to index message for RAG:', err);
-      });
-    }
 
     return {
       id: entity.id,
