@@ -628,7 +628,7 @@ const AutoCreatePage = observer(() => {
                                 onChange={(_json: object, html: string) => {
                                   setRefinedDescription(html);
                                 }}
-                                editable={true}
+                                editable
                                 placeholder="Chỉnh sửa mô tả..."
                               />
                             </div>

@@ -317,6 +317,12 @@ export const WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS: Record<string, IWorkspac
     href: `/auto-create/`,
     access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER],
   },
+  settings: {
+    key: "settings",
+    labelTranslationKey: "Cài đặt",
+    href: `/settings/`,
+    access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER, EUserWorkspaceRoles.GUEST],
+  },
 };
 
 export const WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS_LINKS: IWorkspaceSidebarNavigationItem[] = [
@@ -326,6 +332,7 @@ export const WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS_LINKS: IWorkspaceSidebarN
   WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["timeline"]!,
   WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["summary"]!,
   WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["auto-create"]!,
+  WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["settings"]!,
 ];
 
 export const WORKSPACE_SIDEBAR_STATIC_PINNED_NAVIGATION_ITEMS_LINKS: IWorkspaceSidebarNavigationItem[] = [];

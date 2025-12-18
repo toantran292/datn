@@ -5,8 +5,16 @@ import { useParams, useRouter } from "next/navigation";
 import { observer } from "mobx-react";
 import { Settings, Save, Trash2, AlertTriangle, Loader2 } from "lucide-react";
 import { useProject } from "@/core/hooks/store/use-project";
-import { useMember } from "@/core/hooks/store/use-member";
 import { ProjectTabs } from "@/core/components/project/project-tabs";
+import axios from "axios";
+
+type ProjectMember = {
+  id: string;
+  userId: string;
+  projectId: string;
+  role: string;
+  createdAt: string;
+};
 
 export default observer(function ProjectSettingsPage() {
   const params = useParams();
@@ -15,10 +23,10 @@ export default observer(function ProjectSettingsPage() {
   const workspaceSlug = params?.workspaceSlug as string;
 
   const { currentProject, updateProject, fetchProjectDetails, deleteProject } = useProject();
-  const { workspaceMembers, fetchWorkspaceMembers } = useMember();
 
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [projectMembers, setProjectMembers] = useState<ProjectMember[]>([]);
   const [formData, setFormData] = useState({
     name: "",
     projectLead: "",
@@ -29,12 +37,23 @@ export default observer(function ProjectSettingsPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
+  // Fetch project members
+  const fetchProjectMembers = async (projectId: string) => {
+    try {
+      const response = await axios.get(`/api/project-members/projects/${projectId}`);
+      setProjectMembers(response?.data || []);
+    } catch (error) {
+      console.error("Failed to fetch project members:", error);
+      setProjectMembers([]);
+    }
+  };
+
   useEffect(() => {
     if (projectId) {
       setIsLoading(true);
       Promise.all([
         fetchProjectDetails(projectId),
-        fetchWorkspaceMembers(),
+        fetchProjectMembers(projectId),
       ]).finally(() => setIsLoading(false));
     }
   }, [projectId]);
@@ -167,9 +186,9 @@ export default observer(function ProjectSettingsPage() {
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">-- Select Project Lead --</option>
-              {workspaceMembers.map((member) => (
-                <option key={member.id} value={member.id}>
-                  {member.email}
+              {projectMembers.map((member) => (
+                <option key={member.id} value={member.userId}>
+                  {member.userId}
                 </option>
               ))}
             </select>
@@ -186,9 +205,9 @@ export default observer(function ProjectSettingsPage() {
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">-- No Default Assignee --</option>
-              {workspaceMembers.map((member) => (
-                <option key={member.id} value={member.id}>
-                  {member.email}
+              {projectMembers.map((member) => (
+                <option key={member.id} value={member.userId}>
+                  {member.userId}
                 </option>
               ))}
             </select>
