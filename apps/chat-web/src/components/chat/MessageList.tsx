@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from 'react';
+import { useRef, useEffect, useCallback, useMemo } from 'react';
 import { Hash, Lock, Loader2 } from 'lucide-react';
 import type { Message, Room } from '../../types';
 import type { UserInfo } from '../../contexts/ChatContext';
@@ -22,6 +22,18 @@ export interface MessageListProps {
   onLoadMore?: () => void;
   hasMore?: boolean;
   isLoadingMore?: boolean;
+  lastSeenMessageId?: string | null;
+}
+
+// Unread divider component
+function UnreadDivider() {
+  return (
+    <div className="flex items-center gap-3 my-4 px-2">
+      <div className="flex-1 h-px bg-red-500/50" />
+      <span className="text-xs font-medium text-red-500 uppercase tracking-wide">Mới</span>
+      <div className="flex-1 h-px bg-red-500/50" />
+    </div>
+  );
 }
 
 export function MessageList({
@@ -40,26 +52,31 @@ export function MessageList({
   onLoadMore,
   hasMore,
   isLoadingMore,
+  lastSeenMessageId,
 }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const isInitialLoadRef = useRef(true);
 
+  // Filter out thread replies for main view
+  const mainMessages = useMemo(() => messages.filter(msg => !msg.threadId), [messages]);
+
+  // Only scroll when main messages change (not thread replies)
+  // Use the last message ID to detect actual new messages
+  const lastMainMessageId = mainMessages[mainMessages.length - 1]?.id;
+
   // Scroll to bottom on initial load
   useEffect(() => {
-    if (isInitialLoadRef.current && messages.length > 0) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'auto' });
-      isInitialLoadRef.current = false;
-    }
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Reset initial load flag when room changes
   useEffect(() => {
     isInitialLoadRef.current = true;
   }, [room?.id]);
 
-  // Handle scroll to load more (newer) messages when scrolling down
-  const handleScroll = useCallback(() => {
+  // Filter out thread replies for main view
+  // const mainMessages = messages.filter(msg => !msg.threadId);
+    const handleScroll = useCallback(() => {
     if (!containerRef.current || !onLoadMore || !hasMore || isLoadingMore) return;
 
     const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
@@ -70,9 +87,6 @@ export function MessageList({
     }
   }, [onLoadMore, hasMore, isLoadingMore]);
 
-  // Filter out thread replies for main view
-  const mainMessages = messages.filter(msg => !msg.threadId);
-
   if (mainMessages.length === 0) {
     return (
       <div className="flex-1 min-h-0 overflow-y-auto px-5 py-4 vertical-scrollbar scrollbar-sm">
@@ -81,12 +95,12 @@ export function MessageList({
             {room?.type === 'dm' ? null : (room?.isPrivate ? <Lock size={24} className="text-custom-text-300" /> : <Hash size={24} className="text-custom-text-300" />)}
           </div>
           <h3 className="font-semibold text-custom-text-100 mb-1">
-            {room?.type === 'channel' ? `Welcome to #${room.name}` : 'Start a conversation'}
+            {room?.type === 'channel' ? `Chào mừng đến #${room.name}` : 'Bắt đầu cuộc trò chuyện'}
           </h3>
           <p className="text-sm text-custom-text-300 max-w-xs">
             {room?.type === 'channel'
-              ? 'This is the beginning of the channel. Send a message to get started!'
-              : 'Send a message to start the conversation.'
+              ? 'Đây là khởi đầu của kênh. Gửi tin nhắn để bắt đầu!'
+              : 'Gửi tin nhắn để bắt đầu cuộc trò chuyện.'
             }
           </p>
         </div>
@@ -94,46 +108,67 @@ export function MessageList({
     );
   }
 
+  // Find the index after which to show the unread divider
+  // The divider should appear after the last seen message
+  // Only show divider if lastSeenMessageId exists and there are newer messages after it
+  let unreadDividerIndex = -2; // -2 means no divider
+  let hasUnreadMessages = false;
+
+  if (lastSeenMessageId) {
+    unreadDividerIndex = mainMessages.findIndex(msg => msg.id === lastSeenMessageId);
+    // Only show divider if lastSeenMessage exists in the list and there are messages after it
+    hasUnreadMessages = unreadDividerIndex !== -1 && unreadDividerIndex < mainMessages.length - 1;
+  }
+  // Note: If lastSeenMessageId is null (user never read any messages), we don't show the divider
+  // This prevents showing "New" for all historical messages when a user first joins a room
+
   return (
     <div
       ref={containerRef}
-      className="flex-1 min-h-0 overflow-y-auto px-5 py-4 vertical-scrollbar scrollbar-sm"
+      className="flex-1 min-h-0 overflow-y-auto px-3 md:px-5 py-4 vertical-scrollbar scrollbar-sm"
       onScroll={handleScroll}
     >
       <div className="space-y-0.5">
-        {mainMessages.map((msg) => {
+        {mainMessages.map((msg, index) => {
+          // Check if we should show the unread divider before this message
+          const showUnreadDivider = hasUnreadMessages && index === unreadDividerIndex + 1;
+
           // Render huddle messages with special component
           if (msg.type === 'huddle_started' || msg.type === 'huddle_ended') {
             return (
-              <HuddleMessage
-                key={msg.id}
-                message={msg}
-                currentUserId={currentUserId}
-                liveParticipantCount={msg.type === 'huddle_started' ? huddleParticipantCount : undefined}
-                onOpenThread={onOpenThread}
-                onToggleReaction={onToggleReaction}
-              />
+              <div key={msg.id}>
+                {showUnreadDivider && <UnreadDivider />}
+                <HuddleMessage
+                  message={msg}
+                  currentUserId={currentUserId}
+                  liveParticipantCount={msg.type === 'huddle_started' ? huddleParticipantCount : undefined}
+                  onOpenThread={onOpenThread}
+                  onToggleReaction={onToggleReaction}
+                />
+              </div>
             );
           }
 
           const userInfo = usersCache?.get(msg.userId);
           return (
-            <MessageItem
-              key={msg.id}
-              message={msg}
-              isOwn={msg.userId === currentUserId}
-              onOpenThread={onOpenThread}
-              senderName={userInfo?.displayName}
-              senderAvatarUrl={userInfo?.avatarUrl}
-              onEdit={onEditMessage}
-              onDelete={onDeleteMessage}
-              onPin={onPinMessage}
-              onUnpin={onUnpinMessage}
-              onAddReaction={onAddReaction}
-              onToggleReaction={onToggleReaction}
-              usersCache={usersCache}
-              roomId={room?.id}
-            />
+            <div key={msg.id}>
+              {showUnreadDivider && <UnreadDivider />}
+              <MessageItem
+                message={msg}
+                isOwn={msg.userId === currentUserId}
+                onOpenThread={onOpenThread}
+                senderName={userInfo?.displayName}
+                senderAvatarUrl={userInfo?.avatarUrl}
+                onEdit={onEditMessage}
+                onDelete={onDeleteMessage}
+                onPin={onPinMessage}
+                onUnpin={onUnpinMessage}
+                onAddReaction={onAddReaction}
+                onToggleReaction={onToggleReaction}
+                usersCache={usersCache}
+                roomId={room?.id}
+              />
+            </div>
           );
         })}
 

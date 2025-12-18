@@ -8,12 +8,13 @@ export class ChatsController {
 
   @Get()
   async list(
+    @Ctx() ctx: RequestContext,
     @Query("roomId") roomId: string,
     @Query("pageSize") pageSize?: string,
     @Query("pageState") pageState?: string,
   ) {
     const size = pageSize ? Number(pageSize) : undefined;
-    return this.chats.listMessages(roomId, { pageSize: size, pageState });
+    return this.chats.listMessages(roomId, ctx.userId, { pageSize: size, pageState });
   }
 
   @Get("thread")
@@ -169,10 +170,22 @@ export class ChatsController {
     @Query("q") query: string,
     @Query("limit") limit?: string,
     @Query("offset") offset?: string,
+    @Query("roomId") roomId?: string,
     @Query("startDate") startDate?: string,
     @Query("endDate") endDate?: string,
     @Query("fromUserId") fromUserId?: string,
   ) {
+    // If roomId is provided, search in specific room only
+    if (roomId) {
+      return this.chats.searchInRoom(roomId, ctx.userId, ctx.orgId, query, {
+        limit: limit ? Number(limit) : undefined,
+        offset: offset ? Number(offset) : undefined,
+        startDate,
+        endDate,
+        fromUserId,
+      });
+    }
+
     return this.chats.searchAllRooms(ctx.userId, ctx.orgId, query, {
       limit: limit ? Number(limit) : undefined,
       offset: offset ? Number(offset) : undefined,

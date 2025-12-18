@@ -27,7 +27,7 @@ export function EditMessageModal({ isOpen, message, onClose, onSave }: EditMessa
     e.preventDefault();
 
     if (!content.trim()) {
-      setError('Message cannot be empty');
+      setError('Tin nhắn không được để trống');
       return;
     }
 
@@ -43,7 +43,7 @@ export function EditMessageModal({ isOpen, message, onClose, onSave }: EditMessa
       await onSave(message.id, content.trim());
       onClose();
     } catch (err) {
-      setError('Failed to edit message');
+      setError('Không thể chỉnh sửa tin nhắn');
     } finally {
       setLoading(false);
     }
@@ -55,7 +55,7 @@ export function EditMessageModal({ isOpen, message, onClose, onSave }: EditMessa
       <div className="relative bg-custom-background-100 rounded-xl shadow-xl w-full max-w-lg mx-4">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-custom-border-200">
-          <h2 className="text-lg font-semibold text-custom-text-100">Edit message</h2>
+          <h2 className="text-lg font-semibold text-custom-text-100">Chỉnh sửa tin nhắn</h2>
           <button
             onClick={onClose}
             className="p-1 rounded hover:bg-custom-background-80 text-custom-text-300"
@@ -70,7 +70,7 @@ export function EditMessageModal({ isOpen, message, onClose, onSave }: EditMessa
             value={content}
             onChange={(e) => setContent(e.target.value)}
             className="w-full h-32 px-3 py-2 bg-custom-background-90 border border-custom-border-200 rounded-lg text-custom-text-100 placeholder-custom-text-400 focus:outline-none focus:border-custom-primary-100 resize-none"
-            placeholder="Enter your message..."
+            placeholder="Nhập tin nhắn..."
             autoFocus
           />
 
@@ -85,14 +85,14 @@ export function EditMessageModal({ isOpen, message, onClose, onSave }: EditMessa
               className="px-4 py-2 text-sm font-medium text-custom-text-200 hover:bg-custom-background-80 rounded-lg transition-colors"
               disabled={loading}
             >
-              Cancel
+              Hủy
             </button>
             <button
               type="submit"
               disabled={loading || !content.trim()}
               className="px-4 py-2 text-sm font-medium bg-custom-primary-100 text-white rounded-lg hover:bg-custom-primary-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Saving...' : 'Save'}
+              {loading ? 'Đang lưu...' : 'Lưu'}
             </button>
           </div>
         </form>

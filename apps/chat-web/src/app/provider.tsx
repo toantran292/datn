@@ -6,6 +6,7 @@ import { useTheme } from "next-themes";
 import { resolveGeneralTheme } from "@uts/fe-utils";
 import { AppHeaderProvider, Toast } from "@uts/design-system/ui";
 import { ChatProvider } from "../contexts/ChatContext";
+import { ResponsiveProvider } from "../hooks/useResponsive";
 
 // Environment variables
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8080";
@@ -27,18 +28,20 @@ export const AppProvider: FC<IAppProvider> = (props) => {
 
   return (
     <>
-      <AppHeaderProvider
-        currentApp="chat"
-        apiBaseUrl={API_BASE_URL}
-        authWebUrl={AUTH_WEB_URL}
-        tenantWebUrl={TENANT_WEB_URL}
-        navigateTo={(path: string) => router.push(path)}
-      >
-        <ChatProvider>
-          <ToastWithTheme />
-          {children}
-        </ChatProvider>
-      </AppHeaderProvider>
+      <ResponsiveProvider>
+        <AppHeaderProvider
+          currentApp="chat"
+          apiBaseUrl={API_BASE_URL}
+          authWebUrl={AUTH_WEB_URL}
+          tenantWebUrl={TENANT_WEB_URL}
+          navigateTo={(path: string) => router.push(path)}
+        >
+          <ChatProvider>
+            <ToastWithTheme />
+            {children}
+          </ChatProvider>
+        </AppHeaderProvider>
+      </ResponsiveProvider>
     </>
   );
 };

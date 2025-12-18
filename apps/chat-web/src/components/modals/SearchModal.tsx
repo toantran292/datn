@@ -189,7 +189,7 @@ export function SearchModal({
             <input
               ref={inputRef}
               type="text"
-              placeholder="Search messages... (min 2 characters)"
+              placeholder="Tìm kiếm tin nhắn..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="flex-1 bg-transparent border-none outline-none text-custom-text-100 placeholder:text-custom-text-400 text-lg"
@@ -233,17 +233,22 @@ export function SearchModal({
               {/* Room filter */}
               <div>
                 <label className="block text-xs font-medium text-custom-text-300 mb-1.5">
-                  Channel
+                  Kênh
                 </label>
                 <select
                   value={selectedRoomId}
                   onChange={(e) => setSelectedRoomId(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg bg-custom-background-100 border border-custom-border-200 text-sm text-custom-text-100 focus:outline-none focus:border-custom-primary-100"
                 >
-                  <option value="">All channels</option>
+                  <option value="">Tất cả kênh</option>
                   {rooms.filter(r => r.type === 'channel').map((room) => (
                     <option key={room.id} value={room.id}>
-                      # {room.name}
+                      {room.isPrivate ? '⊖' : '#'} {room.name}
+                    </option>
+                  ))}
+                  {rooms.filter(r => r.type === 'dm').map((room) => (
+                    <option key={room.id} value={room.id}>
+                      @ {room.name || 'Tin nhắn riêng'}
                     </option>
                   ))}
                 </select>
@@ -252,7 +257,7 @@ export function SearchModal({
               {/* Date range */}
               <div>
                 <label className="block text-xs font-medium text-custom-text-300 mb-1.5">
-                  From Date
+                  Từ ngày
                 </label>
                 <input
                   type="date"
@@ -264,7 +269,7 @@ export function SearchModal({
 
               <div>
                 <label className="block text-xs font-medium text-custom-text-300 mb-1.5">
-                  To Date
+                  Đến ngày
                 </label>
                 <input
                   type="date"
@@ -285,7 +290,7 @@ export function SearchModal({
                 }}
                 className="mt-3 text-xs text-custom-primary-100 hover:underline"
               >
-                Clear all filters
+                Xóa bộ lọc
               </button>
             )}
           </div>
@@ -296,7 +301,7 @@ export function SearchModal({
           {loading ? (
             <div className="flex flex-col items-center justify-center py-16">
               <div className="w-8 h-8 mb-3 border-2 border-custom-primary-100/20 border-t-custom-primary-100 rounded-full animate-spin" />
-              <p className="text-sm text-custom-text-400">Searching...</p>
+              <p className="text-sm text-custom-text-400">Đang tìm kiếm...</p>
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -305,7 +310,7 @@ export function SearchModal({
                 onClick={() => performSearch(query)}
                 className="text-sm text-custom-primary-100 hover:underline"
               >
-                Try again
+                Thử lại
               </button>
             </div>
           ) : query.length < 2 ? (
@@ -314,10 +319,10 @@ export function SearchModal({
                 <Search size={32} className="text-custom-text-300" />
               </div>
               <p className="text-sm font-medium text-custom-text-200 mb-1">
-                Search your messages
+                Tìm kiếm tin nhắn
               </p>
               <p className="text-xs text-custom-text-400 max-w-xs">
-                Enter at least 2 characters to search across all your channels and direct messages
+                Nhập ít nhất 2 ký tự để tìm kiếm trong tất cả các kênh và tin nhắn riêng
               </p>
             </div>
           ) : results.length === 0 ? (
@@ -326,10 +331,10 @@ export function SearchModal({
                 <MessageSquare size={32} className="text-custom-text-300" />
               </div>
               <p className="text-sm font-medium text-custom-text-200 mb-1">
-                No results found
+                Không tìm thấy kết quả
               </p>
               <p className="text-xs text-custom-text-400 max-w-xs">
-                Try different keywords or adjust your filters
+                Thử từ khóa khác hoặc điều chỉnh bộ lọc
               </p>
             </div>
           ) : (
@@ -337,7 +342,7 @@ export function SearchModal({
               {/* Results count */}
               <div className="px-4 py-2 border-b border-custom-border-200 bg-custom-background-90">
                 <p className="text-xs text-custom-text-400">
-                  Found <span className="font-medium text-custom-text-200">{total}</span> {total === 1 ? 'result' : 'results'} for &quot;{query}&quot;
+                  Tìm thấy <span className="font-medium text-custom-text-200">{total}</span> kết quả cho &quot;{query}&quot;
                 </p>
               </div>
 
@@ -378,7 +383,7 @@ export function SearchModal({
                         {result.threadId && (
                           <div className="mt-1.5 flex items-center gap-1 text-xs text-custom-primary-100">
                             <MessageSquare size={12} />
-                            <span>In thread</span>
+                            <span>Trong thread</span>
                           </div>
                         )}
                       </div>

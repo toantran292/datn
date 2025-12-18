@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { MessageSquare, Pencil, Trash2, Pin, MoreHorizontal, Smile } from 'lucide-react';
 import type { Message } from '../../types';
 
@@ -32,30 +32,6 @@ export function MessageActions({
 }: MessageActionsProps) {
   const [showMore, setShowMore] = useState(false);
   const [showEmoji, setShowEmoji] = useState(false);
-  const autoCloseTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Auto-close emoji picker after 1 second
-  useEffect(() => {
-    if (showEmoji) {
-      autoCloseTimerRef.current = setTimeout(() => {
-        setShowEmoji(false);
-      }, 1000);
-    }
-    return () => {
-      if (autoCloseTimerRef.current) {
-        clearTimeout(autoCloseTimerRef.current);
-      }
-    };
-  }, [showEmoji]);
-
-  const closeAllMenus = () => {
-    setShowMore(false);
-    setShowEmoji(false);
-    // Also close the parent menu (MessageItem hover state)
-    onClose?.();
-  };
-
-  const hasOpenMenu = showMore || showEmoji;
 
   const isPinned = message.isPinned;
 
@@ -67,29 +43,23 @@ export function MessageActions({
   };
 
   return (
-    <>
-      {/* Transparent overlay to block hover on other messages and close menu on click */}
-      {hasOpenMenu && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={closeAllMenus}
-        />
-      )}
-
-      <div className="absolute top-0 right-5 -translate-y-1/2 flex items-center gap-0.5 bg-custom-background-100 border border-custom-border-200 rounded-lg shadow-sm px-1 py-0.5 z-50">
+    <div className="absolute top-0 right-5 -translate-y-1/2 flex items-center gap-0.5 bg-custom-background-100 border border-custom-border-200 rounded-lg shadow-sm px-1 py-0.5 z-10">
         {/* Add Reaction */}
         {onToggleReaction && (
           <div className="relative">
             <button
               onClick={() => setShowEmoji(!showEmoji)}
               className="p-1.5 rounded hover:bg-custom-background-80 text-custom-text-300 hover:text-custom-text-100 transition-colors"
-              title="Add reaction"
+              title="Thêm biểu cảm"
             >
               <Smile size={16} />
             </button>
 
             {showEmoji && (
-              <div className="absolute bottom-full right-0 mb-1 bg-custom-background-100 border border-custom-border-200 rounded-lg shadow-lg p-1.5 z-50">
+              <div
+                className="absolute bottom-full right-0 mb-1 bg-custom-background-100 border border-custom-border-200 rounded-lg shadow-lg p-1.5 z-20"
+                onMouseLeave={() => setShowEmoji(false)}
+              >
                 <div className="flex gap-0.5">
                   {QUICK_EMOJIS.map((emoji) => (
                     <button
@@ -111,7 +81,7 @@ export function MessageActions({
           <button
             onClick={() => onOpenThread(message)}
             className="p-1.5 rounded hover:bg-custom-background-80 text-custom-text-300 hover:text-custom-text-100 transition-colors"
-            title="Reply in thread"
+            title="Trả lời trong thread"
           >
             <MessageSquare size={16} />
           </button>
@@ -122,13 +92,13 @@ export function MessageActions({
           <button
             onClick={() => setShowMore(!showMore)}
             className="p-1.5 rounded hover:bg-custom-background-80 text-custom-text-300 hover:text-custom-text-100 transition-colors"
-            title="More actions"
+            title="Thêm hành động"
           >
             <MoreHorizontal size={16} />
           </button>
 
           {showMore && (
-            <div className="absolute top-full right-0 mt-1 w-40 bg-custom-background-100 border border-custom-border-200 rounded-lg shadow-lg py-1 z-50">
+            <div className="absolute top-full right-0 mt-1 w-40 bg-custom-background-100 border border-custom-border-200 rounded-lg shadow-lg py-1 z-20">
               {/* Edit - only for own messages */}
               {isOwn && onEdit && (
                 <button
@@ -139,7 +109,7 @@ export function MessageActions({
                   className="w-full px-3 py-2 text-left text-sm text-custom-text-200 hover:bg-custom-background-80 flex items-center gap-2"
                 >
                   <Pencil size={14} />
-                  Edit message
+                  Chỉnh sửa
                 </button>
               )}
 
@@ -154,7 +124,7 @@ export function MessageActions({
                     className="w-full px-3 py-2 text-left text-sm text-custom-text-200 hover:bg-custom-background-80 flex items-center gap-2"
                   >
                     <Pin size={14} />
-                    Unpin message
+                    Bỏ ghim
                   </button>
                 )
               ) : (
@@ -167,7 +137,7 @@ export function MessageActions({
                     className="w-full px-3 py-2 text-left text-sm text-custom-text-200 hover:bg-custom-background-80 flex items-center gap-2"
                   >
                     <Pin size={14} />
-                    Pin message
+                    Ghim tin nhắn
                   </button>
                 )
               )}
@@ -182,13 +152,12 @@ export function MessageActions({
                   className="w-full px-3 py-2 text-left text-sm text-red-500 hover:bg-custom-background-80 flex items-center gap-2"
                 >
                   <Trash2 size={14} />
-                  Delete message
+                  Xóa tin nhắn
                 </button>
               )}
             </div>
           )}
         </div>
-      </div>
-    </>
+    </div>
   );
 }

@@ -1,7 +1,10 @@
+'use client';
+
 import { useState, useEffect } from 'react';
-import { Hash, Lock, Info, Pin, ChevronDown, X, Search, Headphones } from 'lucide-react';
+import { Hash, Lock, Info, Pin, ChevronDown, X, Search, Headphones, Menu } from 'lucide-react';
 import type { Room, Message } from '../../types';
 import { api } from '../../services/api';
+import { useResponsive } from '../../hooks/useResponsive';
 
 export interface ChatHeaderProps {
   room: Room;
@@ -16,6 +19,7 @@ export interface ChatHeaderProps {
 }
 
 export function ChatHeader({ room, sidebarOpen, onToggleSidebar, onJumpToMessage, onOpenSearch, onStartMeeting, isHuddleActive, huddleParticipantCount = 0 }: ChatHeaderProps) {
+  const { isMobile, toggleSidebar, toggleDetailsPanel, detailsPanelOpen } = useResponsive();
   const [pinnedMessages, setPinnedMessages] = useState<Message[]>([]);
   const [showPinnedDropdown, setShowPinnedDropdown] = useState(false);
 
@@ -38,24 +42,35 @@ export function ChatHeader({ room, sidebarOpen, onToggleSidebar, onJumpToMessage
   const pinnedCount = pinnedMessages.length;
 
   return (
-    <div className="flex items-center justify-between px-5 py-3 border-b border-custom-border-200 bg-custom-background-100">
-      <div className="flex items-center gap-3 min-w-0 flex-1">
+    <div className="flex items-center justify-between px-3 md:px-5 py-2 md:py-3 border-b border-custom-border-200 bg-custom-background-100">
+      <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+        {/* Mobile menu button */}
+        {isMobile && (
+          <button
+            onClick={toggleSidebar}
+            className="p-2 rounded-lg text-custom-text-300 hover:text-custom-text-100 hover:bg-custom-background-80 transition-colors flex-shrink-0"
+            title="Mở menu"
+          >
+            <Menu size={20} />
+          </button>
+        )}
+
         {/* Channel name */}
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="text-custom-text-200">
-            {room.type === 'dm' ? null : (room.isPrivate ? <Lock size={18} /> : <Hash size={18} />)}
+        <div className="flex items-center gap-1.5 md:gap-2 min-w-0">
+          <span className="text-custom-text-200 flex-shrink-0">
+            {room.type === 'dm' ? null : (room.isPrivate ? <Lock size={isMobile ? 16 : 18} /> : <Hash size={isMobile ? 16 : 18} />)}
           </span>
-          <h2 className="font-semibold text-lg text-custom-text-100 truncate">
-            {room.name || 'Direct Message'}
+          <h2 className="font-semibold text-base md:text-lg text-custom-text-100 truncate">
+            {room.name || 'Tin nhắn riêng'}
           </h2>
         </div>
 
-        {/* Pinned messages indicator */}
+        {/* Pinned messages indicator - hide on small mobile */}
         {pinnedCount > 0 && (
-          <div className="relative">
+          <div className="relative hidden sm:block">
             <button
               onClick={() => setShowPinnedDropdown(!showPinnedDropdown)}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-custom-text-300 hover:text-custom-text-100 hover:bg-custom-background-80 transition-colors text-sm"
+              className="flex items-center gap-1 md:gap-1.5 px-2 md:px-2.5 py-1 rounded-md text-custom-text-300 hover:text-custom-text-100 hover:bg-custom-background-80 transition-colors text-sm"
             >
               <Pin size={14} className="text-amber-500" />
               <span>{pinnedCount}</span>
@@ -71,9 +86,9 @@ export function ChatHeader({ room, sidebarOpen, onToggleSidebar, onJumpToMessage
                   onClick={() => setShowPinnedDropdown(false)}
                 />
                 {/* Dropdown */}
-                <div className="absolute top-full left-0 mt-1 w-80 max-h-96 overflow-y-auto bg-custom-background-100 border border-custom-border-200 rounded-lg shadow-lg z-50">
+                <div className="absolute top-full left-0 mt-1 w-72 md:w-80 max-h-96 overflow-y-auto bg-custom-background-100 border border-custom-border-200 rounded-lg shadow-lg z-50">
                   <div className="flex items-center justify-between px-3 py-2 border-b border-custom-border-200">
-                    <span className="text-sm font-medium text-custom-text-100">Pinned messages</span>
+                    <span className="text-sm font-medium text-custom-text-100">Tin nhắn đã ghim</span>
                     <button
                       onClick={() => setShowPinnedDropdown(false)}
                       className="p-1 rounded hover:bg-custom-background-80 text-custom-text-300"
@@ -105,53 +120,52 @@ export function ChatHeader({ room, sidebarOpen, onToggleSidebar, onJumpToMessage
         )}
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5 md:gap-1">
         {/* Huddle button */}
         {onStartMeeting && (
           <button
             onClick={onStartMeeting}
-            className={`flex items-center gap-1.5 p-2 rounded-lg transition-colors ${
+            className={`flex items-center gap-1 md:gap-1.5 p-2 rounded-lg transition-colors ${
               isHuddleActive
                 ? 'text-teal-500 bg-teal-500/10 hover:bg-teal-500/20'
                 : 'text-custom-text-400 hover:text-custom-text-100 hover:bg-custom-background-80'
             }`}
-            title={isHuddleActive ? "Join Huddle" : "Start Huddle"}
+            title={isHuddleActive ? "Tham gia cuộc họp" : "Bắt đầu cuộc họp"}
           >
-            <Headphones size={18} />
+            <Headphones size={isMobile ? 18 : 18} />
             {isHuddleActive && huddleParticipantCount > 0 && (
               <span className="text-sm font-medium">{huddleParticipantCount}</span>
             )}
           </button>
         )}
 
-        {/* Search button */}
+        {/* Search button - icon only on mobile */}
         {onOpenSearch && (
           <button
             onClick={onOpenSearch}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-custom-text-400 hover:text-custom-text-100 hover:bg-custom-background-80 transition-colors text-sm"
-            title="Search messages (⌘K)"
+            className="flex items-center gap-1.5 md:gap-2 p-2 md:px-3 md:py-1.5 rounded-lg text-custom-text-400 hover:text-custom-text-100 hover:bg-custom-background-80 transition-colors text-sm"
+            title="Tìm kiếm tin nhắn (⌘K)"
           >
             <Search size={16} />
-            <span className="hidden sm:inline">Search</span>
-            <kbd className="hidden sm:inline px-1.5 py-0.5 rounded bg-custom-background-80 text-xs font-mono">⌘K</kbd>
+            <span className="hidden md:inline">Tìm kiếm</span>
+            <kbd className="hidden lg:inline px-1.5 py-0.5 rounded bg-custom-background-80 text-xs font-mono">⌘K</kbd>
           </button>
         )}
 
-        {onToggleSidebar && (
-          <button
-            onClick={onToggleSidebar}
-            className={`
-              p-2 rounded-lg transition-colors
-              ${sidebarOpen
-                ? 'bg-custom-primary-100/10 text-custom-primary-100'
-                : 'text-custom-text-300 hover:text-custom-text-100 hover:bg-custom-background-80'
-              }
-            `}
-            title="Channel details"
-          >
-            <Info size={18} />
-          </button>
-        )}
+        {/* Details panel toggle */}
+        <button
+          onClick={toggleDetailsPanel}
+          className={`
+            p-2 rounded-lg transition-colors
+            ${detailsPanelOpen
+              ? 'bg-custom-primary-100/10 text-custom-primary-100'
+              : 'text-custom-text-300 hover:text-custom-text-100 hover:bg-custom-background-80'
+            }
+          `}
+          title="Chi tiết kênh"
+        >
+          <Info size={18} />
+        </button>
       </div>
     </div>
   );

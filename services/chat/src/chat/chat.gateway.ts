@@ -29,6 +29,7 @@ type RoomSummaryPayload = {
   orgId: string;
   isPrivate: boolean;
   projectId?: string | null; // null = org-level, string = project-specific
+  type?: 'channel' | 'dm';
 };
 
 @WebSocketGateway({namespace: 'chat'})
@@ -170,7 +171,12 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     };
 
     const roomChannel = `room:${message.roomId}`;
+    const orgChannel = `org:${message.orgId}`;
+
+    // Emit message:new to BOTH room channel (for users viewing the room)
+    // AND org channel (for unread badge updates)
     this.io.to(roomChannel).emit('message:new', messageWithAttachments);
+    this.io.to(orgChannel).emit('message:new', messageWithAttachments);
 
     // Handle thread replies vs main messages differently
     if (data.threadId) {
@@ -184,7 +190,7 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       });
     } else {
       // Main message: emit room:updated
-      this.io.to(`org:${message.orgId}`).emit('room:updated', {
+      this.io.to(orgChannel).emit('room:updated', {
         roomId: message.roomId,
         lastMessage: messageWithAttachments,
         updatedAt: message.sentAt,

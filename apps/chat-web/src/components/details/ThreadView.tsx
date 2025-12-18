@@ -58,7 +58,7 @@ export function ThreadView({
         <div className="flex items-center gap-2 text-sm text-custom-text-300">
           <MessageSquare size={14} />
           <span>
-            {threadMessages.length} {threadMessages.length === 1 ? 'reply' : 'replies'}
+            {threadMessages.length} phản hồi
           </span>
         </div>
       </div>
@@ -97,7 +97,7 @@ export function ThreadView({
         <div className="ml-4 space-y-0.5">
           {threadMessages.length === 0 ? (
             <p className="text-custom-text-400 text-sm text-center py-6">
-              No replies yet. Be the first to reply!
+              Chưa có phản hồi. Hãy là người đầu tiên phản hồi!
             </p>
           ) : (
             threadMessages.map((msg) => {
@@ -132,7 +132,7 @@ export function ThreadView({
         <MessageComposer
           room={null}
           onSendMessage={onSendReply}
-          placeholder="Reply in thread..."
+          placeholder="Phản hồi trong thread..."
           members={usersCache}
           currentUserId={currentUserId}
         />

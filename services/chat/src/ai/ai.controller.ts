@@ -120,6 +120,7 @@ export class AIController {
       const generator = this.aiService.streamSummarizeConversation(
         roomId,
         ctx.userId,
+        ctx.orgId,
         {
           messageCount: messageCount ? parseInt(messageCount, 10) : undefined,
           threadId,
@@ -156,6 +157,7 @@ export class AIController {
       const generator = this.aiService.streamExtractActionItems(
         roomId,
         ctx.userId,
+        ctx.orgId,
         {
           messageCount: messageCount ? parseInt(messageCount, 10) : undefined,
           threadId,
@@ -193,6 +195,7 @@ export class AIController {
       const generator = this.aiService.streamAskQuestion(
         roomId,
         ctx.userId,
+        ctx.orgId,
         question,
         {
           contextMessageCount: contextMessageCount ? parseInt(contextMessageCount, 10) : undefined,

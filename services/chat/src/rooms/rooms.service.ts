@@ -106,6 +106,7 @@ export class RoomsService {
         name: room.name,
         isPrivate: room.isPrivate,
         orgId: room.orgId,
+        type: 'dm',
       }, userId);
     }
 
@@ -713,6 +714,7 @@ export class RoomsService {
    * UC02: Remove member from room
    * - Admin can remove anyone (except last admin)
    * - Users can remove themselves (leave)
+   * - If the last admin leaves, automatically transfer admin to the oldest member
    */
   async removeMember(roomId: string, orgId: string, requesterId: string, targetUserId: string) {
     const room = await this.roomsRepo.findByOrgAndId(orgId, roomId);
@@ -735,11 +737,38 @@ export class RoomsService {
     const targetMember = await this.roomMembersRepo.get(roomId, targetUserId);
     if (!targetMember) throw new NotFoundException('Target user is not a member');
 
-    // Prevent removing the last admin
+    // Handle last admin leaving
     if (targetMember.role === 'ADMIN') {
       const adminCount = await this.roomMembersRepo.countAdmins(roomId);
       if (adminCount <= 1) {
-        throw new BadRequestException('Cannot remove the last admin. Transfer ownership first.');
+        // Check total member count
+        const totalMembers = await this.roomMembersRepo.countMembers(roomId);
+
+        if (totalMembers <= 1) {
+          // Last member (who is also the last admin) is leaving - allow it
+          // The room will have no members
+          await this.roomMembersRepo.removeMember(roomId, targetUserId);
+          this.chatsGateway.notifyMemberRemoved(orgId, roomId, targetUserId);
+          return { removed: true, adminTransferred: false };
+        }
+
+        // Find the oldest non-admin member to transfer admin role
+        const oldestMember = await this.roomMembersRepo.findOldestNonAdminMember(roomId, targetUserId);
+
+        if (!oldestMember) {
+          // No other members to transfer to - this shouldn't happen if totalMembers > 1
+          throw new BadRequestException('Cannot remove the last admin. No member available to transfer ownership.');
+        }
+
+        // Transfer admin role to the oldest member
+        await this.roomMembersRepo.updateRole(roomId, oldestMember.userId, 'ADMIN');
+        this.chatsGateway.notifyMemberRoleChanged(orgId, roomId, oldestMember.userId, 'ADMIN');
+
+        // Now remove the original admin
+        await this.roomMembersRepo.removeMember(roomId, targetUserId);
+        this.chatsGateway.notifyMemberRemoved(orgId, roomId, targetUserId);
+
+        return { removed: true, adminTransferred: true, newAdminUserId: oldestMember.userId };
       }
     }
 
@@ -747,12 +776,12 @@ export class RoomsService {
 
     this.chatsGateway.notifyMemberRemoved(orgId, roomId, targetUserId);
 
-    return { removed: true };
+    return { removed: true, adminTransferred: false };
   }
 
   /**
    * UC02: Update member role
-   * - Only ADMIN can change roles
+   * - Only ADMIN or Org Owner can change roles
    * - Cannot demote the last admin
    */
   async updateMemberRole(
@@ -765,9 +794,9 @@ export class RoomsService {
     const room = await this.roomsRepo.findByOrgAndId(orgId, roomId);
     if (!room) throw new NotFoundException('Room not found');
 
-    const requesterMember = await this.roomMembersRepo.get(roomId, requesterId);
-    if (!requesterMember) throw new ForbiddenException('You are not a member of this room');
-    if (requesterMember.role !== 'ADMIN') throw new ForbiddenException('Only admins can change roles');
+    // Check if requester has permission (room admin or org owner)
+    const hasPermission = await this.hasRoomAdminPrivilege(roomId, orgId, requesterId, room);
+    if (!hasPermission) throw new ForbiddenException('Only admins can change roles');
 
     const targetMember = await this.roomMembersRepo.get(roomId, targetUserId);
     if (!targetMember) throw new NotFoundException('Target user is not a member');
@@ -792,7 +821,8 @@ export class RoomsService {
   /**
    * UC04: Leave room
    * - User removes themselves from room
-   * - Cannot leave if you're the last admin
+   * - If user is the last admin, automatically transfers admin to the oldest member
+   * - If user is the last member, the room will have no members
    */
   async leaveRoom(roomId: string, orgId: string, userId: string) {
     return this.removeMember(roomId, orgId, userId, userId);

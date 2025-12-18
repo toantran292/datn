@@ -49,9 +49,9 @@ export function HuddleMessage({ message, currentUserId, liveParticipantCount, pa
     if (displayParticipantCount <= 1) {
       return (
         <>
-          You're the only one here. Enjoy the tranquility, or{' '}
+          Bạn là người duy nhất ở đây. Tận hưởng sự yên tĩnh, hoặc{' '}
           <button className="text-teal-600 dark:text-teal-400 hover:underline">
-            invite someone
+            mời ai đó
           </button>
           .
         </>
@@ -64,23 +64,23 @@ export function HuddleMessage({ message, currentUserId, liveParticipantCount, pa
       const remaining = displayParticipantCount - otherNames.length;
 
       if (remaining > 0) {
-        return `${otherNames.join(', ')} and ${remaining} other${remaining > 1 ? 's' : ''} ${remaining > 1 ? 'are' : 'is'} already there.`;
+        return `${otherNames.join(', ')} và ${remaining} người khác đã có mặt.`;
       }
-      return `${otherNames.join(', ')} ${otherNames.length > 1 ? 'are' : 'is'} already there.`;
+      return `${otherNames.join(', ')} đã có mặt.`;
     }
 
-    return `${displayParticipantCount} people are in the huddle.`;
+    return `${displayParticipantCount} người đang trong cuộc họp.`;
   };
 
   // Generate title based on state
   const getTitle = () => {
     if (!isStarted) {
-      return 'A huddle happened';
+      return 'Đã có cuộc họp';
     }
     if (displayParticipantCount > 1) {
-      return 'A huddle is happening';
+      return 'Cuộc họp đang diễn ra';
     }
-    return isOwn ? 'You joined the huddle' : 'A huddle started';
+    return isOwn ? 'Bạn đã tham gia cuộc họp' : 'Cuộc họp đã bắt đầu';
   };
 
   return (
@@ -118,7 +118,7 @@ export function HuddleMessage({ message, currentUserId, liveParticipantCount, pa
               {/* LIVE badge for active huddle */}
               {isStarted && (
                 <span className="px-2 py-0.5 rounded text-xs font-bold bg-green-500 text-white uppercase">
-                  Live
+                  Trực tiếp
                 </span>
               )}
 
@@ -132,10 +132,10 @@ export function HuddleMessage({ message, currentUserId, liveParticipantCount, pa
               ) : (
                 <>
                   {participantCount === 1
-                    ? 'You were in the huddle by yourself'
-                    : `${participantCount} people were in the huddle`}{' '}
-                  for {formatDuration(duration)}.
-                  {duration < 60 && ' A nice, meditative session '}
+                    ? 'Bạn đã ở trong cuộc họp một mình'
+                    : `${participantCount} người đã trong cuộc họp`}{' '}
+                  trong {formatDuration(duration)}.
+                  {duration < 60 && ' Một cuộc họp ngắn!'}
                 </>
               )}
             </p>
@@ -155,7 +155,7 @@ export function HuddleMessage({ message, currentUserId, liveParticipantCount, pa
                 className="mt-2 flex items-center gap-1.5 text-teal-600 dark:text-teal-400 text-xs font-medium hover:underline"
               >
                 <MessageSquare size={14} />
-                {message.replyCount} {message.replyCount === 1 ? 'reply' : 'replies'}
+                {message.replyCount} phản hồi
               </button>
             )}
           </div>

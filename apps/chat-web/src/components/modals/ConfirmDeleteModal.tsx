@@ -23,7 +23,7 @@ export function ConfirmDeleteModal({ isOpen, message, onClose, onConfirm }: Conf
       await onConfirm(message.id);
       onClose();
     } catch (err) {
-      setError('Failed to delete message');
+      setError('Không thể xóa tin nhắn');
     } finally {
       setLoading(false);
     }
@@ -37,7 +37,7 @@ export function ConfirmDeleteModal({ isOpen, message, onClose, onConfirm }: Conf
         <div className="flex items-center justify-between p-4 border-b border-custom-border-200">
           <div className="flex items-center gap-2">
             <AlertTriangle className="text-red-500" size={20} />
-            <h2 className="text-lg font-semibold text-custom-text-100">Delete message</h2>
+            <h2 className="text-lg font-semibold text-custom-text-100">Xóa tin nhắn</h2>
           </div>
           <button
             onClick={onClose}
@@ -50,7 +50,7 @@ export function ConfirmDeleteModal({ isOpen, message, onClose, onConfirm }: Conf
         {/* Content */}
         <div className="p-4">
           <p className="text-custom-text-200">
-            Are you sure you want to delete this message? This action cannot be undone.
+            Bạn có chắc muốn xóa tin nhắn này? Hành động này không thể hoàn tác.
           </p>
 
           {/* Message preview */}
@@ -71,14 +71,14 @@ export function ConfirmDeleteModal({ isOpen, message, onClose, onConfirm }: Conf
               className="px-4 py-2 text-sm font-medium text-custom-text-200 hover:bg-custom-background-80 rounded-lg transition-colors"
               disabled={loading}
             >
-              Cancel
+              Hủy
             </button>
             <button
               onClick={handleConfirm}
               disabled={loading}
               className="px-4 py-2 text-sm font-medium bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Deleting...' : 'Delete'}
+              {loading ? 'Đang xóa...' : 'Xóa'}
             </button>
           </div>
         </div>

@@ -111,6 +111,18 @@ export class ChatsService {
       type: "text",
     });
 
+    // // Auto-index message for RAG (fire and forget)
+    // if (this.ragService) {
+    //   this.ragService.indexMessage(entity).catch(err => {
+    //     console.error('Failed to index message for RAG:', err);
+    //   });
+    // }
+
+    // Auto-update lastSeenMessageId for the sender (they've "read" their own message)
+    this.roomMembersRepo.updateLastSeen(body.roomId, body.userId, entity.id, body.orgId).catch(err => {
+      this.logger.warn(`Failed to update lastSeen for sender: ${err.message}`);
+    });
+
     return {
       id: entity.id,
       roomId: entity.roomId,
@@ -270,8 +282,17 @@ export class ChatsService {
     }));
   }
 
-  async listMessages(roomId: string, paging?: { pageSize?: number; pageState?: string }) {
+  async listMessages(roomId: string, userId?: string, paging?: { pageSize?: number; pageState?: string }) {
     const rs = await this.messagesRepo.listByRoom(roomId, paging);
+
+    // Get last seen message ID for unread divider
+    let lastSeenMessageId: string | null = null;
+    if (userId) {
+      lastSeenMessageId = await this.roomMembersRepo.getLastSeen(roomId, userId);
+    }
+
+    // Get pinned message IDs for this room
+    const pinnedMessageIds = await this.pinnedMessagesRepo.getPinnedMessageIds(roomId);
 
     // Get IDs of main messages (those without threadId) to fetch reply counts
     const mainMessageIds = rs.items
@@ -381,8 +402,10 @@ export class ChatsService {
         replyCount: m.threadId ? undefined : (replyCountMap.get(m.id) || 0),
         reactions: reactionsMap.get(m.id) || [],
         attachments: attachmentsWithUrls.get(m.id) || [],
+        isPinned: pinnedMessageIds.has(m.id),
       })),
       pageState: rs.pageState,
+      lastSeenMessageId,
     };
   }
 

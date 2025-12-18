@@ -92,22 +92,22 @@ export const MessageInputToolbar: React.FC<MessageInputToolbarProps> = ({
         <ToolbarButton
           icon={Bold}
           onClick={() => executeCommand("bold")}
-          title="Bold (Cmd+B)"
+          title="Đậm (Cmd+B)"
         />
         <ToolbarButton
           icon={Italic}
           onClick={() => executeCommand("italic")}
-          title="Italic (Cmd+I)"
+          title="Nghiêng (Cmd+I)"
         />
         <ToolbarButton
           icon={Underline}
           onClick={() => executeCommand("underline")}
-          title="Underline (Cmd+U)"
+          title="Gạch chân (Cmd+U)"
         />
         <ToolbarButton
           icon={Strikethrough}
           onClick={() => executeCommand("strikethrough")}
-          title="Strikethrough"
+          title="Gạch ngang"
         />
 
         <ToolbarDivider />
@@ -115,12 +115,12 @@ export const MessageInputToolbar: React.FC<MessageInputToolbarProps> = ({
         <ToolbarButton
           icon={List}
           onClick={() => executeCommand("bulleted-list")}
-          title="Bullet List"
+          title="Danh sách gạch đầu dòng"
         />
         <ToolbarButton
           icon={ListOrdered}
           onClick={() => executeCommand("numbered-list")}
-          title="Numbered List"
+          title="Danh sách đánh số"
         />
 
         <ToolbarDivider />
@@ -128,12 +128,12 @@ export const MessageInputToolbar: React.FC<MessageInputToolbarProps> = ({
         <ToolbarButton
           icon={Quote}
           onClick={() => executeCommand("quote")}
-          title="Quote"
+          title="Trích dẫn"
         />
         <ToolbarButton
           icon={Code}
           onClick={() => executeCommand("code")}
-          title="Code"
+          title="Mã nguồn"
         />
       </div>
 
@@ -144,7 +144,7 @@ export const MessageInputToolbar: React.FC<MessageInputToolbarProps> = ({
           <ToolbarButton
             icon={Smile}
             onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-            title="Add emoji"
+            title="Thêm emoji"
             active={showEmojiPicker}
           />
 
@@ -177,7 +177,7 @@ export const MessageInputToolbar: React.FC<MessageInputToolbarProps> = ({
           <ToolbarButton
             icon={Paperclip}
             onClick={onAttachClick}
-            title="Attach file"
+            title="Đính kèm tệp"
           />
         )}
 
@@ -194,7 +194,7 @@ export const MessageInputToolbar: React.FC<MessageInputToolbarProps> = ({
                 : 'bg-custom-background-80 text-custom-text-400 cursor-not-allowed'
               }
             `}
-            title="Send message (Enter)"
+            title="Gửi tin nhắn (Enter)"
           >
             <Send className="h-3.5 w-3.5" strokeWidth={2} />
           </button>

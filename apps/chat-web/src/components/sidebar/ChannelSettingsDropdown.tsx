@@ -69,27 +69,27 @@ export function ChannelSettingsDropdown({
   const menuItems: MenuItem[] = [
     {
       id: 'edit',
-      label: 'Edit Channel',
+      label: 'Chỉnh sửa kênh',
       icon: <Settings size={16} />,
       onClick: () => setShowEditModal(true),
       disabled: !isOwner,
     },
     {
       id: 'archive',
-      label: 'Archive Channel',
+      label: 'Lưu trữ kênh',
       icon: <Archive size={16} />,
       onClick: () => setConfirmAction('archive'),
       disabled: !isOwner,
     },
     {
       id: 'leave',
-      label: 'Leave Channel',
+      label: 'Rời kênh',
       icon: <LogOut size={16} />,
       onClick: () => setConfirmAction('leave'),
     },
     {
       id: 'delete',
-      label: 'Delete Channel',
+      label: 'Xóa kênh',
       icon: <Trash2 size={16} />,
       onClick: () => setConfirmAction('delete'),
       danger: true,
@@ -144,7 +144,7 @@ export function ChannelSettingsDropdown({
           onClose={() => setConfirmAction(null)}
           onConfirm={handleConfirmAction}
           actionType={confirmAction}
-          channelName={room.name || 'Unnamed Channel'}
+          channelName={room.name || 'Kênh chưa đặt tên'}
           isLoading={isLoading}
         />
       )}

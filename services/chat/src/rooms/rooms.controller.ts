@@ -66,7 +66,7 @@ export class RoomsController {
     @Ctx() ctx: RequestContext,
     @Body() dto: CreateDmDto,
   ) {
-    const room = await this.roomsService.createDm(dto.userIds, ctx.orgId, ctx.userId);
+    const room = await this.roomsService.createDm(dto.user_ids, ctx.orgId, ctx.userId);
     return {
       id: room.id,
       orgId: room.orgId,

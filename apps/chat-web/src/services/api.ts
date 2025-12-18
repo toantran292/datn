@@ -92,7 +92,7 @@ class ApiService {
     return response.json();
   }
 
-  async listOrgUsers(): Promise<Array<{
+  async listOrgUsers(search?: string): Promise<Array<{
     userId: string;
     email: string;
     displayName: string;
@@ -101,7 +101,12 @@ class ApiService {
     isOnline?: boolean;
   }>> {
     // orgId is taken from context (X-Org-ID header set by Edge from JWT)
-    const response = await fetch(`${this.baseURL}/internal/users`, {
+    const params = new URLSearchParams();
+    if (search) {
+      params.append('search', search);
+    }
+    const url = `${this.baseURL}/internal/users${params.toString() ? `?${params.toString()}` : ''}`;
+    const response = await fetch(url, {
       method: 'GET',
       credentials: 'include',
       headers: {
@@ -266,6 +271,7 @@ class ApiService {
   async listRoomMembers(roomId: string): Promise<Array<{
     userId: string;
     orgId: string;
+    role: 'ADMIN' | 'MEMBER';
     lastSeenMessageId: string | null;
     email: string | null;
     displayName: string;
@@ -288,7 +294,24 @@ class ApiService {
     return response.json();
   }
 
-  async listMessages(roomId: string, pageSize?: number, pageState?: string): Promise<{ items: Message[]; pageState: string | null }> {
+  async updateMemberRole(roomId: string, targetUserId: string, role: 'ADMIN' | 'MEMBER'): Promise<{ updated: boolean; role: string }> {
+    const response = await fetch(`${this.baseURL}/rooms/${encodeURIComponent(roomId)}/members/${encodeURIComponent(targetUserId)}/role`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ role }),
+    });
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('Failed to update member role:', error);
+      throw new Error('Failed to update member role');
+    }
+    return response.json();
+  }
+
+  async listMessages(roomId: string, pageSize?: number, pageState?: string): Promise<{ items: Message[]; pageState: string | null; lastSeenMessageId: string | null }> {
     const params = new URLSearchParams({ roomId });
     if (pageSize) params.append('pageSize', pageSize.toString());
     if (pageState) params.append('pageState', pageState);
@@ -332,7 +355,7 @@ class ApiService {
       } as Message;
     });
 
-    return { items, pageState: data.pageState };
+    return { items, pageState: data.pageState, lastSeenMessageId: data.lastSeenMessageId ?? null };
   }
 
   async listThreadMessages(roomId: string, threadId: string, pageSize?: number): Promise<{ items: Message[]; pageState: string | null }> {
@@ -451,7 +474,19 @@ class ApiService {
       },
     });
     if (!response.ok) throw new Error('Failed to get pinned messages');
-    return response.json();
+    const data = await response.json();
+    // Backend returns { roomId, items: [{ messageId, pinnedBy, pinnedAt, message: {...} }], total }
+    // Transform to Message[] format for frontend
+    return (data.items || []).map((item: { messageId: string; pinnedBy: string; pinnedAt: string; message: { id: string; content: string; userId: string; createdAt: string } | null }) => ({
+      id: item.message?.id || item.messageId,
+      roomId: roomId,
+      userId: item.message?.userId || '',
+      content: item.message?.content || '',
+      sentAt: item.message?.createdAt || item.pinnedAt,
+      isPinned: true,
+      pinnedAt: item.pinnedAt,
+      pinnedBy: item.pinnedBy,
+    }));
   }
 
   // ===== ATTACHMENT APIs =====
@@ -512,7 +547,7 @@ class ApiService {
   // ===== UNREAD COUNT APIs =====
 
   async getAllUnreadCounts(): Promise<UnreadCount[]> {
-    const response = await fetch(`${this.baseURL}/notifications/unread`, {
+    const response = await fetch(`${this.baseURL}/messages/notifications/unread`, {
       method: 'GET',
       credentials: 'include',
       headers: {
@@ -524,7 +559,7 @@ class ApiService {
   }
 
   async markAsRead(roomId: string): Promise<{ success: boolean }> {
-    const response = await fetch(`${this.baseURL}/notifications/read/${encodeURIComponent(roomId)}`, {
+    const response = await fetch(`${this.baseURL}/messages/notifications/read/${encodeURIComponent(roomId)}`, {
       method: 'POST',
       credentials: 'include',
       headers: {
@@ -536,7 +571,7 @@ class ApiService {
   }
 
   async markAllAsRead(roomId: string): Promise<{ success: boolean }> {
-    const response = await fetch(`${this.baseURL}/notifications/read-all/${encodeURIComponent(roomId)}`, {
+    const response = await fetch(`${this.baseURL}/messages/notifications/read-all/${encodeURIComponent(roomId)}`, {
       method: 'POST',
       credentials: 'include',
       headers: {
