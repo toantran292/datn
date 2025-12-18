@@ -8,6 +8,7 @@ import { socketService } from "../services/socket";
 import { useAppHeaderContext } from "@uts/design-system/ui";
 import type { PendingFile } from "../components/chat/FilePreview";
 import { prepareUpload, uploadToPresignedUrl } from "../services/files";
+import { useHuddleNotification } from "../hooks/useHuddleNotification";
 
 // ============= Types =============
 export interface ComposeUser {
@@ -124,6 +125,7 @@ const ChatContext = createContext<ChatContextValue | null>(null);
 // ============= Provider =============
 export function ChatProvider({ children }: { children: ReactNode }) {
   const { auth: user, currentProjectId } = useAppHeaderContext();
+  const { playHuddleSound } = useHuddleNotification();
 
   // ===== State =====
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -315,6 +317,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
               }
               return newCounts;
             });
+          },
+          onHuddleStarted: (payload) => {
+            console.log("[ChatContext] Huddle started:", payload);
+            // Play notification sound when someone starts a huddle
+            // Don't play if current user started the huddle
+            if (payload.startedBy !== userIdRef.current) {
+              playHuddleSound();
+            }
           },
         });
 

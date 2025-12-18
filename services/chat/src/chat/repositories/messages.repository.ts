@@ -280,4 +280,37 @@ export class MessagesRepository {
     }
     return result;
   }
+
+  /**
+   * Find huddle message by meetingId
+   * Used to find the thread parent for meeting chat messages
+   */
+  async findHuddleMessageByMeetingId(
+    roomId: string,
+    meetingId: string,
+  ): Promise<PersistedMessage | null> {
+    // Find huddle_started or huddle_ended message with matching meetingId in metadata
+    const message = await this.messageRepo
+      .createQueryBuilder('m')
+      .where('m.room_id = :roomId', { roomId })
+      .andWhere('m.type IN (:...types)', { types: ['huddle_started', 'huddle_ended'] })
+      .andWhere('m.deleted_at IS NULL')
+      .andWhere("m.metadata->>'meetingId' = :meetingId", { meetingId })
+      .orderBy('m.created_at', 'DESC')
+      .getOne();
+
+    if (!message) return null;
+
+    return {
+      id: message.id,
+      roomId: message.roomId,
+      userId: message.userId,
+      orgId: message.orgId,
+      threadId: message.threadId,
+      type: message.type,
+      content: message.content,
+      metadata: message.metadata,
+      createdAt: message.createdAt,
+    };
+  }
 }

@@ -284,6 +284,21 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(`[HuddleBroadcast] Broadcasting to ${roomChannel}:`, message.type, message.id);
     this.io.to(roomChannel).emit('message:new', message);
 
+    // Emit huddle:started event for notification sound when huddle starts
+    // Emit to org so all users in org receive notification (not just room members who joined the channel)
+    if (message.type === 'huddle_started') {
+      const huddlePayload = {
+        roomId,
+        meetingId: message.metadata?.meetingId,
+        meetingRoomId: message.metadata?.meetingRoomId,
+        startedBy: message.userId,
+        startedAt: message.sentAt,
+      };
+      // Emit to org channel so everyone in org gets notification
+      this.io.to(`org:${orgId}`).emit('huddle:started', huddlePayload);
+      console.log(`[HuddleBroadcast] Emitted huddle:started to org:${orgId}`);
+    }
+
     // Also emit room:updated to update the room list
     this.io.to(`org:${orgId}`).emit('room:updated', {
       roomId,
@@ -307,6 +322,36 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       roomId,
       meetingId: data.meetingId,
       participantCount: data.participantCount,
+    });
+  }
+
+  /**
+   * Broadcast a thread message (reply) to a room
+   * Called by internal API when meeting chat message is created
+   */
+  broadcastThreadMessage(orgId: string, roomId: string, threadId: string, message: {
+    id: string;
+    roomId: string;
+    userId: string;
+    orgId: string;
+    threadId?: string | null;
+    type: string;
+    content: string;
+    metadata?: Record<string, any> | null;
+    sentAt: string;
+  }) {
+    const roomChannel = `room:${roomId}`;
+    console.log(`[ThreadBroadcast] Broadcasting to ${roomChannel}:`, message.id);
+
+    // Emit the new message
+    this.io.to(roomChannel).emit('message:new', message);
+
+    // Emit thread:new-reply event for UI to update reply count
+    this.io.to(roomChannel).emit('thread:new-reply', {
+      threadId,
+      roomId,
+      message,
+      // Note: reply count will be fetched by the UI if needed
     });
   }
 }

@@ -40,6 +40,15 @@ export interface CreateHuddleMessageDto {
   participantCount?: number;
 }
 
+export interface CreateMeetingChatMessageDto {
+  roomId: string;
+  userId: string;
+  orgId: string;
+  meetingId: string;
+  content: string;
+  senderName?: string;
+}
+
 // Simple UUID validation regex
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -146,6 +155,48 @@ export class ChatsService {
       userId: entity.userId,
       orgId: entity.orgId,
       threadId: null,
+      type: entity.type,
+      content: entity.content,
+      metadata: entity.metadata,
+      sentAt: entity.createdAt.toISOString(),
+    };
+  }
+
+  /**
+   * Create a meeting chat message as a thread reply under the huddle message
+   */
+  async createMeetingChatMessage(dto: CreateMeetingChatMessageDto): Promise<CreatedMessage | null> {
+    // Find the huddle message for this meeting
+    const huddleMessage = await this.messagesRepo.findHuddleMessageByMeetingId(
+      dto.roomId,
+      dto.meetingId,
+    );
+
+    if (!huddleMessage) {
+      this.logger.warn(`No huddle message found for meeting ${dto.meetingId} in room ${dto.roomId}`);
+      return null;
+    }
+
+    // Create the message as a thread reply
+    const entity = await this.messagesRepo.create({
+      roomId: dto.roomId,
+      content: dto.content,
+      userId: dto.userId,
+      orgId: dto.orgId,
+      threadId: huddleMessage.id, // Thread under the huddle message
+      type: 'meeting_chat',
+      metadata: {
+        meetingId: dto.meetingId,
+        senderName: dto.senderName,
+      },
+    });
+
+    return {
+      id: entity.id,
+      roomId: entity.roomId,
+      userId: entity.userId,
+      orgId: entity.orgId,
+      threadId: entity.threadId,
       type: entity.type,
       content: entity.content,
       metadata: entity.metadata,

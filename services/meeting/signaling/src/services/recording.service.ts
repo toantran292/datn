@@ -1,6 +1,8 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { Recording, RecordingStatus } from '@prisma/client';
+import { FileStorageService } from './file-storage.service';
+import { MediaProcessorService } from './media-processor.service';
 
 export interface StartRecordingDto {
   meetingId: string;
@@ -21,6 +23,7 @@ export interface UpdateRecordingDto {
   s3Bucket?: string;
   s3Key?: string;
   s3Url?: string;
+  audioFileId?: string; // ID of extracted audio file in file-storage
   error?: string;
 }
 
@@ -28,7 +31,11 @@ export interface UpdateRecordingDto {
 export class RecordingService {
   private readonly logger = new Logger(RecordingService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly fileStorage: FileStorageService,
+    private readonly mediaProcessor: MediaProcessorService,
+  ) {}
 
   /**
    * Start a new recording
@@ -394,22 +401,118 @@ export class RecordingService {
   }
 
   /**
-   * Upload recording to S3
+   * Upload recording to S3 and extract audio for AI analysis
    */
   private async uploadToS3(sessionId: string, filePath: string): Promise<void> {
-    // TODO: Implement S3 upload
-    this.logger.log(`Would upload ${filePath} to S3 for session ${sessionId}`);
+    this.logger.log(`Processing recording ${sessionId} from ${filePath}`);
 
-    // After upload, update recording with S3 info
-    const s3Bucket = process.env.RECORDING_S3_BUCKET || 'meeting-recordings';
-    const s3Key = `recordings/${sessionId}.mp4`;
-    const s3Url = `https://${s3Bucket}.s3.amazonaws.com/${s3Key}`;
+    try {
+      // Get recording to find meeting info
+      const recording = await this.prisma.recording.findUnique({
+        where: { sessionId },
+        include: { meeting: true },
+      });
 
-    await this.updateRecordingBySessionId(sessionId, {
-      status: 'COMPLETED',
-      s3Bucket,
-      s3Key,
-      s3Url,
+      if (!recording) {
+        throw new Error(`Recording ${sessionId} not found`);
+      }
+
+      // 1. Upload video file to S3
+      this.logger.log(`Uploading video for session ${sessionId}`);
+      const videoFile = await this.fileStorage.uploadRecording(
+        recording.meetingId,
+        filePath,
+        recording.startedBy,
+        recording.meeting.orgId || undefined,
+      );
+
+      // 2. Extract audio from video for AI analysis
+      this.logger.log(`Extracting audio for session ${sessionId}`);
+      const audioResult = await this.mediaProcessor.extractAudio(filePath, {
+        format: 'mp3',
+        sampleRate: 16000, // Optimized for speech recognition
+        channels: 1, // Mono for better speech analysis
+        bitrate: '128k',
+      });
+
+      // 3. Upload extracted audio to S3
+      this.logger.log(`Uploading audio for session ${sessionId}`);
+      const audioFile = await this.fileStorage.uploadRecording(
+        recording.meetingId,
+        audioResult.audioPath,
+        recording.startedBy,
+        recording.meeting.orgId || undefined,
+      );
+
+      // 4. Update recording with file storage IDs
+      await this.updateRecordingBySessionId(sessionId, {
+        status: 'COMPLETED',
+        s3Bucket: videoFile.bucket,
+        s3Key: videoFile.objectKey,
+        s3Url: videoFile.url,
+        audioFileId: audioFile.id,
+      });
+
+      // 5. Create event for recording processed
+      await this.createMeetingEvent(recording.meetingId, 'recording_processed', recording.startedBy, {
+        recordingId: recording.id,
+        videoFileId: videoFile.id,
+        audioFileId: audioFile.id,
+        duration: audioResult.duration,
+      });
+
+      // 6. Cleanup temp audio file
+      await this.mediaProcessor.cleanup([audioResult.audioPath]);
+
+      this.logger.log(`Recording ${sessionId} processed successfully`);
+    } catch (error) {
+      this.logger.error(`Failed to process recording ${sessionId}: ${error}`);
+      await this.updateRecordingBySessionId(sessionId, {
+        status: 'FAILED',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  }
+
+  /**
+   * Get audio file URL for AI analysis
+   */
+  async getAudioFileUrl(recordingId: string): Promise<string | null> {
+    const recording = await this.prisma.recording.findUnique({
+      where: { id: recordingId },
     });
+
+    if (!recording) {
+      throw new NotFoundException('Recording not found');
+    }
+
+    // Get audioFileId from metadata or dedicated field
+    const audioFileId = (recording as any).audioFileId;
+    if (!audioFileId) {
+      return null;
+    }
+
+    return this.fileStorage.getRecordingUrl(audioFileId);
+  }
+
+  /**
+   * Get video file URL
+   */
+  async getVideoFileUrl(recordingId: string): Promise<string | null> {
+    const recording = await this.prisma.recording.findUnique({
+      where: { id: recordingId },
+    });
+
+    if (!recording) {
+      throw new NotFoundException('Recording not found');
+    }
+
+    if (!recording.s3Url) {
+      return null;
+    }
+
+    // If we have a file storage ID, get fresh presigned URL
+    // Otherwise return the stored URL
+    return recording.s3Url;
   }
 }

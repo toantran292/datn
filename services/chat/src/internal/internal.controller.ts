@@ -22,6 +22,14 @@ interface UpdateHuddleParticipantsBody {
   participantCount: number;
 }
 
+interface CreateMeetingChatMessageBody {
+  userId: string;
+  orgId: string;
+  meetingId: string;
+  content: string;
+  senderName?: string;
+}
+
 @Controller('internal')
 export class InternalController {
   constructor(
@@ -115,6 +123,35 @@ export class InternalController {
     });
 
     return { success: true };
+  }
+
+  /**
+   * Create a meeting chat message as a thread reply under the huddle message
+   * Called by meeting service when a chat message is sent during the meeting
+   */
+  @SkipContext()
+  @Post('rooms/:roomId/meeting-chat')
+  async createMeetingChatMessage(
+    @Param('roomId') roomId: string,
+    @Body() body: CreateMeetingChatMessageBody,
+  ) {
+    const message = await this.chatsService.createMeetingChatMessage({
+      roomId,
+      userId: body.userId,
+      orgId: body.orgId,
+      meetingId: body.meetingId,
+      content: body.content,
+      senderName: body.senderName,
+    });
+
+    if (!message) {
+      return { success: false, error: 'Huddle message not found for this meeting' };
+    }
+
+    // Broadcast to room via WebSocket (as thread reply)
+    this.chatsGateway.broadcastThreadMessage(body.orgId, roomId, message.threadId!, message);
+
+    return { success: true, message };
   }
 }
 

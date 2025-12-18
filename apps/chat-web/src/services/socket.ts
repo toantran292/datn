@@ -10,6 +10,14 @@ export type HuddleParticipantUpdatePayload = {
   participantCount: number;
 };
 
+export type HuddleStartedPayload = {
+  roomId: string;
+  meetingId: string;
+  meetingRoomId: string;
+  startedBy: string;
+  startedAt: string;
+};
+
 export type SocketEventHandlers = {
   onRoomsBootstrap?: (rooms: Room[]) => void;
   onRoomCreated?: (room: Room) => void;
@@ -20,6 +28,7 @@ export type SocketEventHandlers = {
   onUserOnline?: (data: { userId: string; timestamp: string }) => void;
   onUserOffline?: (data: { userId: string; timestamp: string }) => void;
   onHuddleParticipantUpdate?: (payload: HuddleParticipantUpdatePayload) => void;
+  onHuddleStarted?: (payload: HuddleStartedPayload) => void;
   onConnect?: () => void;
   onDisconnect?: () => void;
 };
@@ -102,6 +111,11 @@ class SocketService {
     this.socket.on('huddle:participant_update', (payload: HuddleParticipantUpdatePayload) => {
       console.log('[WS] Huddle participant update:', payload);
       handlers.onHuddleParticipantUpdate?.(payload);
+    });
+
+    this.socket.on('huddle:started', (payload: HuddleStartedPayload) => {
+      console.log('[WS] Huddle started:', payload);
+      handlers.onHuddleStarted?.(payload);
     });
   }
 
