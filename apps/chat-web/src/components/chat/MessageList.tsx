@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useMemo } from 'react';
 import { Hash, Lock } from 'lucide-react';
 import type { Message, Room } from '../../types';
 import type { UserInfo } from '../../contexts/ChatContext';
@@ -49,12 +49,16 @@ export function MessageList({
 }: MessageListProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Filter out thread replies for main view
+  const mainMessages = useMemo(() => messages.filter(msg => !msg.threadId), [messages]);
+
+  // Only scroll when main messages change (not thread replies)
+  // Use the last message ID to detect actual new messages
+  const lastMainMessageId = mainMessages[mainMessages.length - 1]?.id;
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  // Filter out thread replies for main view
-  const mainMessages = messages.filter(msg => !msg.threadId);
+  }, [lastMainMessageId]);
 
   if (mainMessages.length === 0) {
     return (
@@ -101,19 +105,14 @@ export function MessageList({
           // Render huddle messages with special component
           if (msg.type === 'huddle_started' || msg.type === 'huddle_ended') {
             return (
-              <HuddleMessage
-                key={msg.id}
-                message={msg}
-                currentUserId={currentUserId}
-                liveParticipantCount={msg.type === 'huddle_started' ? huddleParticipantCount : undefined}
-                onOpenThread={onOpenThread}
-                onToggleReaction={onToggleReaction}
-              />
               <div key={msg.id}>
                 {showUnreadDivider && <UnreadDivider />}
                 <HuddleMessage
                   message={msg}
                   currentUserId={currentUserId}
+                  liveParticipantCount={msg.type === 'huddle_started' ? huddleParticipantCount : undefined}
+                  onOpenThread={onOpenThread}
+                  onToggleReaction={onToggleReaction}
                 />
               </div>
             );
