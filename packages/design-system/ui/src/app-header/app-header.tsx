@@ -74,11 +74,11 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ className, searchTrigger }
         </Header.LeftItem>
 
         {/* Search trigger slot - can be passed as children */}
-        {searchTrigger && (
+        {/* {searchTrigger && (
           <div className="flex-1 flex items-center justify-center px-4 max-w-xl">
             {searchTrigger}
           </div>
-        )}
+        )} */}
 
         <Header.RightItem className="flex items-center gap-2">
           <ProductSwitcher currentApp={currentApp} workspaceSlug={workspaceSlug} />

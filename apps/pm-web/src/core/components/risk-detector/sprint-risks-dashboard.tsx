@@ -27,6 +27,19 @@ export const SprintRisksDashboard: React.FC<SprintRisksDashboardProps> = ({
   const [filterSeverity, setFilterSeverity] = useState<RiskSeverity | "ALL">("ALL");
   const [filterStatus, setFilterStatus] = useState<RiskAlertStatus | "ALL">("ACTIVE");
   const [isExpanded, setIsExpanded] = useState(false);
+  const [detectionResult, setDetectionResult] = useState<{
+    totalChecked: number;
+    risksFound: number;
+    timestamp: Date;
+    analysis?: {
+      avgVelocity?: number;
+      committedPoints?: number;
+      capacityStatus?: 'UNDER' | 'OPTIMAL' | 'OVER';
+      blockedIssuesCount?: number;
+      totalIssuesCount?: number;
+      dependenciesCount?: number;
+    };
+  } | null>(null);
 
   const fetchRisks = async () => {
     try {
@@ -55,6 +68,31 @@ export const SprintRisksDashboard: React.FC<SprintRisksDashboardProps> = ({
       setError(null);
       const response = await riskDetectorService.detectSprintRisks(sprintId);
       if (response.success) {
+        // Store detection result for display
+        const risksFound = response.detectedRisks || response.risks?.length || 0;
+
+        // Extract analysis data from risks metadata
+        const overcommitRisk = response.risks?.find(r => r.riskType === 'OVERCOMMITMENT');
+        const blockageRisk = response.risks?.find(r => r.riskType === 'BLOCKED_ISSUES');
+        const dependencyRisk = response.risks?.find(r => r.riskType === 'DEPENDENCY_ISSUES');
+
+        setDetectionResult({
+          totalChecked: response.totalChecked || 4,
+          risksFound,
+          timestamp: new Date(),
+          analysis: {
+            avgVelocity: overcommitRisk?.metadata?.avgVelocity as number | undefined,
+            committedPoints: overcommitRisk?.metadata?.committedPoints as number | undefined,
+            capacityStatus: overcommitRisk
+              ? 'OVER'
+              : (overcommitRisk?.metadata?.committedPoints as number || 0) < (overcommitRisk?.metadata?.avgVelocity as number || 0) * 0.8
+                ? 'UNDER'
+                : 'OPTIMAL',
+            blockedIssuesCount: blockageRisk?.metadata?.blockedIssuesCount as number | undefined,
+            totalIssuesCount: blockageRisk?.metadata?.totalIssuesCount as number | undefined,
+            dependenciesCount: dependencyRisk ? 1 : 0,
+          },
+        });
         // Refresh risks list after detection
         await fetchRisks();
       } else {
@@ -190,9 +228,10 @@ export const SprintRisksDashboard: React.FC<SprintRisksDashboardProps> = ({
                   detectRisks();
                 }}
                 disabled={detecting}
+                loading={detecting}
               >
-                <AlertTriangle className={`size-3.5 mr-1.5 ${detecting ? "animate-pulse" : ""}`} />
-                Detect Risks
+                <AlertTriangle className="size-3.5 mr-1.5" />
+                {detecting ? "Đang phân tích..." : "Detect Risks"}
               </Button>
             </>
           )}
@@ -209,6 +248,194 @@ export const SprintRisksDashboard: React.FC<SprintRisksDashboardProps> = ({
       {/* Expandable Content */}
       {isExpanded && (
         <div className="p-4 space-y-4 max-h-[500px] overflow-y-auto border-t border-custom-border-200">
+          {/* Detection Result Banner */}
+          {detectionResult && (
+            <div className="space-y-3">
+              {/* Summary Banner */}
+              <div className={`p-4 rounded-lg border ${
+                detectionResult.risksFound > 0
+                  ? "border-yellow-500/30 bg-yellow-500/5"
+                  : "border-green-500/30 bg-green-500/5"
+              }`}>
+                <div className="flex items-start gap-3">
+                  <div className={`p-2 rounded-lg ${
+                    detectionResult.risksFound > 0
+                      ? "bg-yellow-500/20"
+                      : "bg-green-500/20"
+                  }`}>
+                    {detectionResult.risksFound > 0 ? (
+                      <AlertTriangle className="size-5 text-yellow-600 dark:text-yellow-400" />
+                    ) : (
+                      <Shield className="size-5 text-green-600 dark:text-green-400" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <h4 className={`text-sm font-semibold mb-2 ${
+                      detectionResult.risksFound > 0
+                        ? "text-yellow-700 dark:text-yellow-300"
+                        : "text-green-700 dark:text-green-300"
+                    }`}>
+                      {detectionResult.risksFound > 0
+                        ? `Phát hiện ${detectionResult.risksFound} rủi ro!`
+                        : "Sprint đang trong tình trạng tốt!"}
+                    </h4>
+                    <div className="text-xs text-custom-text-400">
+                      Phân tích lúc: {detectionResult.timestamp.toLocaleString("vi-VN")}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Detailed Analysis */}
+              {detectionResult.analysis && (
+                <div className="border border-custom-border-200 rounded-lg p-4 bg-custom-background-90">
+                  <h5 className="text-sm font-semibold text-custom-text-100 mb-3">
+                    Chi tiết phân tích
+                  </h5>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Capacity Analysis */}
+                    {(detectionResult.analysis.avgVelocity !== undefined || detectionResult.analysis.committedPoints !== undefined) && (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <div className={`p-1.5 rounded ${
+                            detectionResult.analysis.capacityStatus === 'OVER'
+                              ? 'bg-red-500/10'
+                              : detectionResult.analysis.capacityStatus === 'UNDER'
+                                ? 'bg-blue-500/10'
+                                : 'bg-green-500/10'
+                          }`}>
+                            <Target className={`size-3.5 ${
+                              detectionResult.analysis.capacityStatus === 'OVER'
+                                ? 'text-red-500'
+                                : detectionResult.analysis.capacityStatus === 'UNDER'
+                                  ? 'text-blue-500'
+                                  : 'text-green-500'
+                            }`} />
+                          </div>
+                          <span className="text-xs font-medium text-custom-text-200">
+                            Capacity & Velocity
+                          </span>
+                        </div>
+                        <div className="ml-6 space-y-1 text-xs">
+                          {detectionResult.analysis.avgVelocity !== undefined && (
+                            <div className="flex justify-between">
+                              <span className="text-custom-text-400">Velocity trung bình:</span>
+                              <span className="font-medium text-custom-text-200">
+                                {detectionResult.analysis.avgVelocity.toFixed(1)} points
+                              </span>
+                            </div>
+                          )}
+                          {detectionResult.analysis.committedPoints !== undefined && (
+                            <div className="flex justify-between">
+                              <span className="text-custom-text-400">Điểm đã commit:</span>
+                              <span className={`font-medium ${
+                                detectionResult.analysis.capacityStatus === 'OVER'
+                                  ? 'text-red-600 dark:text-red-400'
+                                  : detectionResult.analysis.capacityStatus === 'UNDER'
+                                    ? 'text-blue-600 dark:text-blue-400'
+                                    : 'text-green-600 dark:text-green-400'
+                              }`}>
+                                {detectionResult.analysis.committedPoints.toFixed(1)} points
+                              </span>
+                            </div>
+                          )}
+                          {detectionResult.analysis.avgVelocity !== undefined && detectionResult.analysis.committedPoints !== undefined && (
+                            <div className="pt-1 mt-1 border-t border-custom-border-200">
+                              <span className={`text-xs font-medium ${
+                                detectionResult.analysis.capacityStatus === 'OVER'
+                                  ? 'text-red-600 dark:text-red-400'
+                                  : detectionResult.analysis.capacityStatus === 'UNDER'
+                                    ? 'text-blue-600 dark:text-blue-400'
+                                    : 'text-green-600 dark:text-green-400'
+                              }`}>
+                                {detectionResult.analysis.capacityStatus === 'OVER'
+                                  ? `⚠️ Overcommit ${((detectionResult.analysis.committedPoints / detectionResult.analysis.avgVelocity - 1) * 100).toFixed(0)}%`
+                                  : detectionResult.analysis.capacityStatus === 'UNDER'
+                                    ? `ℹ️ Underutilized ${((1 - detectionResult.analysis.committedPoints / detectionResult.analysis.avgVelocity) * 100).toFixed(0)}%`
+                                    : '✓ Capacity phù hợp'}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Blockage Analysis */}
+                    {(detectionResult.analysis.blockedIssuesCount !== undefined || detectionResult.analysis.totalIssuesCount !== undefined) && (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <div className={`p-1.5 rounded ${
+                            (detectionResult.analysis.blockedIssuesCount || 0) > 0
+                              ? 'bg-yellow-500/10'
+                              : 'bg-green-500/10'
+                          }`}>
+                            <AlertTriangle className={`size-3.5 ${
+                              (detectionResult.analysis.blockedIssuesCount || 0) > 0
+                                ? 'text-yellow-500'
+                                : 'text-green-500'
+                            }`} />
+                          </div>
+                          <span className="text-xs font-medium text-custom-text-200">
+                            Blocked Issues
+                          </span>
+                        </div>
+                        <div className="ml-6 space-y-1 text-xs">
+                          <div className="flex justify-between">
+                            <span className="text-custom-text-400">Issues bị chặn:</span>
+                            <span className={`font-medium ${
+                              (detectionResult.analysis.blockedIssuesCount || 0) > 0
+                                ? 'text-yellow-600 dark:text-yellow-400'
+                                : 'text-green-600 dark:text-green-400'
+                            }`}>
+                              {detectionResult.analysis.blockedIssuesCount || 0}
+                            </span>
+                          </div>
+                          {detectionResult.analysis.totalIssuesCount !== undefined && (
+                            <div className="flex justify-between">
+                              <span className="text-custom-text-400">Tổng issues:</span>
+                              <span className="font-medium text-custom-text-200">
+                                {detectionResult.analysis.totalIssuesCount}
+                              </span>
+                            </div>
+                          )}
+                          {detectionResult.analysis.totalIssuesCount !== undefined && (
+                            <div className="pt-1 mt-1 border-t border-custom-border-200">
+                              <span className={`text-xs font-medium ${
+                                (detectionResult.analysis.blockedIssuesCount || 0) > 0
+                                  ? 'text-yellow-600 dark:text-yellow-400'
+                                  : 'text-green-600 dark:text-green-400'
+                              }`}>
+                                {((detectionResult.analysis.blockedIssuesCount || 0) / detectionResult.analysis.totalIssuesCount * 100).toFixed(1)}% bị chặn
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Detecting Progress */}
+          {detecting && (
+            <div className="p-6 rounded-lg border border-custom-border-200 bg-custom-background-90">
+              <div className="flex items-center gap-3 mb-3">
+                <RefreshCw className="size-5 text-custom-primary animate-spin" />
+                <h4 className="text-sm font-semibold text-custom-text-100">
+                  Đang phân tích sprint...
+                </h4>
+              </div>
+              <div className="text-xs text-custom-text-300 space-y-1 ml-8">
+                <p>⏳ Kiểm tra overcommitment và capacity...</p>
+                <p>⏳ Phân tích dependencies giữa các issues...</p>
+                <p>⏳ Xác định blocked issues...</p>
+                <p>⏳ Đánh giá sprint timeline...</p>
+              </div>
+            </div>
+          )}
+
           {/* Summary Cards */}
           <div className="grid grid-cols-3 gap-4">
         <div className="border border-red-500/30 rounded-lg p-4 bg-red-500/5">
@@ -292,7 +519,7 @@ export const SprintRisksDashboard: React.FC<SprintRisksDashboardProps> = ({
       )}
 
       {/* Risk Alerts List */}
-      {!loading && !error && (
+      {!loading && !error && !detecting && (
         <div className="space-y-3">
           {risks.length === 0 ? (
             <div className="p-8 text-center border border-custom-border-200 rounded-lg bg-custom-background-100">
@@ -300,9 +527,21 @@ export const SprintRisksDashboard: React.FC<SprintRisksDashboardProps> = ({
               <p className="text-sm font-medium text-custom-text-200 mb-1">
                 Không có risk alerts
               </p>
-              <p className="text-xs text-custom-text-400">
-                Sprint đang trong tình trạng tốt! Nhấn "Detect Risks" để kiểm tra lại.
+              <p className="text-xs text-custom-text-400 mb-4">
+                {detectionResult
+                  ? "Sprint đã được kiểm tra và không phát hiện rủi ro nào!"
+                  : "Chưa có dữ liệu phân tích. Nhấn \"Detect Risks\" để bắt đầu phân tích."}
               </p>
+              {!detectionResult && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={detectRisks}
+                >
+                  <AlertTriangle className="size-3.5 mr-1.5" />
+                  Detect Risks
+                </Button>
+              )}
             </div>
           ) : (
             risks.map((risk) => (

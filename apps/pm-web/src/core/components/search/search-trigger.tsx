@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { observer } from "mobx-react";
 import { Search } from "lucide-react";
 import { useSearch } from "@/core/hooks/store/use-search";
@@ -11,7 +11,11 @@ import { useSearch } from "@/core/hooks/store/use-search";
  */
 export const SearchTrigger = observer(() => {
   const searchStore = useSearch();
-  const isMac = typeof window !== "undefined" && /Mac|iPhone|iPod|iPad/.test(navigator.userAgent);
+  const [isMac, setIsMac] = useState(false);
+
+  useEffect(() => {
+    setIsMac(/Mac|iPhone|iPod|iPad/.test(navigator.userAgent));
+  }, []);
 
   return (
     <button

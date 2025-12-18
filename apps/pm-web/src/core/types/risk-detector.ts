@@ -60,6 +60,8 @@ export interface DetectRisksResponse {
   success: boolean;
   detectedRisks: number;
   risks: RiskAlert[];
+  totalChecked?: number; // Total number of checks performed
+  message?: string; // Optional message about the detection
 }
 
 export interface AcknowledgeRiskRequest {
