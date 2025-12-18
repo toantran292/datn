@@ -30,7 +30,8 @@ export const SidebarItemBase: FC<Props> = observer(({ item, additionalRender, ad
       <SidebarNavItem isActive={isActive}>
         <div className="flex items-center gap-2 py-[1px]">
           {icon}
-          <p className="text-sm leading-5 font-medium">{item.labelTranslationKey}</p>
+          {/* eslint-disable-next-line */}
+          <span className="text-sm leading-5 font-medium">{item.labelTranslationKey}</span>
         </div>
       </SidebarNavItem>
     </Link>
