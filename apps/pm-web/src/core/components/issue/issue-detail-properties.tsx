@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { Circle, Users, Signal, User, Calendar, CalendarClock, Network, Hash, Sparkles, TrendingUp } from "lucide-react";
+import { Circle, Users, Signal, User, Calendar, CalendarClock, Network, Hash, TrendingUp } from "lucide-react";
 import { Badge, Button, setToast, TOAST_TYPE } from "@uts/design-system/ui";
 import { IIssue } from "@/core/types/issue";
 import { useIssueStatus } from "@/core/hooks/store/use-issue-status";
@@ -18,8 +18,9 @@ import {
   ISSUE_TYPE_LABELS,
   formatDate,
 } from "@/core/components/backlog/utils";
-import { AIEstimateSection } from "@/core/components/ai";
+import { AIEstimateSection, AIGeneratingButton } from "@/core/components/ai";
 import { useAIEstimate } from "@/core/hooks/use-ai-estimate";
+import { Sparkles } from "lucide-react";
 import type { EstimatePointsData } from "@/core/types/ai";
 
 interface IssueDetailPropertiesProps {
@@ -593,10 +594,16 @@ export const IssueDetailProperties: React.FC<IssueDetailPropertiesProps> = ({
                 />
               )}
               {!disabled && (issue.description || issue.descriptionHtml) && !estimationData && (
-                <Button variant="neutral-primary" size="sm" onClick={handleEstimate} disabled={disabled || isEstimating}>
-                  <Sparkles className="size-3.5" />
-                  {isEstimating ? "Đang xử lý..." : "AI Estimate"}
-                </Button>
+                <>
+                  {isEstimating ? (
+                    <AIGeneratingButton disabled />
+                  ) : (
+                    <Button variant="neutral-primary" size="sm" onClick={handleEstimate} disabled={disabled}>
+                      <Sparkles className="size-3.5" />
+                      AI Estimate
+                    </Button>
+                  )}
+                </>
               )}
             </div>
 
