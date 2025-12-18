@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { firstValueFrom } from 'rxjs';
-import { RagClient } from '../../common/rag/rag.client';
+import { RagClient, SearchResultItem } from '../../common/rag/rag.client';
 import { AgentChatRequestDto, AgentChatResponseDto, ChatMessageDto } from './dto/agent.dto';
 
 interface ProjectSummary {
@@ -20,6 +20,9 @@ interface TaskSummary {
   priority: string;
   projectName?: string;
   assigneeName?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  completedAt?: string;
 }
 
 interface MemberSummary {
@@ -50,8 +53,8 @@ export class AgentService {
     userId: string,
     request: AgentChatRequestDto,
   ): Promise<AgentChatResponseDto> {
-    // 1. Gather context from various services
-    const context = await this.gatherContext(orgId, userId, request.projectId);
+    // 1. Gather context from various services + RAG search
+    const context = await this.gatherContext(orgId, userId, request.projectId, request.message);
 
     // 2. Build system prompt with context
     const systemPrompt = this.buildSystemPrompt(context);
@@ -72,6 +75,7 @@ export class AgentService {
         projects: context.projects.length,
         tasks: context.tasks.length,
         members: context.members.length,
+        ragResults: context.ragResults.length,
       },
     };
   }
@@ -84,8 +88,8 @@ export class AgentService {
     userId: string,
     request: AgentChatRequestDto,
   ): AsyncGenerator<string, void, unknown> {
-    // 1. Gather context from various services
-    const context = await this.gatherContext(orgId, userId, request.projectId);
+    // 1. Gather context from various services + RAG search
+    const context = await this.gatherContext(orgId, userId, request.projectId, request.message);
 
     // 2. Build system prompt with context
     const systemPrompt = this.buildSystemPrompt(context);
@@ -107,16 +111,19 @@ export class AgentService {
     orgId: string,
     userId: string,
     projectId?: string,
+    userQuery?: string,
   ): Promise<{
     projects: ProjectSummary[];
     tasks: TaskSummary[];
     members: MemberSummary[];
     currentUser: { id: string; name?: string };
+    ragResults: SearchResultItem[];
   }> {
-    const [projects, tasks, members] = await Promise.all([
+    const [projects, tasks, members, ragResults] = await Promise.all([
       this.fetchProjects(orgId, projectId),
       this.fetchTasks(orgId, userId, projectId),
       this.fetchMembers(orgId),
+      userQuery ? this.searchRAG(orgId, userQuery, projectId) : Promise.resolve([]),
     ]);
 
     return {
@@ -124,7 +131,37 @@ export class AgentService {
       tasks,
       members,
       currentUser: { id: userId },
+      ragResults,
     };
+  }
+
+  /**
+   * Search RAG for relevant content based on user query
+   */
+  private async searchRAG(
+    orgId: string,
+    query: string,
+    projectId?: string,
+  ): Promise<SearchResultItem[]> {
+    try {
+      const searchOptions: any = {
+        orgId,
+        limit: 10,
+        minSimilarity: 0.6,
+      };
+
+      // If projectId provided, search in that namespace
+      if (projectId) {
+        searchOptions.namespaceId = projectId;
+        searchOptions.namespaceType = 'project';
+      }
+
+      const response = await this.ragClient.search(query, searchOptions);
+      return response.results || [];
+    } catch (err) {
+      this.logger.error(`Failed to search RAG: ${err.message}`);
+      return [];
+    }
   }
 
   private async fetchProjects(orgId: string, projectId?: string): Promise<ProjectSummary[]> {
@@ -169,7 +206,18 @@ export class AgentService {
         }),
       );
 
-      return res.data || [];
+      // Map response to TaskSummary with additional fields
+      return (res.data || []).map((t: any) => ({
+        id: t.id,
+        title: t.title || t.name,
+        status: t.status || t.state,
+        priority: t.priority || 'MEDIUM',
+        projectName: t.project?.name || t.projectName,
+        assigneeName: t.assignee?.displayName || t.assignee?.fullName || t.assignee?.email || t.assigneeName,
+        createdAt: t.createdAt || t.created_at,
+        updatedAt: t.updatedAt || t.updated_at,
+        completedAt: t.completedAt || t.completed_at,
+      }));
     } catch (err) {
       this.logger.error(`Failed to fetch tasks: ${err.message}`);
       return [];
@@ -203,13 +251,30 @@ export class AgentService {
     tasks: TaskSummary[];
     members: MemberSummary[];
     currentUser: { id: string; name?: string };
+    ragResults: SearchResultItem[];
   }): string {
     const projectsSummary = context.projects.length > 0
       ? context.projects.map(p => `- ${p.name} (${p.identifier}): ${p.issueCount || 0} issues`).join('\n')
       : 'Không có dự án nào.';
 
+    const formatDate = (dateStr?: string) => {
+      if (!dateStr) return 'N/A';
+      try {
+        return new Date(dateStr).toLocaleDateString('vi-VN');
+      } catch {
+        return dateStr;
+      }
+    };
+
     const tasksSummary = context.tasks.length > 0
-      ? context.tasks.slice(0, 10).map(t => `- [${t.status}] ${t.title} (${t.priority})`).join('\n')
+      ? context.tasks.slice(0, 15).map(t => {
+          let detail = `- [${t.status}] "${t.title}" (Ưu tiên: ${t.priority})`;
+          if (t.assigneeName) detail += ` | Người thực hiện: ${t.assigneeName}`;
+          if (t.projectName) detail += ` | Dự án: ${t.projectName}`;
+          if (t.status === 'DONE' && t.completedAt) detail += ` | Hoàn thành: ${formatDate(t.completedAt)}`;
+          else if (t.updatedAt) detail += ` | Cập nhật: ${formatDate(t.updatedAt)}`;
+          return detail;
+        }).join('\n')
       : 'Không có công việc nào.';
 
     const membersSummary = context.members.length > 0
@@ -220,7 +285,32 @@ export class AgentService {
     const inProgressCount = context.tasks.filter(t => t.status === 'IN_PROGRESS').length;
     const doneCount = context.tasks.filter(t => t.status === 'DONE').length;
 
-    return `Bạn là UTS Agent - trợ lý AI thông minh cho hệ thống quản lý công việc UTS Workspace.
+    // Build RAG context if available
+    const ragContext = context.ragResults.length > 0
+      ? context.ragResults.map((r, idx) => {
+          const sourceLabel = r.sourceType === 'message' ? 'Tin nhắn' :
+                              r.sourceType === 'document' ? 'Tài liệu' :
+                              r.sourceType === 'file' ? 'File' : r.sourceType;
+          const metadata = r.metadata || {};
+          const metaInfo = metadata.fileName ? ` (${metadata.fileName})` :
+                           metadata.title ? ` (${metadata.title})` : '';
+          return `[${idx + 1}] [${sourceLabel}${metaInfo}] (độ liên quan: ${(r.similarity * 100).toFixed(0)}%)\n${r.content.substring(0, 300)}${r.content.length > 300 ? '...' : ''}`;
+        }).join('\n\n')
+      : '';
+
+    let prompt = `Bạn là UTS Agent - trợ lý AI chuyên biệt cho hệ thống quản lý công việc UTS Workspace.
+
+## GIỚI HẠN PHẠM VI (RẤT QUAN TRỌNG):
+- Bạn CHỈ trả lời các câu hỏi liên quan đến:
+  + Quản lý dự án (projects)
+  + Công việc/task (issues, tasks)
+  + Tiến độ dự án
+  + Thành viên trong workspace
+  + Phân công công việc
+  + Báo cáo tiến độ
+  + Nội dung tài liệu/file trong workspace
+- Nếu người dùng hỏi về bất kỳ chủ đề nào KHÁC (ví dụ: lập trình, kiến thức chung, giải trí, tin tức, v.v.), hãy từ chối lịch sự và nhắc họ rằng bạn chỉ hỗ trợ về quản lý công việc.
+- Ví dụ câu từ chối: "Xin lỗi, tôi là trợ lý chuyên về quản lý công việc trong UTS Workspace. Tôi chỉ có thể hỗ trợ bạn về dự án, task, tiến độ và thành viên. Bạn có câu hỏi gì về công việc không?"
 
 ## Thông tin Workspace hiện tại:
 
@@ -236,15 +326,29 @@ Chi tiết:
 ${tasksSummary}
 
 ### Thành viên (${context.members.length} người):
-${membersSummary}
+${membersSummary}`;
 
-## Hướng dẫn:
+    // Add RAG context if available
+    if (ragContext) {
+      prompt += `
+
+### Thông tin liên quan từ tài liệu/hội thoại (${context.ragResults.length} kết quả):
+${ragContext}`;
+    }
+
+    prompt += `
+
+## Hướng dẫn trả lời:
 - Trả lời bằng tiếng Việt
-- Tập trung vào thông tin workspace thực tế ở trên
+- CHỈ trả lời dựa trên thông tin workspace ở trên
+- Nếu có thông tin từ RAG, ưu tiên sử dụng và trích dẫn nguồn
 - Nếu được hỏi về tiến độ, hãy tính % dựa trên số liệu thực
 - Nếu được hỏi "hôm nay làm gì", hãy gợi ý các task đang có
 - Format response với markdown cho dễ đọc
-- Ngắn gọn, súc tích, đi thẳng vào vấn đề`;
+- Ngắn gọn, súc tích, đi thẳng vào vấn đề
+- KHÔNG trả lời các câu hỏi ngoài phạm vi quản lý công việc`;
+
+    return prompt;
   }
 
   private buildMessages(

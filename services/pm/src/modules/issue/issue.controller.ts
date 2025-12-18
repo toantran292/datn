@@ -82,4 +82,25 @@ export class IssueController {
     const orgId = request.orgId;
     return this.issueService.delete(id, orgId);
   }
+
+  /**
+   * Batch index all issues in org to RAG (offline indexing)
+   */
+  @Post("issues/index-to-rag")
+  async indexAllToRAG(@Req() request: RequestWithOrg): Promise<{ indexed: number; failed: number }> {
+    const orgId = request.orgId;
+    return this.issueService.indexAllIssuesToRAG(orgId);
+  }
+
+  /**
+   * Batch index all issues in a project to RAG
+   */
+  @Post("projects/:projectId/issues/index-to-rag")
+  async indexProjectToRAG(
+    @Param("projectId") projectId: string,
+    @Req() request: RequestWithOrg
+  ): Promise<{ indexed: number; failed: number }> {
+    const orgId = request.orgId;
+    return this.issueService.indexProjectIssuesToRAG(projectId, orgId);
+  }
 }

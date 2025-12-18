@@ -37,5 +37,6 @@ export class AgentChatResponseDto {
     projects?: number;
     tasks?: number;
     members?: number;
+    ragResults?: number;
   };
 }

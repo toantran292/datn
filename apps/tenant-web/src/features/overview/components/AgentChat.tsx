@@ -21,9 +21,9 @@ interface AgentChatProps {
 }
 
 const suggestedQuestions = [
-  "Tổng hợp tiến độ các project",
-  "Hôm nay tôi cần làm gì?",
-  "Ai đang có nhiều task nhất?",
+  "Tiến độ dự án hiện tại như thế nào?",
+  "Tôi có bao nhiêu task chưa hoàn thành?",
+  "Ai đang phụ trách nhiều công việc nhất?",
 ];
 
 export function AgentChat({ className, projectId }: AgentChatProps) {

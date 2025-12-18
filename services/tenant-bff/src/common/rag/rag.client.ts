@@ -23,6 +23,53 @@ export interface LlmResult {
   error?: string;
 }
 
+export interface SearchOptions {
+  namespaceId?: string;
+  namespaceIds?: string[];
+  namespaceType?: string;
+  orgId?: string;
+  sourceTypes?: string[];
+  limit?: number;
+  minSimilarity?: number;
+}
+
+export interface SearchResultItem {
+  id: string;
+  namespaceId: string;
+  orgId: string;
+  sourceType: string;
+  sourceId: string;
+  content: string;
+  chunkIndex: number;
+  metadata: Record<string, any>;
+  similarity: number;
+  createdAt: Date;
+}
+
+export interface SearchResponse {
+  results: SearchResultItem[];
+  total: number;
+  query: string;
+}
+
+export interface AskOptions extends SearchOptions {
+  customPrompt?: string;
+  llmConfig?: LLMConfig;
+  stream?: boolean;
+}
+
+export interface AskResponse {
+  answer: string;
+  sources: Array<{
+    type: string;
+    id: string;
+    content: string;
+    score: number;
+    metadata?: Record<string, any>;
+  }>;
+  confidence: number;
+}
+
 @Injectable()
 export class RagClient implements OnModuleInit {
   private readonly logger = new Logger(RagClient.name);
@@ -150,6 +197,81 @@ export class RagClient implements OnModuleInit {
 
   getDefaultModel(_provider: string): string {
     return 'gpt-4o-mini';
+  }
+
+  /**
+   * Semantic search for content in RAG database
+   */
+  async search(query: string, options: SearchOptions = {}): Promise<SearchResponse> {
+    if (!this.enabled) {
+      return { results: [], total: 0, query };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/search`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query,
+          ...options,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        this.logger.error(`RAG search error: ${error}`);
+        return { results: [], total: 0, query };
+      }
+
+      return response.json();
+    } catch (error) {
+      this.logger.error(`RAG search error: ${error}`);
+      return { results: [], total: 0, query };
+    }
+  }
+
+  /**
+   * RAG-enhanced question answering
+   */
+  async ask(query: string, options: AskOptions = {}): Promise<AskResponse> {
+    if (!this.enabled) {
+      return {
+        answer: 'RAG service is not available',
+        sources: [],
+        confidence: 0,
+      };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/search/ask`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query,
+          ...options,
+          stream: false,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        this.logger.error(`RAG ask error: ${error}`);
+        return {
+          answer: `Error: ${error}`,
+          sources: [],
+          confidence: 0,
+        };
+      }
+
+      return response.json();
+    } catch (error) {
+      this.logger.error(`RAG ask error: ${error}`);
+      return {
+        answer: `Error: ${String(error)}`,
+        sources: [],
+        confidence: 0,
+      };
+    }
   }
 
   /**
