@@ -324,11 +324,11 @@ services:
       start_period: 15s
     networks: [uts_net]
 
-  meeting-api:
+  meet-api:
     build:
       context: ../../services/meeting/signaling
       dockerfile: Dockerfile.dev
-    container_name: uts_meeting_api
+    container_name: uts_meet_api
     restart: unless-stopped
     volumes:
       - ../../services/meeting/signaling/src:/app/src
@@ -336,7 +336,7 @@ services:
       - meeting_api_node_modules:/app/node_modules
     environment:
       NODE_ENV: development
-      PORT_HTTP: 40600
+      PORT_HTTP: 3000
       # Chat service for huddle notifications
       CHAT_SERVICE_URL: http://chat-api:3000
       # Prosody WebSocket
@@ -357,9 +357,9 @@ services:
     depends_on:
       postgres: { condition: service_healthy }
     ports:
-      - "40600:40600"
+      - "40600:3000"
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:40600/health"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
       interval: 30s
       timeout: 10s
       retries: 10
@@ -383,7 +383,7 @@ services:
       chat-api: { condition: service_started }
       notification-api: { condition: service_started }
       file-storage-api: { condition: service_started }
-      meeting-api: { condition: service_started }
+      meet-api: { condition: service_started }
     ports: [ "8080:80" ]
     networks: [uts_net]
 
