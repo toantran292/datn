@@ -2,3 +2,4 @@ CREATE DATABASE identity;
 CREATE DATABASE pm_db;
 CREATE DATABASE notification_db;
 CREATE DATABASE chat_db;
+CREATE DATABASE rag_db;
