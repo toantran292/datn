@@ -52,10 +52,10 @@ export function DeleteOrgModal({ open, orgName, onOpenChange, onConfirm }: Delet
             </div>
             <div>
               <h3 className="text-lg font-semibold text-custom-text-100">
-                Delete Organization
+                Xóa tổ chức
               </h3>
               <p className="text-sm text-custom-text-300">
-                This action cannot be undone
+                Hành động này không thể hoàn tác
               </p>
             </div>
           </div>
@@ -73,24 +73,24 @@ export function DeleteOrgModal({ open, orgName, onOpenChange, onConfirm }: Delet
         <div className="px-5 py-5 space-y-4">
           <div className="p-4 rounded-lg bg-red-50 border border-red-200">
             <p className="text-sm text-red-800">
-              <strong>Warning:</strong> Deleting this organization will permanently remove:
+              <strong>Cảnh báo:</strong> Việc xóa tổ chức này sẽ xóa vĩnh viễn:
             </p>
             <ul className="mt-2 text-sm text-red-700 list-disc list-inside space-y-1">
-              <li>All projects and their data</li>
-              <li>All files and documents</li>
-              <li>All member associations</li>
-              <li>All settings and configurations</li>
+              <li>Tất cả dự án và dữ liệu của chúng</li>
+              <li>Tất cả tệp và tài liệu</li>
+              <li>Tất cả liên kết thành viên</li>
+              <li>Tất cả cài đặt và cấu hình</li>
             </ul>
           </div>
 
           <div className="space-y-2">
             <label htmlFor="confirm-delete" className="text-sm font-medium text-custom-text-200">
-              Type <span className="font-mono bg-custom-background-80 px-1.5 py-0.5 rounded">{orgName}</span> to confirm
+              Nhập <span className="font-mono bg-custom-background-80 px-1.5 py-0.5 rounded">{orgName}</span> để xác nhận
             </label>
             <Input
               id="confirm-delete"
               type="text"
-              placeholder="Enter organization name"
+              placeholder="Nhập tên tổ chức"
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value)}
               inputSize="md"
@@ -108,7 +108,7 @@ export function DeleteOrgModal({ open, orgName, onOpenChange, onConfirm }: Delet
             onClick={handleClose}
             disabled={isDeleting}
           >
-            Cancel
+            Hủy
           </Button>
           <Button
             variant="danger"
@@ -117,7 +117,7 @@ export function DeleteOrgModal({ open, orgName, onOpenChange, onConfirm }: Delet
             disabled={!isConfirmed || isDeleting}
             onClick={handleDelete}
           >
-            Delete Organization
+            Xóa tổ chức
           </Button>
         </div>
       </div>

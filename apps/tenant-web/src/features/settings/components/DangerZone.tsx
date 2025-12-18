@@ -34,9 +34,9 @@ export function DangerZone({ isLoading, onDeleteClick }: DangerZoneProps) {
           <AlertTriangle size={20} className="text-red-600" />
         </div>
         <div>
-          <h3 className="font-semibold text-red-900">Danger Zone</h3>
+          <h3 className="font-semibold text-red-900">Vùng nguy hiểm</h3>
           <p className="text-sm text-red-700">
-            Irreversible and destructive actions
+            Các hành động không thể hoàn tác và mang tính hủy diệt
           </p>
         </div>
       </div>
@@ -45,9 +45,9 @@ export function DangerZone({ isLoading, onDeleteClick }: DangerZoneProps) {
         {/* Delete Organization */}
         <div className="flex items-center justify-between p-4 rounded-lg border border-red-200 bg-white">
           <div>
-            <p className="font-medium text-custom-text-100">Delete this organization</p>
+            <p className="font-medium text-custom-text-100">Xóa tổ chức này</p>
             <p className="text-sm text-custom-text-300">
-              Once deleted, all data will be permanently removed.
+              Sau khi xóa, tất cả dữ liệu sẽ bị xóa vĩnh viễn.
             </p>
           </div>
           <Button
@@ -57,14 +57,14 @@ export function DangerZone({ isLoading, onDeleteClick }: DangerZoneProps) {
             disabled={!isOwner}
             prependIcon={<Trash2 size={16} />}
           >
-            Delete
+            Xóa
           </Button>
         </div>
 
         {!isOwner && (
           <p className="text-xs text-red-600 flex items-center gap-1">
             <AlertTriangle size={12} />
-            Only the organization owner can delete this organization.
+            Chỉ Owner của tổ chức mới có thể xóa tổ chức này.
           </p>
         )}
       </div>

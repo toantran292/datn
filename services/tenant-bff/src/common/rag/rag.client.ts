@@ -151,4 +151,67 @@ export class RagClient implements OnModuleInit {
   getDefaultModel(_provider: string): string {
     return 'gpt-4o-mini';
   }
+
+  /**
+   * Streaming LLM chat completion
+   */
+  async *chatStream(
+    messages: ChatMessage[],
+    config?: LLMConfig,
+  ): AsyncGenerator<string, void, unknown> {
+    if (!this.enabled) {
+      yield 'RAG service is not available';
+      return;
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/llm/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages, config, stream: true }),
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        yield `Error: ${error}`;
+        return;
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) {
+        yield 'Error: No response body';
+        return;
+      }
+
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            if (data === '{}') continue; // done event
+            try {
+              const parsed = JSON.parse(data);
+              if (parsed.text) {
+                yield parsed.text;
+              }
+            } catch {
+              // Skip invalid JSON
+            }
+          }
+        }
+      }
+    } catch (error) {
+      this.logger.error(`LLM chat stream error: ${error}`);
+      yield `Error: ${String(error)}`;
+    }
+  }
 }

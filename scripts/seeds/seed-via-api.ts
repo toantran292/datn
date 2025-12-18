@@ -50,7 +50,7 @@ interface Sprint {
 
 interface Issue {
   id: string;
-  title: string;
+  name: string;
   description: string;
 }
 
@@ -67,6 +67,11 @@ interface Message {
 // ============================================================================
 // HTTP Client Helper
 // ============================================================================
+interface ApiResponse<T> {
+  data: T;
+  cookies?: Record<string, string>;
+}
+
 async function apiCall<T>(
   method: string,
   path: string,
@@ -74,6 +79,17 @@ async function apiCall<T>(
   token?: string,
   headers?: Record<string, string>
 ): Promise<T> {
+  const result = await apiCallWithCookies<T>(method, path, body, token, headers);
+  return result.data;
+}
+
+async function apiCallWithCookies<T>(
+  method: string,
+  path: string,
+  body?: any,
+  token?: string,
+  headers?: Record<string, string>
+): Promise<ApiResponse<T>> {
   const url = path.startsWith('http') ? path : `${API_BASE}${path}`;
 
   const reqHeaders: Record<string, string> = {
@@ -83,6 +99,7 @@ async function apiCall<T>(
 
   if (token) {
     reqHeaders['Authorization'] = `Bearer ${token}`;
+    reqHeaders['Cookie'] = `uts_at=${token}`;
   }
 
   const response = await fetch(url, {
@@ -96,8 +113,26 @@ async function apiCall<T>(
     throw new Error(`API Error ${response.status}: ${error}`);
   }
 
+  // Parse Set-Cookie headers
+  const cookies: Record<string, string> = {};
+  const setCookie = response.headers.get('set-cookie');
+  if (setCookie) {
+    const cookieMatches = setCookie.match(/([^=]+)=([^;]+)/g);
+    if (cookieMatches) {
+      for (const match of cookieMatches) {
+        const [name, value] = match.split('=');
+        if (name && value) {
+          cookies[name.trim()] = value.trim();
+        }
+      }
+    }
+  }
+
   const text = await response.text();
-  return text ? JSON.parse(text) : {};
+  return {
+    data: text ? JSON.parse(text) : {},
+    cookies,
+  };
 }
 
 // ============================================================================
@@ -135,59 +170,59 @@ const SEED_SPRINTS = [
 
 const SEED_ISSUES = [
   {
-    title: 'Setup project structure',
+    name: 'Setup project structure',
     description: 'Initialize the project with NestJS, configure TypeORM, and setup Docker environment',
-    type: 'task',
-    priority: 'high',
+    type: 'TASK',
+    priority: 'HIGH',
   },
   {
-    title: 'User authentication system',
+    name: 'User authentication system',
     description: 'Implement JWT-based authentication with refresh tokens, OAuth2 support for Google and GitHub',
-    type: 'story',
-    priority: 'high',
+    type: 'STORY',
+    priority: 'HIGH',
   },
   {
-    title: 'Product catalog API',
+    name: 'Product catalog API',
     description: 'Create CRUD endpoints for products with pagination, filtering, and search capabilities',
-    type: 'story',
-    priority: 'medium',
+    type: 'STORY',
+    priority: 'MEDIUM',
   },
   {
-    title: 'Shopping cart functionality',
+    name: 'Shopping cart functionality',
     description: 'Implement shopping cart with add/remove items, quantity updates, and price calculation',
-    type: 'story',
-    priority: 'medium',
+    type: 'STORY',
+    priority: 'MEDIUM',
   },
   {
-    title: 'Payment gateway integration',
+    name: 'Payment gateway integration',
     description: 'Integrate Stripe for payment processing with support for multiple currencies',
-    type: 'story',
-    priority: 'high',
+    type: 'STORY',
+    priority: 'HIGH',
   },
   {
-    title: 'Order management system',
+    name: 'Order management system',
     description: 'Build order tracking, status updates, and email notifications',
-    type: 'story',
-    priority: 'medium',
+    type: 'STORY',
+    priority: 'MEDIUM',
   },
   {
-    title: 'Fix checkout total calculation bug',
+    name: 'Fix checkout total calculation bug',
     description: 'When discount codes are applied, the total is not recalculated correctly. Need to fix the price calculation logic.',
-    type: 'bug',
-    priority: 'urgent',
+    type: 'BUG',
+    priority: 'CRITICAL',
   },
   {
-    title: 'Performance optimization',
+    name: 'Performance optimization',
     description: 'Optimize database queries and add caching layer for product listings',
-    type: 'task',
-    priority: 'low',
+    type: 'TASK',
+    priority: 'LOW',
   },
 ];
 
 const SEED_ROOMS = [
-  { name: 'general', description: 'General discussion channel' },
-  { name: 'engineering', description: 'Engineering team discussions' },
-  { name: 'product', description: 'Product planning and roadmap' },
+  { name: 'general', isPrivate: false, type: 'channel' as const },
+  { name: 'engineering', isPrivate: false, type: 'channel' as const },
+  { name: 'product', isPrivate: false, type: 'channel' as const },
 ];
 
 const SEED_MESSAGES = [
@@ -221,14 +256,15 @@ async function seedUsers() {
   for (const userData of SEED_USERS) {
     try {
       // Login to get token - users should already exist from DB seed
-      const loginRes = await apiCall<any>('POST', '/auth/login', {
+      // Endpoint is /auth/token, token is returned via Set-Cookie header
+      const result = await apiCallWithCookies<any>('POST', '/auth/token', {
         email: userData.email,
         password: userData.password,
       });
 
-      // Extract token from Set-Cookie header or response body
-      const token = loginRes.access_token || loginRes.accessToken || loginRes.token;
-      const userId = loginRes.user?.id || loginRes.userId || loginRes.user_id;
+      // Extract token from cookie (uts_at)
+      const token = result.cookies?.uts_at;
+      const userId = result.data.user_id;
 
       if (!token) {
         console.log(`  ⚠️  No token returned for ${userData.email}`);
@@ -241,11 +277,30 @@ async function seedUsers() {
         token: token,
       });
 
-      console.log(`  ✅ Logged in: ${userData.email}`);
+      console.log(`  ✅ Logged in: ${userData.email} (id: ${userId})`);
 
     } catch (error: any) {
       console.log(`  ⚠️  Failed to login ${userData.email}: ${error.message}`);
     }
+  }
+}
+
+async function switchOrg(user: User, orgId: string): Promise<boolean> {
+  try {
+    const result = await apiCallWithCookies<any>('POST', '/auth/switch-org', {
+      org_id: orgId,
+    }, user.token);
+
+    // Update token from new cookie
+    const newToken = result.cookies?.uts_at;
+    if (newToken) {
+      user.token = newToken;
+      return true;
+    }
+    return false;
+  } catch (error: any) {
+    console.log(`  ⚠️  Failed to switch org: ${error.message}`);
+    return false;
   }
 }
 
@@ -259,27 +314,30 @@ async function seedWorkspaces() {
   }
 
   try {
-    // Get user's orgs via /me endpoint
-    const meRes = await apiCall<any>('GET', '/auth/me', undefined, owner.token);
-    const orgId = meRes.org_id || meRes.orgId;
+    // Get user's organizations via /me/tenants endpoint
+    const tenantsRes = await apiCall<any>('GET', '/me/tenants', undefined, owner.token);
+    const joinedOrgs = tenantsRes.joined || [];
 
-    if (orgId) {
-      state.workspaces.set('ACME Corporation', {
-        id: orgId,
-        name: 'ACME Corporation',
-      });
-      console.log(`  ✅ Using org: ${orgId}`);
-    } else {
-      // Try to get orgs list
-      const orgsRes = await apiCall<any>('GET', '/orgs', undefined, owner.token);
-      if (orgsRes.length > 0) {
-        const org = orgsRes[0];
-        state.workspaces.set(org.name || 'Default Org', {
+    if (joinedOrgs.length > 0) {
+      for (const org of joinedOrgs) {
+        state.workspaces.set(org.name || org.display_name, {
           id: org.id,
-          name: org.name || 'Default Org',
+          name: org.name || org.display_name,
         });
-        console.log(`  ✅ Found org: ${org.name}`);
+        console.log(`  ✅ Found org: ${org.name || org.display_name} (${org.id})`);
       }
+
+      // Switch all users to first org to get tokens with org context
+      const firstOrg = joinedOrgs[0];
+      console.log(`\n  🔄 Switching users to org: ${firstOrg.name || firstOrg.display_name}...`);
+      for (const [email, user] of state.users) {
+        const success = await switchOrg(user, firstOrg.id);
+        if (success) {
+          console.log(`    ✅ ${email} switched to org`);
+        }
+      }
+    } else {
+      console.log('  ⚠️  No organizations found for user');
     }
   } catch (error: any) {
     console.log(`  ⚠️  Failed to get orgs: ${error.message}`);
@@ -287,7 +345,7 @@ async function seedWorkspaces() {
 }
 
 async function seedProjects() {
-  console.log('\n📁 Seeding Projects...');
+  console.log('\n📁 Fetching/Creating Projects...');
 
   const owner = state.users.get('owner@acme.com');
   const workspace = state.workspaces.get('ACME Corporation');
@@ -297,19 +355,36 @@ async function seedProjects() {
     return;
   }
 
+  // Fetch existing projects via PM API (token has org context after switch-org)
+  try {
+    const projects = await apiCall<any[]>('GET', '/pm/api/projects', undefined, owner.token);
+
+    if (Array.isArray(projects) && projects.length > 0) {
+      for (const proj of projects) {
+        state.projects.set(proj.identifier, {
+          id: proj.id,
+          name: proj.name,
+          identifier: proj.identifier,
+        });
+        console.log(`  ✅ Found existing: ${proj.name} (${proj.identifier})`);
+      }
+      return;
+    }
+  } catch (error: any) {
+    console.log(`  ℹ️  Could not fetch projects: ${error.message}`);
+  }
+
+  // Create new projects via PM API
   for (const projData of SEED_PROJECTS) {
     try {
-      const res = await apiCall<any>('POST', '/api/tenant/projects', {
+      const project = await apiCall<any>('POST', '/pm/api/projects', {
         name: projData.name,
         identifier: projData.identifier,
         description: projData.description,
-        workspaceId: workspace.id,
-      }, owner.token, {
-        'x-org-id': workspace.id,
-      });
+      }, owner.token);
 
       state.projects.set(projData.identifier, {
-        id: res.id || res.data?.id,
+        id: project.id,
         name: projData.name,
         identifier: projData.identifier,
       });
@@ -322,29 +397,46 @@ async function seedProjects() {
 }
 
 async function seedSprints() {
-  console.log('\n🏃 Seeding Sprints...');
+  console.log('\n🏃 Fetching/Creating Sprints...');
 
   const owner = state.users.get('owner@acme.com');
   const workspace = state.workspaces.get('ACME Corporation');
-  const project = state.projects.get('ECOM');
+  const project = state.projects.get('ECOM') || state.projects.values().next().value;
 
   if (!owner || !workspace || !project) {
     console.log('  ⚠️  Missing dependencies, skipping sprints');
     return;
   }
 
+  // Fetch existing sprints via PM API
+  try {
+    const sprints = await apiCall<any[]>('GET', `/pm/api/projects/${project.id}/sprints`, undefined, owner.token);
+
+    if (Array.isArray(sprints) && sprints.length > 0) {
+      for (const sprint of sprints) {
+        state.sprints.set(sprint.name, {
+          id: sprint.id,
+          name: sprint.name,
+        });
+        console.log(`  ✅ Found existing: ${sprint.name}`);
+      }
+      return;
+    }
+  } catch (error: any) {
+    console.log(`  ℹ️  Could not fetch sprints: ${error.message}`);
+  }
+
+  // Create new sprints via PM API
   for (const sprintData of SEED_SPRINTS) {
     try {
-      const res = await apiCall<any>('POST', `/api/tenant/projects/${project.id}/sprints`, {
+      const sprint = await apiCall<any>('POST', `/pm/api/projects/${project.id}/sprints`, {
         name: sprintData.name,
         startDate: sprintData.startDate,
         endDate: sprintData.endDate,
-      }, owner.token, {
-        'x-org-id': workspace.id,
-      });
+      }, owner.token);
 
       state.sprints.set(sprintData.name, {
-        id: res.id || res.data?.id,
+        id: sprint.id,
         name: sprintData.name,
       });
 
@@ -356,11 +448,11 @@ async function seedSprints() {
 }
 
 async function seedIssues() {
-  console.log('\n🎫 Seeding Issues...');
+  console.log('\n🎫 Fetching/Creating Issues...');
 
   const owner = state.users.get('owner@acme.com');
   const workspace = state.workspaces.get('ACME Corporation');
-  const project = state.projects.get('ECOM');
+  const project = state.projects.get('ECOM') || state.projects.values().next().value;
   const sprint = state.sprints.values().next().value;
 
   if (!owner || !workspace || !project) {
@@ -368,34 +460,55 @@ async function seedIssues() {
     return;
   }
 
+  // Fetch existing issues via PM API - endpoint is /api/projects/:projectId/issues
+  try {
+    const issues = await apiCall<any[]>('GET', `/pm/api/projects/${project.id}/issues`, undefined, owner.token);
+
+    if (Array.isArray(issues) && issues.length > 0) {
+      for (const issue of issues.slice(0, 10)) { // Only take first 10
+        state.issues.set(issue.name, {
+          id: issue.id,
+          name: issue.name,
+          description: issue.description || '',
+        });
+        console.log(`  ✅ Found existing: ${issue.name}`);
+      }
+      console.log(`  ℹ️  Found ${issues.length} total issues`);
+      return;
+    }
+  } catch (error: any) {
+    console.log(`  ℹ️  Could not fetch issues: ${error.message}`);
+  }
+
+  // Create new issues via PM API
+  console.log(`  ℹ️  Using project: ${project.id}, sprint: ${sprint?.id}`);
   for (const issueData of SEED_ISSUES) {
     try {
-      const res = await apiCall<any>('POST', `/api/tenant/projects/${project.id}/issues`, {
-        title: issueData.title,
+      const payload = {
+        projectId: project.id,
+        name: issueData.name,
         description: issueData.description,
         type: issueData.type,
         priority: issueData.priority,
-        sprintId: sprint?.id,
-      }, owner.token, {
-        'x-org-id': workspace.id,
+        ...(sprint?.id ? { sprintId: sprint.id } : {}),
+      };
+      const issue = await apiCall<any>('POST', '/pm/api/issues', payload, owner.token);
+
+      state.issues.set(issueData.name, {
+        id: issue.id,
+        name: issueData.name,
+        description: issueData.description,
       });
 
-      const issue = {
-        id: res.id || res.data?.id,
-        title: issueData.title,
-        description: issueData.description,
-      };
-
-      state.issues.set(issueData.title, issue);
-      console.log(`  ✅ Created: ${issueData.title}`);
+      console.log(`  ✅ Created: ${issueData.name}`);
     } catch (error: any) {
-      console.log(`  ⚠️  Failed: ${issueData.title} - ${error.message}`);
+      console.log(`  ⚠️  Failed: ${issueData.name} - ${error.message}`);
     }
   }
 }
 
 async function seedChatRooms() {
-  console.log('\n💬 Seeding Chat Rooms...');
+  console.log('\n💬 Fetching/Creating Chat Rooms...');
 
   const owner = state.users.get('owner@acme.com');
   const workspace = state.workspaces.get('ACME Corporation');
@@ -405,19 +518,37 @@ async function seedChatRooms() {
     return;
   }
 
+  // Fetch existing rooms via Chat API (token has org context after switch-org)
+  // Edge gateway adds X-User-ID and X-Org-ID from the token
+  try {
+    const roomsRes = await apiCall<any>('GET', '/chat/rooms', undefined, owner.token);
+
+    const rooms = roomsRes.data || roomsRes;
+    if (Array.isArray(rooms) && rooms.length > 0) {
+      for (const room of rooms) {
+        state.rooms.set(room.name, {
+          id: room.id,
+          name: room.name,
+        });
+        console.log(`  ✅ Found existing: #${room.name}`);
+      }
+      return;
+    }
+  } catch (error: any) {
+    console.log(`  ℹ️  Could not fetch rooms: ${error.message}`);
+  }
+
+  // Create new rooms via Chat API
   for (const roomData of SEED_ROOMS) {
     try {
-      const res = await apiCall<any>('POST', '/api/chat/rooms', {
+      const room = await apiCall<any>('POST', '/chat/rooms', {
         name: roomData.name,
-        description: roomData.description,
-        type: 'channel',
-      }, owner.token, {
-        'x-org-id': workspace.id,
-        'x-user-id': owner.id,
-      });
+        isPrivate: roomData.isPrivate,
+        type: roomData.type,
+      }, owner.token);
 
       state.rooms.set(roomData.name, {
-        id: res.id || res.data?.id,
+        id: room.id,
         name: roomData.name,
       });
 
@@ -430,44 +561,9 @@ async function seedChatRooms() {
 
 async function seedMessages() {
   console.log('\n✉️  Seeding Messages...');
-
-  const users = Array.from(state.users.values());
-  const workspace = state.workspaces.get('ACME Corporation');
-
-  if (users.length === 0 || !workspace) {
-    console.log('  ⚠️  Missing dependencies, skipping messages');
-    return;
-  }
-
-  for (let i = 0; i < SEED_MESSAGES.length; i++) {
-    const msgData = SEED_MESSAGES[i];
-    const room = state.rooms.get(msgData.room);
-    const user = users[i % users.length]; // Rotate through users
-
-    if (!room) {
-      console.log(`  ⚠️  Room not found: ${msgData.room}`);
-      continue;
-    }
-
-    try {
-      const res = await apiCall<any>('POST', `/api/chat/rooms/${room.id}/messages`, {
-        content: msgData.content,
-        type: 'text',
-      }, user.token, {
-        'x-org-id': workspace.id,
-        'x-user-id': user.id,
-      });
-
-      state.messages.push({
-        id: res.id || res.data?.id,
-        content: msgData.content,
-      });
-
-      console.log(`  ✅ Message in #${msgData.room}: "${msgData.content.substring(0, 40)}..."`);
-    } catch (error: any) {
-      console.log(`  ⚠️  Failed message in #${msgData.room}: ${error.message}`);
-    }
-  }
+  // Messages are sent via WebSocket in chat service, not REST API
+  // Skip HTTP message seeding - use DB seed (seed-chat.ts) instead
+  console.log('  ℹ️  Messages require WebSocket - use DB seed (npm run seed:chat) instead');
 }
 
 async function indexToRag() {
@@ -491,7 +587,7 @@ async function indexToRag() {
   let failed = 0;
 
   // Index issues
-  for (const [title, issue] of state.issues) {
+  for (const [name, issue] of state.issues) {
     try {
       const project = state.projects.get('ECOM');
       await fetch(`${RAG_API}/embeddings/index`, {
@@ -503,17 +599,17 @@ async function indexToRag() {
           orgId: workspace.id,
           sourceType: 'document',
           sourceId: issue.id,
-          content: `# ${issue.title}\n\n${issue.description}`,
-          metadata: { type: 'issue', title: issue.title },
+          content: `# ${issue.name}\n\n${issue.description}`,
+          metadata: { type: 'issue', name: issue.name },
           chunkSize: 1000,
           chunkOverlap: 200,
         }),
       });
       indexed++;
-      console.log(`  ✅ Indexed issue: ${title}`);
+      console.log(`  ✅ Indexed issue: ${name}`);
     } catch (error: any) {
       failed++;
-      console.log(`  ❌ Failed to index issue: ${title}`);
+      console.log(`  ❌ Failed to index issue: ${name}`);
     }
   }
 

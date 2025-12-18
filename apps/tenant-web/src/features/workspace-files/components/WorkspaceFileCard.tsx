@@ -96,13 +96,13 @@ export function WorkspaceFileCard({
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays === 1) return "Yesterday";
-    if (diffDays < 7) return `${diffDays}d ago`;
-    if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
-    return `${Math.floor(diffDays / 30)}mo ago`;
+    if (diffMins < 1) return "Vừa xong";
+    if (diffMins < 60) return `${diffMins} phút trước`;
+    if (diffHours < 24) return `${diffHours} giờ trước`;
+    if (diffDays === 1) return "Hôm qua";
+    if (diffDays < 7) return `${diffDays} ngày trước`;
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} tuần trước`;
+    return `${Math.floor(diffDays / 30)} tháng trước`;
   };
 
   return (
@@ -134,7 +134,7 @@ export function WorkspaceFileCard({
               }}
             >
               <Eye size={16} className="mr-1" />
-              Preview
+              Xem trước
             </Button>
             <Button
               size="sm"
@@ -146,7 +146,7 @@ export function WorkspaceFileCard({
               }}
             >
               <Download size={16} className="mr-1" />
-              Download
+              Tải xuống
             </Button>
           </div>
         )}
@@ -187,7 +187,7 @@ export function WorkspaceFileCard({
                 }}
               >
                 <Eye size={16} className="mr-2" />
-                Preview
+                Xem trước
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={(e) => {
@@ -196,7 +196,7 @@ export function WorkspaceFileCard({
                 }}
               >
                 <Download size={16} className="mr-2" />
-                Download
+                Tải xuống
               </DropdownMenuItem>
               {onMove && (
                 <DropdownMenuItem
@@ -206,7 +206,7 @@ export function WorkspaceFileCard({
                   }}
                 >
                   <FolderInput size={16} className="mr-2" />
-                  Move to folder
+                  Di chuyển vào thư mục
                 </DropdownMenuItem>
               )}
               {canDelete && onDelete && (
@@ -220,7 +220,7 @@ export function WorkspaceFileCard({
                     }}
                   >
                     <Trash2 size={16} className="mr-2" />
-                    Delete
+                    Xóa
                   </DropdownMenuItem>
                 </>
               )}

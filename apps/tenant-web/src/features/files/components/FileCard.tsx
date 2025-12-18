@@ -125,7 +125,7 @@ export function FileCard({ file, onPreview, onDownload, onDelete }: FileCardProp
               }}
             >
               <Eye size={16} className="mr-1" />
-              Preview
+              Xem trước
             </Button>
             <Button
               size="sm"
@@ -137,7 +137,7 @@ export function FileCard({ file, onPreview, onDownload, onDelete }: FileCardProp
               }}
             >
               <Download size={16} className="mr-1" />
-              Download
+              Tải xuống
             </Button>
           </div>
         )}
@@ -178,7 +178,7 @@ export function FileCard({ file, onPreview, onDownload, onDelete }: FileCardProp
                 }}
               >
                 <Eye size={16} className="mr-2" />
-                Preview
+                Xem trước
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={(e) => {
@@ -187,7 +187,7 @@ export function FileCard({ file, onPreview, onDownload, onDelete }: FileCardProp
                 }}
               >
                 <Download size={16} className="mr-2" />
-                Download
+                Tải xuống
               </DropdownMenuItem>
               <DropdownMenuItem
                 className="text-destructive"
@@ -197,7 +197,7 @@ export function FileCard({ file, onPreview, onDownload, onDelete }: FileCardProp
                 }}
               >
                 <Trash2 size={16} className="mr-2" />
-                Delete
+                Xóa
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

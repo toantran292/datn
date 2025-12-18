@@ -24,12 +24,12 @@ export function SettingsView() {
   const handleSaveSettings = async (data: { name?: string; description?: string }) => {
     const success = await updateSettings(data);
     if (success) {
-      toast.success("Settings saved", {
-        description: "Your organization settings have been updated.",
+      toast.success("Đã lưu cài đặt", {
+        description: "Cài đặt tổ chức của bạn đã được cập nhật.",
       });
     } else {
-      toast.error("Failed to save settings", {
-        description: "Please try again later.",
+      toast.error("Không thể lưu cài đặt", {
+        description: "Vui lòng thử lại sau.",
       });
     }
     return success;
@@ -38,12 +38,12 @@ export function SettingsView() {
   const handleUploadLogo = async (file: File) => {
     const success = await uploadLogo(file);
     if (success) {
-      toast.success("Logo uploaded", {
-        description: "Your organization logo has been updated.",
+      toast.success("Đã tải lên logo", {
+        description: "Logo tổ chức của bạn đã được cập nhật.",
       });
     } else {
-      toast.error("Failed to upload logo", {
-        description: "Please try again later.",
+      toast.error("Không thể tải lên logo", {
+        description: "Vui lòng thử lại sau.",
       });
     }
     return success;
@@ -52,12 +52,12 @@ export function SettingsView() {
   const handleDeleteLogo = async () => {
     const success = await deleteLogo();
     if (success) {
-      toast.success("Logo removed", {
-        description: "Your organization logo has been deleted.",
+      toast.success("Đã xóa logo", {
+        description: "Logo tổ chức của bạn đã được xóa.",
       });
     } else {
-      toast.error("Failed to remove logo", {
-        description: "Please try again later.",
+      toast.error("Không thể xóa logo", {
+        description: "Vui lòng thử lại sau.",
       });
     }
     return success;
@@ -66,14 +66,14 @@ export function SettingsView() {
   const handleDeleteOrganization = async () => {
     const success = await deleteOrganization();
     if (success) {
-      toast.success("Organization deleted", {
-        description: "You will be redirected shortly.",
+      toast.success("Đã xóa tổ chức", {
+        description: "Bạn sẽ được chuyển hướng trong giây lát.",
       });
       // Redirect will be handled by the backend/auth flow
       window.location.href = "/";
     } else {
-      toast.error("Failed to delete organization", {
-        description: "Please try again later.",
+      toast.error("Không thể xóa tổ chức", {
+        description: "Vui lòng thử lại sau.",
       });
     }
     return success;
@@ -85,10 +85,10 @@ export function SettingsView() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="mb-2" style={{ fontWeight: 600 }}>
-            Settings
+            Cài đặt
           </h1>
           <p className="text-muted-foreground">
-            Manage your organization settings and preferences
+            Quản lý cài đặt và tùy chọn tổ chức của bạn
           </p>
         </div>
 

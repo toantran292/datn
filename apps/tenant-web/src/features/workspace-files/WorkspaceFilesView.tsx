@@ -166,12 +166,12 @@ export function WorkspaceFilesView({ workspaceId, userRole = "MEMBER" }: Workspa
       const url = await getDownloadUrl(file.id);
       if (url) {
         window.open(url, "_blank");
-        toast.success(`Downloading ${file.name}`);
+        toast.success(`Đang tải xuống ${file.name}`);
       } else {
-        toast.error("Failed to get download link");
+        toast.error("Không thể lấy liên kết tải xuống");
       }
     } catch {
-      toast.error("Failed to download file");
+      toast.error("Không thể tải xuống tệp");
     }
   };
 
@@ -181,16 +181,16 @@ export function WorkspaceFilesView({ workspaceId, userRole = "MEMBER" }: Workspa
     if (itemToDelete.type === "file") {
       const success = await deleteFile(itemToDelete.item.id);
       if (success) {
-        toast.success(`${itemToDelete.item.name} deleted`);
+        toast.success(`Đã xóa ${itemToDelete.item.name}`);
       } else {
-        toast.error("Failed to delete file");
+        toast.error("Không thể xóa tệp");
       }
     } else {
       const success = await deleteFolder(itemToDelete.item.id);
       if (success) {
-        toast.success(`Folder "${itemToDelete.item.name}" deleted`);
+        toast.success(`Đã xóa thư mục "${itemToDelete.item.name}"`);
       } else {
-        toast.error("Failed to delete folder");
+        toast.error("Không thể xóa thư mục");
       }
     }
 
@@ -246,7 +246,7 @@ export function WorkspaceFilesView({ workspaceId, userRole = "MEMBER" }: Workspa
 
   const handleUploadSuccess = () => {
     setUploadOpen(false);
-    toast.success("File uploaded successfully");
+    toast.success("Đã tải lên tệp thành công");
   };
 
   const handleCreateFolderSuccess = () => {
@@ -259,10 +259,10 @@ export function WorkspaceFilesView({ workspaceId, userRole = "MEMBER" }: Workspa
         {/* Header */}
         <div className="mb-6">
           <h1 className="mb-2" style={{ fontWeight: 600 }}>
-            Workspace Files
+            Tệp Workspace
           </h1>
           <p className="text-muted-foreground">
-            Manage files and folders in your workspace
+            Quản lý tệp và thư mục trong workspace của bạn
           </p>
         </div>
 
@@ -303,7 +303,7 @@ export function WorkspaceFilesView({ workspaceId, userRole = "MEMBER" }: Workspa
               size={18}
             />
             <Input
-              placeholder="Search by name..."
+              placeholder="Tìm kiếm theo tên..."
               className="pl-10 rounded-xl bg-white border-border h-11"
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
@@ -312,14 +312,14 @@ export function WorkspaceFilesView({ workspaceId, userRole = "MEMBER" }: Workspa
 
           <Select value={typeFilter} onValueChange={handleTypeChange}>
             <SelectTrigger className="w-full lg:w-44 rounded-xl bg-white h-11">
-              <SelectValue placeholder="File Type" />
+              <SelectValue placeholder="Loại tệp" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="image">Images</SelectItem>
-              <SelectItem value="document">Documents</SelectItem>
+              <SelectItem value="all">Tất cả loại</SelectItem>
+              <SelectItem value="image">Hình ảnh</SelectItem>
+              <SelectItem value="document">Tài liệu</SelectItem>
               <SelectItem value="pdf">PDFs</SelectItem>
-              <SelectItem value="spreadsheet">Spreadsheets</SelectItem>
+              <SelectItem value="spreadsheet">Bảng tính</SelectItem>
             </SelectContent>
           </Select>
 
@@ -329,7 +329,7 @@ export function WorkspaceFilesView({ workspaceId, userRole = "MEMBER" }: Workspa
             className="rounded-xl h-11"
           >
             <FolderPlus size={18} className="mr-2" />
-            New Folder
+            Thư mục mới
           </Button>
 
           <Button
@@ -337,14 +337,14 @@ export function WorkspaceFilesView({ workspaceId, userRole = "MEMBER" }: Workspa
             className="bg-secondary hover:bg-secondary/90 text-white rounded-xl shadow-sm h-11"
           >
             <Upload size={18} className="mr-2" />
-            Upload
+            Tải lên
           </Button>
         </div>
 
         {/* View Mode Toggle */}
         <div className="flex items-center justify-between mb-6">
           <p className="text-sm text-muted-foreground">
-            {folders.length} folders, {total} files
+            {folders.length} thư mục, {total} tệp
           </p>
           <div className="flex items-center gap-1 bg-muted rounded-xl p-1">
             <Button
@@ -374,7 +374,7 @@ export function WorkspaceFilesView({ workspaceId, userRole = "MEMBER" }: Workspa
             {/* Folders Section */}
             {folders.length > 0 && (
               <div className="mb-8">
-                <h3 className="text-sm font-medium text-muted-foreground mb-4">Folders</h3>
+                <h3 className="text-sm font-medium text-muted-foreground mb-4">Thư mục</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {folders.map((folder) => (
                     <FolderCard
@@ -392,7 +392,7 @@ export function WorkspaceFilesView({ workspaceId, userRole = "MEMBER" }: Workspa
             {/* Files Section */}
             {files.length > 0 && (
               <div>
-                <h3 className="text-sm font-medium text-muted-foreground mb-4">Files</h3>
+                <h3 className="text-sm font-medium text-muted-foreground mb-4">Tệp</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {files.map((file) => (
                     <WorkspaceFileCard
@@ -419,10 +419,10 @@ export function WorkspaceFilesView({ workspaceId, userRole = "MEMBER" }: Workspa
                   onClick={() => handlePageChange(page - 1)}
                 >
                   <ChevronLeft size={16} />
-                  Previous
+                  Trước
                 </Button>
                 <span className="text-sm text-muted-foreground px-4">
-                  Page {page} of {totalPages}
+                  Trang {page} / {totalPages}
                 </span>
                 <Button
                   variant="outline"
@@ -431,7 +431,7 @@ export function WorkspaceFilesView({ workspaceId, userRole = "MEMBER" }: Workspa
                   disabled={page >= totalPages}
                   onClick={() => handlePageChange(page + 1)}
                 >
-                  Next
+                  Sau
                   <ChevronRight size={16} />
                 </Button>
               </div>
@@ -443,12 +443,12 @@ export function WorkspaceFilesView({ workspaceId, userRole = "MEMBER" }: Workspa
               <Filter size={32} className="text-muted-foreground" />
             </div>
             <h3 style={{ fontWeight: 600 }} className="mb-2">
-              {searchQuery || typeFilter !== "all" ? "No files found" : "This folder is empty"}
+              {searchQuery || typeFilter !== "all" ? "Không tìm thấy tệp" : "Thư mục này trống"}
             </h3>
             <p className="text-muted-foreground mb-6">
               {searchQuery || typeFilter !== "all"
-                ? "Try adjusting your filters or search query"
-                : "Upload files or create folders to get started"}
+                ? "Thử điều chỉnh bộ lọc hoặc từ khóa tìm kiếm"
+                : "Tải lên tệp hoặc tạo thư mục để bắt đầu"}
             </p>
             {searchQuery || typeFilter !== "all" ? (
               <Button
@@ -460,7 +460,7 @@ export function WorkspaceFilesView({ workspaceId, userRole = "MEMBER" }: Workspa
                   setFilters({ search: "", type: "all" });
                 }}
               >
-                Clear Filters
+                Xóa bộ lọc
               </Button>
             ) : (
               <div className="flex justify-center gap-3">
@@ -470,14 +470,14 @@ export function WorkspaceFilesView({ workspaceId, userRole = "MEMBER" }: Workspa
                   onClick={() => setCreateFolderOpen(true)}
                 >
                   <FolderPlus size={16} className="mr-2" />
-                  New Folder
+                  Thư mục mới
                 </Button>
                 <Button
                   className="bg-secondary hover:bg-secondary/90 text-white rounded-xl"
                   onClick={() => setUploadOpen(true)}
                 >
                   <Upload size={16} className="mr-2" />
-                  Upload File
+                  Tải lên tệp
                 </Button>
               </div>
             )}
@@ -515,22 +515,22 @@ export function WorkspaceFilesView({ workspaceId, userRole = "MEMBER" }: Workspa
         <AlertDialogContent className="rounded-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Delete {itemToDelete?.type === "folder" ? "Folder" : "File"}
+              Xóa {itemToDelete?.type === "folder" ? "thư mục" : "tệp"}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{itemToDelete?.item?.name}"?
+              Bạn có chắc chắn muốn xóa "{itemToDelete?.item?.name}"?
               {itemToDelete?.type === "folder" &&
-                " This will also delete all files inside this folder."}
-              This action cannot be undone.
+                " Điều này cũng sẽ xóa tất cả các tệp trong thư mục này."}
+              Hành động này không thể hoàn tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-xl">Cancel</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-xl">Hủy</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive hover:bg-destructive/90 rounded-xl"
               onClick={handleDeleteConfirm}
             >
-              Delete
+              Xóa
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

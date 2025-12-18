@@ -50,10 +50,10 @@ export function ChangeRoleModal({ open, onOpenChange, member, onConfirm }: Chang
         <div className="flex items-center justify-between px-5 py-4 border-b border-custom-border-200">
           <div>
             <h3 className="text-lg font-semibold text-custom-text-100">
-              Change Role
+              Thay đổi vai trò
             </h3>
             <p className="text-sm text-custom-text-300 mt-0.5">
-              Update role for {member?.name}
+              Cập nhật vai trò cho {member?.name}
             </p>
           </div>
           <button
@@ -70,7 +70,7 @@ export function ChangeRoleModal({ open, onOpenChange, member, onConfirm }: Chang
           {/* Role Selection */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-custom-text-200">
-              Select Role
+              Chọn vai trò
             </label>
             <div className="grid grid-cols-2 gap-3">
               <button
@@ -97,7 +97,7 @@ export function ChangeRoleModal({ open, onOpenChange, member, onConfirm }: Chang
                   </span>
                 </div>
                 <p className="text-xs text-custom-text-300 ml-6">
-                  Full access to all projects and settings
+                  Truy cập đầy đủ vào tất cả dự án và cài đặt
                 </p>
               </button>
 
@@ -125,7 +125,7 @@ export function ChangeRoleModal({ open, onOpenChange, member, onConfirm }: Chang
                   </span>
                 </div>
                 <p className="text-xs text-custom-text-300 ml-6">
-                  Access only to assigned projects
+                  Chỉ truy cập vào các dự án được gán
                 </p>
               </button>
             </div>
@@ -140,7 +140,7 @@ export function ChangeRoleModal({ open, onOpenChange, member, onConfirm }: Chang
             onClick={handleClose}
             disabled={isSubmitting}
           >
-            Cancel
+            Hủy
           </Button>
           <Button
             type="submit"
@@ -151,7 +151,7 @@ export function ChangeRoleModal({ open, onOpenChange, member, onConfirm }: Chang
             prependIcon={<Shield size={16} />}
             className="bg-[#00C4AB] hover:bg-[#00B09A]"
           >
-            Update Role
+            Cập nhật vai trò
           </Button>
         </div>
       </form>

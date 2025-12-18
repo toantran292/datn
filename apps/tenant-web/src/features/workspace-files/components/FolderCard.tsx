@@ -68,7 +68,7 @@ export function FolderCard({ folder, onOpen, onDelete, canDelete = false }: Fold
                   }}
                 >
                   <Trash2 size={16} className="mr-2" />
-                  Delete
+                  Xóa
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

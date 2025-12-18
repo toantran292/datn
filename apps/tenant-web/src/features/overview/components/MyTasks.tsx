@@ -19,11 +19,11 @@ const typeIcons: Record<string, typeof ListTodo> = {
 };
 
 const priorityConfig: Record<string, { color: string; bg: string; label: string }> = {
-  URGENT: { color: "#DC2626", bg: "#FEE2E2", label: "Urgent" },
-  HIGH: { color: "#EA580C", bg: "#FFEDD5", label: "High" },
-  MEDIUM: { color: "#CA8A04", bg: "#FEF9C3", label: "Medium" },
-  LOW: { color: "#16A34A", bg: "#DCFCE7", label: "Low" },
-  NONE: { color: "#6B7280", bg: "#F3F4F6", label: "None" },
+  URGENT: { color: "#DC2626", bg: "#FEE2E2", label: "Khẩn cấp" },
+  HIGH: { color: "#EA580C", bg: "#FFEDD5", label: "Cao" },
+  MEDIUM: { color: "#CA8A04", bg: "#FEF9C3", label: "Trung bình" },
+  LOW: { color: "#16A34A", bg: "#DCFCE7", label: "Thấp" },
+  NONE: { color: "#6B7280", bg: "#F3F4F6", label: "Không" },
 };
 
 function formatDate(dateString?: string): string {
@@ -34,23 +34,23 @@ function formatDate(dateString?: string): string {
   tomorrow.setDate(tomorrow.getDate() + 1);
 
   if (date.toDateString() === today.toDateString()) {
-    return "Today";
+    return "Hôm nay";
   }
   if (date.toDateString() === tomorrow.toDateString()) {
-    return "Tomorrow";
+    return "Ngày mai";
   }
 
   const diffMs = date.getTime() - today.getTime();
   const diffDays = Math.ceil(diffMs / 86400000);
 
   if (diffDays < 0) {
-    return `${Math.abs(diffDays)} day${Math.abs(diffDays) > 1 ? "s" : ""} overdue`;
+    return `Quá hạn ${Math.abs(diffDays)} ngày`;
   }
   if (diffDays <= 7) {
-    return `In ${diffDays} day${diffDays > 1 ? "s" : ""}`;
+    return `Còn ${diffDays} ngày`;
   }
 
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return date.toLocaleDateString("vi-VN", { month: "short", day: "numeric" });
 }
 
 function isOverdue(dateString?: string): boolean {
@@ -63,9 +63,9 @@ export function MyTasks({ tasks = [], isLoading = false, onTaskClick }: MyTasksP
     return (
       <Card className="p-6 border border-border shadow-md rounded-2xl bg-white">
         <div className="mb-6">
-          <h3 style={{ fontWeight: 600 }}>My Tasks</h3>
+          <h3 style={{ fontWeight: 600 }}>Công việc của tôi</h3>
           <p className="text-sm text-muted-foreground mt-1">
-            Tasks assigned to you
+            Công việc được giao cho bạn
           </p>
         </div>
         <div className="space-y-3">
@@ -88,18 +88,18 @@ export function MyTasks({ tasks = [], isLoading = false, onTaskClick }: MyTasksP
     return (
       <Card className="p-6 border border-border shadow-md rounded-2xl bg-white">
         <div className="mb-6">
-          <h3 style={{ fontWeight: 600 }}>My Tasks</h3>
+          <h3 style={{ fontWeight: 600 }}>Công việc của tôi</h3>
           <p className="text-sm text-muted-foreground mt-1">
-            Tasks assigned to you
+            Công việc được giao cho bạn
           </p>
         </div>
         <div className="py-12 text-center">
           <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-2xl flex items-center justify-center">
             <CheckSquare size={28} className="text-muted-foreground" />
           </div>
-          <p className="text-muted-foreground font-medium">No tasks assigned</p>
+          <p className="text-muted-foreground font-medium">Chưa có công việc nào</p>
           <p className="text-sm text-muted-foreground mt-1">
-            You're all caught up!
+            Bạn đã hoàn thành tất cả!
           </p>
         </div>
       </Card>
@@ -132,13 +132,13 @@ export function MyTasks({ tasks = [], isLoading = false, onTaskClick }: MyTasksP
       <div className="mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <h3 style={{ fontWeight: 600 }}>My Tasks</h3>
+            <h3 style={{ fontWeight: 600 }}>Công việc của tôi</h3>
             <p className="text-sm text-muted-foreground mt-1">
-              {tasks.length} task{tasks.length !== 1 ? "s" : ""} assigned to you
+              {tasks.length} công việc được giao cho bạn
             </p>
           </div>
           <Badge variant="secondary" className="text-sm">
-            {tasks.filter(t => t.status?.name?.toUpperCase() !== "DONE").length} open
+            {tasks.filter(t => t.status?.name?.toUpperCase() !== "DONE").length} đang mở
           </Badge>
         </div>
       </div>

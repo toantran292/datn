@@ -33,7 +33,7 @@ export function CreateFolderModal({
 
   const handleCreate = async () => {
     if (!folderName.trim()) {
-      toast.error("Please enter a folder name");
+      toast.error("Vui lòng nhập tên thư mục");
       return;
     }
 
@@ -42,15 +42,15 @@ export function CreateFolderModal({
       const result = await onCreate(folderName.trim());
       if (result) {
         setFolderName("");
-        toast.success("Folder created successfully");
+        toast.success("Đã tạo thư mục thành công");
         onSuccess?.();
         onOpenChange(false);
       } else {
-        toast.error("Failed to create folder");
+        toast.error("Không thể tạo thư mục");
       }
     } catch (error: any) {
-      toast.error("Failed to create folder", {
-        description: error.message || "Please try again later",
+      toast.error("Không thể tạo thư mục", {
+        description: error.message || "Vui lòng thử lại sau",
       });
     } finally {
       setIsCreating(false);
@@ -67,18 +67,18 @@ export function CreateFolderModal({
     <Dialog open={open} onOpenChange={(v) => !isCreating && onOpenChange(v)}>
       <DialogContent className="sm:max-w-[400px] rounded-2xl">
         <DialogHeader>
-          <DialogTitle style={{ fontWeight: 600 }}>Create New Folder</DialogTitle>
+          <DialogTitle style={{ fontWeight: 600 }}>Tạo thư mục mới</DialogTitle>
           <DialogDescription>
-            Create a new folder to organize your files
+            Tạo thư mục mới để sắp xếp các tệp của bạn
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="folderName">Folder Name</Label>
+            <Label htmlFor="folderName">Tên thư mục</Label>
             <Input
               id="folderName"
-              placeholder="Enter folder name..."
+              placeholder="Nhập tên thư mục..."
               value={folderName}
               onChange={(e) => setFolderName(e.target.value)}
               className="rounded-xl"
@@ -101,12 +101,12 @@ export function CreateFolderModal({
             {isCreating ? (
               <>
                 <Loader2 size={16} className="mr-2 animate-spin" />
-                Creating...
+                Đang tạo...
               </>
             ) : (
               <>
                 <FolderPlus size={16} className="mr-2" />
-                Create
+                Tạo
               </>
             )}
           </Button>
@@ -116,7 +116,7 @@ export function CreateFolderModal({
             disabled={isCreating}
             className="flex-1 rounded-xl"
           >
-            Cancel
+            Hủy
           </Button>
         </div>
       </DialogContent>
