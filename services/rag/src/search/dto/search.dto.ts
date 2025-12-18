@@ -1,7 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsString,
-  IsUUID,
   IsOptional,
   IsEnum,
   IsArray,
@@ -10,9 +9,13 @@ import {
   Max,
   MinLength,
   IsObject,
+  Matches,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { EmbeddingSourceType } from '../../database/entities/document-embedding.entity';
+
+// UUID-like pattern (accepts any 8-4-4-4-12 hex format, not just strict UUID versions)
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export class SearchRequestDto {
   @ApiProperty({
@@ -28,7 +31,7 @@ export class SearchRequestDto {
     description: 'Namespace ID to search within',
     example: '550e8400-e29b-41d4-a716-446655440000',
   })
-  @IsUUID()
+  @Matches(UUID_PATTERN, { message: 'namespaceId must be a valid UUID format' })
   @IsOptional()
   namespaceId?: string;
 
@@ -37,7 +40,7 @@ export class SearchRequestDto {
     example: ['550e8400-e29b-41d4-a716-446655440000', '550e8400-e29b-41d4-a716-446655440001'],
   })
   @IsArray()
-  @IsUUID('all', { each: true })
+  @Matches(UUID_PATTERN, { each: true, message: 'each namespaceId must be a valid UUID format' })
   @IsOptional()
   namespaceIds?: string[];
 
@@ -53,7 +56,7 @@ export class SearchRequestDto {
     description: 'Organization ID filter',
     example: '550e8400-e29b-41d4-a716-446655440001',
   })
-  @IsUUID()
+  @Matches(UUID_PATTERN, { message: 'orgId must be a valid UUID format' })
   @IsOptional()
   orgId?: string;
 

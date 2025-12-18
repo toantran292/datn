@@ -16,6 +16,8 @@ export class ProjectLiteResponseDto {
   name: string;
   orgId: string;
   projectLead: string | null;
+  issueCount: number;
+  sprintCount: number;
 }
 
 export class ProjectIdentifierAvailabilityResponseDto {

@@ -1,13 +1,16 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsUUID, IsOptional, IsEnum, IsObject, MinLength, IsNumber } from 'class-validator';
+import { IsString, IsOptional, IsEnum, IsObject, MinLength, IsNumber, Matches } from 'class-validator';
 import { EmbeddingSourceType } from '../../database/entities/document-embedding.entity';
+
+// UUID-like pattern (accepts any 8-4-4-4-12 hex format, not just strict UUID versions)
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export class IndexDocumentRequestDto {
   @ApiProperty({
     description: 'Namespace ID for isolating embeddings (e.g., roomId, projectId)',
     example: '550e8400-e29b-41d4-a716-446655440000',
   })
-  @IsUUID()
+  @Matches(UUID_PATTERN, { message: 'namespaceId must be a valid UUID format' })
   namespaceId: string;
 
   @ApiPropertyOptional({
@@ -23,7 +26,7 @@ export class IndexDocumentRequestDto {
     description: 'Organization ID',
     example: '550e8400-e29b-41d4-a716-446655440001',
   })
-  @IsUUID()
+  @Matches(UUID_PATTERN, { message: 'orgId must be a valid UUID format' })
   orgId: string;
 
   @ApiProperty({
@@ -38,7 +41,7 @@ export class IndexDocumentRequestDto {
     description: 'Unique ID of the source document/message',
     example: '550e8400-e29b-41d4-a716-446655440002',
   })
-  @IsUUID()
+  @Matches(UUID_PATTERN, { message: 'sourceId must be a valid UUID format' })
   sourceId: string;
 
   @ApiProperty({
@@ -82,7 +85,7 @@ export class IndexShortTextRequestDto {
     description: 'Namespace ID for isolating embeddings',
     example: '550e8400-e29b-41d4-a716-446655440000',
   })
-  @IsUUID()
+  @Matches(UUID_PATTERN, { message: 'namespaceId must be a valid UUID format' })
   namespaceId: string;
 
   @ApiPropertyOptional({
@@ -97,7 +100,7 @@ export class IndexShortTextRequestDto {
     description: 'Organization ID',
     example: '550e8400-e29b-41d4-a716-446655440001',
   })
-  @IsUUID()
+  @Matches(UUID_PATTERN, { message: 'orgId must be a valid UUID format' })
   orgId: string;
 
   @ApiProperty({
@@ -112,7 +115,7 @@ export class IndexShortTextRequestDto {
     description: 'Unique ID of the source',
     example: '550e8400-e29b-41d4-a716-446655440002',
   })
-  @IsUUID()
+  @Matches(UUID_PATTERN, { message: 'sourceId must be a valid UUID format' })
   sourceId: string;
 
   @ApiProperty({

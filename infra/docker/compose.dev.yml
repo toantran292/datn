@@ -386,8 +386,8 @@ services:
       EMBEDDING_MODEL: text-embedding-3-small
     depends_on:
       postgres: { condition: service_healthy }
-    expose:
-      - "3000"
+    ports:
+      - "41600:3000"
     healthcheck:
       test:
         [

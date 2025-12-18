@@ -149,6 +149,36 @@ export const FOLDER_IDS = {
 } as const;
 
 // ============================================================================
+// DOCUMENT IDs - For RAG embeddings (using 'aa' prefix for hex compliance)
+// ============================================================================
+export const DOCUMENT_IDS = {
+  // ACME Documents
+  ACME_API_DOC: 'aa100000-0000-0000-0000-000000000001',
+  ACME_ROADMAP: 'aa100000-0000-0000-0000-000000000002',
+  ACME_SPRINT3_REPORT: 'aa100000-0000-0000-0000-000000000003',
+  ACME_ARCHITECTURE: 'aa100000-0000-0000-0000-000000000004',
+
+  // Tech Startup Documents
+  STARTUP_MVP_REQUIREMENTS: 'aa200000-0000-0000-0000-000000000001',
+  STARTUP_PITCH_DECK: 'aa200000-0000-0000-0000-000000000002',
+
+  // Innovation Labs Documents
+  LABS_LLM_COMPARISON: 'aa300000-0000-0000-0000-000000000001',
+  LABS_RAG_ARCHITECTURE: 'aa300000-0000-0000-0000-000000000002',
+} as const;
+
+// ============================================================================
+// MESSAGE IDs - For RAG short text embeddings (using 'ab' prefix for hex compliance)
+// ============================================================================
+export const RAG_MESSAGE_IDS = {
+  ACME_ENG_MSG_1: 'ab100000-0000-0000-0000-000000000001',
+  ACME_ENG_MSG_2: 'ab100000-0000-0000-0000-000000000002',
+  ACME_ENG_MSG_3: 'ab100000-0000-0000-0000-000000000003',
+  ACME_PROD_MSG_1: 'ab100000-0000-0000-0000-000000000004',
+  ACME_PROD_MSG_2: 'ab100000-0000-0000-0000-000000000005',
+} as const;
+
+// ============================================================================
 // ENUMS - Must match schema definitions
 // ============================================================================
 

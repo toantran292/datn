@@ -16,6 +16,7 @@ import { seedIssues } from './seed-issues';
 import { seedChat } from './seed-chat';
 import { seedChatWithVideo } from './seed-chat-with-video';
 import { seedFiles } from './seed-files';
+import { seedRag } from './seed-rag';
 
 interface SeedStep {
   name: string;
@@ -57,6 +58,11 @@ const SEED_STEPS: SeedStep[] = [
     name: 'Files',
     fn: seedFiles,
     dependsOn: ['Organizations'],
+  },
+  {
+    name: 'RAG Embeddings',
+    fn: seedRag,
+    dependsOn: ['Organizations', 'Chat'],
   },
 ];
 
@@ -131,13 +137,14 @@ Usage:
 
 Options:
   --help, -h     Show this help message
-  --only <name>  Run only specific seed (users, orgs, projects, issues, chat, video, files)
+  --only <name>  Run only specific seed (users, orgs, projects, issues, chat, video, files, rag)
   --skip <name>  Skip specific seed
 
 Examples:
   npx tsx scripts/seeds/seed-all.ts                    # Run all seeds
   npx tsx scripts/seeds/seed-all.ts --only users       # Run only users seed
   npx tsx scripts/seeds/seed-all.ts --skip video       # Skip video seed
+  npx tsx scripts/seeds/seed-all.ts --only rag         # Run only RAG embeddings
 
 Available Seeds:
   - users        User accounts
@@ -147,6 +154,7 @@ Available Seeds:
   - chat         Chat rooms and messages
   - video        Meeting recordings and video messages
   - files        File metadata and folders
+  - rag          RAG embeddings for AI search (requires RAG service running)
 `);
   process.exit(0);
 }
@@ -164,6 +172,8 @@ if (onlyIndex !== -1 && args[onlyIndex + 1]) {
     chat: seedChat,
     video: seedChatWithVideo,
     files: seedFiles,
+    rag: seedRag,
+    embeddings: seedRag,
   };
 
   if (seedMap[seedName]) {
@@ -179,7 +189,7 @@ if (onlyIndex !== -1 && args[onlyIndex + 1]) {
       });
   } else {
     console.error(`Unknown seed: ${seedName}`);
-    console.log('Available: users, orgs, projects, issues, chat, video, files');
+    console.log('Available: users, orgs, projects, issues, chat, video, files, rag');
     process.exit(1);
   }
 } else {
