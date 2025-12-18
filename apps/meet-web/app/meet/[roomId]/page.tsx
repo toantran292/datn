@@ -19,7 +19,8 @@ import { RecordingIndicator } from '@/components/RecordingIndicator';
 import { useClientRecording } from '@/hooks/useClientRecording';
 import { SettingsPanel, BackgroundOption } from '@/components/SettingsPanel';
 import { MeetingExports } from '@/components/MeetingExports';
-import { MeetingChatPanel } from '@/components/MeetingChatPanel';
+import { MeetingSidePanel } from '@/components/MeetingSidePanel';
+import type { CaptionEvent } from '@/hooks/useJitsiConference';
 import type { JitsiTrack } from '@/types/jitsi';
 import { Video } from 'lucide-react';
 import { useCallback } from 'react';
@@ -60,9 +61,11 @@ function MeetingPageContent() {
   // Exports panel state
   const [isExportsOpen, setIsExportsOpen] = useState(false);
 
-  // Chat panel state
-  const [isChatOpen, setIsChatOpen] = useState(false);
+  // Side panel state (Chat + Captions tabs)
+  const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
+  const [sidePanelTab, setSidePanelTab] = useState<'chat' | 'captions'>('chat');
   const [chatUnreadCount, setChatUnreadCount] = useState(0);
+
 
   // Initialize Jitsi and load meeting data from localStorage
   useEffect(() => {
@@ -92,6 +95,14 @@ function MeetingPageContent() {
     setMeetingId(mId);
     setIsInitialized(true);
 
+    // Clear any join locks from /meet page to prevent duplicate join protection from blocking future joins
+    // This is safe because we're already in the meeting room
+    Object.keys(sessionStorage).forEach(key => {
+      if (key.startsWith('joining_')) {
+        sessionStorage.removeItem(key);
+      }
+    });
+
     // Handle page unload - notify meeting service using sendBeacon for reliability
     const handleBeforeUnload = () => {
       if (mId && uId) {
@@ -118,12 +129,17 @@ function MeetingPageContent() {
   );
 
   // Transcript saver - saves all final captions to database
-  const { saveCaption } = useTranscriptSaver({
+  const { saveCaption, uploadToS3 } = useTranscriptSaver({
     meetingId,
     enabled: true, // Always save transcripts
     translateToLang: translationEnabled ? translationLang : undefined,
     currentUserId: userId, // Replace 'local' with real userId
   });
+
+  // Callback to save final captions to database
+  const handleFinalCaption = useCallback((caption: CaptionEvent) => {
+    saveCaption(caption);
+  }, [saveCaption]);
 
   // Jitsi conference - simplified hook with transcript callback
   const {
@@ -153,7 +169,7 @@ function MeetingPageContent() {
     connection,
     isConnected ? roomId : null,
     displayName,
-    { onFinalCaption: saveCaption }
+    { onFinalCaption: handleFinalCaption }
   );
 
   // Embed mode: Notify parent when connected
@@ -233,14 +249,23 @@ function MeetingPageContent() {
 
   // Handle leave
   const handleLeave = async () => {
-    // Notify parent window in embed mode
-    if (isEmbedMode) {
-      postToParent('huddle:leave');
-    }
+    console.log('[handleLeave] Starting leave process...', { meetingId, userId, isEmbedMode });
+    // Upload transcript to S3 before leaving
+    console.log('[handleLeave] Uploading transcript to S3...');
+    await uploadToS3();
     // Notify meeting service that user is leaving
     if (meetingId && userId) {
-      await leaveMeeting(meetingId, userId);
+      console.log('[handleLeave] Calling leaveMeeting API...');
+      try {
+        await leaveMeeting(meetingId, userId);
+        console.log('[handleLeave] leaveMeeting API call successful');
+      } catch (err) {
+        console.error('[handleLeave] leaveMeeting API call failed:', err);
+      }
+    } else {
+      console.warn('[handleLeave] Missing meetingId or userId:', { meetingId, userId });
     }
+    console.log('[handleLeave] Leaving conference...');
     await leaveConference();
     // Clear stored meeting info
     localStorage.removeItem('jwtToken');
@@ -248,8 +273,15 @@ function MeetingPageContent() {
     localStorage.removeItem('roomId');
     localStorage.removeItem('meetingId');
     localStorage.removeItem('iceServers');
-    // Close the tab (works when opened via window.open from chat-web)
-    if (!isEmbedMode) {
+    console.log('[handleLeave] Cleared localStorage');
+    // Notify parent window in embed mode AFTER all cleanup is done
+    // This allows the parent to close/unmount the iframe safely
+    if (isEmbedMode) {
+      console.log('[handleLeave] Notifying parent window to close huddle');
+      postToParent('huddle:leave');
+    } else {
+      // Close the tab (works when opened via window.open from chat-web)
+      console.log('[handleLeave] Closing window...');
       window.close();
     }
   };
@@ -540,14 +572,14 @@ function MeetingPageContent() {
         isScreenSharing={isScreenSharing}
         isRecording={isRecording}
         isCaptionsOn={isCaptionsEnabled}
-        isChatOpen={isChatOpen}
+        isChatOpen={isSidePanelOpen}
         unreadCount={chatUnreadCount}
         onToggleMic={toggleAudio}
         onToggleVideo={toggleVideo}
         onToggleScreenShare={toggleScreenShare}
         onToggleRecording={toggleRecording}
         onToggleCaptions={toggleCaptions}
-        onToggleChat={() => setIsChatOpen(!isChatOpen)}
+        onToggleChat={() => setIsSidePanelOpen(!isSidePanelOpen)}
         onSendReaction={sendReaction}
         onShowSettings={handleShowSettings}
         onShowExports={() => setIsExportsOpen(true)}
@@ -582,15 +614,18 @@ function MeetingPageContent() {
         />
       )}
 
-      {/* Chat Panel */}
-      <MeetingChatPanel
-        isOpen={isChatOpen}
-        onClose={() => setIsChatOpen(false)}
+      {/* Side Panel (Chat + Captions) */}
+      <MeetingSidePanel
+        isOpen={isSidePanelOpen}
+        onClose={() => setIsSidePanelOpen(false)}
         meetingId={meetingId}
         roomId={roomId}
         userId={userId}
         userName={displayName}
+        captions={captions}
         onUnreadCountChange={setChatUnreadCount}
+        activeTab={sidePanelTab}
+        onTabChange={setSidePanelTab}
       />
     </div>
   );

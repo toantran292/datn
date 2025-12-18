@@ -45,6 +45,8 @@ export class FileStorageService {
       subjectId: request.subjectId,
       uploadedBy: request.uploadedBy,
       orgId: request.orgId,
+      workspaceId: request.workspaceId,
+      folderId: request.folderId,
       tags: request.tags,
       metadata: request.metadata,
       uploadStatus: 'pending',
@@ -197,6 +199,13 @@ export class FileStorageService {
     modelType?: string;
     subjectId?: string;
     uploadedBy?: string;
+    orgId?: string;
+    workspaceId?: string;
+    folderId?: string | null;
+    search?: string;
+    mimeType?: string;
+    sortBy?: 'name' | 'size' | 'createdAt';
+    sortOrder?: 'asc' | 'desc';
     tags?: string[];
     page?: number;
     limit?: number;
@@ -208,6 +217,14 @@ export class FileStorageService {
     totalPages: number;
   }> {
     return this.metadataService.findAll(query);
+  }
+
+  /**
+   * Move file to a different folder (UC14)
+   */
+  async moveFile(fileId: string, folderId: string | null): Promise<FileMetadata> {
+    this.logger.log(`Moving file ${fileId} to folder ${folderId || 'root'}`);
+    return this.metadataService.moveToFolder(fileId, folderId);
   }
 
   async deleteFile(fileId: string): Promise<void> {

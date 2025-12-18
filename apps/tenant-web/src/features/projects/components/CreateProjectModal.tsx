@@ -40,7 +40,7 @@ export function CreateProjectModal({
     e.preventDefault();
 
     if (!name.trim()) {
-      setError("Project name is required");
+      setError("Tên dự án là bắt buộc");
       return;
     }
 
@@ -56,7 +56,7 @@ export function CreateProjectModal({
       handleClose();
     } catch (err: any) {
       console.error("Failed to create project:", err);
-      setError(err.message || "Failed to create project. Please try again.");
+      setError(err.message || "Không thể tạo dự án. Vui lòng thử lại.");
     } finally {
       setIsSubmitting(false);
     }
@@ -74,10 +74,10 @@ export function CreateProjectModal({
         <div className="flex items-center justify-between px-5 py-4 border-b border-custom-border-200">
           <div>
             <h3 className="text-lg font-semibold text-custom-text-100">
-              Create New Project
+              Tạo dự án mới
             </h3>
             <p className="text-sm text-custom-text-300 mt-0.5">
-              Create a new project to organize your work
+              Tạo một dự án mới để tổ chức công việc của bạn
             </p>
           </div>
           <button
@@ -94,12 +94,12 @@ export function CreateProjectModal({
           {/* Project Name Field */}
           <div className="space-y-2">
             <label htmlFor="project-name" className="text-sm font-medium text-custom-text-200">
-              Project Name <span className="text-red-500">*</span>
+              Tên dự án <span className="text-red-500">*</span>
             </label>
             <Input
               id="project-name"
               type="text"
-              placeholder="e.g., Marketing Campaign"
+              placeholder="VD: Chiến dịch Marketing"
               value={name}
               onChange={(e) => {
                 setName(e.target.value);
@@ -115,12 +115,12 @@ export function CreateProjectModal({
           {/* Project ID Field */}
           <div className="space-y-2">
             <label htmlFor="project-id" className="text-sm font-medium text-custom-text-200">
-              Project ID
+              Mã dự án
             </label>
             <Input
               id="project-id"
               type="text"
-              placeholder="Auto-generated if empty"
+              placeholder="Tự động tạo nếu để trống"
               value={identifier}
               onChange={(e) => handleIdentifierChange(e.target.value)}
               inputSize="md"
@@ -129,18 +129,18 @@ export function CreateProjectModal({
               maxLength={5}
             />
             <p className="text-xs text-custom-text-300">
-              Max 5 characters. Leave empty to auto-generate from project name.
+              Tối đa 5 ký tự. Để trống để tự động tạo từ tên dự án.
             </p>
           </div>
 
           {/* Description Field */}
           <div className="space-y-2">
             <label htmlFor="project-description" className="text-sm font-medium text-custom-text-200">
-              Description
+              Mô tả
             </label>
             <TextArea
               id="project-description"
-              placeholder="Describe the project..."
+              placeholder="Mô tả dự án..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               className="w-full min-h-[100px]"
@@ -161,7 +161,7 @@ export function CreateProjectModal({
             onClick={handleClose}
             disabled={isSubmitting}
           >
-            Cancel
+            Hủy
           </Button>
           <Button
             type="submit"
@@ -172,7 +172,7 @@ export function CreateProjectModal({
             prependIcon={<FolderPlus size={16} />}
             className="bg-[#00C4AB] hover:bg-[#00B09A]"
           >
-            Create Project
+            Tạo dự án
           </Button>
         </div>
       </form>

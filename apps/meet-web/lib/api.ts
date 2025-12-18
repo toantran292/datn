@@ -95,17 +95,24 @@ export async function leaveMeeting(
   meetingId: string,
   userId: string
 ): Promise<void> {
+  const url = `${API_URL}/meet/${meetingId}/leave`;
+  console.log('[leaveMeeting] Calling:', url, { user_id: userId });
   try {
-    await fetch(`${API_URL}/meet/${meetingId}/leave`, {
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ user_id: userId }),
     });
+    console.log('[leaveMeeting] Response status:', response.status);
+    if (!response.ok) {
+      const text = await response.text();
+      console.error('[leaveMeeting] Response error:', text);
+    }
   } catch (error) {
     // Don't throw - leaving notification failure shouldn't block UI
-    console.warn('Failed to notify meeting service about leave:', error);
+    console.warn('[leaveMeeting] Failed to notify meeting service about leave:', error);
   }
 }
 
@@ -523,4 +530,54 @@ export async function regenerateSummary(
   }
 
   return response.json();
+}
+
+// ==================== Transcript Upload to S3 ====================
+
+export interface TranscriptS3Entry {
+  speakerId: string;
+  speakerName?: string;
+  text: string;
+  translatedText?: string;
+  translatedLang?: string;
+  timestamp: string;
+  isFinal: boolean;
+}
+
+/**
+ * Upload transcript to S3
+ * Called when user leaves meeting to save final transcript
+ */
+export async function uploadTranscriptToS3(
+  meetingId: string,
+  entries: TranscriptS3Entry[],
+  userId: string
+): Promise<{ success: boolean }> {
+  if (entries.length === 0) {
+    return { success: true };
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/transcripts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-User-ID': userId,
+      },
+      body: JSON.stringify({
+        meetingId,
+        entries,
+      }),
+    });
+
+    if (!response.ok) {
+      console.warn('[Transcript] Upload to S3 failed:', response.status);
+      return { success: false };
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.warn('[Transcript] Upload to S3 error:', error);
+    return { success: false };
+  }
 }

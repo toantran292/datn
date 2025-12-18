@@ -5,6 +5,7 @@ import {
   IsInt,
   Min,
   Max,
+  IsEnum,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -24,6 +25,34 @@ export class QueryFilesDto {
   @IsOptional()
   @IsString()
   uploadedBy?: string;
+
+  @IsOptional()
+  @IsString()
+  orgId?: string;
+
+  @IsOptional()
+  @IsString()
+  workspaceId?: string;
+
+  @IsOptional()
+  @IsString()
+  folderId?: string;
+
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsString()
+  mimeType?: string;
+
+  @IsOptional()
+  @IsEnum(['name', 'size', 'createdAt'])
+  sortBy?: 'name' | 'size' | 'createdAt';
+
+  @IsOptional()
+  @IsEnum(['asc', 'desc'])
+  sortOrder?: 'asc' | 'desc';
 
   @IsOptional()
   @IsArray()

@@ -284,6 +284,9 @@ export function ChatApp() {
             currentUserId={messages.currentUserId}
             onSendMessage={messages.sendMessage}
             onLoadMessages={messages.loadMessages}
+            onLoadMoreMessages={messages.loadMoreMessages}
+            hasMoreMessages={messages.hasMoreMessages}
+            isLoadingMoreMessages={messages.isLoadingMoreMessages}
             onOpenThread={handleOpenThread}
             onToggleSidebar={sidebar.toggle}
             sidebarOpen={sidebar.isOpen}

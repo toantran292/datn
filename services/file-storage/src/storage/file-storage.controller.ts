@@ -221,6 +221,23 @@ export class FileStorageController {
     };
   }
 
+  /**
+   * Move file to a different folder (UC14)
+   */
+  @Patch(':id/move')
+  async moveFile(
+    @Param('id') id: string,
+    @Body() body: { folderId: string | null },
+  ) {
+    const metadata = await this.fileStorageService.moveFile(id, body.folderId);
+
+    return {
+      statusCode: HttpStatus.OK,
+      data: metadata,
+      message: 'File moved successfully',
+    };
+  }
+
   @Delete(':id')
   async deleteFile(@Param('id') id: string) {
     await this.fileStorageService.deleteFile(id);

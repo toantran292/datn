@@ -23,6 +23,7 @@ ID | Service | HTTP/API | WS | Console/Admin | In-Container
 4  | Project Management   | 40400    | 40401  | 40402         | (service default)
 5  | Chat Service         | 40500    | 40501  | 40502         | (service default; WS on 40501)
 6  | Meeting Service      | 40600    | 40601  | 40602         | (service default; WS on 40601)
+—  | RAG Service          | 41600    | —      | —             | 3000
 7  | Postgres             | 41000    | —      | —             | 5432
 8  | Redis                | 41100    | —      | —             | 6379
 9  | MinIO API            | 41200    | —      | 41201         | 9000/9001

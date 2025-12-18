@@ -32,19 +32,19 @@ const activityTypeMap: Record<ActivityType, ActivityCategory> = {
 };
 
 const activityTitleMap: Record<ActivityType, string> = {
-  MEMBER_JOINED: "New member joined",
-  MEMBER_LEFT: "Member left",
-  FILE_UPLOADED: "File uploaded",
-  REPORT_CREATED: "Report created",
-  SETTINGS_UPDATED: "Settings updated"
+  MEMBER_JOINED: "Thành viên mới tham gia",
+  MEMBER_LEFT: "Thành viên đã rời đi",
+  FILE_UPLOADED: "Đã tải lên tệp",
+  REPORT_CREATED: "Đã tạo báo cáo",
+  SETTINGS_UPDATED: "Đã cập nhật cài đặt"
 };
 
 const activityBadgeMap: Record<ActivityType, string> = {
-  MEMBER_JOINED: "Team",
-  MEMBER_LEFT: "Team",
-  FILE_UPLOADED: "Files",
-  REPORT_CREATED: "Reports",
-  SETTINGS_UPDATED: "Settings"
+  MEMBER_JOINED: "Nhóm",
+  MEMBER_LEFT: "Nhóm",
+  FILE_UPLOADED: "Tệp",
+  REPORT_CREATED: "Báo cáo",
+  SETTINGS_UPDATED: "Cài đặt"
 };
 
 const iconMap: Record<ActivityCategory, LucideIcon> = {
@@ -71,11 +71,11 @@ function formatTimeAgo(dateString: string): string {
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return "Just now";
-  if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
-  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-  if (diffDays === 1) return "Yesterday";
-  if (diffDays < 7) return `${diffDays} days ago`;
+  if (diffMins < 1) return "Vừa xong";
+  if (diffMins < 60) return `${diffMins} phút trước`;
+  if (diffHours < 24) return `${diffHours} giờ trước`;
+  if (diffDays === 1) return "Hôm qua";
+  if (diffDays < 7) return `${diffDays} ngày trước`;
   return date.toLocaleDateString();
 }
 
@@ -84,9 +84,9 @@ export function RecentActivity({ activities = [], isLoading = false, hasMore = f
     return (
       <Card className="p-6 border border-border shadow-md rounded-2xl bg-white">
         <div className="mb-6">
-          <h3 style={{ fontWeight: 600 }}>Activity Timeline</h3>
+          <h3 style={{ fontWeight: 600 }}>Dòng thời gian hoạt động</h3>
           <p className="text-sm text-muted-foreground mt-1">
-            Recent actions across your organization
+            Các hoạt động gần đây trong tổ chức của bạn
           </p>
         </div>
         <div className="space-y-4">
@@ -109,13 +109,13 @@ export function RecentActivity({ activities = [], isLoading = false, hasMore = f
     return (
       <Card className="p-6 border border-border shadow-md rounded-2xl bg-white">
         <div className="mb-6">
-          <h3 style={{ fontWeight: 600 }}>Activity Timeline</h3>
+          <h3 style={{ fontWeight: 600 }}>Dòng thời gian hoạt động</h3>
           <p className="text-sm text-muted-foreground mt-1">
-            Recent actions across your organization
+            Các hoạt động gần đây trong tổ chức của bạn
           </p>
         </div>
         <div className="py-8 text-center text-muted-foreground">
-          <p>No recent activity</p>
+          <p>Không có hoạt động gần đây</p>
         </div>
       </Card>
     );
@@ -183,7 +183,7 @@ export function RecentActivity({ activities = [], isLoading = false, hasMore = f
           className="w-full mt-6 py-2 text-sm text-secondary hover:text-secondary/80 transition-colors rounded-lg hover:bg-secondary/5"
           style={{ fontWeight: 600 }}
         >
-          View all activity
+          Xem tất cả hoạt động
         </button>
       )}
     </Card>

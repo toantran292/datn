@@ -2,10 +2,12 @@ import { useRef, useCallback, useEffect } from 'react';
 import {
   saveTranscriptBatch,
   translateText,
+  getTranscript,
   type TranscriptEntry,
   type LanguageCode,
   type MeetingContext,
 } from '@/lib/translation';
+import { uploadTranscriptToS3, type TranscriptS3Entry } from '@/lib/api';
 import type { CaptionEvent } from '@/hooks/useJitsiConference';
 
 interface UseTranscriptSaverOptions {
@@ -128,9 +130,45 @@ export function useTranscriptSaver({
     await flushQueue();
   }, [flushQueue]);
 
+  // Upload all transcripts to S3 (called when leaving meeting)
+  const uploadToS3 = useCallback(async () => {
+    if (!meetingId || !currentUserId) {
+      console.log('[TranscriptSaver] No meetingId or userId, skipping S3 upload');
+      return { success: false };
+    }
+
+    // First flush any pending entries to DB
+    await flushQueue();
+
+    // Get all transcripts from DB
+    const result = await getTranscript(meetingId);
+    if (!result?.entries || result.entries.length === 0) {
+      console.log('[TranscriptSaver] No transcripts to upload to S3');
+      return { success: true };
+    }
+
+    // Convert to S3 format
+    const s3Entries: TranscriptS3Entry[] = result.entries.map(entry => ({
+      speakerId: entry.speakerId,
+      speakerName: entry.speakerName,
+      text: entry.originalText,
+      translatedText: entry.translatedText,
+      translatedLang: entry.translatedLang,
+      timestamp: entry.startTime,
+      isFinal: entry.isFinal ?? true,
+    }));
+
+    console.log('[TranscriptSaver] Uploading', s3Entries.length, 'entries to S3');
+    const uploadResult = await uploadTranscriptToS3(meetingId, s3Entries, currentUserId);
+    console.log('[TranscriptSaver] S3 upload result:', uploadResult);
+
+    return uploadResult;
+  }, [meetingId, currentUserId, flushQueue]);
+
   return {
     saveCaption,
     flush,
+    uploadToS3,
     queueLength: transcriptQueue.current.length,
   };
 }

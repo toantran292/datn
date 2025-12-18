@@ -104,13 +104,13 @@ export function MembersView() {
     });
 
     if (success) {
-      toast.success(`Invitation sent to ${data.email}`, {
-        description: "They will receive an email to join the organization.",
+      toast.success(`Đã gửi lời mời đến ${data.email}`, {
+        description: "Họ sẽ nhận được email để tham gia tổ chức.",
       });
       setInviteModalOpen(false);
     } else {
-      toast.error(`Failed to invite ${data.email}`, {
-        description: error || "Please try again later.",
+      toast.error(`Không thể mời ${data.email}`, {
+        description: error || "Vui lòng thử lại sau.",
       });
     }
   };
@@ -118,31 +118,31 @@ export function MembersView() {
   const handleCancelInvitation = async (id: string, email: string) => {
     const success = await cancelInvitation(id);
     if (success) {
-      toast.success(`Invitation to ${email} has been cancelled`);
+      toast.success(`Đã hủy lời mời đến ${email}`);
     } else {
-      toast.error(`Failed to cancel invitation`);
+      toast.error(`Không thể hủy lời mời`);
     }
   };
 
   const handleResendInvitation = async (id: string, email: string) => {
     const success = await resendInvitation(id);
     if (success) {
-      toast.success(`Invitation resent to ${email}`);
+      toast.success(`Đã gửi lại lời mời đến ${email}`);
     } else {
-      toast.error(`Failed to resend invitation`);
+      toast.error(`Không thể gửi lại lời mời`);
     }
   };
 
   const handleCopyEmail = (email: string) => {
     navigator.clipboard.writeText(email);
-    toast.success("Email copied to clipboard");
+    toast.success("Đã sao chép email");
   };
 
   const handleCopyInviteLink = (id: string) => {
     // TODO: Get actual invite link from API
     const inviteLink = `${window.location.origin}/invite/${id}`;
     navigator.clipboard.writeText(inviteLink);
-    toast.success("Invite link copied to clipboard");
+    toast.success("Đã sao chép liên kết mời");
   };
 
   const handleChangeRole = (id: string, name: string, currentRole: string) => {
@@ -159,9 +159,9 @@ export function MembersView() {
   const handleRemoveMember = async (id: string, name: string) => {
     const success = await removeMember(id);
     if (success) {
-      toast.success(`${name} has been removed from the organization`);
+      toast.success(`Đã xóa ${name} khỏi tổ chức`);
     } else {
-      toast.error(`Failed to remove ${name}`);
+      toast.error(`Không thể xóa ${name}`);
     }
   };
 
@@ -209,7 +209,7 @@ export function MembersView() {
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-4 border-secondary/20 border-t-secondary mx-auto mb-4" />
             <p className="text-muted-foreground font-medium">
-              Loading members...
+              Đang tải thành viên...
             </p>
           </div>
         </div>
@@ -223,7 +223,7 @@ export function MembersView() {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="bg-red-50 text-red-600 p-4 rounded-xl mb-4">
-              <p className="font-medium">Failed to load members</p>
+              <p className="font-medium">Không thể tải thành viên</p>
               <p className="text-sm mt-1">{error}</p>
             </div>
             <Button
@@ -231,7 +231,7 @@ export function MembersView() {
               className="rounded-xl"
             >
               <RefreshCw size={16} className="mr-2" />
-              Retry
+              Thử lại
             </Button>
           </div>
         </div>
@@ -245,17 +245,17 @@ export function MembersView() {
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center justify-between gap-4 mb-1">
-            <h1 className="text-2xl font-semibold">Members</h1>
+            <h1 className="text-2xl font-semibold">Thành viên</h1>
             <Button
               className="shrink-0 rounded-xl bg-[#00C4AB] hover:bg-[#00B09A] text-white"
               onClick={() => setInviteModalOpen(true)}
             >
               <UserPlus size={18} className="mr-2" />
-              Invite Member
+              Mời thành viên
             </Button>
           </div>
           <p className="text-muted-foreground">
-            Manage organization members and invitations
+            Quản lý thành viên tổ chức và lời mời
           </p>
         </div>
 
@@ -271,7 +271,7 @@ export function MembersView() {
                   : "text-custom-text-300 hover:text-custom-text-100"
               }`}
             >
-              All
+              Tất cả
               <span className={`ml-1.5 px-1.5 py-0.5 rounded-md text-xs ${
                 statusFilter === "all"
                   ? "bg-custom-background-90"
@@ -288,7 +288,7 @@ export function MembersView() {
                   : "text-custom-text-300 hover:text-custom-text-100"
               }`}
             >
-              Active
+              Hoạt động
               <span className={`ml-1.5 px-1.5 py-0.5 rounded-md text-xs ${
                 statusFilter === "active"
                   ? "bg-emerald-100 text-emerald-700"
@@ -305,7 +305,7 @@ export function MembersView() {
                   : "text-custom-text-300 hover:text-custom-text-100"
               }`}
             >
-              Pending
+              Chờ xử lý
               <span className={`ml-1.5 px-1.5 py-0.5 rounded-md text-xs ${
                 statusFilter === "pending"
                   ? "bg-amber-100 text-amber-700"
@@ -324,7 +324,7 @@ export function MembersView() {
                 size={18}
               />
               <Input
-                placeholder="Search by name or email..."
+                placeholder="Tìm theo tên hoặc email..."
                 className="pl-10 rounded-xl bg-white border-border h-10"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -332,10 +332,10 @@ export function MembersView() {
             </div>
             <Select value={roleFilter} onValueChange={setRoleFilter}>
               <SelectTrigger className="w-36 rounded-xl bg-white h-10">
-                <SelectValue placeholder="All Roles" />
+                <SelectValue placeholder="Tất cả vai trò" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
+                <SelectItem value="all">Tất cả vai trò</SelectItem>
                 <SelectItem value="owner">Owner</SelectItem>
                 <SelectItem value="admin">Admin</SelectItem>
                 <SelectItem value="member">Member</SelectItem>
@@ -349,10 +349,10 @@ export function MembersView() {
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/30 hover:bg-muted/30">
-                <TableHead className="w-[280px]">Member</TableHead>
-                <TableHead className="w-[120px]">Role</TableHead>
-                <TableHead className="w-[140px]">Projects</TableHead>
-                <TableHead className="w-[100px]">Status</TableHead>
+                <TableHead className="w-[280px]">Thành viên</TableHead>
+                <TableHead className="w-[120px]">Vai trò</TableHead>
+                <TableHead className="w-[140px]">Dự án</TableHead>
+                <TableHead className="w-[100px]">Trạng thái</TableHead>
                 <TableHead className="w-[50px]"></TableHead>
               </TableRow>
             </TableHeader>
@@ -361,9 +361,9 @@ export function MembersView() {
                 <TableRow>
                   <TableCell colSpan={5} className="h-32 text-center">
                     <div className="text-muted-foreground">
-                      <p className="font-medium">No members found</p>
+                      <p className="font-medium">Không tìm thấy thành viên</p>
                       <p className="text-sm">
-                        Try adjusting your search or filters
+                        Hãy điều chỉnh tìm kiếm hoặc bộ lọc
                       </p>
                     </div>
                   </TableCell>
@@ -434,7 +434,7 @@ export function MembersView() {
                         ) : item.role === "owner" || item.role === "admin" ? (
                           <span className="flex items-center gap-1.5 text-sm text-secondary font-medium">
                             <FolderKanban size={14} />
-                            All projects
+                            Tất cả dự án
                           </span>
                         ) : projectCount > 0 ? (
                           <Popover>
@@ -453,7 +453,7 @@ export function MembersView() {
                             >
                               <div className="p-3 border-b border-border">
                                 <h4 className="font-medium text-sm">
-                                  Joined Projects
+                                  Dự án đã tham gia
                                 </h4>
                               </div>
                               <div className="p-2 max-h-48 overflow-y-auto">
@@ -478,7 +478,7 @@ export function MembersView() {
                           </Popover>
                         ) : (
                           <span className="text-sm text-muted-foreground">
-                            No projects
+                            Không có dự án
                           </span>
                         )}
                       </TableCell>
@@ -513,13 +513,13 @@ export function MembersView() {
                                   className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted rounded-md transition-colors"
                                 >
                                   <Copy size={16} />
-                                  Copy Email
+                                  Sao chép email
                                 </button>
                                 <button
                                   className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted rounded-md transition-colors"
                                 >
                                   <UserCircle size={16} />
-                                  View Profile
+                                  Xem hồ sơ
                                 </button>
                                 <div className="my-1 h-px bg-border" />
                                 <button
@@ -530,7 +530,7 @@ export function MembersView() {
                                   className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                   <Shield size={16} />
-                                  Change Role
+                                  Thay đổi vai trò
                                 </button>
                                 {item.role === "member" && (
                                   <button
@@ -538,7 +538,7 @@ export function MembersView() {
                                     className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted rounded-md transition-colors"
                                   >
                                     <FolderKanban size={16} />
-                                    Manage Projects
+                                    Quản lý dự án
                                   </button>
                                 )}
                                 <div className="my-1 h-px bg-border" />
@@ -550,7 +550,7 @@ export function MembersView() {
                                   className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                   <UserMinus size={16} />
-                                  Remove Member
+                                  Xóa thành viên
                                 </button>
                               </>
                             ) : (
@@ -560,14 +560,14 @@ export function MembersView() {
                                   className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted rounded-md transition-colors"
                                 >
                                   <Copy size={16} />
-                                  Copy Email
+                                  Sao chép email
                                 </button>
                                 <button
                                   onClick={() => handleCopyInviteLink(item.id)}
                                   className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted rounded-md transition-colors"
                                 >
                                   <Link size={16} />
-                                  Copy Invite Link
+                                  Sao chép liên kết mời
                                 </button>
                                 <div className="my-1 h-px bg-border" />
                                 <button
@@ -575,7 +575,7 @@ export function MembersView() {
                                   className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-muted rounded-md transition-colors"
                                 >
                                   <RefreshCw size={16} />
-                                  Resend Invitation
+                                  Gửi lại lời mời
                                 </button>
                                 <div className="my-1 h-px bg-border" />
                                 <button
@@ -583,7 +583,7 @@ export function MembersView() {
                                   className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors"
                                 >
                                   <X size={16} />
-                                  Cancel Invitation
+                                  Hủy lời mời
                                 </button>
                               </>
                             )}
@@ -600,7 +600,7 @@ export function MembersView() {
 
         {/* Footer */}
         <div className="mt-4 text-sm text-muted-foreground">
-          Showing {filteredList.length} of {counts.all} members
+          Hiển thị {filteredList.length} / {counts.all} thành viên
         </div>
       </div>
 
@@ -623,11 +623,11 @@ export function MembersView() {
           if (!selectedMember) return;
           const success = await updateMemberRole(selectedMember.id, newRole);
           if (success) {
-            toast.success(`${selectedMember.name}'s role has been changed to ${newRole}`);
+            toast.success(`Đã thay đổi vai trò của ${selectedMember.name} thành ${newRole}`);
             setChangeRoleModalOpen(false);
             setSelectedMember(null);
           } else {
-            toast.error(`Failed to change role`);
+            toast.error(`Không thể thay đổi vai trò`);
           }
         }}
       />
@@ -644,11 +644,11 @@ export function MembersView() {
           if (!selectedMemberForProjects) return;
           const success = await updateMemberProjects(selectedMemberForProjects.id, projectIds);
           if (success) {
-            toast.success(`Projects updated for ${selectedMemberForProjects.name}`);
+            toast.success(`Đã cập nhật dự án cho ${selectedMemberForProjects.name}`);
             setManageProjectsModalOpen(false);
             setSelectedMemberForProjects(null);
           } else {
-            toast.error(`Failed to update projects`);
+            toast.error(`Không thể cập nhật dự án`);
           }
         }}
       />

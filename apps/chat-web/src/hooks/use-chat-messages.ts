@@ -9,6 +9,9 @@ export function useChatMessages() {
   const {
     messages,
     handleLoadMessages,
+    handleLoadMoreMessages,
+    hasMoreMessages,
+    isLoadingMoreMessages,
     handleSendMessage,
     handleEditMessage,
     handleDeleteMessage,
@@ -30,6 +33,9 @@ export function useChatMessages() {
   return {
     messages,
     loadMessages: handleLoadMessages,
+    loadMoreMessages: handleLoadMoreMessages,
+    hasMoreMessages,
+    isLoadingMoreMessages,
     sendMessage: handleSendMessage,
     editMessage: handleEditMessage,
     deleteMessage: handleDeleteMessage,

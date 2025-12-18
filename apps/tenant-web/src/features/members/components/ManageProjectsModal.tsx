@@ -67,10 +67,10 @@ export function ManageProjectsModal({
       <div className="flex items-center justify-between px-5 py-4 border-b border-custom-border-200">
         <div>
           <h3 className="text-lg font-semibold text-custom-text-100">
-            Manage Projects
+            Quản lý dự án
           </h3>
           <p className="text-sm text-custom-text-300 mt-0.5">
-            Select projects for <strong>{member.name}</strong>
+            Chọn dự án cho <strong>{member.name}</strong>
           </p>
         </div>
         <button
@@ -91,7 +91,7 @@ export function ManageProjectsModal({
         ) : projects.length === 0 ? (
           <div className="text-center py-8">
             <FolderKanban className="mx-auto h-12 w-12 text-custom-text-400 mb-3" />
-            <p className="text-custom-text-300">No projects available</p>
+            <p className="text-custom-text-300">Không có dự án nào</p>
           </div>
         ) : (
           <div className="space-y-2 max-h-[400px] overflow-y-auto">
@@ -124,7 +124,7 @@ export function ManageProjectsModal({
                     </p>
                   </div>
                   <div className="text-xs text-custom-text-400">
-                    {project.issueCount ?? 0} issues
+                    {project.issueCount ?? 0} issue
                   </div>
                 </button>
               );
@@ -134,7 +134,7 @@ export function ManageProjectsModal({
 
         <div className="mt-4 pt-4 border-t border-custom-border-200">
           <p className="text-sm text-custom-text-300">
-            {selectedProjects.length} project{selectedProjects.length !== 1 ? "s" : ""} selected
+            Đã chọn {selectedProjects.length} dự án
           </p>
         </div>
       </div>
@@ -147,7 +147,7 @@ export function ManageProjectsModal({
           onClick={handleClose}
           disabled={isSubmitting}
         >
-          Cancel
+          Hủy
         </Button>
         <Button
           variant="primary"
@@ -157,7 +157,7 @@ export function ManageProjectsModal({
           onClick={handleConfirm}
           className="bg-[#00C4AB] hover:bg-[#00B09A]"
         >
-          Save Changes
+          Lưu thay đổi
         </Button>
       </div>
     </ModalCore>

@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import {
   FileMetadata,
   FileMetadataDocument,
@@ -43,7 +43,13 @@ export class MetadataService {
     subjectId?: string;
     uploadedBy?: string;
     orgId?: string;
+    workspaceId?: string;
+    folderId?: string | null;
+    search?: string;
+    mimeType?: string;
     tags?: string[];
+    sortBy?: 'name' | 'size' | 'createdAt';
+    sortOrder?: 'asc' | 'desc';
     page?: number;
     limit?: number;
   }): Promise<{
@@ -64,12 +70,39 @@ export class MetadataService {
     if (query.subjectId) filter.subjectId = query.subjectId;
     if (query.uploadedBy) filter.uploadedBy = query.uploadedBy;
     if (query.orgId) filter.orgId = query.orgId;
+    if (query.workspaceId) filter.workspaceId = query.workspaceId;
     if (query.tags && query.tags.length > 0) filter.tags = { $in: query.tags };
+
+    // Folder filtering (UC14)
+    if (query.folderId !== undefined) {
+      if (query.folderId === null || query.folderId === 'null' || query.folderId === '') {
+        filter.folderId = null;
+      } else {
+        filter.folderId = new Types.ObjectId(query.folderId);
+      }
+    }
+
+    // Search by filename (UC14)
+    if (query.search) {
+      filter.originalName = { $regex: query.search, $options: 'i' };
+    }
+
+    // Filter by mimeType prefix (e.g., 'image', 'application/pdf')
+    if (query.mimeType) {
+      filter.mimeType = { $regex: `^${query.mimeType}`, $options: 'i' };
+    }
+
+    // Only show completed uploads by default
+    filter.uploadStatus = 'completed';
+
+    // Sorting (UC14)
+    const sortField = query.sortBy === 'name' ? 'originalName' : (query.sortBy || 'createdAt');
+    const sortOrder = query.sortOrder === 'asc' ? 1 : -1;
 
     const [docs, total] = await Promise.all([
       this.fileMetadataModel
         .find(filter)
-        .sort({ createdAt: -1 })
+        .sort({ [sortField]: sortOrder })
         .skip(skip)
         .limit(limit)
         .exec(),
@@ -83,6 +116,57 @@ export class MetadataService {
       limit,
       totalPages: Math.ceil(total / limit),
     };
+  }
+
+  /**
+   * Move file to a different folder (UC14)
+   */
+  async moveToFolder(fileId: string, folderId: string | null): Promise<FileMetadataType> {
+    const updated = await this.fileMetadataModel
+      .findByIdAndUpdate(
+        fileId,
+        { folderId: folderId ? new Types.ObjectId(folderId) : null },
+        { new: true },
+      )
+      .exec();
+
+    if (!updated) {
+      throw new NotFoundException(`File with ID "${fileId}" not found`);
+    }
+
+    this.logger.log(`File ${fileId} moved to folder ${folderId || 'root'}`);
+    return this.toFileMetadata(updated);
+  }
+
+  /**
+   * Get files in a folder for counting (UC14)
+   */
+  async countFilesInFolder(workspaceId: string, folderId: string | null): Promise<number> {
+    const filter: any = {
+      workspaceId,
+      uploadStatus: 'completed',
+    };
+
+    if (folderId) {
+      filter.folderId = new Types.ObjectId(folderId);
+    } else {
+      filter.folderId = null;
+    }
+
+    return this.fileMetadataModel.countDocuments(filter).exec();
+  }
+
+  /**
+   * Move all files from a folder (for folder deletion) (UC14)
+   */
+  async moveFilesFromFolder(folderId: string, newFolderId: string | null): Promise<number> {
+    const result = await this.fileMetadataModel.updateMany(
+      { folderId: new Types.ObjectId(folderId) },
+      { folderId: newFolderId ? new Types.ObjectId(newFolderId) : null },
+    );
+
+    this.logger.log(`Moved ${result.modifiedCount} files from folder ${folderId}`);
+    return result.modifiedCount;
   }
 
   async update(
@@ -199,6 +283,8 @@ export class MetadataService {
       subjectId: doc.subjectId,
       uploadedBy: doc.uploadedBy,
       orgId: doc.orgId,
+      workspaceId: doc.workspaceId,
+      folderId: doc.folderId?.toString() || null,
       tags: doc.tags,
       metadata: doc.metadata,
       uploadStatus: doc.uploadStatus as 'pending' | 'completed' | 'failed',

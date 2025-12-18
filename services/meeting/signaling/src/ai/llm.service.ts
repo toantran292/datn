@@ -285,4 +285,107 @@ export class LLMService implements OnModuleInit {
       throw error;
     }
   }
+
+  /**
+   * Summarize meeting transcript
+   * Returns a concise summary of the meeting discussion
+   */
+  async summarizeMeeting(
+    transcript: string,
+    options?: {
+      language?: LanguageCode;
+      maxLength?: number;
+      includeActionItems?: boolean;
+    },
+  ): Promise<string> {
+    if (!transcript.trim()) {
+      return '';
+    }
+
+    const language = options?.language ? SUPPORTED_LANGUAGES[options.language] : 'the same language as the transcript';
+    const includeActionItems = options?.includeActionItems ?? true;
+
+    const systemPrompt = `You are a meeting summarizer. Analyze the meeting transcript and provide a concise summary.
+
+Instructions:
+- Write the summary in ${language}
+- Keep the summary concise (max ${options?.maxLength || 300} words)
+- Focus on key discussion points and decisions made
+${includeActionItems ? '- Include action items if any were mentioned' : ''}
+- Use bullet points for clarity
+- Do not include timestamps or speaker names in the summary
+
+Format:
+## Summary
+[Main points discussed]
+
+${includeActionItems ? `## Action Items
+[List of action items if any]` : ''}`;
+
+    try {
+      const response = await this.model.invoke([
+        new SystemMessage(systemPrompt),
+        new HumanMessage(transcript),
+      ]);
+
+      const parser = new StringOutputParser();
+      return await parser.invoke(response);
+    } catch (error: unknown) {
+      this.logger.error(`Meeting summarization failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Stream meeting summary
+   */
+  async *summarizeMeetingStream(
+    transcript: string,
+    options?: {
+      language?: LanguageCode;
+      maxLength?: number;
+      includeActionItems?: boolean;
+    },
+  ): AsyncGenerator<string, void, unknown> {
+    if (!transcript.trim()) {
+      return;
+    }
+
+    const language = options?.language ? SUPPORTED_LANGUAGES[options.language] : 'the same language as the transcript';
+    const includeActionItems = options?.includeActionItems ?? true;
+
+    const systemPrompt = `You are a meeting summarizer. Analyze the meeting transcript and provide a concise summary.
+
+Instructions:
+- Write the summary in ${language}
+- Keep the summary concise (max ${options?.maxLength || 300} words)
+- Focus on key discussion points and decisions made
+${includeActionItems ? '- Include action items if any were mentioned' : ''}
+- Use bullet points for clarity
+- Do not include timestamps or speaker names in the summary
+
+Format:
+## Summary
+[Main points discussed]
+
+${includeActionItems ? `## Action Items
+[List of action items if any]` : ''}`;
+
+    try {
+      const stream = await this.model.stream([
+        new SystemMessage(systemPrompt),
+        new HumanMessage(transcript),
+      ]);
+
+      for await (const chunk of stream) {
+        const content = chunk.content as string;
+        if (content) {
+          yield content;
+        }
+      }
+    } catch (error: unknown) {
+      this.logger.error(`Streaming summarization failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw error;
+    }
+  }
 }

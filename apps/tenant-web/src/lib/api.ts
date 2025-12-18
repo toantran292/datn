@@ -435,3 +435,232 @@ export interface ProjectsResponse {
 export async function getProjects(): Promise<ProjectsResponse> {
   return apiGet<ProjectsResponse>('/tenant/projects');
 }
+
+// ============================================================================
+// REPORTS API
+// ============================================================================
+
+export type ReportStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+export type ReportType = 'SUMMARY' | 'ANALYSIS' | 'EXTRACTION' | 'COMPARISON' | 'CUSTOM';
+export type LlmProvider = 'OPENAI' | 'ANTHROPIC' | 'GOOGLE';
+export type ExportFormat = 'PDF' | 'DOCX' | 'MARKDOWN' | 'HTML';
+
+export interface Report {
+  id: string;
+  orgId: string;
+  name: string;
+  description?: string;
+  type: ReportType;
+  status: ReportStatus;
+  llmProvider: LlmProvider;
+  llmModel: string;
+  prompt?: string;
+  content?: string;
+  fileIds: string[];
+  config?: Record<string, any>;
+  errorMessage?: string;
+  tokenUsage?: {
+    input: number;
+    output: number;
+    total: number;
+  };
+  createdBy: string;
+  createdAt: string;
+  startedAt?: string;
+  completedAt?: string;
+}
+
+export interface ReportSummary {
+  id: string;
+  name: string;
+  type: ReportType;
+  status: ReportStatus;
+  llmProvider: LlmProvider;
+  createdBy: string;
+  createdAt: string;
+  completedAt?: string;
+}
+
+export interface CreateReportRequest {
+  name: string;
+  description?: string;
+  type: ReportType;
+  llmProvider: LlmProvider;
+  llmModel: string;
+  fileIds: string[];
+  prompt?: string;
+  config?: {
+    temperature?: number;
+    maxTokens?: number;
+  };
+}
+
+export interface ReportStatusResponse {
+  id: string;
+  status: ReportStatus;
+  errorMessage?: string;
+  createdAt: string;
+  startedAt?: string;
+  completedAt?: string;
+}
+
+export interface ReportTypeInfo {
+  type: ReportType;
+  name: string;
+  description: string;
+  defaultPrompt: string;
+}
+
+export interface ExportFormatInfo {
+  format: ExportFormat;
+  name: string;
+  mimeType: string;
+  extension: string;
+}
+
+export interface PagedReportsResponse {
+  items: ReportSummary[];
+  page: number;
+  size: number;
+  total: number;
+  totalPages: number;
+}
+
+// Reports API functions
+export async function getReports(page: number = 0, size: number = 20): Promise<PagedReportsResponse> {
+  return apiGet<PagedReportsResponse>(`/tenant/reports?page=${page}&size=${size}`);
+}
+
+export async function getReport(reportId: string): Promise<Report> {
+  return apiGet<Report>(`/tenant/reports/${reportId}`);
+}
+
+export async function createReport(data: CreateReportRequest): Promise<Report> {
+  return apiPost<Report>('/tenant/reports', data);
+}
+
+export async function getReportStatus(reportId: string): Promise<ReportStatusResponse> {
+  return apiGet<ReportStatusResponse>(`/tenant/reports/${reportId}/status`);
+}
+
+export async function deleteReport(reportId: string): Promise<void> {
+  return apiDelete<void>(`/tenant/reports/${reportId}`);
+}
+
+export async function retryReport(reportId: string): Promise<Report> {
+  return apiPost<Report>(`/tenant/reports/${reportId}/retry`);
+}
+
+export async function getReportTypes(): Promise<ReportTypeInfo[]> {
+  return apiGet<ReportTypeInfo[]>('/tenant/reports/types');
+}
+
+export async function getExportFormats(): Promise<ExportFormatInfo[]> {
+  return apiGet<ExportFormatInfo[]>('/tenant/reports/export/formats');
+}
+
+export async function exportReport(reportId: string, format: ExportFormat): Promise<Blob> {
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080';
+  const response = await fetch(`${API_BASE}/tenant/reports/${reportId}/export?format=${format}`, {
+    method: 'GET',
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new ApiError(`Export failed: ${response.statusText}`, response.status);
+  }
+
+  return response.blob();
+}
+
+// ============================================================================
+// AGENT API (UTS Agent)
+// ============================================================================
+
+export interface AgentChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface AgentChatRequest {
+  message: string;
+  history?: AgentChatMessage[];
+  projectId?: string;
+}
+
+export interface AgentChatResponse {
+  response: string;
+  context?: {
+    projects?: number;
+    tasks?: number;
+    members?: number;
+  };
+}
+
+export async function agentChat(request: AgentChatRequest): Promise<AgentChatResponse> {
+  return apiPost<AgentChatResponse>('/tenant/agent/chat', request);
+}
+
+/**
+ * Streaming agent chat - returns async generator for SSE
+ */
+export async function* agentChatStream(
+  request: AgentChatRequest,
+  onStart?: () => void
+): AsyncGenerator<string, void, unknown> {
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8080';
+
+  const response = await fetch(`${API_BASE}/tenant/agent/chat/stream`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    throw new ApiError(`Stream failed: ${response.statusText}`, response.status);
+  }
+
+  onStart?.();
+
+  const reader = response.body?.getReader();
+  if (!reader) {
+    throw new Error('No response body');
+  }
+
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+
+    for (const line of lines) {
+      if (line.startsWith('data: ')) {
+        const data = line.slice(6);
+        if (data === '[DONE]') {
+          return;
+        }
+        try {
+          const parsed = JSON.parse(data);
+          if (parsed.error) {
+            throw new Error(parsed.error);
+          }
+          if (parsed.text) {
+            yield parsed.text;
+          }
+        } catch (e) {
+          // Skip invalid JSON lines
+          if (e instanceof SyntaxError) continue;
+          throw e;
+        }
+      }
+    }
+  }
+}

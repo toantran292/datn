@@ -15,6 +15,7 @@ interface CreateHuddleMessageBody {
   meetingRoomId: string;
   duration?: number;
   participantCount?: number;
+  hasTranscript?: boolean;
 }
 
 interface UpdateHuddleParticipantsBody {
@@ -110,6 +111,7 @@ export class InternalController {
         meetingRoomId: body.meetingRoomId,
         duration: body.duration,
         participantCount: body.participantCount,
+        hasTranscript: body.hasTranscript,
       });
 
       if (updatedMessage) {

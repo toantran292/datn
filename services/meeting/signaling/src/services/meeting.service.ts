@@ -2,6 +2,7 @@ import { Injectable, Logger, NotFoundException, ForbiddenException } from '@nest
 import { PrismaService } from '../prisma.service';
 import { Meeting, Participant, MeetingStatus, ParticipantRole, ParticipantStatus } from '@prisma/client';
 import { ChatIntegrationService } from './chat-integration.service';
+import { TranscriptService } from '../ai/transcript.service';
 
 export type MeetingWithParticipants = Meeting & { participants: Participant[] };
 
@@ -38,6 +39,7 @@ export class MeetingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly chatIntegration: ChatIntegrationService,
+    private readonly transcriptService: TranscriptService,
   ) {}
 
   /**
@@ -519,6 +521,10 @@ export class MeetingService {
         const duration = Math.floor((endedAt.getTime() - meeting.startedAt.getTime()) / 1000);
         const participantCount = meeting.participants.length;
 
+        // Check if meeting has transcript entries
+        const { total: transcriptCount } = await this.transcriptService.getTranscript(meeting.id, { limit: 1 });
+        const hasTranscript = transcriptCount > 0;
+
         this.chatIntegration.notifyHuddleEnded({
           chatId: meeting.subjectId,
           userId: meeting.hostUserId,
@@ -527,6 +533,7 @@ export class MeetingService {
           meetingRoomId: meeting.roomId,
           duration,
           participantCount,
+          hasTranscript,
         });
       }
     }
@@ -774,6 +781,11 @@ export class MeetingService {
     // Notify chat service if this is a chat huddle
     if (meeting.subjectType === 'chat' && meeting.orgId) {
       const duration = Math.floor((endedAt.getTime() - meeting.startedAt.getTime()) / 1000);
+
+      // Check if meeting has transcript entries
+      const { total: transcriptCount } = await this.transcriptService.getTranscript(meeting.id, { limit: 1 });
+      const hasTranscript = transcriptCount > 0;
+
       this.chatIntegration.notifyHuddleEnded({
         chatId: meeting.subjectId,
         userId: adminUserId,
@@ -782,6 +794,7 @@ export class MeetingService {
         meetingRoomId: meeting.roomId,
         duration,
         participantCount: meeting.participants.length,
+        hasTranscript,
       });
     }
 
