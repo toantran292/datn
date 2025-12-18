@@ -4,8 +4,7 @@ import { useState } from "react";
 import { Languages, ChevronDown, ChevronUp, Loader2, Globe } from "lucide-react";
 import { Button } from "@uts/design-system/ui";
 import { cn } from "@uts/fe-utils";
-import type { TranslateData, TranslateLanguage } from "@/core/hooks/use-ai-translate-stream";
-import { LANGUAGE_LABELS } from "@/core/hooks/use-ai-translate-stream";
+import { LANGUAGE_LABELS, type TranslateData, type TranslateLanguage } from "@/core/hooks/use-ai-translate-stream";
 
 export interface AITranslateSectionProps {
   original: string;

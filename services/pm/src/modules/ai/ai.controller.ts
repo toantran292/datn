@@ -9,6 +9,7 @@ import {
   Sse,
   MessageEvent,
   Res,
+  Param,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import {
@@ -26,6 +27,7 @@ import { createHash } from 'crypto';
 // import { User } from '@prisma/client';
 import { AIService } from './ai.service';
 import { AISprintSummaryService } from './ai-sprint-summary.service';
+import { DocumentExtractionService } from './document-extraction.service';
 import { FileStorageClient } from '../../common/file-storage/file-storage.client';
 import {
   RefineDescriptionDto,
@@ -55,6 +57,7 @@ export class AIController {
   constructor(
     private readonly aiService: AIService,
     private readonly sprintSummaryService: AISprintSummaryService,
+    private readonly documentExtractionService: DocumentExtractionService,
     private readonly fileStorageClient: FileStorageClient,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
@@ -613,6 +616,32 @@ export class AIController {
       };
     } catch (error) {
       this.logger.error('Failed to confirm upload', error.stack);
+      throw error;
+    }
+  }
+
+  @Post('documents/:assetId/extract')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Extract text from uploaded document',
+    description: 'Extracts text content from PDF, Word, or Excel documents',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Text extracted successfully',
+  })
+  async extractDocumentText(@Param('assetId') assetId: string) {
+    this.logger.log(`Extracting text from document: ${assetId}`);
+
+    try {
+      const result = await this.documentExtractionService.extractTextFromDocument(assetId);
+
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      this.logger.error('Failed to extract text', error.stack);
       throw error;
     }
   }

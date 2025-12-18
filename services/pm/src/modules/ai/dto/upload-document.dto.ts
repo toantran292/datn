@@ -7,6 +7,11 @@ export enum DocumentType {
   DOC = 'application/msword',
   XLSX = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   XLS = 'application/vnd.ms-excel',
+  MP4 = 'video/mp4',
+  MOV = 'video/quicktime',
+  AVI = 'video/x-msvideo',
+  MKV = 'video/x-matroska',
+  WEBM = 'video/webm',
 }
 
 export class CreateDocumentUploadUrlDto {

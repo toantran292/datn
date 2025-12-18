@@ -14,6 +14,7 @@ export interface UploadedDocument {
   mimeType: string;
   size: number;
   uploadStatus: string;
+  extractedText?: string;
 }
 
 const ALLOWED_MIME_TYPES = [
@@ -22,9 +23,14 @@ const ALLOWED_MIME_TYPES = [
   "application/msword", // .doc
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
   "application/vnd.ms-excel", // .xls
+  "video/mp4", // .mp4
+  "video/quicktime", // .mov
+  "video/x-msvideo", // .avi
+  "video/x-matroska", // .mkv
+  "video/webm", // .webm
 ];
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB (increased for video)
 
 export function useDocumentUpload() {
   const [isUploading, setIsUploading] = useState(false);
@@ -48,7 +54,7 @@ export function useDocumentUpload() {
       setToast({
         type: TOAST_TYPE.ERROR,
         title: "Định dạng file không hỗ trợ",
-        message: "Chỉ hỗ trợ file PDF, Word (.doc, .docx), Excel (.xls, .xlsx)",
+        message: "Chỉ hỗ trợ file PDF, Word (.doc, .docx), Excel (.xls, .xlsx) và Video (.mp4, .mov, .avi, .mkv, .webm)",
       });
       return false;
     }
@@ -131,6 +137,27 @@ export function useDocumentUpload() {
       }
 
       const confirmData = await confirmResponse.json();
+      setUploadProgress(70);
+
+      // Step 4: Extract text from document
+      const extractResponse = await fetch(`/api/ai/documents/${uploadData.assetId}/extract`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      let extractedText: string | undefined;
+
+      if (extractResponse.ok) {
+        const extractData = await extractResponse.json();
+        extractedText = extractData?.data?.text;
+        setUploadProgress(90);
+      } else {
+        // If extraction fails, continue without text
+        console.warn("Text extraction failed, but upload succeeded");
+      }
+
       setUploadProgress(100);
 
       const uploadedDoc: UploadedDocument = {
@@ -139,6 +166,7 @@ export function useDocumentUpload() {
         mimeType: confirmData.data.mimeType,
         size: confirmData.data.size,
         uploadStatus: confirmData.data.uploadStatus,
+        extractedText,
       };
 
       setUploadedDocument(uploadedDoc);
@@ -147,7 +175,9 @@ export function useDocumentUpload() {
       setToast({
         type: TOAST_TYPE.SUCCESS,
         title: "Upload thành công",
-        message: `Đã upload file ${file.name}`,
+        message: extractedText
+          ? `Đã upload và extract ${file.name}`
+          : `Đã upload ${file.name}`,
       });
 
       return uploadedDoc;

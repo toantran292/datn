@@ -1,6 +1,7 @@
 import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
+import { toFile } from 'openai/uploads';
 
 interface ChatCompletionRequest {
   model: string;
@@ -181,5 +182,34 @@ export class OpenAIService {
     const modelLimit = 128000; // gpt-4o-mini context window
 
     return totalEstimate > modelLimit;
+  }
+
+  /**
+   * Transcribe audio/video file using OpenAI Whisper API
+   * Supports Vietnamese and many other languages
+   */
+  async transcribeAudio(buffer: Buffer, filename: string): Promise<string> {
+    try {
+      this.logger.log(`Starting Whisper transcription for file: ${filename}`);
+
+      // Convert Buffer to File using OpenAI's toFile helper
+      const file = await toFile(buffer, filename);
+
+      const transcription = await this.openai.audio.transcriptions.create({
+        file: file,
+        model: 'whisper-1',
+        language: 'vi', // Vietnamese language code
+        response_format: 'text',
+      });
+
+      this.logger.log(`Whisper transcription completed: ${transcription.length} characters`);
+
+      return transcription;
+    } catch (error) {
+      this.logger.error('Whisper transcription error:', error);
+      throw new InternalServerErrorException(
+        `Failed to transcribe audio: ${error.message}`
+      );
+    }
   }
 }

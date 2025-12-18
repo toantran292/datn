@@ -6,7 +6,6 @@ import { useParams } from "next/navigation";
 import {
   Sparkles,
   FileText,
-  Type,
   Upload,
   Wand2,
   Split,
@@ -60,7 +59,6 @@ const AutoCreatePage = observer(() => {
 
   // Workflow State
   const [currentStep, setCurrentStep] = useState<WorkflowStep>(1);
-  const [inputMode, setInputMode] = useState<"text" | "file">("text");
 
   // Form Data
   const [description, setDescription] = useState("");
@@ -103,12 +101,19 @@ const AutoCreatePage = observer(() => {
     }
   }, [estimateData, isEstimating]);
 
+  // Auto-fill description when document is uploaded and text extracted
+  useEffect(() => {
+    if (uploadedDocument?.extractedText) {
+      setDescription(uploadedDocument.extractedText);
+    }
+  }, [uploadedDocument]);
+
   const handleStep1Submit = async () => {
-    if (!description.trim() || !issueName.trim()) {
+    if (!description.trim()) {
       setToast({
         type: TOAST_TYPE.WARNING,
         title: "Thiếu thông tin",
-        message: "Vui lòng nhập tên và mô tả công việc",
+        message: "Vui lòng nhập mô tả công việc hoặc upload file",
       });
       return;
     }
@@ -117,7 +122,7 @@ const AutoCreatePage = observer(() => {
       await refine({
         issueId: projectId || "temp-id",
         currentDescription: description,
-        issueName: issueName,
+        issueName: issueName || "Issue from document",
         issueType: issueType,
         priority: priority,
       });
@@ -395,180 +400,157 @@ const AutoCreatePage = observer(() => {
                     </div>
                   </div>
 
-                  <div className="mb-6 flex gap-2 rounded-lg border border-custom-border-200 bg-custom-background-90 p-1">
-                    <button
-                      onClick={() => setInputMode("text")}
-                      className={`flex-1 flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                        inputMode === "text"
-                          ? "bg-custom-background-100 text-custom-text-100 shadow-sm"
-                          : "text-custom-text-300 hover:text-custom-text-200"
-                      }`}
-                    >
-                      <Type className="size-4" />
-                      Text Input
-                    </button>
-                    <button
-                      onClick={() => setInputMode("file")}
-                      className={`flex-1 flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors ${
-                        inputMode === "file"
-                          ? "bg-custom-background-100 text-custom-text-100 shadow-sm"
-                          : "text-custom-text-300 hover:text-custom-text-200"
-                      }`}
-                    >
-                      <Upload className="size-4" />
-                      File Upload
-                    </button>
-                  </div>
-
-                  {inputMode === "text" ? (
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-custom-text-200">Tên công việc</label>
-                        <input
-                          type="text"
-                          value={issueName}
-                          onChange={(e) => setIssueName(e.target.value)}
-                          placeholder="Ví dụ: Tích hợp Google OAuth"
-                          className="w-full rounded-md border border-custom-border-200 bg-custom-background-100 px-3 py-2 text-sm text-custom-text-100 placeholder-custom-text-400 focus:border-custom-primary-100 focus:outline-none"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-custom-text-200">Loại công việc</label>
-                          <select
-                            value={issueType}
-                            onChange={(e) => setIssueType(e.target.value as any)}
-                            className="w-full rounded-md border border-custom-border-200 bg-custom-background-100 px-3 py-2 text-sm text-custom-text-100 focus:border-custom-primary-100 focus:outline-none"
-                          >
-                            <option value="STORY">Story</option>
-                            <option value="TASK">Task</option>
-                            <option value="BUG">Bug</option>
-                          </select>
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium text-custom-text-200">Độ ưu tiên</label>
-                          <select
-                            value={priority}
-                            onChange={(e) => setPriority(e.target.value as any)}
-                            className="w-full rounded-md border border-custom-border-200 bg-custom-background-100 px-3 py-2 text-sm text-custom-text-100 focus:border-custom-primary-100 focus:outline-none"
-                          >
-                            <option value="LOW">Low</option>
-                            <option value="MEDIUM">Medium</option>
-                            <option value="HIGH">High</option>
-                            <option value="CRITICAL">Critical</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-custom-text-200">Mô tả ngắn gọn</label>
-                        <TextArea
-                          value={description}
-                          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
-                          placeholder="Nhập mô tả ngắn gọn. AI sẽ cải thiện và tạo mô tả chi tiết..."
-                          className="min-h-[200px]"
-                        />
-                        <p className="text-xs text-custom-text-400">{description.length} / 10,000 ký tự</p>
-                      </div>
-
-                      <Button
-                        variant="primary"
-                        size="md"
-                        onClick={handleStep1Submit}
-                        disabled={isRefining || !description.trim() || !issueName.trim()}
-                        className="w-full"
-                      >
-                        {isRefining ? (
-                          <>
-                            <Sparkles className="size-4 animate-spin" />
-                            Đang cải thiện mô tả...
-                          </>
-                        ) : (
-                          <>
-                            <Wand2 className="size-4" />
-                            Cải thiện mô tả với AI
-                            <ArrowRight className="size-4 ml-2" />
-                          </>
-                        )}
-                      </Button>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-custom-text-200">Tên công việc</label>
+                      <input
+                        type="text"
+                        value={issueName}
+                        onChange={(e) => setIssueName(e.target.value)}
+                        placeholder="Ví dụ: Tích hợp Google OAuth"
+                        className="w-full rounded-md border border-custom-border-200 bg-custom-background-100 px-3 py-2 text-sm text-custom-text-100 placeholder-custom-text-400 focus:border-custom-primary-100 focus:outline-none"
+                      />
                     </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <div className="rounded-lg border-2 border-dashed border-custom-border-300 bg-custom-background-90 p-12 text-center">
-                        <FileText className="size-12 mx-auto mb-4 text-custom-text-300" />
-                        <p className="text-sm font-medium text-custom-text-200 mb-1">Upload file tài liệu</p>
-                        <p className="text-xs text-custom-text-400 mb-4">Hỗ trợ PDF, Word (.doc, .docx), Excel (.xls, .xlsx)</p>
 
-                        {uploadedDocument ? (
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-center gap-2 text-sm text-green-600">
-                              <CheckCircle2 className="size-4" />
-                              <span>{uploadedDocument.fileName}</span>
-                            </div>
-                            <Button variant="neutral-primary" size="sm" onClick={resetUpload}>
-                              <X className="size-4" />
-                              Xóa và chọn file khác
-                            </Button>
-                          </div>
-                        ) : (
-                          <>
-                            <input
-                              type="file"
-                              id="document-upload"
-                              accept=".pdf,.doc,.docx,.xls,.xlsx"
-                              className="hidden"
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  await uploadDocument(file, { projectId });
-                                }
-                                // Reset input
-                                e.target.value = "";
-                              }}
-                              disabled={isUploading}
-                            />
-                            <Button
-                              variant="neutral-primary"
-                              size="sm"
-                              disabled={isUploading}
-                              onClick={() => document.getElementById("document-upload")?.click()}
-                            >
-                              {isUploading ? (
-                                <>
-                                  <Loader2 className="size-4 animate-spin" />
-                                  Đang upload... {uploadProgress}%
-                                </>
-                              ) : (
-                                <>
-                                  <Upload className="size-4" />
-                                  Chọn file
-                                </>
-                              )}
-                            </Button>
-                          </>
-                        )}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-custom-text-200">Loại công việc</label>
+                        <select
+                          value={issueType}
+                          onChange={(e) => setIssueType(e.target.value as any)}
+                          className="w-full rounded-md border border-custom-border-200 bg-custom-background-100 px-3 py-2 text-sm text-custom-text-100 focus:border-custom-primary-100 focus:outline-none"
+                        >
+                          <option value="STORY">Story</option>
+                          <option value="TASK">Task</option>
+                          <option value="BUG">Bug</option>
+                        </select>
                       </div>
-                      {isUploading && (
-                        <div className="space-y-2">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-custom-text-200">Độ ưu tiên</label>
+                        <select
+                          value={priority}
+                          onChange={(e) => setPriority(e.target.value as any)}
+                          className="w-full rounded-md border border-custom-border-200 bg-custom-background-100 px-3 py-2 text-sm text-custom-text-100 focus:border-custom-primary-100 focus:outline-none"
+                        >
+                          <option value="LOW">Low</option>
+                          <option value="MEDIUM">Medium</option>
+                          <option value="HIGH">High</option>
+                          <option value="CRITICAL">Critical</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-custom-text-200">Mô tả ngắn gọn</label>
+                      <TextArea
+                        value={description}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
+                        placeholder="Nhập mô tả ngắn gọn. AI sẽ cải thiện và tạo mô tả chi tiết..."
+                        className="min-h-[200px]"
+                      />
+                      <p className="text-xs text-custom-text-400">{description.length} / 10,000 ký tự</p>
+                    </div>
+
+                    {/* File Upload Section */}
+                    <div className="relative rounded-xl border-2 border-dashed border-custom-border-300 bg-gradient-to-br from-custom-background-90 to-custom-background-80 p-8 transition-all hover:border-custom-primary-100/50 hover:bg-custom-background-90">
+                      <input
+                        type="file"
+                        id="document-upload"
+                        accept=".pdf,.doc,.docx,.xls,.xlsx,.mp4,.mov,.avi,.mkv,.webm"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            await uploadDocument(file, { projectId });
+                          }
+                          e.target.value = "";
+                        }}
+                        disabled={isUploading}
+                      />
+
+                      {uploadedDocument ? (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="flex size-10 items-center justify-center rounded-lg bg-green-500/10">
+                              <CheckCircle2 className="size-5 text-green-600" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-custom-text-100">{uploadedDocument.fileName}</p>
+                              {uploadedDocument.extractedText && (
+                                <p className="text-xs text-custom-text-400">
+                                  Đã extract {uploadedDocument.extractedText.length} ký tự
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <Button
+                            variant="neutral-primary"
+                            size="sm"
+                            onClick={resetUpload}
+                            className="shrink-0"
+                          >
+                            <X className="size-4" />
+                            Xóa
+                          </Button>
+                        </div>
+                      ) : isUploading ? (
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-center gap-3">
+                            <Loader2 className="size-5 animate-spin text-custom-primary-100" />
+                            <span className="text-sm font-medium text-custom-text-200">
+                              Đang upload và xử lý... {uploadProgress}%
+                            </span>
+                          </div>
                           <div className="h-2 bg-custom-background-80 rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-custom-primary-100 transition-all duration-300"
+                              className="h-full bg-gradient-to-r from-custom-primary-100 to-purple-500 transition-all duration-300"
                               style={{ width: `${uploadProgress}%` }}
                             />
                           </div>
-                          <p className="text-xs text-custom-text-400 text-center">
-                            Đang upload và xử lý file...
-                          </p>
                         </div>
-                      )}
-                      {uploadedDocument && (
-                        <p className="text-xs text-green-600 text-center">
-                          ✓ File đã được upload thành công. Tính năng extract text đang được phát triển.
-                        </p>
+                      ) : (
+                        <button
+                          onClick={() => document.getElementById("document-upload")?.click()}
+                          className="w-full text-center space-y-3 cursor-pointer group"
+                        >
+                          <div className="flex justify-center">
+                            <div className="flex size-12 items-center justify-center rounded-xl bg-custom-primary-100/10 group-hover:bg-custom-primary-100/20 transition-colors">
+                              <Upload className="size-6 text-custom-primary-100" />
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-custom-text-200 group-hover:text-custom-primary-100 transition-colors">
+                              Hoặc upload file tài liệu/video
+                            </p>
+                            <p className="text-xs text-custom-text-400 mt-1">
+                              PDF, Word, Excel, Video (MP4, MOV, AVI, MKV, WebM)
+                            </p>
+                          </div>
+                        </button>
                       )}
                     </div>
-                  )}
+
+                    <Button
+                      variant="primary"
+                      size="md"
+                      onClick={handleStep1Submit}
+                      disabled={isRefining || !description.trim()}
+                      className="w-full"
+                    >
+                      {isRefining ? (
+                        <>
+                          <Sparkles className="size-4 animate-spin" />
+                          Đang cải thiện mô tả...
+                        </>
+                      ) : (
+                        <>
+                          <Wand2 className="size-4" />
+                          Cải thiện mô tả với AI
+                          <ArrowRight className="size-4 ml-2" />
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}

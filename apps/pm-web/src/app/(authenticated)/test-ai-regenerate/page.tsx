@@ -53,7 +53,7 @@ export default function TestAIRegeneratePage() {
           </h2>
           <IssueActionButtons
             issueId="TEST-AI-123"
-            showAIActions={true}
+            showAIActions
           />
         </div>
 

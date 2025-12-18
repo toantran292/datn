@@ -6,6 +6,7 @@ import { AIService } from './ai.service';
 import { OpenAIService } from './openai.service';
 import { PromptService } from './prompt.service';
 import { AISprintSummaryService } from './ai-sprint-summary.service';
+import { DocumentExtractionService } from './document-extraction.service';
 import { FileStorageModule } from '../../common/file-storage/file-storage.module';
 
 @Module({
@@ -20,7 +21,7 @@ import { FileStorageModule } from '../../common/file-storage/file-storage.module
     }),
   ],
   controllers: [AIController],
-  providers: [AIService, OpenAIService, PromptService, AISprintSummaryService],
-  exports: [AIService, OpenAIService, AISprintSummaryService],
+  providers: [AIService, OpenAIService, PromptService, AISprintSummaryService, DocumentExtractionService],
+  exports: [AIService, OpenAIService, AISprintSummaryService, DocumentExtractionService],
 })
 export class AIModule {}
