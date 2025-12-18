@@ -81,6 +81,47 @@ export interface StatsResponse {
   bySourceType: Record<string, number>;
 }
 
+// LLM Types
+export interface LLMConfig {
+  modelName?: string;
+  temperature?: number;
+  maxTokens?: number;
+}
+
+export interface ChatMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+}
+
+export interface ConversationMessage {
+  userId: string;
+  content: string;
+  createdAt: Date | string;
+}
+
+export interface ActionItem {
+  task: string;
+  assignee: string | null;
+  priority: 'high' | 'medium' | 'low';
+  deadline: string | null;
+}
+
+export interface SummarizeResponse {
+  summary: string;
+}
+
+export interface TranslateResponse {
+  translation: string;
+}
+
+export interface ChatResponse {
+  response: string;
+}
+
+export interface ExtractActionsResponse {
+  items: ActionItem[];
+}
+
 @Injectable()
 export class RagClient implements OnModuleInit {
   private readonly logger = new Logger(RagClient.name);
@@ -387,6 +428,416 @@ export class RagClient implements OnModuleInit {
     } catch (error) {
       this.logger.error(`RAG process error: ${error}`);
       return { success: false, chunksCreated: 0, message: String(error) };
+    }
+  }
+
+  // ==================== LLM Methods ====================
+
+  /**
+   * Generic LLM chat completion
+   */
+  async chat(
+    messages: ChatMessage[],
+    config?: LLMConfig,
+  ): Promise<ChatResponse> {
+    if (!this.enabled) {
+      return { response: 'RAG service is not available' };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/llm/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages, config, stream: false }),
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        return { response: `Error: ${error}` };
+      }
+
+      return response.json();
+    } catch (error) {
+      this.logger.error(`LLM chat error: ${error}`);
+      return { response: `Error: ${String(error)}` };
+    }
+  }
+
+  /**
+   * Streaming LLM chat completion
+   */
+  async *streamChat(messages: ChatMessage[], config?: LLMConfig): AsyncGenerator<string> {
+    if (!this.enabled) {
+      yield 'RAG service is not available';
+      return;
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/llm/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages, config, stream: true }),
+      });
+
+      if (!response.ok) {
+        yield `Error: ${await response.text()}`;
+        return;
+      }
+
+      yield* this.readStream(response);
+    } catch (error) {
+      this.logger.error(`LLM stream chat error: ${error}`);
+      yield `Error: ${String(error)}`;
+    }
+  }
+
+  /**
+   * Summarize conversation
+   */
+  async summarizeConversation(
+    messages: ConversationMessage[],
+    config?: LLMConfig,
+    customPrompt?: string,
+  ): Promise<SummarizeResponse> {
+    if (!this.enabled) {
+      return { summary: 'RAG service is not available' };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/llm/summarize/conversation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages, config, customPrompt, stream: false }),
+      });
+
+      if (!response.ok) {
+        return { summary: `Error: ${await response.text()}` };
+      }
+
+      return response.json();
+    } catch (error) {
+      this.logger.error(`LLM summarize conversation error: ${error}`);
+      return { summary: `Error: ${String(error)}` };
+    }
+  }
+
+  /**
+   * Stream summarize conversation
+   */
+  async *streamSummarizeConversation(
+    messages: ConversationMessage[],
+    config?: LLMConfig,
+    customPrompt?: string,
+  ): AsyncGenerator<string> {
+    if (!this.enabled) {
+      yield 'RAG service is not available';
+      return;
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/llm/summarize/conversation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages, config, customPrompt, stream: true }),
+      });
+
+      if (!response.ok) {
+        yield `Error: ${await response.text()}`;
+        return;
+      }
+
+      yield* this.readStream(response);
+    } catch (error) {
+      this.logger.error(`LLM stream summarize error: ${error}`);
+      yield `Error: ${String(error)}`;
+    }
+  }
+
+  /**
+   * Extract action items from conversation
+   */
+  async extractActionItems(
+    messages: ConversationMessage[],
+    config?: LLMConfig,
+  ): Promise<ExtractActionsResponse> {
+    if (!this.enabled) {
+      return { items: [] };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/llm/extract/actions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages, config, stream: false }),
+      });
+
+      if (!response.ok) {
+        return { items: [] };
+      }
+
+      return response.json();
+    } catch (error) {
+      this.logger.error(`LLM extract actions error: ${error}`);
+      return { items: [] };
+    }
+  }
+
+  /**
+   * Stream extract action items (markdown format)
+   */
+  async *streamExtractActionItems(
+    messages: ConversationMessage[],
+    config?: LLMConfig,
+  ): AsyncGenerator<string> {
+    if (!this.enabled) {
+      yield 'RAG service is not available';
+      return;
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/llm/extract/actions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages, config, stream: true }),
+      });
+
+      if (!response.ok) {
+        yield `Error: ${await response.text()}`;
+        return;
+      }
+
+      yield* this.readStream(response);
+    } catch (error) {
+      this.logger.error(`LLM stream extract actions error: ${error}`);
+      yield `Error: ${String(error)}`;
+    }
+  }
+
+  /**
+   * Summarize document
+   */
+  async summarizeDocument(
+    content: string,
+    documentName: string,
+    config?: LLMConfig,
+    customPrompt?: string,
+  ): Promise<SummarizeResponse> {
+    if (!this.enabled) {
+      return { summary: 'RAG service is not available' };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/llm/summarize/document`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content, documentName, config, customPrompt, stream: false }),
+      });
+
+      if (!response.ok) {
+        return { summary: `Error: ${await response.text()}` };
+      }
+
+      return response.json();
+    } catch (error) {
+      this.logger.error(`LLM summarize document error: ${error}`);
+      return { summary: `Error: ${String(error)}` };
+    }
+  }
+
+  /**
+   * Stream summarize document
+   */
+  async *streamSummarizeDocument(
+    content: string,
+    documentName: string,
+    config?: LLMConfig,
+    customPrompt?: string,
+  ): AsyncGenerator<string> {
+    if (!this.enabled) {
+      yield 'RAG service is not available';
+      return;
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/llm/summarize/document`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content, documentName, config, customPrompt, stream: true }),
+      });
+
+      if (!response.ok) {
+        yield `Error: ${await response.text()}`;
+        return;
+      }
+
+      yield* this.readStream(response);
+    } catch (error) {
+      this.logger.error(`LLM stream summarize document error: ${error}`);
+      yield `Error: ${String(error)}`;
+    }
+  }
+
+  /**
+   * Translate text
+   */
+  async translate(
+    text: string,
+    targetLanguage: string,
+    sourceLanguage?: string,
+    config?: LLMConfig,
+  ): Promise<TranslateResponse> {
+    if (!this.enabled) {
+      return { translation: 'RAG service is not available' };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/llm/translate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, targetLanguage, sourceLanguage, config, stream: false }),
+      });
+
+      if (!response.ok) {
+        return { translation: `Error: ${await response.text()}` };
+      }
+
+      return response.json();
+    } catch (error) {
+      this.logger.error(`LLM translate error: ${error}`);
+      return { translation: `Error: ${String(error)}` };
+    }
+  }
+
+  /**
+   * Stream translate
+   */
+  async *streamTranslate(
+    text: string,
+    targetLanguage: string,
+    sourceLanguage?: string,
+    config?: LLMConfig,
+  ): AsyncGenerator<string> {
+    if (!this.enabled) {
+      yield 'RAG service is not available';
+      return;
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/llm/translate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, targetLanguage, sourceLanguage, config, stream: true }),
+      });
+
+      if (!response.ok) {
+        yield `Error: ${await response.text()}`;
+        return;
+      }
+
+      yield* this.readStream(response);
+    } catch (error) {
+      this.logger.error(`LLM stream translate error: ${error}`);
+      yield `Error: ${String(error)}`;
+    }
+  }
+
+  /**
+   * Summarize transcription (audio/video)
+   */
+  async summarizeTranscription(
+    transcription: string,
+    fileName: string,
+    config?: LLMConfig,
+  ): Promise<SummarizeResponse> {
+    if (!this.enabled) {
+      return { summary: 'RAG service is not available' };
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/llm/summarize/transcription`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transcription, fileName, config, stream: false }),
+      });
+
+      if (!response.ok) {
+        return { summary: `Error: ${await response.text()}` };
+      }
+
+      return response.json();
+    } catch (error) {
+      this.logger.error(`LLM summarize transcription error: ${error}`);
+      return { summary: `Error: ${String(error)}` };
+    }
+  }
+
+  /**
+   * Stream summarize transcription
+   */
+  async *streamSummarizeTranscription(
+    transcription: string,
+    fileName: string,
+    config?: LLMConfig,
+  ): AsyncGenerator<string> {
+    if (!this.enabled) {
+      yield 'RAG service is not available';
+      return;
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/llm/summarize/transcription`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transcription, fileName, config, stream: true }),
+      });
+
+      if (!response.ok) {
+        yield `Error: ${await response.text()}`;
+        return;
+      }
+
+      yield* this.readStream(response);
+    } catch (error) {
+      this.logger.error(`LLM stream summarize transcription error: ${error}`);
+      yield `Error: ${String(error)}`;
+    }
+  }
+
+  // ==================== Helper Methods ====================
+
+  /**
+   * Helper to read SSE stream
+   */
+  private async *readStream(response: Response): AsyncGenerator<string> {
+    const reader = response.body?.getReader();
+    if (!reader) {
+      yield 'No response stream';
+      return;
+    }
+
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try {
+            const data = JSON.parse(line.slice(6));
+            if (data.text) {
+              yield data.text;
+            }
+          } catch {
+            // Ignore parse errors
+          }
+        }
+      }
     }
   }
 }

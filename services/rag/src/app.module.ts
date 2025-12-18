@@ -5,6 +5,7 @@ import { LoggerModule } from 'nestjs-pino';
 import { EmbeddingModule } from './embedding/embedding.module';
 import { SearchModule } from './search/search.module';
 import { ProcessorModule } from './processor/processor.module';
+import { LLMModule } from './llm/llm.module';
 import { HealthController } from './health.controller';
 
 @Module({
@@ -40,6 +41,7 @@ import { HealthController } from './health.controller';
     EmbeddingModule,
     SearchModule,
     ProcessorModule,
+    LLMModule,
   ],
   controllers: [HealthController],
 })

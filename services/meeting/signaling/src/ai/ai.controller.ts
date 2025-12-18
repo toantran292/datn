@@ -8,7 +8,7 @@ import {
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
-import { LLMService, SUPPORTED_LANGUAGES, type LanguageCode, type MeetingContext } from './llm.service';
+import { RagClient, SUPPORTED_LANGUAGES, type LanguageCode, type MeetingContext } from '../common/rag';
 import { TranscriptService, SaveTranscriptDto } from './transcript.service';
 
 interface TranslateRequest {
@@ -37,7 +37,7 @@ interface SaveCaptionsBatchRequest {
 @Controller('ai')
 export class AIController {
   constructor(
-    private readonly llmService: LLMService,
+    private readonly ragClient: RagClient,
     private readonly transcriptService: TranscriptService,
   ) {}
 
@@ -63,16 +63,8 @@ export class AIController {
       );
     }
 
-    // Check if OpenAI API key is configured
-    if (!process.env.OPENAI_API_KEY) {
-      throw new HttpException(
-        'Translation service not configured',
-        HttpStatus.SERVICE_UNAVAILABLE,
-      );
-    }
-
     try {
-      const result = await this.llmService.translate(text, targetLang, sourceLang, context);
+      const result = await this.ragClient.translate(text, targetLang, sourceLang, context);
       return result;
     } catch (error) {
       throw new HttpException(
@@ -88,7 +80,7 @@ export class AIController {
   @Get('languages')
   getLanguages() {
     return {
-      languages: this.llmService.getSupportedLanguages(),
+      languages: this.ragClient.getSupportedLanguages(),
     };
   }
 

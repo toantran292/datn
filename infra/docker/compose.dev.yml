@@ -184,10 +184,9 @@ services:
       PM_BASE_URL: ${PM_BASE_URL:-http://pm:3000}
       SERVICE_TIMEOUT_MS: 3500
       CACHE_TTL_SEC: 60
-      # LLM Configuration for Reports (UC16)
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      GOOGLE_AI_API_KEY: ${GOOGLE_AI_API_KEY:-}
+      # RAG Service for LLM (Reports UC16)
+      RAG_SERVICE_URL: http://rag-api:3000
+      RAG_ENABLED: "true"
       FILE_STORAGE_URL: http://file-storage-api:3000
       NOTIFICATION_URL: http://notification-api:3000
     expose:
@@ -433,10 +432,12 @@ services:
       TURN_SECRET: ${TURN_SECRET:-turnsharedsecret}
       # Database
       DATABASE_URL: postgresql://${PG_USER}:${PG_PASSWORD}@postgres:5432/meeting_db
-      # AI/LLM Configuration
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      # RAG Service for AI/LLM
+      RAG_SERVICE_URL: http://rag-api:3000
+      RAG_ENABLED: "true"
     depends_on:
       postgres: { condition: service_healthy }
+      rag-api: { condition: service_healthy }
     ports:
       - "40600:3000"
     healthcheck:
