@@ -14,12 +14,10 @@ import { RoomsRepository } from "../rooms/repositories/room.repository";
 import { PresenceModule } from "../common/presence/presence.module";
 import { IdentityModule } from "../common/identity/identity.module";
 import { FileStorageModule } from "../common/file-storage/file-storage.module";
-import { RagModule } from "../ai/rag/rag.module";
 
 @Module({
   imports: [
     forwardRef(() => RoomsModule),
-    forwardRef(() => RagModule),
     HttpModule,
     PresenceModule,
     IdentityModule,

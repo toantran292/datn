@@ -2,7 +2,7 @@ import { Injectable, Logger, NotFoundException, BadRequestException } from '@nes
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { v4 as uuidv4 } from 'uuid';
-import { LlmService } from '../llm/llm.service';
+import { RagClient } from '../common/rag';
 import {
   Report,
   ReportStatus,
@@ -28,7 +28,7 @@ export class ReportsService {
   private readonly exportService: ExportService;
 
   constructor(
-    private readonly llmService: LlmService,
+    private readonly ragClient: RagClient,
     private readonly httpService: HttpService,
     private readonly config: ConfigService,
   ) {
@@ -84,12 +84,11 @@ export class ReportsService {
       // Get document context
       const context = await this.getDocumentContext(report.fileIds);
 
-      // Generate with LLM
-      const provider = report.llmProvider || LlmProvider.OPENAI;
-      const result = await this.llmService.generate(
+      // Generate with RAG Service
+      const result = await this.ragClient.generate(
         fullPrompt,
         context,
-        provider,
+        report.llmProvider || LlmProvider.OPENAI,
         report.llmModel,
       );
 

@@ -52,10 +52,10 @@ export function InviteMemberModal({ open, onOpenChange, onInvite }: InviteMember
         <div className="flex items-center justify-between px-5 py-4 border-b border-custom-border-200">
           <div>
             <h3 className="text-lg font-semibold text-custom-text-100">
-              Invite Team Member
+              Mời thành viên
             </h3>
             <p className="text-sm text-custom-text-300 mt-0.5">
-              Send an invitation to join your organization
+              Gửi lời mời để tham gia tổ chức của bạn
             </p>
           </div>
           <button
@@ -72,7 +72,7 @@ export function InviteMemberModal({ open, onOpenChange, onInvite }: InviteMember
           {/* Email Field */}
           <div className="space-y-2">
             <label htmlFor="invite-email" className="text-sm font-medium text-custom-text-200">
-              Email Address
+              Địa chỉ email
             </label>
             <Input
               id="invite-email"
@@ -89,7 +89,7 @@ export function InviteMemberModal({ open, onOpenChange, onInvite }: InviteMember
           {/* Role Selection */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-custom-text-200">
-              Role
+              Vai trò
             </label>
             <div className="grid grid-cols-2 gap-3">
               <button
@@ -116,7 +116,7 @@ export function InviteMemberModal({ open, onOpenChange, onInvite }: InviteMember
                   </span>
                 </div>
                 <p className="text-xs text-custom-text-300 ml-6">
-                  Full access to all projects and settings
+                  Truy cập đầy đủ vào tất cả dự án và cài đặt
                 </p>
               </button>
 
@@ -144,7 +144,7 @@ export function InviteMemberModal({ open, onOpenChange, onInvite }: InviteMember
                   </span>
                 </div>
                 <p className="text-xs text-custom-text-300 ml-6">
-                  Access only to assigned projects
+                  Chỉ truy cập vào các dự án được gán
                 </p>
               </button>
             </div>
@@ -159,7 +159,7 @@ export function InviteMemberModal({ open, onOpenChange, onInvite }: InviteMember
             onClick={handleClose}
             disabled={isSubmitting}
           >
-            Cancel
+            Hủy
           </Button>
           <Button
             type="submit"
@@ -170,7 +170,7 @@ export function InviteMemberModal({ open, onOpenChange, onInvite }: InviteMember
             prependIcon={<Mail size={16} />}
             className="bg-[#00C4AB] hover:bg-[#00B09A]"
           >
-            Send Invitation
+            Gửi lời mời
           </Button>
         </div>
       </form>

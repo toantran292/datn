@@ -48,11 +48,11 @@ const formatTimeAgo = (dateString: string): string => {
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return "Just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays === 1) return "Yesterday";
-  if (diffDays < 7) return `${diffDays}d ago`;
+  if (diffMins < 1) return "Vừa xong";
+  if (diffMins < 60) return `${diffMins} phút trước`;
+  if (diffHours < 24) return `${diffHours} giờ trước`;
+  if (diffDays === 1) return "Hôm qua";
+  if (diffDays < 7) return `${diffDays} ngày trước`;
   return date.toLocaleDateString();
 };
 
@@ -61,9 +61,9 @@ export function RecentFiles({ files = [], isLoading = false, onViewAll, onFileCl
     return (
       <Card className="p-6 border border-border shadow-md rounded-2xl bg-white">
         <div className="mb-6">
-          <h3 style={{ fontWeight: 600 }}>Recent Files</h3>
+          <h3 style={{ fontWeight: 600 }}>Tệp gần đây</h3>
           <p className="text-sm text-muted-foreground mt-1">
-            Latest uploads across all projects
+            Các tệp tải lên mới nhất từ tất cả dự án
           </p>
         </div>
         <div className="space-y-3">
@@ -86,14 +86,14 @@ export function RecentFiles({ files = [], isLoading = false, onViewAll, onFileCl
     return (
       <Card className="p-6 border border-border shadow-md rounded-2xl bg-white">
         <div className="mb-6">
-          <h3 style={{ fontWeight: 600 }}>Recent Files</h3>
+          <h3 style={{ fontWeight: 600 }}>Tệp gần đây</h3>
           <p className="text-sm text-muted-foreground mt-1">
-            Latest uploads across all projects
+            Các tệp tải lên mới nhất từ tất cả dự án
           </p>
         </div>
         <div className="py-8 text-center text-muted-foreground">
           <File className="w-12 h-12 mx-auto mb-3 opacity-50" />
-          <p>No files uploaded yet</p>
+          <p>Chưa có tệp nào được tải lên</p>
         </div>
       </Card>
     );
@@ -152,7 +152,7 @@ export function RecentFiles({ files = [], isLoading = false, onViewAll, onFileCl
           className="w-full mt-4 py-2 text-sm text-secondary hover:text-secondary/80 transition-colors rounded-lg hover:bg-secondary/5"
           style={{ fontWeight: 600 }}
         >
-          View all files
+          Xem tất cả tệp
         </button>
       )}
     </Card>

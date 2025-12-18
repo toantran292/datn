@@ -53,13 +53,13 @@ function formatTimeAgo(dateString: string): string {
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return "Just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays === 1) return "Yesterday";
-  if (diffDays < 7) return `${diffDays}d ago`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
-  return `${Math.floor(diffDays / 30)}mo ago`;
+  if (diffMins < 1) return "Vừa xong";
+  if (diffMins < 60) return `${diffMins} phút trước`;
+  if (diffHours < 24) return `${diffHours} giờ trước`;
+  if (diffDays === 1) return "Hôm qua";
+  if (diffDays < 7) return `${diffDays} ngày trước`;
+  if (diffDays < 30) return `${Math.floor(diffDays / 7)} tuần trước`;
+  return `${Math.floor(diffDays / 30)} tháng trước`;
 }
 
 function FilesLoadingSkeleton() {
@@ -131,30 +131,30 @@ export function FilesView() {
       const url = await getDownloadUrl(file.id.toString());
       if (url) {
         window.open(url, "_blank");
-        toast.success(`Downloading ${file.name}`);
+        toast.success(`Đang tải ${file.name}`);
       } else {
-        toast.error("Failed to get download link");
+        toast.error("Không thể lấy liên kết tải xuống");
       }
     } catch {
-      toast.error("Failed to download file");
+      toast.error("Không thể tải xuống tệp");
     }
   };
 
   const handleDelete = async (file: FileCardItem) => {
     const success = await deleteFile(file.id.toString());
     if (success) {
-      toast.success(`${file.name} deleted`, {
-        description: "The file has been removed from your workspace.",
+      toast.success(`Đã xóa ${file.name}`, {
+        description: "Tệp đã được xóa khỏi workspace của bạn.",
       });
     } else {
-      toast.error("Failed to delete file");
+      toast.error("Không thể xóa tệp");
     }
   };
 
   const handleUploadSuccess = () => {
     setUploadOpen(false);
     refetch();
-    toast.success("File uploaded successfully");
+    toast.success("Tệp đã được tải lên thành công");
   };
 
   const fileCardItems = files.map(toFileCardItem);
@@ -168,10 +168,10 @@ export function FilesView() {
             {/* Header */}
             <div className="mb-6">
               <h1 className="mb-2" style={{ fontWeight: 600 }}>
-                Files & Storage
+                Tệp & Lưu trữ
               </h1>
               <p className="text-muted-foreground">
-                Manage uploaded files across your workspace
+                Quản lý các tệp đã tải lên trong workspace của bạn
               </p>
             </div>
 
@@ -180,7 +180,7 @@ export function FilesView() {
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
                 <Input
-                  placeholder="Search by name..."
+                  placeholder="Tìm kiếm theo tên..."
                   className="pl-10 rounded-xl bg-white border-border h-11"
                   value={searchQuery}
                   onChange={(e) => handleSearchChange(e.target.value)}
@@ -189,30 +189,30 @@ export function FilesView() {
 
               <Select value={typeFilter} onValueChange={handleTypeChange}>
                 <SelectTrigger className="w-full lg:w-44 rounded-xl bg-white h-11">
-                  <SelectValue placeholder="File Type" />
+                  <SelectValue placeholder="Loại tệp" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="image">Images</SelectItem>
-                  <SelectItem value="document">Documents</SelectItem>
-                  <SelectItem value="pdf">PDFs</SelectItem>
-                  <SelectItem value="spreadsheet">Spreadsheets</SelectItem>
+                  <SelectItem value="all">Tất cả</SelectItem>
+                  <SelectItem value="image">Hình ảnh</SelectItem>
+                  <SelectItem value="document">Tài liệu</SelectItem>
+                  <SelectItem value="pdf">PDF</SelectItem>
+                  <SelectItem value="spreadsheet">Bảng tính</SelectItem>
                 </SelectContent>
               </Select>
 
               <Button
                 onClick={() => setUploadOpen(true)}
-                className="bg-secondary hover:bg-secondary/90 text-white rounded-xl shadow-sm h-11 lg:w-auto"
+                className="shrink-0 rounded-xl bg-[#00C4AB] hover:bg-[#00B09A] text-white h-11"
               >
                 <Upload size={18} className="mr-2" />
-                Upload
+                Tải lên
               </Button>
             </div>
 
             {/* View Mode Toggle */}
             <div className="flex items-center justify-between mb-6">
               <p className="text-sm text-muted-foreground">
-                {total} files total
+                Tổng cộng {total} tệp
               </p>
               <div className="flex items-center gap-1 bg-muted rounded-xl p-1">
                 <Button
@@ -262,10 +262,10 @@ export function FilesView() {
                       onClick={() => handlePageChange(page - 1)}
                     >
                       <ChevronLeft size={16} />
-                      Previous
+                      Trước
                     </Button>
                     <span className="text-sm text-muted-foreground px-4">
-                      Page {page} of {totalPages}
+                      Trang {page} / {totalPages}
                     </span>
                     <Button
                       variant="outline"
@@ -274,7 +274,7 @@ export function FilesView() {
                       disabled={page >= totalPages}
                       onClick={() => handlePageChange(page + 1)}
                     >
-                      Next
+                      Sau
                       <ChevronRight size={16} />
                     </Button>
                   </div>
@@ -285,11 +285,11 @@ export function FilesView() {
                 <div className="w-24 h-24 mx-auto mb-4 bg-muted rounded-2xl flex items-center justify-center">
                   <Filter size={32} className="text-muted-foreground" />
                 </div>
-                <h3 style={{ fontWeight: 600 }} className="mb-2">No files found</h3>
+                <h3 style={{ fontWeight: 600 }} className="mb-2">Không tìm thấy tệp</h3>
                 <p className="text-muted-foreground mb-6">
                   {searchQuery || typeFilter !== "all"
-                    ? "Try adjusting your filters or search query"
-                    : "Upload your first file to get started"}
+                    ? "Hãy điều chỉnh bộ lọc hoặc từ khóa tìm kiếm"
+                    : "Tải lên tệp đầu tiên để bắt đầu"}
                 </p>
                 {(searchQuery || typeFilter !== "all") && (
                   <Button
@@ -301,7 +301,7 @@ export function FilesView() {
                       setFilters({ search: "", type: "all" });
                     }}
                   >
-                    Clear Filters
+                    Xóa bộ lọc
                   </Button>
                 )}
               </div>

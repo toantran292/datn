@@ -57,7 +57,7 @@ export function StorageSummaryWidget({
         <div className="w-10 h-10 rounded-xl bg-[#FF8800]/10 flex items-center justify-center">
           <HardDrive size={20} className="text-[#FF8800]" />
         </div>
-        <h3 style={{ fontWeight: 600 }}>Storage Summary</h3>
+        <h3 style={{ fontWeight: 600 }}>Tổng quan lưu trữ</h3>
       </div>
 
       {/* Total Storage */}
@@ -72,14 +72,14 @@ export function StorageSummaryWidget({
         </div>
         <Progress value={usagePercent} className="h-3 mb-2" />
         <p className="text-sm text-muted-foreground">
-          {usagePercent.toFixed(1)}% of quota used
+          Đã sử dụng {usagePercent.toFixed(1)}% hạn mức
         </p>
       </div>
 
       {/* File Count */}
       <div className="pt-6 border-t border-border">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-muted-foreground">Total Files</span>
+          <span className="text-sm text-muted-foreground">Tổng số tệp</span>
           <span style={{ fontWeight: 600, fontSize: '1.25rem' }}>{fileCount || 0}</span>
         </div>
 
@@ -87,11 +87,11 @@ export function StorageSummaryWidget({
         <div className="mt-4 p-3 rounded-lg bg-muted/50">
           <p className="text-xs text-muted-foreground">
             {usagePercent >= 90 ? (
-              <span className="text-red-500">Storage almost full! Consider deleting unused files.</span>
+              <span className="text-red-500">Lưu trữ sắp đầy! Hãy xem xét xóa các tệp không sử dụng.</span>
             ) : usagePercent >= 70 ? (
-              <span className="text-amber-500">Storage is filling up. Review your files regularly.</span>
+              <span className="text-amber-500">Lưu trữ đang được lấp đầy. Thường xuyên xem xét các tệp của bạn.</span>
             ) : (
-              "Plenty of storage available for your workspace."
+              "Có nhiều dung lượng lưu trữ cho workspace của bạn."
             )}
           </p>
         </div>

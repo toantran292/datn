@@ -1,9 +1,10 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Markdown from "react-markdown";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Bot, Send, Sparkles } from "lucide-react";
+import { Bot, Send, Sparkles, AlertCircle } from "lucide-react";
+import { agentChatStream, type AgentChatMessage } from "@/lib/api";
 
 interface Message {
   id: string;
@@ -11,36 +12,24 @@ interface Message {
   content: string;
   timestamp: Date;
   isStreaming?: boolean;
+  isError?: boolean;
 }
 
 interface AgentChatProps {
   className?: string;
+  projectId?: string; // Optional: focus on specific project
 }
 
 const suggestedQuestions = [
-  "Tong hop tien do cac project tuan nay",
-  "File nao duoc upload gan day nhat?",
-  "Ai chua hoat dong trong 7 ngay qua?",
+  "Tiến độ dự án hiện tại như thế nào?",
+  "Tôi có bao nhiêu task chưa hoàn thành?",
+  "Ai đang phụ trách nhiều công việc nhất?",
 ];
 
-const getMockResponse = (question: string): string => {
-  if (question.toLowerCase().includes("tien do") || question.toLowerCase().includes("project")) {
-    return "Dua tren du lieu workspace cua ban:\n\n**Tong quan tien do tuan nay:**\n\n- **Marketing Campaign**: 85% hoan thanh, 3 tasks con lai\n- **Product Development**: 62% hoan thanh, dang trong sprint 4\n- **Customer Success**: 90% hoan thanh, sap release\n\n**Goi y**: Project Marketing can attention vi deadline gan.";
-  }
-  if (question.toLowerCase().includes("file") || question.toLowerCase().includes("upload")) {
-    return "**Files duoc upload gan day:**\n\n1. `Q4-Report-Final.pdf` - Marketing (2 gio truoc)\n2. `meeting-notes.md` - Product Dev (5 gio truoc)\n3. `budget-2025.xlsx` - Marketing (hom qua)\n\nTong cong **47 files** duoc upload trong tuan nay.";
-  }
-  if (question.toLowerCase().includes("hoat dong") || question.toLowerCase().includes("inactive")) {
-    return "**Thanh vien chua hoat dong (7 ngay):**\n\n- Nguyen Van A - last seen: 10 ngay truoc\n- Tran Thi B - last seen: 8 ngay truoc\n\n**18/20** thanh vien dang hoat dong binh thuong.";
-  }
-  return "Toi co the giup ban voi cac thong tin ve workspace nhu:\n\n- Tien do cac project\n- Files va documents\n- Hoat dong cua team members\n- Thong ke va bao cao\n\nHay hoi cu the hon de toi co the ho tro tot nhat!";
-};
-
-export function AgentChat({ className }: AgentChatProps) {
+export function AgentChat({ className, projectId }: AgentChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
-  const [streamingMessageId, setStreamingMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -51,34 +40,8 @@ export function AgentChat({ className }: AgentChatProps) {
     scrollToBottom();
   }, [messages, isThinking]);
 
-  const streamText = async (messageId: string, fullText: string) => {
-    const words = fullText.split(" ");
-    let currentText = "";
-
-    for (let i = 0; i < words.length; i++) {
-      currentText += (i === 0 ? "" : " ") + words[i];
-
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === messageId
-            ? { ...msg, content: currentText, isStreaming: true }
-            : msg
-        )
-      );
-
-      await new Promise((resolve) => setTimeout(resolve, 30 + Math.random() * 40));
-    }
-
-    setMessages((prev) =>
-      prev.map((msg) =>
-        msg.id === messageId ? { ...msg, isStreaming: false } : msg
-      )
-    );
-    setStreamingMessageId(null);
-  };
-
-  const handleSend = async () => {
-    if (!input.trim() || isThinking || streamingMessageId) return;
+  const handleSend = useCallback(async () => {
+    if (!input.trim() || isThinking) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -92,25 +55,86 @@ export function AgentChat({ className }: AgentChatProps) {
     setInput("");
     setIsThinking(true);
 
-    await new Promise((resolve) => setTimeout(resolve, 1000 + Math.random() * 500));
-
-    setIsThinking(false);
-
+    // Create assistant message placeholder for streaming
     const assistantMessageId = (Date.now() + 1).toString();
-    const assistantMessage: Message = {
-      id: assistantMessageId,
-      role: "assistant",
-      content: "",
-      timestamp: new Date(),
-      isStreaming: true,
-    };
+    let streamedContent = "";
 
-    setMessages((prev) => [...prev, assistantMessage]);
-    setStreamingMessageId(assistantMessageId);
+    try {
+      // Build history from previous messages
+      const history: AgentChatMessage[] = messages.map((m) => ({
+        role: m.role,
+        content: m.content,
+      }));
 
-    const response = getMockResponse(userQuestion);
-    await streamText(assistantMessageId, response);
-  };
+      // Stream response
+      for await (const chunk of agentChatStream(
+        { message: userQuestion, history, projectId },
+        () => {
+          // Add streaming message when stream starts
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: assistantMessageId,
+              role: "assistant",
+              content: "",
+              timestamp: new Date(),
+              isStreaming: true,
+            },
+          ]);
+        }
+      )) {
+        streamedContent += chunk;
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === assistantMessageId
+              ? { ...m, content: streamedContent }
+              : m
+          )
+        );
+      }
+
+      // Mark streaming complete
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === assistantMessageId
+            ? { ...m, isStreaming: false }
+            : m
+        )
+      );
+    } catch (error: any) {
+      console.error("Agent chat error:", error);
+
+      // If streaming started, update the message with error
+      if (streamedContent) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === assistantMessageId
+              ? {
+                  ...m,
+                  content: streamedContent + "\n\n*Lỗi kết nối, phản hồi có thể không đầy đủ.*",
+                  isStreaming: false,
+                  isError: true,
+                }
+              : m
+          )
+        );
+      } else {
+        // No streaming started, add error message
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: assistantMessageId,
+            role: "assistant",
+            content: "Xin lỗi, tôi không thể xử lý yêu cầu của bạn lúc này. Vui lòng thử lại sau.",
+            timestamp: new Date(),
+            isError: true,
+          },
+        ]);
+      }
+    } finally {
+      setIsThinking(false);
+    }
+  }, [input, isThinking, messages, projectId]);
 
   const handleSuggestedQuestion = (question: string) => {
     setInput(question);
@@ -127,7 +151,7 @@ export function AgentChat({ className }: AgentChatProps) {
           <Sparkles size={16} className="text-primary" />
         </div>
         <p className="text-sm text-muted-foreground">
-          Hoi dap ve workspace cua ban
+          Hỏi đáp về workspace của bạn
         </p>
       </div>
 
@@ -136,7 +160,7 @@ export function AgentChat({ className }: AgentChatProps) {
           <div className="h-full flex flex-col items-center justify-center text-center py-8">
             <Bot size={40} className="text-muted-foreground/30 mb-3" />
             <p className="text-sm text-muted-foreground mb-4">
-              Bat dau bang cach hoi mot cau hoi
+              Bắt đầu bằng cách hỏi một câu hỏi
             </p>
             <div className="space-y-2 w-full">
               {suggestedQuestions.map((question, index) => (
@@ -160,11 +184,16 @@ export function AgentChat({ className }: AgentChatProps) {
                 className={`max-w-[85%] px-4 py-2.5 rounded-2xl ${
                   message.role === "user"
                     ? "bg-primary text-primary-foreground rounded-br-md"
+                    : message.isError
+                    ? "bg-destructive/10 text-destructive rounded-bl-md"
                     : "bg-muted rounded-bl-md"
                 }`}
               >
                 {message.role === "assistant" ? (
                   <div className="text-sm prose prose-sm prose-neutral max-w-none [&>p]:m-0 [&>ul]:my-1 [&>ol]:my-1 [&_li]:my-0 [&_code]:bg-background/50 [&_code]:px-1 [&_code]:rounded">
+                    {message.isError && (
+                      <AlertCircle size={14} className="inline mr-1" />
+                    )}
                     <Markdown>{message.content}</Markdown>
                   </div>
                 ) : (
@@ -190,16 +219,16 @@ export function AgentChat({ className }: AgentChatProps) {
 
       <div className="flex gap-2">
         <Input
-          placeholder="Hoi ve workspace cua ban..."
+          placeholder="Hỏi về workspace của bạn..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
-          disabled={isThinking || !!streamingMessageId}
+          disabled={isThinking}
           className="rounded-xl"
         />
         <Button
           onClick={handleSend}
-          disabled={!input.trim() || isThinking || !!streamingMessageId}
+          disabled={!input.trim() || isThinking}
           size="icon"
           className="rounded-xl flex-shrink-0"
         >

@@ -14,6 +14,7 @@ import { AIModule } from "./modules/ai/ai.module";
 import { RiskDetectorModule } from "./modules/risk-detector/risk-detector.module";
 import { RagModule } from "./modules/rag/rag.module";
 import { ProjectMemberModule } from "./modules/project-member/project-member.module";
+import { RagModule } from "./common/rag/rag.module";
 import { OrgIdGuard } from "./common/guards";
 
 @Module({
@@ -22,6 +23,7 @@ import { OrgIdGuard } from "./common/guards";
       isGlobal: true,
     }),
     PrismaModule,
+    RagModule,
     ProjectModule,
     SprintModule,
     IssueModule,
