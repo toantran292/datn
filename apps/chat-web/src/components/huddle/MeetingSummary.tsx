@@ -68,6 +68,22 @@ export function MeetingSummary({ meetingId, className = '' }: MeetingSummaryProp
     };
   };
 
+  // Helper to render inline markdown (bold)
+  const renderInlineMarkdown = (text: string) => {
+    // Split by **bold** pattern
+    const parts = text.split(/(\*\*[^*]+\*\*)/g);
+    return parts.map((part, idx) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return (
+          <strong key={idx} className="font-semibold text-gray-900 dark:text-white">
+            {part.slice(2, -2)}
+          </strong>
+        );
+      }
+      return <span key={idx}>{part}</span>;
+    });
+  };
+
   // Simple markdown-like rendering for summary
   const renderSummary = (text: string) => {
     const lines = text.split('\n');
@@ -76,7 +92,7 @@ export function MeetingSummary({ meetingId, className = '' }: MeetingSummaryProp
       if (line.startsWith('## ')) {
         return (
           <h3 key={i} className="font-semibold text-gray-900 dark:text-white mt-3 mb-1">
-            {line.replace('## ', '')}
+            {renderInlineMarkdown(line.replace('## ', ''))}
           </h3>
         );
       }
@@ -84,7 +100,7 @@ export function MeetingSummary({ meetingId, className = '' }: MeetingSummaryProp
       if (line.startsWith('- ') || line.startsWith('• ')) {
         return (
           <li key={i} className="ml-4 text-gray-700 dark:text-gray-300">
-            {line.replace(/^[-•]\s*/, '')}
+            {renderInlineMarkdown(line.replace(/^[-•]\s*/, ''))}
           </li>
         );
       }
@@ -95,7 +111,7 @@ export function MeetingSummary({ meetingId, className = '' }: MeetingSummaryProp
       // Regular text
       return (
         <p key={i} className="text-gray-700 dark:text-gray-300">
-          {line}
+          {renderInlineMarkdown(line)}
         </p>
       );
     });
