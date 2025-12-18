@@ -190,7 +190,7 @@ export class DocumentExtractionService {
 
   /**
    * Extract audio from video and convert to MP3
-   * This reduces file size significantly while preserving audio quality
+   * High quality MP3 for maximum transcription accuracy
    */
   private async extractAudioFromVideo(videoBuffer: Buffer, originalName: string): Promise<Buffer> {
     return new Promise((resolve, reject) => {
@@ -206,9 +206,17 @@ export class DocumentExtractionService {
       ffmpeg(videoPath)
         .noVideo() // Remove video stream
         .audioCodec('libmp3lame') // Use MP3 codec
-        .audioBitrate('64k') // Low bitrate for small size (good for speech)
-        .audioChannels(1) // Mono audio (sufficient for speech)
-        .audioFrequency(16000) // 16kHz sampling rate (Whisper optimal)
+        .audioBitrate('192k') // High bitrate for maximum quality
+        .audioChannels(2) // Stereo - preserve original channels for better context
+        .audioFrequency(44100) // CD quality - maximum clarity for speech
+        .audioQuality(0) // Highest quality (0-9, 0 is best)
+        // Audio filters for enhanced speech clarity
+        .audioFilters([
+          'highpass=f=200', // Remove low frequency noise below 200Hz
+          'lowpass=f=3000', // Remove high frequency noise above 3kHz (speech is 300-3000Hz)
+          'volume=1.5', // Boost volume slightly for clarity
+          'afftdn=nf=-20', // Advanced noise reduction
+        ])
         .on('end', () => {
           this.logger.log(`Audio extraction completed: ${audioPath}`);
 

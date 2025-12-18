@@ -199,12 +199,17 @@ export class OpenAIService {
         file: file,
         model: 'whisper-1',
         language: 'vi', // Vietnamese language code
-        response_format: 'text',
+        response_format: 'verbose_json', // Get detailed output with timestamps
+        temperature: 0, // Lower temperature = more accurate/consistent (0-1, default 0)
+        timestamp_granularities: ['segment'], // Get segment-level timestamps for better accuracy
+        // Comprehensive prompt with context about Vietnamese technical terms
+        prompt: 'Đây là cuộc họp về dự án phần mềm bằng tiếng Việt. Các từ khóa: task, issue, sprint, agile, scrum, story point, backlog, ticket, bug, feature, requirement, deadline, repository, pull request, code review, testing, deployment, production.',
       });
 
-      this.logger.log(`Whisper transcription completed: ${transcription.length} characters`);
+      this.logger.log(`Whisper transcription completed: ${transcription.text.length} characters`);
 
-      return transcription;
+      // Return just the text from verbose response
+      return transcription.text;
     } catch (error) {
       this.logger.error('Whisper transcription error:', error);
       throw new InternalServerErrorException(
