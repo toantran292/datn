@@ -265,4 +265,131 @@ export class ChatsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   notifyMemberRoleChanged(orgId: string, roomId: string, userId: string, newRole: string) {
     this.io.to(`org:${orgId}`).emit('room:member_role_changed', { roomId, userId, role: newRole });
   }
+
+  /**
+   * Broadcast a huddle message to a room
+   * Called by internal API when meeting service notifies about huddle start/end
+   */
+  broadcastHuddleMessage(orgId: string, roomId: string, message: {
+    id: string;
+    roomId: string;
+    userId: string;
+    orgId: string;
+    type: string;
+    content: string;
+    metadata?: Record<string, any> | null;
+    sentAt: string;
+  }) {
+    const roomChannel = `room:${roomId}`;
+    console.log(`[HuddleBroadcast] Broadcasting to ${roomChannel} and org:${orgId}:`, message.type, message.id);
+
+    // Emit to room channel (for users who have joined the room)
+    this.io.to(roomChannel).emit('message:new', message);
+
+    // Also emit to org channel so all users in org receive the message
+    // This ensures users who haven't joined the room channel yet still see the huddle message
+    this.io.to(`org:${orgId}`).emit('message:new', message);
+
+    // Emit huddle:started event for notification sound when huddle starts
+    // Emit to org so all users in org receive notification (not just room members who joined the channel)
+    if (message.type === 'huddle_started') {
+      const huddlePayload = {
+        roomId,
+        meetingId: message.metadata?.meetingId,
+        meetingRoomId: message.metadata?.meetingRoomId,
+        startedBy: message.userId,
+        startedAt: message.sentAt,
+      };
+      // Emit to org channel so everyone in org gets notification
+      this.io.to(`org:${orgId}`).emit('huddle:started', huddlePayload);
+      console.log(`[HuddleBroadcast] Emitted huddle:started to org:${orgId}`);
+    }
+
+    // Also emit room:updated to update the room list
+    this.io.to(`org:${orgId}`).emit('room:updated', {
+      roomId,
+      lastMessage: message,
+      updatedAt: message.sentAt,
+    });
+    console.log(`[HuddleBroadcast] Emitted room:updated to org:${orgId}`);
+  }
+
+  /**
+   * Broadcast huddle message update (when huddle_started is edited to huddle_ended)
+   * Called by internal API when meeting service notifies about huddle end
+   */
+  broadcastHuddleMessageUpdate(orgId: string, roomId: string, message: {
+    id: string;
+    roomId: string;
+    userId: string;
+    orgId: string;
+    type: string;
+    content: string;
+    metadata?: Record<string, any> | null;
+    sentAt: string;
+  }) {
+    const roomChannel = `room:${roomId}`;
+    console.log(`[HuddleBroadcast] Broadcasting update to ${roomChannel} and org:${orgId}:`, message.type, message.id);
+
+    // Emit message:updated to room channel (for users viewing the room)
+    this.io.to(roomChannel).emit('message:updated', message);
+
+    // Also emit to org channel (for users who may not have joined room but need update)
+    this.io.to(`org:${orgId}`).emit('message:updated', message);
+
+    // Also emit room:updated to update the room list
+    this.io.to(`org:${orgId}`).emit('room:updated', {
+      roomId,
+      lastMessage: message,
+      updatedAt: new Date().toISOString(),
+    });
+    console.log(`[HuddleBroadcast] Emitted message:updated to room and org, plus room:updated`);
+  }
+
+  /**
+   * Broadcast huddle participant count update to a room
+   * Called by internal API when meeting service notifies about participant changes
+   */
+  broadcastHuddleParticipantUpdate(orgId: string, roomId: string, data: {
+    meetingId: string;
+    participantCount: number;
+  }) {
+    const roomChannel = `room:${roomId}`;
+    console.log(`[HuddleParticipants] Broadcasting to ${roomChannel}:`, data.participantCount);
+    this.io.to(roomChannel).emit('huddle:participant_update', {
+      roomId,
+      meetingId: data.meetingId,
+      participantCount: data.participantCount,
+    });
+  }
+
+  /**
+   * Broadcast a thread message (reply) to a room
+   * Called by internal API when meeting chat message is created
+   */
+  broadcastThreadMessage(orgId: string, roomId: string, threadId: string, message: {
+    id: string;
+    roomId: string;
+    userId: string;
+    orgId: string;
+    threadId?: string | null;
+    type: string;
+    content: string;
+    metadata?: Record<string, any> | null;
+    sentAt: string;
+  }) {
+    const roomChannel = `room:${roomId}`;
+    console.log(`[ThreadBroadcast] Broadcasting to ${roomChannel}:`, message.id);
+
+    // Emit the new message
+    this.io.to(roomChannel).emit('message:new', message);
+
+    // Emit thread:new-reply event for UI to update reply count
+    this.io.to(roomChannel).emit('thread:new-reply', {
+      threadId,
+      roomId,
+      message,
+      // Note: reply count will be fetched by the UI if needed
+    });
+  }
 }

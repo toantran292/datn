@@ -18,7 +18,10 @@
     "marketing:preview": "pnpm --filter marketing-web preview",
     "chat-api:dev": "pnpm --filter chat-api start:dev",
     "chat-api:build": "pnpm --filter chat-api build",
-    "chat-api:test": "pnpm --filter chat-api test"
+    "chat-api:test": "pnpm --filter chat-api test",
+    "meeting:dev": "pnpm --filter meet-web dev",
+    "meeting:build": "pnpm --filter meet-web build",
+    "meeting:preview": "pnpm --filter meet-web preview"
   },
   "devDependencies": {
     "turbo": "^2.1.3",

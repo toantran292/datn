@@ -1,0 +1,102 @@
+\subsection{Yêu cầu chức năng}
+
+Phân hệ họp trực tuyến phục vụ 3 nhóm người dùng chính với các use cases được tổ chức theo chức năng và mối quan hệ mở rộng (extends).
+
+\subsubsection{Sơ đồ trường hợp sử dụng tổng quan}
+
+Sơ đồ use case tổng quan mô tả các chức năng chính của hệ thống theo 3 nhóm tác nhân:
+
+\textbf{Project Member} là người dùng chính của hệ thống, thực hiện các chức năng liên quan đến cuộc họp bao gồm: bắt đầu cuộc họp, tham gia cuộc họp, sử dụng tính năng trong cuộc họp (bật/tắt camera microphone, chia sẻ màn hình, gửi reaction), xem lại cuộc họp và bản tóm tắt (xem file ghi hình, đọc bản ghi chép văn bản, xem bản tóm tắt AI), và quản lý ghi hình cuộc họp (export dữ liệu).
+
+\textbf{Workspace Admin} quản lý chính sách và tài nguyên workspace thông qua chức năng cấu hình chính sách workspace, bao gồm: cấu hình chính sách ghi hình, quản lý hạn mức và storage, cấu hình quyền truy cập, và xem thống kê sử dụng.
+
+\textbf{System Admin} quản lý hạ tầng kỹ thuật thông qua chức năng giám sát và quản lý hạ tầng, bao gồm: giám sát hạ tầng real-time và cấu hình Jitsi components.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/uc.drawio.png}
+    \caption{Sơ đồ trường hợp sử dụng tổng quan của phân hệ họp trực tuyến}
+    \label{fig:usecase_meeting_overview}
+\end{figure}
+
+\subsubsection{Use cases của Project Member}
+
+Project Member có 5 use cases chính liên quan đến việc tổ chức và tham gia cuộc họp:
+
+\textbf{UC01 - Bắt đầu cuộc họp:} Khởi tạo cuộc họp video ngay lập tức từ ngữ cảnh dự án hoặc sprint, tự động liên kết với context và tạo JWT token để xác thực với Jitsi.
+
+\textbf{UC02 - Tham gia cuộc họp:} Tham gia cuộc họp đang diễn ra thông qua đường dẫn mời hoặc danh sách cuộc họp, xác thực quyền truy cập và thiết lập kết nối WebRTC.
+
+\textbf{UC03 - Sử dụng tính năng:} Use case này được mở rộng (extends) thành 3 tính năng con:
+\begin{itemize}
+    \item \textit{Bật/tắt camera microphone:} Điều khiển video và audio track trong cuộc họp
+    \item \textit{Chia sẻ màn hình:} Chia sẻ màn hình, cửa sổ hoặc tab trình duyệt với các participants khác
+    \item \textit{Gửi reaction:} Gửi emoji reactions để tương tác không làm gián đoạn cuộc họp
+\end{itemize}
+
+\textbf{UC04 - Xem lại cuộc họp và bản tóm tắt:} Use case này được mở rộng (extends) thành 3 tính năng con:
+\begin{itemize}
+    \item \textit{Xem file ghi hình:} Truy cập và phát lại video recording của cuộc họp
+    \item \textit{Đọc bản ghi chép văn bản:} Xem transcript với timestamp, có thể click để nhảy đến vị trí tương ứng trong video
+    \item \textit{Xem bản tóm tắt AI:} Xem AI-generated summary bao gồm action items, decisions và key points
+\end{itemize}
+
+\textbf{UC05 - Quản lý ghi hình cuộc họp:} Bắt đầu/dừng ghi hình cuộc họp sử dụng Jibri, với tính năng mở rộng:
+\begin{itemize}
+    \item \textit{Export dữ liệu:} Xuất recording, transcript hoặc summary ra các định dạng khác nhau (MP4, PDF, TXT)
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/uc-Page-4.drawio.png}
+    \caption{Sơ đồ trường hợp sử dụng của Project Member}
+    \label{fig:usecase_project_member}
+\end{figure}
+
+\subsubsection{Use cases của Workspace Admin}
+
+Workspace Admin quản lý chính sách và tài nguyên workspace thông qua UC06 - Cấu hình chính sách workspace, được mở rộng thành 4 nhóm chức năng:
+
+\textbf{Cấu hình chính sách ghi hình:} Thiết lập các quy định về recording cho workspace bao gồm auto-record cho tất cả meetings, chất lượng video (720p/1080p), bitrate tối đa, và thời gian lưu trữ recordings.
+
+\textbf{Quản lý hạn mức và storage:} Hiển thị dashboard sử dụng storage hiện tại, cập nhật quotas cho từng project hoặc toàn workspace, thiết lập threshold cảnh báo khi gần đầy.
+
+\textbf{Cấu hình quyền truy cập:} Thiết lập các chính sách bảo mật bao gồm yêu cầu authentication để join, bật/tắt waiting room, cấu hình encryption settings, và quyền xem recording.
+
+\textbf{Xem thống kê sử dụng:} Xem các biểu đồ và báo cáo về meeting usage bao gồm số cuộc họp theo thời gian, thống kê theo project, duration trung bình, và số participants.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{images/uc-Page-2.drawio.png}
+    \caption{Sơ đồ trường hợp sử dụng của Workspace Admin}
+    \label{fig:usecase_workspace_admin}
+\end{figure}
+
+\subsubsection{Use cases của System Admin}
+
+System Admin quản lý hạ tầng kỹ thuật thông qua UC07 - Giám sát và quản lý hạ tầng, được mở rộng thành 2 nhóm chức năng:
+
+\textbf{Giám sát hạ tầng real-time:} Dashboard real-time hiển thị trạng thái của tất cả Jitsi services bao gồm:
+\begin{itemize}
+    \item Service status: Videobridge, Jicofo, Prosody, Jibri instances
+    \item Active meetings: Số cuộc họp đang diễn ra và số participants
+    \item Resource utilization: CPU, memory, bandwidth của từng component
+    \item Quality metrics: Packet loss, latency, jitter trung bình
+    \item Alerts và warnings tự động highlight khi có vấn đề
+\end{itemize}
+
+\textbf{Cấu hình Jitsi components:} Quản lý cấu hình của các thành phần Jitsi bao gồm:
+\begin{itemize}
+    \item Videobridge settings: Max participants per bridge, bandwidth limits
+    \item Jicofo configuration: Focus component settings, room creation policies
+    \item Prosody configuration: XMPP server settings, authentication modules
+    \item Jibri pool management: Số lượng instances, auto-scaling rules
+    \item External services: Speech-to-Text API keys, AI service configuration, Object Storage credentials
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{images/uc-Page-3.drawio.png}
+    \caption{Sơ đồ trường hợp sử dụng của System Admin}
+    \label{fig:usecase_system_admin}
+\end{figure}

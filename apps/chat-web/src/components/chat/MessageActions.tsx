@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MessageSquare, Pencil, Trash2, Pin, MoreHorizontal, Smile } from 'lucide-react';
 import type { Message } from '../../types';
 
@@ -32,6 +32,21 @@ export function MessageActions({
 }: MessageActionsProps) {
   const [showMore, setShowMore] = useState(false);
   const [showEmoji, setShowEmoji] = useState(false);
+  const autoCloseTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Auto-close emoji picker after 1 second
+  useEffect(() => {
+    if (showEmoji) {
+      autoCloseTimerRef.current = setTimeout(() => {
+        setShowEmoji(false);
+      }, 1000);
+    }
+    return () => {
+      if (autoCloseTimerRef.current) {
+        clearTimeout(autoCloseTimerRef.current);
+      }
+    };
+  }, [showEmoji]);
 
   const closeAllMenus = () => {
     setShowMore(false);

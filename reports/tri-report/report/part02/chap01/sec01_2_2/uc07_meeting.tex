@@ -1,0 +1,53 @@
+\paragraph{UC07: Giám sát và quản lý hạ tầng}
+
+\begin{longtable}{|p{4cm}|p{11cm}|}
+\hline
+\textbf{Tên use case} & Giám sát và quản lý hạ tầng \\
+\hline
+\textbf{Mã use case} & UC07 \\
+\hline
+\textbf{Mô tả} & Giám sát hạ tầng Jitsi (Videobridge, Jicofo, Prosody, Jibri), cấu hình external services (STT, AI, Storage), và xử lý alerts/incidents. \\
+\hline
+\textbf{Actor} & System Admin \\
+\hline
+\textbf{Điều kiện tiên quyết} &
+\begin{itemize}[leftmargin=*,noitemsep,topsep=0pt]
+    \item Đã đăng nhập với vai trò System Admin
+    \item Hệ thống monitoring đã được thiết lập
+\end{itemize} \\
+\hline
+\textbf{Điều kiện kết thúc} &
+\begin{itemize}[leftmargin=*,noitemsep,topsep=0pt]
+    \item Thông tin monitoring chính xác, cấu hình được áp dụng
+    \item Sự cố được ghi nhận và xử lý
+\end{itemize} \\
+\hline
+\textbf{Luồng sự kiện chính} &
+Admin truy cập "System Monitoring Dashboard" và thực hiện:
+\begin{itemize}[leftmargin=*,noitemsep,topsep=0pt]
+    \item \textbf{Dashboard real-time:} Service status, active meetings, resource utilization, quality metrics. Auto-refresh mỗi 10s, highlight warnings/errors
+    \item \textbf{Giám sát Jitsi components:}
+    \begin{itemize}[leftmargin=*,noitemsep]
+        \item Videobridge: instances, channels, CPU/Memory, throughput
+        \item Jicofo: conferences đang quản lý, bridge selections
+        \item Prosody: XMPP connections, MUC rooms, message throughput
+    \end{itemize}
+    \item \textbf{Quản lý Jibri:} Danh sách instances với status, restart/stop, add/remove instances
+    \item \textbf{Cấu hình external services:}
+    \begin{itemize}[leftmargin=*,noitemsep]
+        \item Speech-to-Text: Provider, API key, language settings
+        \item AI Service: Provider, model, API key, parameters
+        \item Object Storage: S3/MinIO endpoint, credentials, bucket
+    \end{itemize}
+    \item \textbf{Xử lý alerts:} Xem alerts theo priority, troubleshoot, resolve
+    \item \textbf{Quản lý incidents:} Tạo, theo dõi timeline, root cause analysis, post-mortem
+\end{itemize} \\
+\hline
+\textbf{Luồng thay thế} &
+\textbf{Test connection thất bại:} Hiển thị error chi tiết để sửa.
+
+\textbf{Không thể restart instance:} Đánh dấu cần can thiệp thủ công. \\
+\hline
+\caption{Đặc tả UC07: Giám sát và quản lý hạ tầng}
+\label{tab:uc07_meeting}
+\end{longtable}

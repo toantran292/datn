@@ -4,15 +4,32 @@ import type { Room, Message, RoomUpdatedPayload } from '../types';
 // Connect through edge (nginx) at port 8080, which proxies /chat to chat service
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL || 'http://localhost:8080';
 
+export type HuddleParticipantUpdatePayload = {
+  roomId: string;
+  meetingId: string;
+  participantCount: number;
+};
+
+export type HuddleStartedPayload = {
+  roomId: string;
+  meetingId: string;
+  meetingRoomId: string;
+  startedBy: string;
+  startedAt: string;
+};
+
 export type SocketEventHandlers = {
   onRoomsBootstrap?: (rooms: Room[]) => void;
   onRoomCreated?: (room: Room) => void;
   onRoomMemberJoined?: (data: { id: string; name?: string | null; orgId: string; isPrivate: boolean; userId: string }) => void;
   onRoomUpdated?: (payload: RoomUpdatedPayload) => void;
   onMessageNew?: (message: Message) => void;
+  onMessageUpdated?: (message: Message) => void;
   onJoinedRoom?: (data: { roomId: string; userId: string; joinedAt: number }) => void;
   onUserOnline?: (data: { userId: string; timestamp: string }) => void;
   onUserOffline?: (data: { userId: string; timestamp: string }) => void;
+  onHuddleParticipantUpdate?: (payload: HuddleParticipantUpdatePayload) => void;
+  onHuddleStarted?: (payload: HuddleStartedPayload) => void;
   onConnect?: () => void;
   onDisconnect?: () => void;
 };
@@ -77,6 +94,11 @@ class SocketService {
       handlers.onMessageNew?.(message);
     });
 
+    this.socket.on('message:updated', (message: Message) => {
+      console.log('[WS] Message updated:', message);
+      handlers.onMessageUpdated?.(message);
+    });
+
     this.socket.on('joined_room', (data) => {
       console.log('[WS] Joined room:', data);
       handlers.onJoinedRoom?.(data);
@@ -90,6 +112,16 @@ class SocketService {
     this.socket.on('user:offline', (data: { userId: string; timestamp: string }) => {
       console.log('[WS] User offline:', data);
       handlers.onUserOffline?.(data);
+    });
+
+    this.socket.on('huddle:participant_update', (payload: HuddleParticipantUpdatePayload) => {
+      console.log('[WS] Huddle participant update:', payload);
+      handlers.onHuddleParticipantUpdate?.(payload);
+    });
+
+    this.socket.on('huddle:started', (payload: HuddleStartedPayload) => {
+      console.log('[WS] Huddle started:', payload);
+      handlers.onHuddleStarted?.(payload);
     });
   }
 

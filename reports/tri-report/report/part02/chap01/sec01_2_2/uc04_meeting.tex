@@ -1,0 +1,50 @@
+\paragraph{UC04: Quản lý ghi hình cuộc họp}
+
+\begin{longtable}{|p{4cm}|p{11cm}|}
+\hline
+\textbf{Tên use case} & Quản lý ghi hình cuộc họp \\
+\hline
+\textbf{Mã use case} & UC04 \\
+\hline
+\textbf{Mô tả} & Bắt đầu/dừng ghi hình cuộc họp sử dụng Jibri, upload lên storage và kích hoạt transcription + AI analysis. \\
+\hline
+\textbf{Actor} & Project Member \\
+\hline
+\textbf{Điều kiện tiên quyết} &
+\begin{itemize}[leftmargin=*,noitemsep,topsep=0pt]
+    \item Đang trong cuộc họp có ít nhất 2 participants
+    \item Có Jibri instance khả dụng, chưa vượt hạn mức storage
+\end{itemize} \\
+\hline
+\textbf{Điều kiện kết thúc} &
+\begin{itemize}[leftmargin=*,noitemsep,topsep=0pt]
+    \item File ghi hình được lưu vào object storage
+    \item Transcription và AI summary được xử lý
+\end{itemize} \\
+\hline
+\textbf{Luồng sự kiện chính} &
+\textbf{Bắt đầu ghi hình:}
+\begin{enumerate}[leftmargin=*,noitemsep,topsep=0pt]
+    \item Người dùng nhấn "Bắt đầu ghi hình"
+    \item Kiểm tra Jibri khả dụng và hạn mức storage
+    \item Khởi động Jibri instance, capture video/audio
+    \item Hiển thị icon "Recording" cho tất cả participants
+\end{enumerate}
+\textbf{Dừng ghi hình:}
+\begin{enumerate}[leftmargin=*,noitemsep,topsep=0pt]
+    \item Người dùng nhấn "Dừng ghi hình"
+    \item Jibri finalize video, upload lên object storage
+    \item Kích hoạt background job: trích xuất audio, gọi Speech-to-Text API, gọi AI API tạo summary
+    \item Gửi thông báo "Recording đã sẵn sàng"
+\end{enumerate} \\
+\hline
+\textbf{Luồng thay thế} &
+\textbf{Không có Jibri khả dụng:} Hiển thị "Dịch vụ ghi hình đang bận".
+
+\textbf{Vượt hạn mức storage:} Thông báo và gửi alert đến Workspace Admin.
+
+\textbf{Lỗi upload/STT/AI:} Retry 3 lần, nếu thất bại ghi log và thông báo. \\
+\hline
+\caption{Đặc tả UC04: Quản lý ghi hình cuộc họp}
+\label{tab:uc04_meeting}
+\end{longtable}

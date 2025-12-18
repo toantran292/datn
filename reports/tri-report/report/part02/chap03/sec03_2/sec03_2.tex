@@ -1,0 +1,120 @@
+\subsection{Kiến trúc phân hệ họp trực tuyến}
+
+\subsubsection{Kiến trúc tổng thể}
+
+Phân hệ họp trực tuyến được thiết kế theo kiến trúc phân tán (distributed architecture) với sự phân tách rõ ràng giữa các thành phần: client frontend, backend services, real-time infrastructure (Jitsi), và AI processing pipeline. Kiến trúc tuân theo các nguyên tắc: Real-time First Design với low-latency communication là priority cao nhất, Horizontal Scalability cho phép thêm instances để handle increased load, Event-Driven Architecture với asynchronous processing cho recording và transcription, High Availability với redundancy và failover mechanisms, và Security by Design với encryption mandatory ở mọi layer.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\textwidth]{images/meeting_architecture.png}
+\caption{Sơ đồ kiến trúc phân hệ họp trực tuyến}
+\label{fig:meeting_architecture}
+\end{figure}
+
+Kiến trúc bao gồm năm layers chính. Client Layer với Next.js web application embed Jitsi Meet External API trong React components, WebSocket client cho real-time notifications về meeting events, responsive design support cho desktop browsers, tablets và mobile browsers. API Gateway Layer với Nginx reverse proxy handle HTTPS termination và request routing, load balancing cho Meeting Service instances, rate limiting để protect against abuse, và WebSocket proxy cho persistent connections. Application Layer với Meeting Service (NestJS) expose RESTful APIs cho meeting CRUD operations, JWT token generation và validation, Jibri allocation và lifecycle management, webhook handling cho Jitsi events, và background job orchestration. Real-time Communication Layer với Jitsi Infrastructure gồm Videobridge instances forward media streams, Jicofo manage conference allocation, Prosody XMPP server cho signaling, và Jibri pool cho recording capabilities. Processing Layer với AI Service orchestrate Speech-to-Text conversion, LLM summarization, action items extraction, và metadata generation.
+
+\subsubsection{Kiến trúc Jitsi Infrastructure}
+
+Jitsi Meet infrastructure cung cấp core video conferencing capabilities với kiến trúc SFU (Selective Forwarding Unit) được tối ưu cho multi-party conferences. Kiến trúc này được thiết kế để scale horizontally và maintain high availability trong production environments.
+
+\textbf{Jitsi Videobridge (SFU Component):}
+
+Videobridge hoạt động như Selective Forwarding Unit (SFU), nhận media streams từ participants và forward đến các participants khác mà không decode/re-encode. Kiến trúc SFU giảm CPU usage so với MCU (Multipoint Control Unit) và cho phép mỗi Videobridge instance handle hàng trăm participants. Videobridge sử dụng simulcast để receive multiple quality layers từ sender (low, medium, high resolution) và forward quality phù hợp đến từng receiver dựa trên available bandwidth. Adaptive bitrate control tự động điều chỉnh video quality dựa trên network conditions. WebRTC data channels cho phép peer-to-peer messaging và signaling. Multiple Videobridge instances có thể deployed và managed bởi Jicofo với Octo protocol cho cascading conferences across regions.
+
+\textbf{Jicofo (Conference Focus):}
+
+Jicofo là signaling và control component quản lý conference lifecycle. Jicofo allocate conferences đến Videobridge instances dựa trên current load và availability, manage participants joining/leaving conferences, negotiate media capabilities (codecs, resolutions) giữa participants, implement SIP gateway integration cho legacy systems, và handle conference features như recording start/stop, live streaming, lobby mode. Jicofo communicate với Prosody XMPP server để send control messages và với Videobridges qua XMPP protocol.
+
+\textbf{Prosody (XMPP Server):}
+
+Prosody cung cấp messaging infrastructure cho Jitsi components communication. Prosody manage Multi-User Chat (MUC) rooms cho mỗi conference, handle signaling messages giữa clients và Jitsi components, authenticate participants sử dụng JWT tokens hoặc anonymous authentication, maintain presence information cho participants, và support custom plugins cho features như token authentication, component authentication. XMPP protocol đảm bảo reliable message delivery và real-time updates.
+
+\textbf{Jibri (Recording Infrastructure):}
+
+Jibri là recording và streaming component sử dụng Chrome headless và ffmpeg. Jibri join conference như một hidden participant với audio và video enabled, capture combined stream từ Jitsi Meet interface, encode video sử dụng H.264 codec và audio với AAC codec vào MP4 container format, upload recorded files đến configured storage (MinIO/S3), và support live streaming đến platforms như YouTube Live, Facebook Live. Multiple Jibri instances deployed để support concurrent recordings với load balancing managed by Meeting Service.
+
+\textbf{Integration với Backend Services:}
+
+Meeting Service là bridge giữa application và Jitsi infrastructure. Service generate JWT tokens cho authentication với custom claims (user info, permissions, meeting metadata), manage meeting lifecycle (create, start, end) và sync state với database, allocate Jibri instances khi recording requested, collect metrics từ Videobridge instances cho monitoring dashboard, và handle webhook callbacks từ Jitsi events (participant joined/left, recording started/stopped).
+
+Frontend tích hợp Jitsi Meet External API (lib-jitsi-meet) để embed conferencing trong Next.js pages. External API cung cấp programmatic control qua JavaScript API: initialize conference với JWT token, listen events (participantJoined, audioMuteStatusChanged, videoMuteStatusChanged, recordingStatusChanged), control conference (mute/unmute, kick participant, start/stop recording), customize UI (hide buttons, change themes, inject custom UI components), và access advanced features (speaker stats, connection quality indicators).
+
+\textbf{Deployment Architecture:}
+
+Jitsi components được containerized với Docker và orchestrated với Docker Compose hoặc Kubernetes. Development environment chạy single-instance setup với tất cả components trên cùng host. Production environment deploy multiple Videobridge instances across availability zones, separate Jibri instances pool với auto-scaling based on demand, Prosody cluster với high availability configuration, Jicofo redundancy với active-passive failover, và Nginx reverse proxy cho SSL termination và load balancing. Health monitoring với Prometheus metrics collection và Grafana dashboards tracking conferences count, participants count, bandwidth usage, packet loss rate, jitter, CPU và memory utilization.
+
+\textbf{Security Considerations:}
+
+Security được enforce ở multiple layers. JWT authentication với short expiration (2 hours) và signed với secret key. HTTPS/WSS cho all communication channels để prevent eavesdropping. DTLS-SRTP encryption cho media streams với forward secrecy. Firewall rules restrict access đến Videobridge ports (UDP 10000-20000) và internal component ports. Rate limiting trên Prosody để prevent flooding attacks. CORS configuration cho web clients và CSP headers để prevent XSS. Optional End-to-End Encryption (E2EE) với Insertable Streams API cho sensitive meetings.
+
+\subsubsection{Kiến trúc Meeting Service Backend}
+
+Meeting Service là core backend component quản lý toàn bộ meeting lifecycle và orchestrate interactions giữa frontend, Jitsi infrastructure, và AI processing pipeline. Service được implement bằng NestJS với TypeScript và tuân theo clean architecture principles.
+
+\textbf{Layered Architecture:}
+
+Meeting Service được tổ chức theo three-layer architecture chuẩn. Presentation Layer (Controllers) expose RESTful API endpoints cho meeting operations: POST /meetings để create meeting mới với validation, GET /meetings/:id để retrieve meeting details với caching, PUT /meetings/:id để update meeting metadata, DELETE /meetings/:id để cancel meetings, POST /meetings/:id/recordings/start để initiate recording, POST /meetings/:id/recordings/stop để finalize recording, GET /meetings/:id/summary để retrieve AI-generated summary. Controllers validate request DTOs, handle authentication via JWT guards, format responses với consistent structure, và implement error handling với proper HTTP status codes.
+
+Business Logic Layer (Services) implement core meeting workflows. MeetingService orchestrate meeting creation workflow: generate unique room\_name (UUID-based), create JWT token với workspace và user claims, persist meeting record vào database, send invitations via Notification Service. JibriService manage Jibri instance pool: track instance availability status, allocate available instance cho recording request, monitor recording progress và handle failures, release instance sau khi recording complete. TranscriptionService orchestrate post-meeting processing: extract audio từ recorded video với ffmpeg, upload audio đến STT API (Google Cloud, AWS, Whisper), parse transcript response với timestamps, persist transcript segments vào database. SummaryService generate AI-powered insights: retrieve transcript từ database, construct prompt cho LLM với context, call LLM API (OpenAI GPT-4, Claude, Gemini), parse structured response (summary, action items, decisions), persist summary data vào database.
+
+Data Access Layer (Repositories) quản lý database interactions. Repositories sử dụng Prisma ORM cho type-safe queries, implement CRUD operations cho các entities: Meeting, MeetingParticipant, Recording, Transcript, MeetingSummary, JibriInstance, VideobridgeInstance. Repository layer cung cấp query methods với filtering, sorting, pagination, cache frequently accessed data với Redis (meeting tokens, instance status), và implement transaction management cho complex operations.
+
+\textbf{Event-Driven Architecture:}
+
+Meeting Service sử dụng event-driven approach cho asynchronous operations. Events được publish via Redis Pub/Sub hoặc message queue (RabbitMQ, Kafka). Key events bao gồm: MeetingCreatedEvent trigger notification sending đến participants, RecordingStartedEvent update meeting status và notify frontend, RecordingUploadedEvent trigger transcription background job, TranscriptCompletedEvent trigger summary generation job, SummaryGeneratedEvent notify participants via WebSocket. Event handlers execute asynchronously và implement retry logic với exponential backoff cho failed operations.
+
+\textbf{Background Jobs và Task Queue:}
+
+Long-running tasks được execute via background job system sử dụng Bull queue (Redis-backed). Job queues bao gồm: TranscriptionQueue process recordings với configurable concurrency, SummaryQueue generate AI summaries với priority-based scheduling, CleanupQueue enforce retention policies và delete expired recordings. Jobs implement progress tracking cho real-time updates, automatic retry với max attempts limit, dead letter queue cho failed jobs cần manual intervention, và job result persistence cho auditing.
+
+\subsubsection{Kiến trúc AI Processing Pipeline}
+
+AI Processing Pipeline tự động convert meeting recordings thành actionable insights thông qua multi-stage processing. Pipeline được thiết kế với fault tolerance và scalability làm priority.
+
+\textbf{Speech-to-Text Conversion Stage:}
+
+Stage đầu tiên extract audio track từ recorded video và convert thành text transcript. Workflow bao gồm: Audio extraction sử dụng ffmpeg command: ffmpeg -i recording.mp4 -vn -acodec pcm\_s16le -ar 16000 audio.wav, extract mono audio channel với sample rate 16kHz (optimal cho speech recognition). STT Provider Integration hỗ trợ multiple providers với fallback mechanism: Google Cloud Speech-to-Text với enhanced video model, AWS Transcribe với custom vocabulary support, Whisper API (OpenAI) với high accuracy multilingual. Transcript Parsing xử lý API response để extract: timestamped segments với start\_time và end\_time, transcribed text với confidence scores, speaker labels nếu diarization enabled, word-level timestamps cho precise navigation. Error Handling implement retry logic cho transient API failures, fallback sang alternative provider nếu primary failed, và store error details cho troubleshooting.
+
+\textbf{LLM Summarization Stage:}
+
+Stage thứ hai process transcript để generate structured summary với insights. Workflow bao gồm: Prompt Engineering construct detailed prompt cho LLM: system prompt define output format (JSON schema với sections), context injection với meeting metadata (title, participants, duration), transcript text với chunking nếu exceeds token limit, few-shot examples để guide output quality. LLM Provider Integration support multiple providers: OpenAI GPT-4 Turbo với 128K context window và JSON mode, Anthropic Claude 3.5 Sonnet với 200K context, excellent instruction following, Google Gemini Pro với competitive pricing, multimodal support. Response Processing parse LLM output JSON để extract: executive summary (2-3 paragraphs highlighting key topics), discussion points array với timestamps clickable, action items array với title, assigned\_to, due\_date, priority, decisions array documenting important choices made, follow-up topics array cho future meetings. Quality Validation check response structure completeness, validate timestamp references match transcript, verify action items have assignees, và re-generate nếu quality thresholds not met.
+
+\textbf{Metadata Enrichment Stage:}
+
+Stage cuối cùng enrich meeting data với derived metadata. Processing bao gồm: Keyword Extraction identify important terms và topics discussed trong meeting, Sentiment Analysis gauge overall meeting tone (positive, neutral, negative), Participation Metrics calculate speaking time per participant, identify dominant speakers, detect engagement patterns, và Topic Modeling cluster discussions vào thematic categories. Metadata được indexed cho search functionality và analytics dashboards.
+
+\textbf{Pipeline Orchestration:}
+
+Pipeline execution được orchestrate bởi workflow engine (temporal.io hoặc custom). Workflow features: Sequential stage execution với dependency management, parallel processing cho independent operations, automatic checkpointing cho resume after failures, progress tracking với real-time updates, và cost tracking cho API usage (STT và LLM tokens).
+
+\subsubsection{Data Storage Architecture}
+
+Phân hệ Họp trực tuyến (Meeting) sử dụng multi-storage strategy tối ưu cho các loại data khác nhau với trade-offs giữa performance, cost, và durability.
+
+\textbf{Relational Database (PostgreSQL):}
+
+PostgreSQL lưu trữ structured meeting metadata với ACID guarantees. Schema design bao gồm: Meeting table chứa core meeting info (meeting\_id, workspace\_id, room\_name, title, status, timestamps), MeetingParticipant table track participants (participant\_id, meeting\_id, user\_id, role, joined\_at, duration), Recording table lưu recording metadata (recording\_id, meeting\_id, file\_url, resolution, status), Transcript table chứa transcript data (transcript\_id, full\_text, segments JSONB với timestamps), MeetingSummary table lưu AI-generated insights (summary\_id, summary\_text, action\_items JSONB, decisions JSONB). Indexes được tạo trên: workspace\_id cho workspace-scoped queries, meeting\_id cho join operations, status columns cho filtering, và created\_at cho time-based queries. Partitioning strategy với range partitioning trên created\_at cho historical data management.
+
+\textbf{Object Storage (MinIO/S3):}
+
+Object storage lưu trữ large binary files (video recordings) với high durability và low cost. Storage organization: Bucket structure với separate buckets cho development, staging, production, Path hierarchy: recordings/\{workspace\_id\}/\{meeting\_id\}/\{timestamp\}.mp4, Object metadata tags cho workspace, meeting\_id, resolution, duration. Lifecycle policies implement tiered storage: hot storage (S3 Standard) cho recordings < 30 days, warm storage (S3 Infrequent Access) cho 30-90 days, cold storage (S3 Glacier) cho > 90 days, automatic deletion sau retention period expires. Access control với presigned URLs có short expiration (1 hour) cho secure video streaming, bucket policies restrict public access, và encryption at rest (AES-256) mandatory.
+
+\textbf{In-Memory Cache (Redis):}
+
+Redis cache frequently accessed data cho low-latency reads. Cached data bao gồm: JWT tokens cho meeting access (key: meeting:\{id\}:token, TTL: 2 hours), Active meeting state (participants count, recording status), Jibri instance availability (key: jibri:\{id\}:status), User permissions cache (workspace membership). Cache strategies: Write-through caching cho critical data, Cache-aside pattern cho optional caching, TTL-based expiration với proactive refresh, và Cache invalidation trên updates.
+
+\subsubsection{Scalability và High Availability}
+
+Phân hệ được thiết kế để scale horizontally và maintain high availability trong production.
+
+\textbf{Horizontal Scaling Strategy:}
+
+Stateless services (Meeting Service, AI Service) scale horizontally bằng cách deploy multiple instances behind load balancer. Load balancing algorithms: round-robin cho equal distribution, least-connections cho uneven load, IP hash cho session affinity khi cần. Auto-scaling policies dựa trên metrics: CPU utilization > 70\% trigger scale-up, request queue depth > 100 trigger scale-up, scale-down khi metrics < 30\% trong sustained period. Jitsi Infrastructure scales với: multiple Videobridge instances cho distributed media forwarding, Jibri instance pool với auto-scaling based on recording demand, Prosody cluster với multiple XMPP servers.
+
+\textbf{High Availability Mechanisms:}
+
+Database replication với PostgreSQL streaming replication: primary-replica setup với automatic failover, read replicas cho load distribution, point-in-time recovery (PITR) enabled. Service redundancy với minimum 2 instances per service trong production, health checks và automatic restart cho failed instances, circuit breakers prevent cascade failures. Data backup với daily database backups retained 30 days, continuous WAL archiving cho PITR, S3 object versioning cho accidental deletion recovery.
+
+\textbf{Monitoring và Observability:}
+
+Comprehensive monitoring stack: Metrics collection với Prometheus scraping service endpoints, custom metrics cho meeting-specific KPIs (active conferences, recording queue depth, transcription latency), alerting rules cho critical thresholds (Videobridge offline, Jibri pool exhausted). Distributed tracing với OpenTelemetry instrument requests across services, trace meeting workflow end-to-end (create → join → record → transcribe → summarize), identify performance bottlenecks và latency sources. Centralized logging với ELK stack (Elasticsearch, Logstash, Kibana) aggregate logs từ all services, structured logging với JSON format, log retention policies tuân theo compliance. Dashboards với Grafana visualize system health: infrastructure metrics (CPU, memory, network), application metrics (request rates, error rates, latency percentiles), business metrics (meetings created, recordings processed, AI API costs).

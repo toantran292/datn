@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { MessageSquare, Sparkles } from 'lucide-react';
 import type { Message, Room } from '../../types';
 import type { UserInfo } from '../../contexts/ChatContext';
@@ -37,6 +37,11 @@ export interface ChatWindowProps {
   onFileRemove?: (fileId: string) => void;
   // Search
   onOpenSearch?: () => void;
+  // Meeting
+  onStartMeeting?: () => void;
+  onCopyMeetingLink?: () => void;
+  // Huddle participant count (real-time from WebSocket)
+  huddleParticipantCounts?: Map<string, number>;
 }
 
 export function ChatWindow({
@@ -64,6 +69,9 @@ export function ChatWindow({
   onFilesSelect,
   onFileRemove,
   onOpenSearch,
+  onStartMeeting,
+  onCopyMeetingLink,
+  huddleParticipantCounts,
 }: ChatWindowProps) {
   useEffect(() => {
     if (room) {
@@ -78,6 +86,24 @@ export function ChatWindow({
       onSendMessage(html, mentionedUserIds);
     }
   };
+
+  // Check if there's an active huddle (huddle_started without matching huddle_ended)
+  // Must be called before any early returns to maintain hooks order
+  const { isHuddleActive, huddleParticipantCount } = useMemo(() => {
+    // Find the last huddle_started or huddle_ended message
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].type === 'huddle_ended') {
+        return { isHuddleActive: false, huddleParticipantCount: 0 };
+      }
+      if (messages[i].type === 'huddle_started') {
+        // Use real-time count from WebSocket if available, otherwise fallback to message metadata
+        const realtimeCount = room?.id ? huddleParticipantCounts?.get(room.id) : undefined;
+        const count = realtimeCount ?? messages[i].metadata?.participantCount ?? 1;
+        return { isHuddleActive: true, huddleParticipantCount: count };
+      }
+    }
+    return { isHuddleActive: false, huddleParticipantCount: 0 };
+  }, [messages, room?.id, huddleParticipantCounts]);
 
   // Compose mode - show compose header and message area
   if (isComposing) {
@@ -174,6 +200,9 @@ export function ChatWindow({
         sidebarOpen={sidebarOpen}
         onToggleSidebar={onToggleSidebar}
         onOpenSearch={onOpenSearch}
+        onStartMeeting={onStartMeeting}
+        isHuddleActive={isHuddleActive}
+        huddleParticipantCount={huddleParticipantCount}
       />
 
       <MessageList
@@ -188,6 +217,7 @@ export function ChatWindow({
         onUnpinMessage={onUnpinMessage}
         onAddReaction={onAddReaction}
         onToggleReaction={onToggleReaction}
+        huddleParticipantCount={huddleParticipantCount}
       />
 
       <MessageComposer

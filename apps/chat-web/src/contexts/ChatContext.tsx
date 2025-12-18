@@ -8,6 +8,7 @@ import { socketService } from "../services/socket";
 import { useAppHeaderContext } from "@uts/design-system/ui";
 import type { PendingFile } from "../components/chat/FilePreview";
 import { prepareUpload, uploadToPresignedUrl } from "../services/files";
+import { useHuddleNotification } from "../hooks/useHuddleNotification";
 
 // ============= Types =============
 export interface ComposeUser {
@@ -32,6 +33,7 @@ interface ChatContextValue {
   connectionStatus: string;
   usersCache: Map<string, UserInfo>;
   unreadCounts: Map<string, number>;
+  huddleParticipantCounts: Map<string, number>;
 
   // Project context
   currentProjectId: string | null | undefined;
@@ -123,6 +125,7 @@ const ChatContext = createContext<ChatContextValue | null>(null);
 // ============= Provider =============
 export function ChatProvider({ children }: { children: ReactNode }) {
   const { auth: user, currentProjectId } = useAppHeaderContext();
+  const { playHuddleSound } = useHuddleNotification();
 
   // ===== State =====
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -151,6 +154,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   // Unread counts
   const [unreadCounts, setUnreadCounts] = useState<Map<string, number>>(new Map());
+
+  // Huddle participant counts (roomId -> count)
+  const [huddleParticipantCounts, setHuddleParticipantCounts] = useState<Map<string, number>>(new Map());
 
   // Pending file uploads
   const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
@@ -271,6 +277,17 @@ export function ChatProvider({ children }: { children: ReactNode }) {
               }
             }
           },
+          onMessageUpdated: (message) => {
+            console.log('[ChatContext] onMessageUpdated:', message.id, 'roomId:', message.roomId, 'type:', message.type);
+            if (message.roomId === selectedRoomIdRef.current) {
+              // Update existing message in messages list
+              setMessages((prev) =>
+                prev.map((msg) =>
+                  msg.id === message.id ? { ...msg, ...message } : msg
+                )
+              );
+            }
+          },
           onJoinedRoom: (data) => {
             console.log("Joined room:", data);
           },
@@ -299,6 +316,26 @@ export function ChatProvider({ children }: { children: ReactNode }) {
                 return { ...room, members: updatedMembers };
               })
             );
+          },
+          onHuddleParticipantUpdate: (payload) => {
+            console.log("[ChatContext] Huddle participant update:", payload);
+            setHuddleParticipantCounts((prev) => {
+              const newCounts = new Map(prev);
+              if (payload.participantCount > 0) {
+                newCounts.set(payload.roomId, payload.participantCount);
+              } else {
+                newCounts.delete(payload.roomId);
+              }
+              return newCounts;
+            });
+          },
+          onHuddleStarted: (payload) => {
+            console.log("[ChatContext] Huddle started:", payload);
+            // Play notification sound when someone starts a huddle
+            // Don't play if current user started the huddle
+            if (payload.startedBy !== userIdRef.current) {
+              playHuddleSound();
+            }
           },
         });
 
@@ -994,6 +1031,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     connectionStatus,
     usersCache,
     unreadCounts,
+    huddleParticipantCounts,
 
     // Project context
     currentProjectId,

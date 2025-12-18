@@ -1,0 +1,331 @@
+\paragraph{UC04: Quản lý Tệp tin}
+\mbox{}
+
+% UC04.1 - Upload tệp
+\textbf{UC04.1 - Upload tệp}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc04_1_upload_file.png}
+    \caption{Sơ đồ use case chức năng upload tệp}
+    \label{fig:uc04_1_upload_file}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC04.1 - Upload tệp},
+    label = {tab:uc04_1},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Upload tệp} \\\hline
+ID & UC04.1 \\\hline
+Người sử dụng & Workspace Owner, Member \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Cao \\\hline
+Các thành phần tham gia & + \textbf{User:} Muốn tải tệp tin lên workspace để chia sẻ với thành viên khác. \\\hline
+Mô tả tóm tắt & Chức năng cho phép thành viên tải tệp tin lên workspace. \\\hline
+Trigger & User chọn "Upload tệp" trong giao diện quản lý tệp. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User chọn "Upload tệp".
+        \item Hệ thống kiểm tra quyền truy cập (Include UC04.6).
+        \item Hệ thống hiển thị dialog upload.
+        \item User chọn tệp từ máy tính.
+        \item Hệ thống validate loại tệp và kích thước.
+        \item User chọn thư mục đích (nếu có).
+        \item User nhấn "Upload".
+        \item Hệ thống hiển thị progress bar.
+        \item Hệ thống lưu tệp vào storage.
+        \item Hệ thống tạo metadata record.
+        \item Hệ thống trigger AI để xử lý/index tệp (nếu cần).
+        \item Hệ thống hiển thị thông báo thành công.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & Include UC04.6 (Kiểm tra quyền truy cập). \\\hline
+Luồng luân phiên/đặc biệt &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textcolor{red}{+ E1: Vượt quá kích thước cho phép (100MB) → Hiển thị lỗi.} \\
+    \textcolor{red}{+ E2: Loại tệp không được hỗ trợ → Hiển thị danh sách loại tệp hợp lệ.} \\
+    \textcolor{red}{+ E3: Không có quyền upload → Hiển thị lỗi 403 Forbidden.} \\
+    \textcolor{red}{+ A1: Drag \& drop nhiều tệp → Xử lý batch upload.}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Tệp được upload thành công và có thể truy cập bởi các thành viên. \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+% UC04.2 - Xem danh sách tệp
+\textbf{UC04.2 - Xem danh sách tệp}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc04_2_view_files.png}
+    \caption{Sơ đồ use case chức năng xem danh sách tệp}
+    \label{fig:uc04_2_view_files}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC04.2 - Xem danh sách tệp},
+    label = {tab:uc04_2},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Xem danh sách tệp} \\\hline
+ID & UC04.2 \\\hline
+Người sử dụng & Workspace Owner, Member \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia & + \textbf{User:} Muốn xem tất cả tệp tin trong workspace. \\\hline
+Mô tả tóm tắt & Chức năng hiển thị danh sách tất cả tệp tin trong workspace. \\\hline
+Trigger & User truy cập trang Files của workspace. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User truy cập trang Files.
+        \item Hệ thống truy vấn danh sách tệp.
+        \item Hệ thống hiển thị danh sách với thông tin: tên, loại, kích thước, người upload, ngày.
+        \item User chọn chế độ xem (list/grid).
+        \item User sắp xếp theo tiêu chí.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng luân phiên/đặc biệt &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textcolor{red}{+ A1: Lọc theo loại tệp → Hiển thị chỉ loại tệp được chọn.} \\
+    \textcolor{red}{+ A2: Phân trang → Hiển thị 20 tệp/trang.}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & User xem được danh sách tệp tin trong workspace. \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+% UC04.3 - Tải tệp
+\textbf{UC04.3 - Tải tệp}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc04_3_download_file.png}
+    \caption{Sơ đồ use case chức năng tải tệp}
+    \label{fig:uc04_3_download_file}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC04.3 - Tải tệp},
+    label = {tab:uc04_3},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Tải tệp} \\\hline
+ID & UC04.3 \\\hline
+Người sử dụng & Workspace Owner, Member \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia & + \textbf{User:} Muốn tải tệp tin về máy tính cá nhân. \\\hline
+Mô tả tóm tắt & Chức năng cho phép thành viên download tệp tin từ workspace. \\\hline
+Trigger & User chọn "Tải xuống" cho một tệp. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User chọn tệp cần tải.
+        \item Hệ thống kiểm tra quyền truy cập (Include UC04.6).
+        \item User nhấn "Tải xuống".
+        \item Hệ thống tạo signed URL.
+        \item Hệ thống bắt đầu download.
+        \item Hệ thống ghi log download.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & Include UC04.6 (Kiểm tra quyền truy cập). \\\hline
+Luồng luân phiên/đặc biệt &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textcolor{red}{+ E1: Không có quyền → Hiển thị lỗi 403 Forbidden.} \\
+    \textcolor{red}{+ E2: Tệp không tồn tại → Hiển thị lỗi 404 Not Found.}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Tệp được tải về máy tính của user thành công. \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+% UC04.4 - Xóa tệp
+\textbf{UC04.4 - Xóa tệp}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc04_4_delete_file.png}
+    \caption{Sơ đồ use case chức năng xóa tệp}
+    \label{fig:uc04_4_delete_file}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC04.4 - Xóa tệp},
+    label = {tab:uc04_4},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Xóa tệp} \\\hline
+ID & UC04.4 \\\hline
+Người sử dụng & Workspace Owner, Member \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia & + \textbf{User:} Muốn xóa tệp tin không còn cần thiết. \\\hline
+Mô tả tóm tắt & Chức năng cho phép xóa tệp tin khỏi workspace. \\\hline
+Trigger & User chọn "Xóa" cho một tệp. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User chọn tệp cần xóa.
+        \item Hệ thống kiểm tra quyền (Include UC04.6).
+        \item User nhấn "Xóa".
+        \item Hệ thống hiển thị xác nhận.
+        \item User xác nhận xóa.
+        \item Hệ thống soft delete (chuyển vào Trash).
+        \item Hệ thống ghi audit log.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & Include UC04.6 (Kiểm tra quyền truy cập). \\\hline
+Luồng luân phiên/đặc biệt &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textcolor{red}{+ E1: Không có quyền xóa → Hiển thị lỗi.} \\
+    \textcolor{red}{+ A1: Xóa vĩnh viễn từ Trash → Hard delete sau 30 ngày hoặc theo yêu cầu Owner.} \\
+    \textcolor{red}{+ A2: Khôi phục từ Trash → Chuyển tệp về vị trí ban đầu.}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Tệp được chuyển vào Trash và có thể khôi phục trong 30 ngày. \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+% UC04.5 - Tìm kiếm tệp
+\textbf{UC04.5 - Tìm kiếm tệp}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc04_5_search_file.png}
+    \caption{Sơ đồ use case chức năng tìm kiếm tệp}
+    \label{fig:uc04_5_search_file}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC04.5 - Tìm kiếm tệp},
+    label = {tab:uc04_5},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Tìm kiếm tệp} \\\hline
+ID & UC04.5 \\\hline
+Người sử dụng & Workspace Owner, Member \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia & + \textbf{User:} Muốn tìm nhanh tệp tin theo từ khóa hoặc bộ lọc. \\\hline
+Mô tả tóm tắt & Chức năng tìm kiếm tệp tin trong workspace theo nhiều tiêu chí. \\\hline
+Trigger & User nhập từ khóa vào ô tìm kiếm. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User nhập từ khóa tìm kiếm.
+        \item User áp dụng bộ lọc (loại tệp, ngày, người upload).
+        \item User nhấn "Tìm kiếm" hoặc Enter.
+        \item Hệ thống tìm full-text trong metadata.
+        \item Hệ thống tìm trong nội dung tệp (nếu được index).
+        \item Hệ thống hiển thị kết quả với highlight.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng luân phiên/đặc biệt &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textcolor{red}{+ A1: Tìm kiếm AI → Dùng semantic search để tìm tệp liên quan.} \\
+    \textcolor{red}{+ A2: Không có kết quả → Gợi ý từ khóa tương tự.}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & User tìm được tệp tin phù hợp với tiêu chí tìm kiếm. \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+% UC04.6 - Kiểm tra quyền truy cập
+\textbf{UC04.6 - Kiểm tra quyền truy cập}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc04_6_check_permission.png}
+    \caption{Sơ đồ use case chức năng kiểm tra quyền truy cập}
+    \label{fig:uc04_6_check_permission}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC04.6 - Kiểm tra quyền truy cập},
+    label = {tab:uc04_6},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Kiểm tra quyền truy cập} \\\hline
+ID & UC04.6 \\\hline
+Người sử dụng & System \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Cao \\\hline
+Các thành phần tham gia & + \textbf{System:} Cần xác thực quyền của user trước khi thực hiện thao tác với tệp. \\\hline
+Mô tả tóm tắt & Chức năng hệ thống kiểm tra quyền truy cập của user đối với tệp/thư mục. \\\hline
+Trigger & Được gọi từ UC04.1, UC04.3, UC04.4. \\\hline
+Kiểu sự kiện & Internal. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item Hệ thống lấy thông tin user và role.
+        \item Hệ thống lấy permission của tệp/thư mục.
+        \item Hệ thống kiểm tra: nếu user là Owner → cho phép tất cả.
+        \item Hệ thống kiểm tra quyền (read/write/delete).
+        \item Hệ thống trả kết quả: cho phép hoặc từ chối.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & Include bởi UC04.1, UC04.3, UC04.4. \\\hline
+Luồng luân phiên/đặc biệt &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textcolor{red}{+ E1: Không có quyền → Trả về lỗi 403 Forbidden.}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Hệ thống xác định được user có quyền thực hiện thao tác hay không. \\\hline
+\end{longtblr}

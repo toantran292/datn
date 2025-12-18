@@ -11,8 +11,15 @@ import {
 import { Room } from './room.entity';
 import { MessageReaction } from './message-reaction.entity';
 
-export type MessageType = 'text' | 'file' | 'system';
+export type MessageType = 'text' | 'file' | 'system' | 'huddle_started' | 'huddle_ended';
 export type MessageFormat = 'plain' | 'markdown';
+
+export interface HuddleMetadata {
+  meetingId: string;
+  meetingRoomId: string;
+  duration?: number; // seconds
+  participantCount?: number;
+}
 
 @Entity('messages')
 @Index(['roomId', 'createdAt'])
@@ -55,6 +62,9 @@ export class Message {
 
   @Column({ name: 'deleted_at', type: 'timestamp', nullable: true })
   deletedAt: Date | null;
+
+  @Column({ type: 'jsonb', nullable: true })
+  metadata: Record<string, any> | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
