@@ -219,4 +219,70 @@ export class LLMService implements OnModuleInit {
       }
     }
   }
+
+  /**
+   * Translate text with streaming response
+   * Returns an async generator that yields tokens as they arrive
+   */
+  async *translateStream(
+    text: string,
+    targetLang: LanguageCode,
+    sourceLang?: LanguageCode,
+    context?: MeetingContext,
+  ): AsyncGenerator<string, void, unknown> {
+    if (!text.trim()) {
+      return;
+    }
+
+    const meetingId = context?.meetingId || 'default';
+
+    // Check cache first
+    const cacheKey = `${meetingId}|${text}|${targetLang}|${sourceLang || 'auto'}`;
+    const cached = translationCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      yield cached.translation;
+      return;
+    }
+
+    const targetLanguageName = SUPPORTED_LANGUAGES[targetLang];
+    const sourceLanguageName = sourceLang ? SUPPORTED_LANGUAGES[sourceLang] : null;
+
+    const systemPrompt = this.buildContextualPrompt(
+      targetLanguageName,
+      sourceLanguageName,
+      context,
+      meetingId,
+    );
+
+    try {
+      const stream = await this.model.stream([
+        new SystemMessage(systemPrompt),
+        new HumanMessage(text),
+      ]);
+
+      let fullTranslation = '';
+
+      for await (const chunk of stream) {
+        const content = chunk.content as string;
+        if (content) {
+          fullTranslation += content;
+          yield content;
+        }
+      }
+
+      // Cache the full translation
+      translationCache.set(cacheKey, {
+        translation: fullTranslation,
+        timestamp: Date.now(),
+      });
+
+      // Add to context
+      if (context?.meetingId) {
+        this.addToContext(context.meetingId, text);
+      }
+    } catch (error: unknown) {
+      this.logger.error(`Streaming translation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw error;
+    }
+  }
 }

@@ -217,6 +217,7 @@ export function ChatWindow({
         onUnpinMessage={onUnpinMessage}
         onAddReaction={onAddReaction}
         onToggleReaction={onToggleReaction}
+        huddleParticipantCount={huddleParticipantCount}
       />
 
       <MessageComposer

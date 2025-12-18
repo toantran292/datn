@@ -3,6 +3,8 @@ import { PrismaService } from '../prisma.service';
 import { Meeting, Participant, MeetingStatus, ParticipantRole, ParticipantStatus } from '@prisma/client';
 import { ChatIntegrationService } from './chat-integration.service';
 
+export type MeetingWithParticipants = Meeting & { participants: Participant[] };
+
 export interface CreateMeetingDto {
   roomId: string;
   subjectType: 'chat' | 'project';
@@ -23,8 +25,8 @@ export interface JoinMeetingDto {
 export interface ParticipantInfo {
   id: string;
   userId: string;
-  userName?: string;
-  userAvatar?: string;
+  userName: string | null;
+  userAvatar: string | null;
   role: ParticipantRole;
   joinedAt: Date;
 }
@@ -416,7 +418,7 @@ export class MeetingService {
   /**
    * Get active meetings
    */
-  async getActiveMeetings(): Promise<Meeting[]> {
+  async getActiveMeetings(): Promise<MeetingWithParticipants[]> {
     return this.prisma.meeting.findMany({
       where: {
         status: 'ACTIVE',

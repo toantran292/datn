@@ -7,9 +7,15 @@ import {
   Query,
   HttpException,
   HttpStatus,
+  Sse,
 } from '@nestjs/common';
+import { Observable } from 'rxjs';
 import { LLMService, SUPPORTED_LANGUAGES, type LanguageCode, type MeetingContext } from './llm.service';
 import { TranscriptService, SaveTranscriptDto } from './transcript.service';
+
+interface SSEMessage {
+  data: string;
+}
 
 interface TranslateRequest {
   text: string;
@@ -90,6 +96,65 @@ export class AIController {
     return {
       languages: this.llmService.getSupportedLanguages(),
     };
+  }
+
+  /**
+   * Stream translate text to target language (SSE)
+   * Streams tokens as they arrive from LLM for faster perceived response
+   */
+  @Sse('translate/stream')
+  translateStream(
+    @Query('text') text: string,
+    @Query('targetLang') targetLang: LanguageCode,
+    @Query('sourceLang') sourceLang?: LanguageCode,
+    @Query('meetingId') meetingId?: string,
+  ): Observable<SSEMessage> {
+    // Validate input
+    if (!text || !targetLang) {
+      return new Observable(subscriber => {
+        subscriber.next({ data: JSON.stringify({ type: 'error', error: 'Missing required fields: text and targetLang' }) });
+        subscriber.complete();
+      });
+    }
+
+    if (!SUPPORTED_LANGUAGES[targetLang]) {
+      return new Observable(subscriber => {
+        subscriber.next({ data: JSON.stringify({ type: 'error', error: `Unsupported target language: ${targetLang}` }) });
+        subscriber.complete();
+      });
+    }
+
+    if (!process.env.OPENAI_API_KEY) {
+      return new Observable(subscriber => {
+        subscriber.next({ data: JSON.stringify({ type: 'error', error: 'Translation service not configured' }) });
+        subscriber.complete();
+      });
+    }
+
+    return new Observable(subscriber => {
+      const context: MeetingContext | undefined = meetingId ? { meetingId } : undefined;
+      const generator = this.llmService.translateStream(text, targetLang, sourceLang, context);
+
+      (async () => {
+        try {
+          let fullTranslation = '';
+          for await (const token of generator) {
+            fullTranslation += token;
+            subscriber.next({ data: JSON.stringify({ type: 'token', token }) });
+          }
+          subscriber.next({ data: JSON.stringify({ type: 'done', translation: fullTranslation }) });
+          subscriber.complete();
+        } catch (error) {
+          subscriber.next({
+            data: JSON.stringify({
+              type: 'error',
+              error: error instanceof Error ? error.message : 'Translation failed',
+            }),
+          });
+          subscriber.complete();
+        }
+      })();
+    });
   }
 
   // ==================== TRANSCRIPT ENDPOINTS ====================

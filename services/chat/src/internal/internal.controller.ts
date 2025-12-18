@@ -22,6 +22,14 @@ interface UpdateHuddleParticipantsBody {
   participantCount: number;
 }
 
+interface CreateMeetingChatMessageBody {
+  userId: string;
+  orgId: string;
+  meetingId: string;
+  content: string;
+  senderName?: string;
+}
+
 @Controller('internal')
 export class InternalController {
   constructor(
@@ -31,6 +39,20 @@ export class InternalController {
     private readonly chatsGateway: ChatsGateway,
     private readonly roomsRepository: RoomsRepository,
   ) {}
+
+  /**
+   * Get meeting chat messages for a specific meeting
+   * Returns thread replies under the huddle message
+   */
+  @SkipContext()
+  @Get('rooms/:roomId/meeting-chat/:meetingId')
+  async getMeetingChatMessages(
+    @Param('roomId') roomId: string,
+    @Param('meetingId') meetingId: string,
+  ) {
+    const messages = await this.chatsService.getMeetingChatMessages(roomId, meetingId);
+    return { success: true, messages };
+  }
 
   /**
    * List users in the organization
@@ -68,6 +90,7 @@ export class InternalController {
   /**
    * Create a huddle message in a chat room
    * Called by meeting service when huddle starts/ends
+   * For huddle_ended: updates existing huddle_started message instead of creating new one
    */
   @SkipContext()
   @Post('rooms/:roomId/huddle')
@@ -75,6 +98,28 @@ export class InternalController {
     @Param('roomId') roomId: string,
     @Body() body: CreateHuddleMessageBody,
   ) {
+    // For huddle_ended, try to update existing huddle_started message
+    if (body.type === 'huddle_ended') {
+      const updatedMessage = await this.chatsService.updateHuddleToEnded({
+        roomId,
+        userId: body.userId,
+        orgId: body.orgId,
+        type: body.type,
+        meetingId: body.meetingId,
+        meetingRoomId: body.meetingRoomId,
+        duration: body.duration,
+        participantCount: body.participantCount,
+      });
+
+      if (updatedMessage) {
+        // Broadcast update via WebSocket (message:updated event)
+        this.chatsGateway.broadcastHuddleMessageUpdate(body.orgId, roomId, updatedMessage);
+        return updatedMessage;
+      }
+      // If no huddle_started message found, fall through to create new one
+    }
+
+    // Create new message for huddle_started (or huddle_ended if no existing message)
     const message = await this.chatsService.createHuddleMessage({
       roomId,
       userId: body.userId,
@@ -115,6 +160,35 @@ export class InternalController {
     });
 
     return { success: true };
+  }
+
+  /**
+   * Create a meeting chat message as a thread reply under the huddle message
+   * Called by meeting service when a chat message is sent during the meeting
+   */
+  @SkipContext()
+  @Post('rooms/:roomId/meeting-chat')
+  async createMeetingChatMessage(
+    @Param('roomId') roomId: string,
+    @Body() body: CreateMeetingChatMessageBody,
+  ) {
+    const message = await this.chatsService.createMeetingChatMessage({
+      roomId,
+      userId: body.userId,
+      orgId: body.orgId,
+      meetingId: body.meetingId,
+      content: body.content,
+      senderName: body.senderName,
+    });
+
+    if (!message) {
+      return { success: false, error: 'Huddle message not found for this meeting' };
+    }
+
+    // Broadcast to room via WebSocket (as thread reply)
+    this.chatsGateway.broadcastThreadMessage(body.orgId, roomId, message.threadId!, message);
+
+    return { success: true, message };
   }
 }
 

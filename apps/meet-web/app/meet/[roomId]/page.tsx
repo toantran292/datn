@@ -19,6 +19,7 @@ import { RecordingIndicator } from '@/components/RecordingIndicator';
 import { useClientRecording } from '@/hooks/useClientRecording';
 import { SettingsPanel, BackgroundOption } from '@/components/SettingsPanel';
 import { MeetingExports } from '@/components/MeetingExports';
+import { MeetingChatPanel } from '@/components/MeetingChatPanel';
 import type { JitsiTrack } from '@/types/jitsi';
 import { Video } from 'lucide-react';
 import { useCallback } from 'react';
@@ -58,6 +59,10 @@ function MeetingPageContent() {
 
   // Exports panel state
   const [isExportsOpen, setIsExportsOpen] = useState(false);
+
+  // Chat panel state
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [chatUnreadCount, setChatUnreadCount] = useState(0);
 
   // Initialize Jitsi and load meeting data from localStorage
   useEffect(() => {
@@ -535,11 +540,14 @@ function MeetingPageContent() {
         isScreenSharing={isScreenSharing}
         isRecording={isRecording}
         isCaptionsOn={isCaptionsEnabled}
+        isChatOpen={isChatOpen}
+        unreadCount={chatUnreadCount}
         onToggleMic={toggleAudio}
         onToggleVideo={toggleVideo}
         onToggleScreenShare={toggleScreenShare}
         onToggleRecording={toggleRecording}
         onToggleCaptions={toggleCaptions}
+        onToggleChat={() => setIsChatOpen(!isChatOpen)}
         onSendReaction={sendReaction}
         onShowSettings={handleShowSettings}
         onShowExports={() => setIsExportsOpen(true)}
@@ -573,6 +581,17 @@ function MeetingPageContent() {
           onClose={() => setIsExportsOpen(false)}
         />
       )}
+
+      {/* Chat Panel */}
+      <MeetingChatPanel
+        isOpen={isChatOpen}
+        onClose={() => setIsChatOpen(false)}
+        meetingId={meetingId}
+        roomId={roomId}
+        userId={userId}
+        userName={displayName}
+        onUnreadCountChange={setChatUnreadCount}
+      />
     </div>
   );
 }

@@ -47,10 +47,10 @@ export class ChatIntegrationService {
       );
 
       this.logger.log(`Successfully notified chat service about huddle start`);
-    } catch (error) {
+    } catch (error: unknown) {
       // Don't throw - huddle message failure shouldn't block meeting
       this.logger.warn(
-        `Failed to notify chat service about huddle start: ${error.message}`
+        `Failed to notify chat service about huddle start: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
@@ -76,10 +76,10 @@ export class ChatIntegrationService {
       );
 
       this.logger.log(`Successfully notified chat service about participant update`);
-    } catch (error) {
+    } catch (error: unknown) {
       // Don't throw - participant update failure shouldn't block meeting
       this.logger.warn(
-        `Failed to notify chat service about participant update: ${error.message}`
+        `Failed to notify chat service about participant update: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
@@ -114,11 +114,85 @@ export class ChatIntegrationService {
       );
 
       this.logger.log(`Successfully notified chat service about huddle end`);
-    } catch (error) {
+    } catch (error: unknown) {
       // Don't throw - huddle message failure shouldn't block meeting
       this.logger.warn(
-        `Failed to notify chat service about huddle end: ${error.message}`
+        `Failed to notify chat service about huddle end: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
+    }
+  }
+
+  /**
+   * Send a meeting chat message to the chat service
+   * This will create a thread reply under the huddle message
+   */
+  async sendMeetingChatMessage(dto: {
+    chatId: string;
+    userId: string;
+    orgId: string;
+    meetingId: string;
+    content: string;
+    senderName?: string;
+  }): Promise<{ success: boolean; messageId?: string }> {
+    try {
+      const url = `${CHAT_SERVICE_URL}/internal/rooms/${dto.chatId}/meeting-chat`;
+
+      this.logger.log(`Sending meeting chat message to chat service: ${dto.chatId}`);
+
+      const response = await firstValueFrom(
+        this.httpService.post(url, {
+          userId: dto.userId,
+          orgId: dto.orgId,
+          meetingId: dto.meetingId,
+          content: dto.content,
+          senderName: dto.senderName,
+        })
+      );
+
+      if (response.data.success) {
+        this.logger.log(`Successfully sent meeting chat message: ${response.data.message?.id}`);
+        return { success: true, messageId: response.data.message?.id };
+      } else {
+        this.logger.warn(`Failed to send meeting chat message: ${response.data.error}`);
+        return { success: false };
+      }
+    } catch (error: unknown) {
+      // Don't throw - chat message failure shouldn't block meeting
+      this.logger.warn(
+        `Failed to send meeting chat message: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+      return { success: false };
+    }
+  }
+
+  /**
+   * Get meeting chat messages from the chat service
+   */
+  async getMeetingChatMessages(dto: {
+    chatId: string;
+    meetingId: string;
+  }): Promise<any[]> {
+    try {
+      const url = `${CHAT_SERVICE_URL}/internal/rooms/${dto.chatId}/meeting-chat/${dto.meetingId}`;
+
+      this.logger.log(`Getting meeting chat messages from chat service: ${dto.chatId}`);
+
+      const response = await firstValueFrom(
+        this.httpService.get(url)
+      );
+
+      if (response.data.success) {
+        this.logger.log(`Successfully got ${response.data.messages?.length || 0} meeting chat messages`);
+        return response.data.messages || [];
+      } else {
+        this.logger.warn(`Failed to get meeting chat messages: ${response.data.error}`);
+        return [];
+      }
+    } catch (error: unknown) {
+      this.logger.warn(
+        `Failed to get meeting chat messages: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+      return [];
     }
   }
 }
