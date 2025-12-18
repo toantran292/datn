@@ -70,9 +70,9 @@ export function GeneralSettings({ settings, isLoading, isSaving, onSave }: Gener
           <Building2 size={20} className="text-[#3B82F6]" />
         </div>
         <div>
-          <h3 className="font-semibold text-custom-text-100">General Settings</h3>
+          <h3 className="font-semibold text-custom-text-100">Cài đặt chung</h3>
           <p className="text-sm text-custom-text-300">
-            Basic information about your organization
+            Thông tin cơ bản về tổ chức của bạn
           </p>
         </div>
       </div>
@@ -80,12 +80,12 @@ export function GeneralSettings({ settings, isLoading, isSaving, onSave }: Gener
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
           <label htmlFor="org-name" className="text-sm font-medium text-custom-text-200">
-            Organization Name
+            Tên tổ chức
           </label>
           <Input
             id="org-name"
             type="text"
-            placeholder="Enter organization name"
+            placeholder="Nhập tên tổ chức"
             value={name}
             onChange={(e) => setName(e.target.value)}
             inputSize="md"
@@ -96,18 +96,18 @@ export function GeneralSettings({ settings, isLoading, isSaving, onSave }: Gener
 
         <div className="space-y-2">
           <label htmlFor="org-description" className="text-sm font-medium text-custom-text-200">
-            Description
+            Mô tả
           </label>
           <textarea
             id="org-description"
-            placeholder="Describe your organization..."
+            placeholder="Mô tả tổ chức của bạn..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
             className="w-full px-3 py-2 rounded-lg border border-custom-border-200 bg-custom-background-100 text-custom-text-100 placeholder:text-custom-text-400 focus:outline-none focus:ring-2 focus:ring-[#00C4AB]/20 focus:border-[#00C4AB] resize-none transition-colors"
           />
           <p className="text-xs text-custom-text-400">
-            Brief description of your organization. This will be visible to all members.
+            Mô tả ngắn gọn về tổ chức của bạn. Điều này sẽ hiển thị cho tất cả thành viên.
           </p>
         </div>
 
@@ -121,7 +121,7 @@ export function GeneralSettings({ settings, isLoading, isSaving, onSave }: Gener
             prependIcon={<Save size={16} />}
             className="bg-[#00C4AB] hover:bg-[#00B09A]"
           >
-            Save Changes
+            Lưu thay đổi
           </Button>
         </div>
       </form>

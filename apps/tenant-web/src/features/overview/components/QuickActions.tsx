@@ -15,24 +15,24 @@ export function QuickActions({
   const actions = [
     {
       icon: FolderPlus,
-      label: "Create Project",
-      description: "Start a new project workspace",
+      label: "Tạo dự án",
+      description: "Bắt đầu một workspace dự án mới",
       color: "#FF8800",
       bgColor: "#FFF4E6",
       onClick: onCreateProject
     },
     {
       icon: UserPlus,
-      label: "Invite Member",
-      description: "Add someone to your team",
+      label: "Mời thành viên",
+      description: "Thêm ai đó vào nhóm của bạn",
       color: "#00C4AB",
       bgColor: "#ECFDF5",
       onClick: onInviteMember
     },
     {
       icon: Upload,
-      label: "Upload File",
-      description: "Share files with your team",
+      label: "Tải lên tệp",
+      description: "Chia sẻ tệp với nhóm của bạn",
       color: "#3B82F6",
       bgColor: "#EEF4FF",
       onClick: onUploadFile
@@ -42,9 +42,9 @@ export function QuickActions({
   return (
     <Card className="p-6 shadow-md rounded-2xl border border-border">
       <div className="mb-6">
-        <h3 style={{ fontWeight: 600 }}>Quick Actions</h3>
+        <h3 style={{ fontWeight: 600 }}>Thao tác nhanh</h3>
         <p className="text-sm text-muted-foreground mt-1">
-          Common tasks to get started
+          Các tác vụ phổ biến để bắt đầu
         </p>
       </div>
 

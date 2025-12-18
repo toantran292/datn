@@ -31,7 +31,7 @@ const UTSLogo: React.FC = () => (
   </div>
 );
 
-export const AppHeader: React.FC<AppHeaderProps> = ({ className }) => {
+export const AppHeader: React.FC<AppHeaderProps> = ({ className, searchTrigger }) => {
   const { currentApp, workspaceSlug, currentWorkspaceId, apiBaseUrl, authWebUrl } = useAppHeaderContext();
 
   const [isCreateProjectModalOpen, setIsCreateProjectModalOpen] = useState(false);
@@ -72,6 +72,13 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ className }) => {
             <ProjectSelector onCreateProject={handleOpenCreateProject} />
           )}
         </Header.LeftItem>
+
+        {/* Search trigger slot - can be passed as children */}
+        {/* {searchTrigger && (
+          <div className="flex-1 flex items-center justify-center px-4 max-w-xl">
+            {searchTrigger}
+          </div>
+        )} */}
 
         <Header.RightItem className="flex items-center gap-2">
           <ProductSwitcher currentApp={currentApp} workspaceSlug={workspaceSlug} />

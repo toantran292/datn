@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, HttpCode, HttpStatus, Req } from "@nestjs/common";
+import { Controller, Get, Post, Put, Delete, Body, Param, HttpCode, HttpStatus, Req, Query } from "@nestjs/common";
 import type { RequestWithOrg } from "../../common/interfaces";
 import { IssueService } from "./issue.service";
 import { CreateIssueDto } from "./dto/create-issue.dto";
 import { UpdateIssueDto } from "./dto/update-issue.dto";
 import { ReorderIssueDto } from "./dto/reorder-issue.dto";
 import { IssueResponseDto } from "./dto/issue-response.dto";
+import { SearchIssuesDto, SearchIssuesResponseDto } from "./dto/search-issues.dto";
 
 @Controller("api")
 export class IssueController {
@@ -16,6 +17,15 @@ export class IssueController {
     const orgId = request.orgId;
     const userId = (request.headers["x-user-id"] as string) || "00000000-0000-0000-0000-000000000000";
     return this.issueService.create(dto, orgId, userId);
+  }
+
+  @Get("issues/search")
+  async searchIssues(
+    @Query() searchDto: SearchIssuesDto,
+    @Req() request: RequestWithOrg
+  ): Promise<SearchIssuesResponseDto> {
+    const orgId = request.orgId;
+    return this.issueService.searchIssues(searchDto, orgId);
   }
 
   @Get("issues/assigned")
@@ -81,5 +91,26 @@ export class IssueController {
   async delete(@Param("id") id: string, @Req() request: RequestWithOrg): Promise<void> {
     const orgId = request.orgId;
     return this.issueService.delete(id, orgId);
+  }
+
+  /**
+   * Batch index all issues in org to RAG (offline indexing)
+   */
+  @Post("issues/index-to-rag")
+  async indexAllToRAG(@Req() request: RequestWithOrg): Promise<{ indexed: number; failed: number }> {
+    const orgId = request.orgId;
+    return this.issueService.indexAllIssuesToRAG(orgId);
+  }
+
+  /**
+   * Batch index all issues in a project to RAG
+   */
+  @Post("projects/:projectId/issues/index-to-rag")
+  async indexProjectToRAG(
+    @Param("projectId") projectId: string,
+    @Req() request: RequestWithOrg
+  ): Promise<{ indexed: number; failed: number }> {
+    const orgId = request.orgId;
+    return this.issueService.indexProjectIssuesToRAG(projectId, orgId);
   }
 }

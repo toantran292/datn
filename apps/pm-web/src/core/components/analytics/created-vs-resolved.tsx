@@ -20,7 +20,7 @@ export const CreatedVsResolved: React.FC<CreatedVsResolvedProps> = ({ projectId 
 
   const chartData = useMemo(() => {
     if (!data?.data) return [];
-    
+
     // Group by date
     const dataMap = new Map<string, { date: string; created: number; completed: number }>();
     

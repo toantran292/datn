@@ -42,6 +42,7 @@ export class RequestContextGuard implements CanActivate {
 
     const errors = validateSync(dto, { whitelist: true, forbidNonWhitelisted: true });
     if (errors.length) {
+      console.error('RequestContextGuard validation errors:', errors);
       throw new BadRequestException('Missing/invalid x-user-id or x-org-id headers');
     }
 

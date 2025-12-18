@@ -1,0 +1,391 @@
+\paragraph{UC03: Quản lý Công việc}
+\mbox{}
+
+\textbf{UC03.1 - Tạo công việc mới}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/uc03_1_create_issue.png}
+    \caption{Sơ đồ use case chức năng tạo công việc}
+    \label{fig:uc03_1_create_issue}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC03.1 - Tạo công việc mới},
+    label = {tab:uc03_1},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Tạo công việc mới} \\\hline
+ID & UC03.1 \\\hline
+Người sử dụng & Project Lead, Team Member \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Cao \\\hline
+Các thành phần tham gia & + \textbf{User:} Muốn tạo công việc mới để theo dõi task, bug hoặc user story trong dự án. \\\hline
+Mô tả tóm tắt & Cho phép user tạo công việc mới với thông tin: name, type (STORY/TASK/BUG/EPIC), priority (LOW/MEDIUM/HIGH/CRITICAL), description, sprint, assignees, story points. Công việc được tự động gán identifier theo dự án (ví dụ: PM-1, PM-2). \\\hline
+Trigger & User nhấn "Tạo công việc" trong board view hoặc backlog view. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User nhấn "Tạo công việc"
+        \item Form hiển thị với: Tên công việc (required), Type, Priority, Description, Sprint (optional), Assignees (optional), Story Points (optional), Start Date, Target Date
+        \item User nhập thông tin công việc
+        \item Backend validate: name không trống
+        \item Backend tự động tạo sequenceId tiếp theo (ví dụ: 1, 2, 3...)
+        \item Identifier = projectIdentifier + "-" + sequenceId (PM-1)
+        \item Nếu không chọn status, gán status đầu tiên (thường là TODO)
+        \item Nếu chọn sprint, gán vào sprint đó (hiển thị trong board nếu sprint đang ACTIVE)
+        \item Backend tính sortOrder để đặt công việc ở cuối danh sách
+        \item Tạo IssueActivity record ghi log "created"
+        \item Hiển thị công việc mới trong board/backlog
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- Name trống: Hiển thị lỗi "Tên công việc là bắt buộc".
+
+    \textbf{\textcolor{red}{E2}} -- Sprint không thuộc project: Hiển thị lỗi "Sprint không thuộc dự án".
+
+    \textbf{\textcolor{red}{A1}} -- Tạo công việc con: User có thể chọn công việc cha để tạo công việc con (parentId).
+
+    \textbf{\textcolor{red}{A2}} -- Tạo nhanh: User có thể tạo nhanh chỉ với name, các field khác dùng giá trị mặc định.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Công việc mới được tạo với identifier duy nhất (PM-1), hiển thị trong board/backlog view, có thể assign, comment và update sau. \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+\textbf{UC03.2 - Cập nhật công việc}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/uc03_2_update_issue.png}
+    \caption{Sơ đồ use case chức năng cập nhật công việc}
+    \label{fig:uc03_2_update_issue}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC03.2 - Cập nhật công việc},
+    label = {tab:uc03_2},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Cập nhật công việc} \\\hline
+ID & UC03.2 \\\hline
+Người sử dụng & Project Lead, Team Member, Viewer (read-only) \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Cao \\\hline
+Các thành phần tham gia & + \textbf{User:} Muốn cập nhật thông tin công việc như status, priority, assignees, description, sprint. \\\hline
+Mô tả tóm tắt & Cho phép user cập nhật các thuộc tính của công việc. Mỗi thay đổi được ghi log vào IssueActivity. \\\hline
+Trigger & User thay đổi field trong panel chi tiết công việc hoặc kéo thả trong board view. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User mở panel chi tiết công việc hoặc inline edit
+        \item User thay đổi field: status, priority, assignees, description, sprint, story points, dates
+        \item Backend validate thay đổi (ví dụ: status phải thuộc project)
+        \item Backend cập nhật công việc
+        \item Backend tạo IssueActivity record ghi log thay đổi (field nào, giá trị cũ, giá trị mới)
+        \item Gửi notification cho assignees nếu có thay đổi về assignees
+        \item UI cập nhật real-time (hiển thị thay đổi ngay)
+        \item Hiển thị activity log trong tab Activity
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{A1}} -- Kéo thả công việc trong board: User kéo công việc sang column khác (status mới), backend cập nhật statusId và sortOrder.
+
+    \textbf{\textcolor{red}{A2}} -- Di chuyển công việc vào sprint: User kéo công việc từ backlog vào sprint hoặc giữa các sprint.
+
+    \textbf{\textcolor{red}{A3}} -- Sắp xếp lại công việc: User kéo thả để thay đổi thứ tự, backend tính lại sortOrder giữa 2 công việc lân cận.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Công việc được cập nhật thành công, activity log ghi lại thay đổi, các member liên quan nhận notification. \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+\textbf{UC03.3 - Xem chi tiết công việc}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/uc03_3_view_issue.png}
+    \caption{Sơ đồ use case chức năng xem chi tiết công việc}
+    \label{fig:uc03_3_view_issue}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC03.3 - Xem chi tiết công việc},
+    label = {tab:uc03_3},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Xem chi tiết công việc} \\\hline
+ID & UC03.3 \\\hline
+Người sử dụng & Project Lead, Team Member, Viewer \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia & + \textbf{User:} Muốn xem thông tin đầy đủ của công việc, bao gồm description, comments, activity log, công việc con. \\\hline
+Mô tả tóm tắt & Hiển thị chi tiết công việc trong panel bên phải với các tab: Details, Activity, Comments. \\\hline
+Trigger & User click vào card công việc trong board view hoặc backlog view. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User click vào card công việc
+        \item Backend query công việc với relations: status, sprint, assignees, comments, activities, subIssues
+        \item Panel hiển thị:
+        \begin{itemize}
+            \item Header: Identifier (PM-1), Name, Close button
+            \item Properties: Type, Priority, Status, Sprint, Assignees, Story Points, Dates
+            \item Description (rich text editor với markdown support)
+            \item Tab Activity: Log tất cả thay đổi (created, status changed, assigned, etc.)
+            \item Tab Comments: Danh sách comments (include UC03.5)
+            \item Công việc con (nếu có): Danh sách công việc con
+        \end{itemize}
+        \item User có thể inline edit các field
+        \item User có thể thêm comment (UC03.5)
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + Include UC03.5 (Thêm comment).
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{A1}} -- Xem công việc con: Click vào công việc con để mở panel chi tiết của công việc đó.
+
+    \textbf{\textcolor{red}{A2}} -- Navigate bằng keyboard: User có thể dùng phím mũi tên để di chuyển giữa các công việc.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & User xem được đầy đủ thông tin công việc, có thể edit inline, thêm comment, xem activity history. \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+\textbf{UC03.4 - Xóa công việc}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/uc03_4_delete_issue.png}
+    \caption{Sơ đồ use case chức năng xóa công việc}
+    \label{fig:uc03_4_delete_issue}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC03.4 - Xóa công việc},
+    label = {tab:uc03_4},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Xóa công việc} \\\hline
+ID & UC03.4 \\\hline
+Người sử dụng & Project Lead \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia & + \textbf{Project Lead:} Muốn xóa công việc không còn cần thiết hoặc tạo nhầm. \\\hline
+Mô tả tóm tắt & Cho phép Project Lead xóa công việc. Nếu có công việc con, phải xử lý công việc con trước. \\\hline
+Trigger & Project Lead nhấn "Xóa công việc" trong panel chi tiết. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item Project Lead mở panel chi tiết công việc
+        \item Nhấn button "Xóa công việc"
+        \item Backend kiểm tra quyền (chỉ Project Lead)
+        \item Backend kiểm tra công việc con
+        \item Hiển thị dialog xác nhận với warning về công việc con (nếu có)
+        \item Project Lead xác nhận
+        \item Backend cascade delete: comments, activities
+        \item Backend set parentId = NULL cho công việc con (hoặc xóa nếu user chọn)
+        \item Backend xóa công việc
+        \item UI remove công việc khỏi board/backlog
+        \item Hiển thị toast "Đã xóa công việc"
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- Không có quyền: Team Member và Viewer không thể xóa công việc.
+
+    \textbf{\textcolor{red}{A1}} -- Có công việc con: Hỏi user chọn: (a) Xóa cả công việc con, (b) Chuyển công việc con thành công việc độc lập.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Công việc và tất cả dữ liệu liên quan (comments, activities) bị xóa, công việc con được xử lý theo lựa chọn. \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+\textbf{UC03.5 - Thêm comment vào công việc}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/uc03_5_add_comment.png}
+    \caption{Sơ đồ use case chức năng thêm comment}
+    \label{fig:uc03_5_add_comment}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC03.5 - Thêm comment vào công việc},
+    label = {tab:uc03_5},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Thêm comment vào công việc} \\\hline
+ID & UC03.5 \\\hline
+Người sử dụng & Project Lead, Team Member \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia & + \textbf{User:} Muốn thêm comment để thảo luận, đặt câu hỏi, hoặc update thông tin về công việc. \\\hline
+Mô tả tóm tắt & Cho phép user thêm comment vào công việc với markdown support. Comment có thể mention user khác (@username). \\\hline
+Trigger & User nhập text vào comment box và nhấn "Thêm comment" trong panel chi tiết công việc. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User mở tab Comments trong panel chi tiết công việc
+        \item User nhập comment text (hỗ trợ markdown)
+        \item User có thể mention user khác bằng @username
+        \item User nhấn "Thêm comment"
+        \item Backend validate comment không trống
+        \item Backend tạo IssueComment record với: issueId, comment, commentHtml (rendered markdown), createdBy
+        \item Backend parse mentions (@username) và gửi notification cho user được mention
+        \item Hiển thị comment mới ở cuối danh sách với: avatar, username, timestamp, comment content
+        \item Gửi notification cho assignees và followers của công việc
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & Include bởi UC03.3 (Xem chi tiết công việc). \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- Comment trống: Hiển thị lỗi "Comment không được để trống".
+
+    \textbf{\textcolor{red}{A1}} -- Edit comment: User có thể edit comment của mình (hiển thị "Edited" badge).
+
+    \textbf{\textcolor{red}{A2}} -- Delete comment: User có thể xóa comment của mình hoặc Project Lead xóa bất kỳ comment nào.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Comment được thêm vào công việc, user được mention nhận notification, activity log ghi lại "commented". \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+\textbf{UC03.6 - Tự động tạo công việc từ mô tả}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/uc03_6_ai_generate_issues.png}
+    \caption{Sơ đồ use case chức năng tự động tạo công việc bằng AI}
+    \label{fig:uc03_6_ai_generate_issues}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC03.6 - Tự động tạo công việc từ mô tả},
+    label = {tab:uc03_6},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Tự động tạo công việc từ mô tả} \\\hline
+ID & UC03.6 \\\hline
+Người sử dụng & Project Lead, Team Member \\\hline
+Mức độ cần thiết & Mở rộng \\\hline
+Phân loại & Cao \\\hline
+Các thành phần tham gia & + \textbf{User:} Muốn tạo nhiều công việc nhanh chóng từ mô tả tổng quan hoặc user story.
+
++ \textbf{LLM Service:} Phân tích mô tả đầu vào và tạo danh sách công việc với thông tin chi tiết. \\\hline
+Mô tả tóm tắt & User nhập mô tả tổng quan (ví dụ: feature requirements, user story), hệ thống sử dụng LLM để tự động phân tích và tạo ra danh sách công việc (issues) với đầy đủ thông tin: name, description, type, priority, estimated story points. \\\hline
+Trigger & User nhấn "Tạo công việc bằng AI" trong backlog view hoặc board view. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User nhấn "Tạo công việc bằng AI"
+        \item Dialog hiển thị với textarea để nhập mô tả (requirements, user story, hoặc feature description)
+        \item User nhập mô tả chi tiết (ví dụ: "Xây dựng trang đăng nhập với Google OAuth, validation form, remember me, forgot password")
+        \item User nhấn "Tạo tự động"
+        \item Frontend gửi mô tả đến Backend API
+        \item Backend gọi LLM service với prompt template:
+        \begin{itemize}
+            \item System prompt: "Phân tích mô tả và tạo danh sách công việc chi tiết"
+            \item User input: Mô tả từ user
+            \item Expected output: JSON array với các công việc
+        \end{itemize}
+        \item LLM phân tích và trả về danh sách công việc với:
+        \begin{itemize}
+            \item name: Tên công việc ngắn gọn
+            \item description: Mô tả chi tiết (markdown)
+            \item type: STORY/TASK/BUG/EPIC
+            \item priority: LOW/MEDIUM/HIGH/CRITICAL
+            \item storyPoints: Ước lượng (1-13)
+        \end{itemize}
+        \item Backend validate kết quả từ LLM
+        \item Hiển thị preview danh sách công việc được tạo
+        \item User review và có thể edit từng công việc trước khi confirm
+        \item User nhấn "Tạo tất cả"
+        \item Backend tạo từng công việc với sequenceId tăng dần
+        \item Ghi log vào AIGenerationLog với: prompt, response, tokensUsed, model
+        \item Hiển thị công việc mới trong board/backlog
+        \item Toast thông báo "Đã tạo X công việc từ mô tả"
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- Mô tả trống hoặc quá ngắn: Hiển thị lỗi "Vui lòng nhập mô tả chi tiết hơn (tối thiểu 50 ký tự)".
+
+    \textbf{\textcolor{red}{E2}} -- LLM service lỗi: Hiển thị lỗi "Không thể kết nối AI service, vui lòng thử lại".
+
+    \textbf{\textcolor{red}{E3}} -- LLM trả về kết quả không hợp lệ: Hiển thị lỗi "AI không thể phân tích mô tả, vui lòng làm rõ hơn".
+
+    \textbf{\textcolor{red}{A1}} -- User chỉnh sửa trước khi tạo: User có thể edit name, description, type, priority của từng công việc trong preview.
+
+    \textbf{\textcolor{red}{A2}} -- User loại bỏ một số công việc: User có thể uncheck công việc nào không muốn tạo.
+
+    \textbf{\textcolor{red}{A3}} -- Tạo từ template: User có thể chọn template có sẵn (ví dụ: "Login feature", "REST API endpoint") để AI tạo nhanh hơn.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Danh sách công việc được tạo tự động từ mô tả, hiển thị trong board/backlog, user tiết kiệm thời gian so với tạo thủ công từng công việc. Log AI generation được lưu để tracking chi phí và performance. \\\hline
+\end{longtblr}

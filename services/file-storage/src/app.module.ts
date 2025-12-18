@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { StorageModule } from './storage/storage.module';
+import { FolderModule } from './folder/folder.module';
 import minioConfig from './config/minio.config';
 
 @Module({
@@ -17,6 +18,7 @@ import minioConfig from './config/minio.config';
       }),
     }),
     StorageModule,
+    FolderModule,
   ],
 })
 export class AppModule {}

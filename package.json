@@ -13,6 +13,17 @@
     "lint": "turbo run lint",
     "test": "turbo run test",
     "clean": "turbo run clean && pnpm rimraf node_modules */*/node_modules */*/*/node_modules",
+
+    "seed": "npx tsx scripts/seeds/seed-all.ts",
+    "seed:users": "npx tsx scripts/seeds/seed-all.ts --only users",
+    "seed:orgs": "npx tsx scripts/seeds/seed-all.ts --only orgs",
+    "seed:projects": "npx tsx scripts/seeds/seed-all.ts --only projects",
+    "seed:issues": "npx tsx scripts/seeds/seed-all.ts --only issues",
+    "seed:chat": "npx tsx scripts/seeds/seed-all.ts --only chat",
+    "seed:video": "npx tsx scripts/seeds/seed-all.ts --only video",
+    "seed:files": "npx tsx scripts/seeds/seed-all.ts --only files",
+    "seed:clear": "npx tsx scripts/seeds/clear-all.ts",
+
     "marketing:dev": "pnpm --filter marketing-web dev",
     "marketing:build": "pnpm --filter marketing-web build",
     "marketing:preview": "pnpm --filter marketing-web preview",

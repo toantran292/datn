@@ -1,0 +1,447 @@
+\paragraph{UC05: Board \& Backlog View}
+\mbox{}
+
+\textbf{UC05.1 - Xem Board view}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc05_1_board_view.png}
+    \caption{Sơ đồ use case chức năng xem Board view}
+    \label{fig:uc05_1_board_view}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC05.1 - Xem Board view},
+    label = {tab:uc05_1},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Xem Board view} \\\hline
+ID & UC05.1 \\\hline
+Người sử dụng & Project Lead, Team Member, Viewer \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Cao \\\hline
+Các thành phần tham gia & + \textbf{User:} Muốn xem board view với issues của sprint đang active, grouped by status columns. \\\hline
+Mô tả tóm tắt & Board view hiển thị tất cả issues của ACTIVE sprint, grouped by status columns (TO DO, IN PROGRESS, DONE, etc.). User có thể kéo thả issues giữa các columns để thay đổi status. \\\hline
+Trigger & User click vào tab "Board" trong project detail page. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User click tab "Board"
+        \item Backend query ACTIVE sprint của project
+        \item Backend query tất cả issues với sprintId = ACTIVE sprint
+        \item Backend query tất cả issue statuses của project (sorted by order)
+        \item Frontend group issues by statusId thành columns
+        \item Hiển thị board với:
+        \begin{itemize}
+            \item Sprint header: Sprint name, Goal, Date range, Progress
+            \item Columns: Mỗi status là một column
+            \item Issue cards: Hiển thị identifier, name, priority, assignees
+        \end{itemize}
+        \item User có thể kéo thả issue sang column khác (UC05.4)
+        \item User có thể click vào issue để xem detail (UC03.3)
+        \item User có thể click "Complete Sprint" để kết thúc sprint (UC02.3)
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + Include UC03.3 (Xem chi tiết issue). \\
+    + Include UC05.4 (Drag-and-drop issues).
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- Không có ACTIVE sprint: Hiển thị empty state "No active sprint. Start a sprint from backlog".
+
+    \textbf{\textcolor{red}{A1}} -- Filter issues: User có thể filter by assignee, priority, type (UC05.3).
+
+    \textbf{\textcolor{red}{A2}} -- Create issue: User có thể tạo issue mới trực tiếp từ board (UC03.1).
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & User xem được board với tất cả issues của active sprint, grouped by status, có thể drag-and-drop để update status. \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+\textbf{UC05.2 - Xem Backlog view}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc05_2_backlog_view.png}
+    \caption{Sơ đồ use case chức năng xem Backlog view}
+    \label{fig:uc05_2_backlog_view}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC05.2 - Xem Backlog view},
+    label = {tab:uc05_2},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Xem Backlog view} \\\hline
+ID & UC05.2 \\\hline
+Người sử dụng & Project Lead, Team Member, Viewer \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Cao \\\hline
+Các thành phần tham gia & + \textbf{User:} Muốn xem backlog với tất cả sprints (FUTURE, ACTIVE, CLOSED) và issues chưa được gán sprint. \\\hline
+Mô tả tóm tắt & Backlog view hiển thị tất cả sprints và backlog section. Mỗi section có thể expand/collapse. User có thể kéo thả issues giữa các sprints. \\\hline
+Trigger & User click vào tab "Backlog" trong project detail page. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User click tab "Backlog"
+        \item Backend query tất cả sprints của project (sorted: ACTIVE first, then FUTURE, then CLOSED)
+        \item Backend query tất cả issues của project
+        \item Frontend group issues:
+        \begin{itemize}
+            \item ACTIVE sprint section: issues với sprintId = ACTIVE sprint
+            \item FUTURE sprint sections: issues với sprintId = FUTURE sprints
+            \item Backlog section: issues với sprintId = NULL
+            \item CLOSED sprint sections (collapsed): issues với sprintId = CLOSED sprints
+        \end{itemize}
+        \item Hiển thị sections với:
+        \begin{itemize}
+            \item Sprint header: Name, Goal, Dates, Issue count, Start/Complete buttons
+            \item Backlog header: "Backlog", Issue count, Create Sprint button
+            \item Issue list: Collapsible, có thể tạo issue mới inline
+        \end{itemize}
+        \item User có thể kéo thả issue giữa các sprint/backlog (UC05.4)
+        \item User có thể Start sprint từ FUTURE → ACTIVE (UC02.2)
+        \item User có thể Complete sprint từ ACTIVE → CLOSED (UC02.3)
+        \item User có thể Create sprint mới từ backlog (UC02.1)
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + Include UC02.1 (Tạo sprint). \\
+    + Include UC02.2 (Bắt đầu sprint). \\
+    + Include UC02.3 (Hoàn thành sprint). \\
+    + Include UC05.4 (Drag-and-drop issues).
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{A1}} -- Expand/collapse sections: User có thể expand/collapse từng sprint section để ẩn/hiện issues.
+
+    \textbf{\textcolor{red}{A2}} -- Create issue inline: User có thể tạo issue nhanh chỉ với name, issue sẽ được gán vào sprint/backlog tương ứng.
+
+    \textbf{\textcolor{red}{A3}} -- Xem CLOSED sprints: User có thể expand CLOSED sprint sections để xem issues đã hoàn thành.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & User xem được backlog với tất cả sprints và issues, có thể plan sprint, move issues, start/complete sprint. \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+\textbf{UC05.3 - Filter và search issues}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc05_3_filter_search.png}
+    \caption{Sơ đồ use case chức năng filter và search issues}
+    \label{fig:uc05_3_filter_search}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC05.3 - Filter và search issues},
+    label = {tab:uc05_3},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Filter và search issues} \\\hline
+ID & UC05.3 \\\hline
+Người sử dụng & Project Lead, Team Member, Viewer \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia & + \textbf{User:} Muốn filter hoặc search issues để tìm nhanh issues cần xem. \\\hline
+Mô tả tóm tắt & Cho phép user filter issues theo assignee, priority, type, status. Hỗ trợ search theo issue identifier hoặc name. \\\hline
+Trigger & User nhập text vào search box hoặc click filter button trong board/backlog view. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User click "Filter" button hoặc search box
+        \item Hiển thị filter panel với:
+        \begin{itemize}
+            \item Assignee: Multi-select dropdown với tất cả members
+            \item Priority: LOW, MEDIUM, HIGH, CRITICAL
+            \item Type: STORY, TASK, BUG, EPIC
+            \item Status: Tất cả custom statuses của project
+        \end{itemize}
+        \item User chọn filters hoặc nhập search text
+        \item Frontend filter issues client-side real-time
+        \item Hiển thị chỉ issues matching filters
+        \item Badge hiển thị số lượng filters đang active
+        \item User có thể clear filters bằng "Clear all" button
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{A1}} -- Search by identifier: User nhập "PM-123" để tìm issue cụ thể.
+
+    \textbf{\textcolor{red}{A2}} -- Search by name: User nhập text để search trong issue name.
+
+    \textbf{\textcolor{red}{A3}} -- Combine filters: User có thể combine nhiều filters (ví dụ: assignee = me AND priority = HIGH).
+
+    \textbf{\textcolor{red}{A4}} -- Save filter preset: User có thể save filter combination để dùng lại sau (optional).
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Issues được filter và hiển thị theo criteria, user dễ dàng tìm thấy issues cần xem. \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+\textbf{UC05.4 - Drag-and-drop issues}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc05_4_drag_drop.png}
+    \caption{Sơ đồ use case chức năng drag-and-drop issues}
+    \label{fig:uc05_4_drag_drop}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC05.4 - Drag-and-drop issues},
+    label = {tab:uc05_4},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Drag-and-drop issues} \\\hline
+ID & UC05.4 \\\hline
+Người sử dụng & Project Lead, Team Member \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Cao \\\hline
+Các thành phần tham gia & + \textbf{User:} Muốn kéo thả issue để thay đổi status (board view) hoặc move giữa sprints (backlog view). \\\hline
+Mô tả tóm tắt & Cho phép user kéo thả issue để update status hoặc sprintId. Backend tự động tính lại sortOrder để maintain thứ tự. \\\hline
+Trigger & User kéo issue card và thả vào vị trí mới (column khác hoặc sprint khác). \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User nhấn và giữ issue card
+        \item Frontend hiển thị drag preview (semi-transparent)
+        \item User kéo card qua các columns (board) hoặc sprints (backlog)
+        \item Frontend hiển thị drop zone (highlighted border)
+        \item User thả card vào vị trí mới
+        \item Frontend tính lại sortOrder dựa trên vị trí drop (giữa 2 issues lân cận)
+        \item Backend update issue với:
+        \begin{itemize}
+            \item statusId (nếu drop vào column khác trong board)
+            \item sprintId (nếu drop vào sprint khác trong backlog)
+            \item sortOrder (vị trí mới)
+        \end{itemize}
+        \item Backend tạo IssueActivity record ghi log thay đổi
+        \item UI cập nhật vị trí issue real-time
+        \item Nếu thay đổi status/sprint, gửi notification cho assignees
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + Include UC03.2 (Cập nhật issue).
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{A1}} -- Reorder trong cùng column: User kéo issue lên/xuống để thay đổi thứ tự, chỉ update sortOrder.
+
+    \textbf{\textcolor{red}{A2}} -- Move từ backlog vào sprint: User kéo issue từ backlog section vào sprint section, update sprintId.
+
+    \textbf{\textcolor{red}{A3}} -- Batch drag-drop: User có thể select nhiều issues và kéo thả cùng lúc (optional, advanced feature).
+
+    \textbf{\textcolor{red}{E1}} -- Drop vào vị trí invalid: Nếu user drop vào vị trí không hợp lệ (ví dụ: outside drop zone), cancel drag và return về vị trí cũ.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Issue được update status/sprint/sortOrder, activity log ghi lại thay đổi, UI cập nhật vị trí real-time. \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+\textbf{UC05.5 - Xem Calendar view}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc05_5_calendar_view.png}
+    \caption{Sơ đồ use case chức năng xem Calendar view}
+    \label{fig:uc05_5_calendar_view}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC05.5 - Xem Calendar view},
+    label = {tab:uc05_5},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Xem Calendar view} \\\hline
+ID & UC05.5 \\\hline
+Người sử dụng & Project Lead, Team Member, Viewer/Stakeholder \\\hline
+Mức độ cần thiết & Tùy chọn \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia & + \textbf{User:} Muốn xem công việc theo dạng calendar để theo dõi deadline và timeline. \\\hline
+Mô tả tóm tắt & Hiển thị issues của project dưới dạng calendar view theo tháng, cho phép user xem issues theo ngày với due date hoặc created date. \\\hline
+Trigger & User chọn "Calendar" tab trong project view hoặc click "View" menu và chọn "Calendar". \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User navigate đến Calendar view
+        \item Backend load tất cả issues của project với due date hoặc created date trong tháng hiện tại
+        \item Frontend hiển thị calendar grid với:
+        \begin{itemize}
+            \item Header hiển thị tháng/năm hiện tại
+            \item Navigation buttons (Previous/Next month, Today)
+            \item Days of week (Mon - Sun)
+            \item Calendar cells cho từng ngày
+        \end{itemize}
+        \item Mỗi issue hiển thị trong calendar cell tương ứng với due date:
+        \begin{itemize}
+            \item Issue key và title (truncated)
+            \item Color coding theo type (STORY/TASK/BUG/EPIC)
+            \item Priority indicator
+        \end{itemize}
+        \item User có thể click vào issue để xem detail (UC03.3)
+        \item User có thể navigate giữa các tháng bằng prev/next buttons
+        \item User có thể click "Today" để quay về tháng hiện tại
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + Extend UC03.3 (Xem chi tiết công việc) khi click vào issue trong calendar.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{A1}} -- Filter calendar: User có thể apply filter criteria (assignee, type, priority) để chỉ hiển thị issues match filter.
+
+    \textbf{\textcolor{red}{A2}} -- Multiple issues per day: Nếu một ngày có nhiều issues, hiển thị số lượng và cho phép expand để xem tất cả.
+
+    \textbf{\textcolor{red}{A3}} -- Week view: User có thể switch sang week view để xem chi tiết hơn cho một tuần cụ thể (optional).
+
+    \textbf{\textcolor{red}{E1}} -- No issues in month: Nếu không có issues nào trong tháng, hiển thị empty calendar với message "No issues found for this month".
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & User có overview về issues theo timeline dạng calendar, dễ dàng theo dõi deadline và workload theo ngày/tuần/tháng. \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+\textbf{UC05.6 - Xem Timeline view}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc05_6_timeline_view.png}
+    \caption{Sơ đồ use case chức năng xem Timeline view}
+    \label{fig:uc05_6_timeline_view}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC05.6 - Xem Timeline view},
+    label = {tab:uc05_6},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Xem Timeline view} \\\hline
+ID & UC05.6 \\\hline
+Người sử dụng & Project Lead, Team Member, Viewer/Stakeholder \\\hline
+Mức độ cần thiết & Tùy chọn \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia & + \textbf{User:} Muốn xem công việc theo dạng timeline (Gantt-style) để visualize dependencies và duration. \\\hline
+Mô tả tóm tắt & Hiển thị issues của project dưới dạng horizontal timeline bars, cho phép user xem duration, progress, và dependencies giữa các issues. \\\hline
+Trigger & User chọn "Timeline" tab trong project view hoặc click "View" menu và chọn "Timeline". \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User navigate đến Timeline view
+        \item Backend load tất cả issues của project với start date và due date
+        \item Frontend hiển thị timeline grid với:
+        \begin{itemize}
+            \item Header hiển thị time range (ví dụ: Q1 2025, Jan - Mar 2025)
+            \item Time axis (horizontal) với date markers
+            \item Issue rows (vertical) cho từng issue
+        \end{itemize}
+        \item Mỗi issue hiển thị dưới dạng horizontal bar:
+        \begin{itemize}
+            \item Bar start từ start date, end tại due date
+            \item Bar color theo type (STORY/TASK/BUG/EPIC)
+            \item Issue key và title label
+            \item Progress indicator (filled portion of bar)
+            \item Dependencies arrows nếu issue có parent/child relationship
+        \end{itemize}
+        \item User có thể:
+        \begin{itemize}
+            \item Zoom in/out để xem theo day/week/month granularity
+            \item Scroll timeline ngang để xem different time ranges
+            \item Hover over bar để xem issue details tooltip
+            \item Click vào bar để xem issue detail (UC03.3)
+        \end{itemize}
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + Extend UC03.3 (Xem chi tiết công việc) khi click vào issue bar trong timeline.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{A1}} -- Group by sprint: User có thể group issues by sprint để xem timeline theo sprint phases.
+
+    \textbf{\textcolor{red}{A2}} -- Group by assignee: User có thể group issues by assignee để xem workload distribution.
+
+    \textbf{\textcolor{red}{A3}} -- Filter timeline: User có thể apply filter criteria để chỉ hiển thị subset of issues.
+
+    \textbf{\textcolor{red}{A4}} -- Drag to adjust dates: Project Lead có thể drag bar ends để adjust start/due date trực tiếp trên timeline (optional, advanced feature).
+
+    \textbf{\textcolor{red}{E1}} -- Missing dates: Issues không có start date/due date không hiển thị trên timeline, user cần set dates trước.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & User có overview về project timeline với dependencies và progress visualization, giúp planning và tracking hiệu quả. \\\hline
+\end{longtblr}

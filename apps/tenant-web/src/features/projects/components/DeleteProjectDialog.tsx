@@ -50,7 +50,7 @@ export function DeleteProjectDialog({
             <AlertTriangle className="h-5 w-5 text-red-600" />
           </div>
           <h3 className="text-lg font-semibold text-custom-text-100">
-            Delete Project
+            Xóa dự án
           </h3>
         </div>
         <button
@@ -65,10 +65,10 @@ export function DeleteProjectDialog({
       {/* Content */}
       <div className="px-5 py-5">
         <p className="text-sm text-custom-text-200">
-          Are you sure you want to delete <strong className="text-custom-text-100">{project?.name}</strong>?
+          Bạn có chắc chắn muốn xóa <strong className="text-custom-text-100">{project?.name}</strong>?
         </p>
         <p className="text-sm text-custom-text-300 mt-2">
-          This will permanently delete all issues, sprints, and data associated with this project. This action cannot be undone.
+          Điều này sẽ xóa vĩnh viễn tất cả issue, sprint và dữ liệu liên quan đến dự án này. Hành động này không thể hoàn tác.
         </p>
       </div>
 
@@ -80,7 +80,7 @@ export function DeleteProjectDialog({
           onClick={handleClose}
           disabled={isDeleting}
         >
-          Cancel
+          Hủy
         </Button>
         <Button
           variant="primary"
@@ -91,7 +91,7 @@ export function DeleteProjectDialog({
           prependIcon={<Trash2 size={16} />}
           className="bg-red-600 hover:bg-red-700"
         >
-          Delete Project
+          Xóa dự án
         </Button>
       </div>
     </ModalCore>

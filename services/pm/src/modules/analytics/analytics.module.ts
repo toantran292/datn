@@ -9,3 +9,5 @@ import { PrismaService } from 'src/prisma/prisma.service';
   exports: [AnalyticsService],
 })
 export class AnalyticsModule {}
+
+

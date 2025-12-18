@@ -8,10 +8,10 @@ export function UserSettingsView() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="mb-2" style={{ fontWeight: 600 }}>
-          User Settings
+          Cài đặt người dùng
         </h1>
         <p className="text-muted-foreground">
-          Manage your profile and notification preferences
+          Quản lý hồ sơ và tùy chọn thông báo của bạn
         </p>
       </div>
 

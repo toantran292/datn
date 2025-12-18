@@ -9,8 +9,7 @@ import {
   HttpStatus,
   Sse,
 } from '@nestjs/common';
-import { Observable } from 'rxjs';
-import { LLMService, SUPPORTED_LANGUAGES, type LanguageCode, type MeetingContext } from './llm.service';
+import { RagClient, SUPPORTED_LANGUAGES, type LanguageCode, type MeetingContext } from '../common/rag';
 import { TranscriptService, SaveTranscriptDto } from './transcript.service';
 
 interface SSEMessage {
@@ -43,7 +42,7 @@ interface SaveCaptionsBatchRequest {
 @Controller('ai')
 export class AIController {
   constructor(
-    private readonly llmService: LLMService,
+    private readonly ragClient: RagClient,
     private readonly transcriptService: TranscriptService,
   ) {}
 
@@ -69,16 +68,8 @@ export class AIController {
       );
     }
 
-    // Check if OpenAI API key is configured
-    if (!process.env.OPENAI_API_KEY) {
-      throw new HttpException(
-        'Translation service not configured',
-        HttpStatus.SERVICE_UNAVAILABLE,
-      );
-    }
-
     try {
-      const result = await this.llmService.translate(text, targetLang, sourceLang, context);
+      const result = await this.ragClient.translate(text, targetLang, sourceLang, context);
       return result;
     } catch (error) {
       throw new HttpException(
@@ -94,67 +85,8 @@ export class AIController {
   @Get('languages')
   getLanguages() {
     return {
-      languages: this.llmService.getSupportedLanguages(),
+      languages: this.ragClient.getSupportedLanguages(),
     };
-  }
-
-  /**
-   * Stream translate text to target language (SSE)
-   * Streams tokens as they arrive from LLM for faster perceived response
-   */
-  @Sse('translate/stream')
-  translateStream(
-    @Query('text') text: string,
-    @Query('targetLang') targetLang: LanguageCode,
-    @Query('sourceLang') sourceLang?: LanguageCode,
-    @Query('meetingId') meetingId?: string,
-  ): Observable<SSEMessage> {
-    // Validate input
-    if (!text || !targetLang) {
-      return new Observable(subscriber => {
-        subscriber.next({ data: JSON.stringify({ type: 'error', error: 'Missing required fields: text and targetLang' }) });
-        subscriber.complete();
-      });
-    }
-
-    if (!SUPPORTED_LANGUAGES[targetLang]) {
-      return new Observable(subscriber => {
-        subscriber.next({ data: JSON.stringify({ type: 'error', error: `Unsupported target language: ${targetLang}` }) });
-        subscriber.complete();
-      });
-    }
-
-    if (!process.env.OPENAI_API_KEY) {
-      return new Observable(subscriber => {
-        subscriber.next({ data: JSON.stringify({ type: 'error', error: 'Translation service not configured' }) });
-        subscriber.complete();
-      });
-    }
-
-    return new Observable(subscriber => {
-      const context: MeetingContext | undefined = meetingId ? { meetingId } : undefined;
-      const generator = this.llmService.translateStream(text, targetLang, sourceLang, context);
-
-      (async () => {
-        try {
-          let fullTranslation = '';
-          for await (const token of generator) {
-            fullTranslation += token;
-            subscriber.next({ data: JSON.stringify({ type: 'token', token }) });
-          }
-          subscriber.next({ data: JSON.stringify({ type: 'done', translation: fullTranslation }) });
-          subscriber.complete();
-        } catch (error) {
-          subscriber.next({
-            data: JSON.stringify({
-              type: 'error',
-              error: error instanceof Error ? error.message : 'Translation failed',
-            }),
-          });
-          subscriber.complete();
-        }
-      })();
-    });
   }
 
   // ==================== TRANSCRIPT ENDPOINTS ====================

@@ -1,0 +1,23 @@
+\subsection{Giới thiệu khái quát về mô hình SaaS}
+
+\subsubsection{Khái quát}
+
+SaaS (Software as a Service - Phần mềm dưới dạng dịch vụ) là một mô hình phân phối phần mềm trong đó ứng dụng được lưu trữ trên cloud và cung cấp cho người dùng thông qua Internet. Thay vì cài đặt và bảo trì phần mềm trên máy tính cá nhân hoặc máy chủ riêng, người dùng có thể truy cập ứng dụng qua trình duyệt web mà không cần quan tâm đến hạ tầng bên dưới. SaaS là một trong ba mô hình chính của Cloud Computing, bên cạnh IaaS (Infrastructure as a Service) và PaaS (Platform as a Service). Trong mô hình SaaS, nhà cung cấp chịu trách nhiệm quản lý toàn bộ hạ tầng, bao gồm máy chủ, lưu trữ, mạng, và cả phần mềm ứng dụng.
+
+Mô hình SaaS đã trở thành xu hướng chủ đạo trong ngành công nghiệp phần mềm hiện đại, đặc biệt trong các lĩnh vực quản lý doanh nghiệp, cộng tác nhóm, và tự động hóa quy trình. Các ứng dụng SaaS phổ biến như Google Workspace, Microsoft 365, Salesforce, Slack đã chứng minh hiệu quả của mô hình này trong việc giảm chi phí vận hành và tăng khả năng tiếp cận cho người dùng.
+
+\subsubsection{Đặc điểm và nguyên lý hoạt động}
+
+Mô hình SaaS hoạt động dựa trên nguyên lý Multi-tenancy, trong đó một instance của ứng dụng phục vụ nhiều khách hàng (tenants) khác nhau, với dữ liệu được phân tách logic hoặc vật lý để đảm bảo tính bảo mật và riêng tư. Người dùng trả phí theo mô hình Subscription-based pricing, tức là thanh toán theo tháng hoặc năm thay vì mua license một lần, giúp giảm chi phí ban đầu và linh hoạt hơn trong việc điều chỉnh quy mô sử dụng.
+
+Nhà cung cấp SaaS chịu trách nhiệm tự động cập nhật và bảo trì phần mềm mà không cần sự can thiệp của người dùng, đảm bảo ứng dụng luôn chạy với phiên bản mới nhất và được vá các lỗ hổng bảo mật kịp thời. Tính accessibility cao là một đặc điểm nổi bật, cho phép người dùng truy cập từ bất kỳ đâu có kết nối Internet thông qua trình duyệt web hoặc ứng dụng di động. Hệ thống SaaS cũng được thiết kế với khả năng scalability linh hoạt, dễ dàng mở rộng hoặc thu hẹp tài nguyên theo nhu cầu sử dụng thực tế.
+
+\subsubsection{Ưu điểm và khả năng ứng dụng}
+
+Mô hình SaaS mang lại nhiều lợi ích cho cả người dùng và doanh nghiệp. Chi phí ban đầu thấp là ưu điểm nổi bật, do không cần đầu tư vào phần cứng, infrastructure hay license phần mềm đắt tiền. Thời gian triển khai nhanh cho phép người dùng bắt đầu sử dụng ngay sau khi đăng ký, không cần qua các bước cài đặt phức tạp hay cấu hình hệ thống. Việc bảo trì tự động do nhà cung cấp đảm nhận giúp giảm gánh nặng cho đội ngũ IT nội bộ, trong khi khả năng mở rộng linh hoạt cho phép dễ dàng thêm người dùng hoặc tính năng khi cần thiết.
+
+Hầu hết các ứng dụng SaaS hiện đại đều cung cấp API để tích hợp với các hệ thống khác, tạo nên hệ sinh thái phần mềm liên kết và tự động hóa quy trình làm việc. Mô hình SaaS đặc biệt phù hợp với các tổ chức muốn số hóa quy trình mà không cần đầu tư lớn vào hạ tầng IT, hoặc các startup cần triển khai nhanh sản phẩm để thử nghiệm thị trường.
+
+\subsubsection{Vận dụng vào đề tài}
+
+Trong đề tài này, hệ thống quản lý dự án được xây dựng hoàn toàn theo mô hình SaaS với kiến trúc Multi-tenant, trong đó mỗi organization đại diện cho một tenant độc lập với dữ liệu (projects, sprints, issues, custom statuses) được phân tách hoàn toàn ở cấp database và logic. Người dùng truy cập hệ thống thông qua trình duyệt web mà không cần cài đặt bất kỳ phần mềm nào, đảm bảo trải nghiệm nhất quán trên mọi thiết bị và nền tảng. Hệ thống được thiết kế theo nguyên lý API-first, cung cấp RESTful API để tích hợp với các dịch vụ bên ngoài như LLM Provider (OpenAI, Anthropic Claude) cho các tính năng AI Sprint Summary, AI Issue Description Generation và AI Task Breakdown, cũng như Cloud Storage (MinIO/S3) cho issue attachments. Kiến trúc Microservices với PM Service (NestJS + Prisma) kết hợp containerization (Docker) cho phép mở rộng horizontal khi số lượng projects, sprints và issues tăng lên, đáp ứng yêu cầu về tính sẵn sàng cao và khả năng chịu tải của một nền tảng SaaS quản lý dự án chuyên nghiệp.

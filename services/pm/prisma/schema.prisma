@@ -57,15 +57,24 @@ model ProjectMember {
 }
 
 model Sprint {
-  id        String    @id @default(uuid()) @db.Uuid
-  projectId String    @map("project_id") @db.Uuid
-  name      String    @db.VarChar(255)
-  status    SprintStatus @default(FUTURE)
-  goal      String?   @db.Text
-  startDate DateTime? @map("start_date") @db.Date
-  endDate   DateTime? @map("end_date") @db.Date
-  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  id                  String       @id @default(uuid()) @db.Uuid
+  projectId           String       @map("project_id") @db.Uuid
+  name                String       @db.VarChar(255)
+  status              SprintStatus @default(FUTURE)
+  goal                String?      @db.Text
+  startDate           DateTime?    @map("start_date") @db.Date
+  endDate             DateTime?    @map("end_date") @db.Date
+  // Snapshot metrics taken when sprint starts
+  initialIssueCount   Int?         @map("initial_issue_count")
+  initialStoryPoints  Decimal?     @map("initial_story_points") @db.Decimal(10, 2)
+  startedAt           DateTime?    @map("started_at") @db.Timestamptz
+  // Completion metrics
+  completedAt           DateTime?    @map("completed_at") @db.Timestamptz
+  completedIssueCount   Int?         @map("completed_issue_count")
+  incompletedIssueCount Int?         @map("incompleted_issue_count")
+  velocity              Decimal?     @db.Decimal(10, 2)
+  createdAt           DateTime     @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime     @updatedAt @map("updated_at") @db.Timestamptz
 
   // Relations
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -113,6 +122,10 @@ model Issue {
   createdBy       String?  @map("created_by") @db.Uuid
   createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz
   updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // RAG - Vector embeddings for semantic search
+  embedding          String?   @db.Text // JSON string of vector(1536)
+  embeddingUpdatedAt DateTime? @map("embedding_updated_at") @db.Timestamptz
 
   // Relations
   project      Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -174,4 +187,150 @@ model IssueActivity {
   @@index([actorId])
   @@index([createdAt])
   @@map("issue_activity")
+}
+
+// ============================================================================
+// AI RISK DETECTOR & SPRINT HEALTH MONITOR
+// ============================================================================
+
+enum RiskSeverity {
+  CRITICAL
+  MEDIUM
+  LOW
+}
+
+enum RiskAlertStatus {
+  ACTIVE
+  ACKNOWLEDGED
+  RESOLVED
+  DISMISSED
+}
+
+enum RecommendationStatus {
+  PENDING
+  APPLIED
+  DISMISSED
+}
+
+// Sprint history for trend analysis and velocity calculation
+model SprintHistory {
+  id               String   @id @default(uuid()) @db.Uuid
+  sprintId         String   @map("sprint_id") @db.Uuid
+  projectId        String   @map("project_id") @db.Uuid
+
+  // Metrics
+  committedPoints  Int      @map("committed_points")
+  completedPoints  Int      @map("completed_points")
+  velocity         Int
+
+  // Health scores (0-100)
+  healthScoreOverall     Int?    @map("health_score_overall")
+  healthScoreCommitment  Int?    @map("health_score_commitment")
+  healthScoreProgress    Int?    @map("health_score_progress")
+  healthScoreVelocity    Int?    @map("health_score_velocity")
+  healthScoreQuality     Int?    @map("health_score_quality")
+  healthScoreBalance     Int?    @map("health_score_balance")
+
+  // Metadata
+  startDate    DateTime  @map("start_date") @db.Timestamptz
+  endDate      DateTime  @map("end_date") @db.Timestamptz
+  successRate  Decimal?  @map("success_rate") @db.Decimal(3, 2) // 0.00-1.00
+
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([sprintId])
+  @@index([projectId])
+  @@index([startDate])
+  @@map("sprint_history")
+}
+
+// Risk alerts detected by AI system
+model RiskAlert {
+  id          String           @id @default(uuid()) @db.Uuid
+  sprintId    String           @map("sprint_id") @db.Uuid
+  projectId   String           @map("project_id") @db.Uuid
+
+  // Risk details
+  riskType    String           @map("risk_type") @db.VarChar(50) // OVERCOMMITMENT, BLOCKED_ISSUES, etc.
+  severity    RiskSeverity
+  title       String           @db.VarChar(255)
+  description String           @db.Text
+  impactScore Int?             @map("impact_score") // 0-10
+
+  // Status tracking
+  status           RiskAlertStatus @default(ACTIVE)
+  acknowledgedBy   String?         @map("acknowledged_by") @db.Uuid
+  acknowledgedAt   DateTime?       @map("acknowledged_at") @db.Timestamptz
+  resolvedAt       DateTime?       @map("resolved_at") @db.Timestamptz
+
+  // Additional context
+  affectedIssues Json?            @map("affected_issues") @db.JsonB // Array of issue IDs
+  metadata       Json?            @db.JsonB // Additional risk-specific data
+
+  detectedAt DateTime          @default(now()) @map("detected_at") @db.Timestamptz
+  createdAt  DateTime          @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime          @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  recommendations RiskRecommendation[]
+
+  @@index([sprintId, status])
+  @@index([projectId])
+  @@index([severity, status])
+  @@index([detectedAt])
+  @@map("risk_alert")
+}
+
+// AI-generated recommendations for resolving risks
+model RiskRecommendation {
+  id       String               @id @default(uuid()) @db.Uuid
+  alertId  String               @map("alert_id") @db.Uuid
+
+  priority         Int              // 1, 2, 3...
+  action           String           @db.Text
+  expectedImpact   String?          @map("expected_impact") @db.Text
+  effortEstimate   String?          @map("effort_estimate") @db.VarChar(50)
+  suggestedIssues  Json?            @map("suggested_issues") @db.JsonB // Array of issue IDs
+
+  // Status
+  status     RecommendationStatus @default(PENDING)
+  appliedAt  DateTime?            @map("applied_at") @db.Timestamptz
+  appliedBy  String?              @map("applied_by") @db.Uuid
+
+  createdAt  DateTime             @default(now()) @map("created_at") @db.Timestamptz
+
+  // Relations
+  alert RiskAlert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  @@index([alertId])
+  @@map("risk_recommendation")
+}
+
+// Daily health score snapshots for trend tracking
+model SprintHealthSnapshot {
+  id           String   @id @default(uuid()) @db.Uuid
+  sprintId     String   @map("sprint_id") @db.Uuid
+  snapshotDate DateTime @map("snapshot_date") @db.Date
+
+  // Current metrics at snapshot time
+  daysElapsed       Int      @map("days_elapsed")
+  daysRemaining     Int      @map("days_remaining")
+  committedPoints   Int      @map("committed_points")
+  completedPoints   Int      @map("completed_points")
+  inProgressPoints  Int      @map("in_progress_points")
+  blockedPoints     Int      @map("blocked_points")
+
+  // Health scores (0-100)
+  healthScoreOverall Int  @map("health_score_overall")
+  healthScoreBreakdown Json @map("health_score_breakdown") @db.JsonB
+
+  // Risk summary
+  activeRisksCount   Int @default(0) @map("active_risks_count")
+  criticalRisksCount Int @default(0) @map("critical_risks_count")
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@unique([sprintId, snapshotDate], name: "unique_sprint_snapshot")
+  @@index([sprintId, snapshotDate])
+  @@map("sprint_health_snapshot")
 }

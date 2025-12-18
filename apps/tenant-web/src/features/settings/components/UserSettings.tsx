@@ -32,20 +32,20 @@ const defaultNotificationSettings: NotificationSettings = {
 
 const notificationLabels: Record<keyof NotificationSettings, { title: string; description: string }> = {
   taskAssigned: {
-    title: "Task Assigned",
-    description: "When a task is assigned to you",
+    title: "Công việc được giao",
+    description: "Khi một công việc được giao cho bạn",
   },
   taskUpdated: {
-    title: "Task Updated",
-    description: "When a task you're assigned to is updated",
+    title: "Công việc được cập nhật",
+    description: "Khi một công việc bạn được giao được cập nhật",
   },
   mentions: {
-    title: "Mentions",
-    description: "When someone mentions you in a comment",
+    title: "Được nhắc đến",
+    description: "Khi ai đó nhắc đến bạn trong một bình luận",
   },
   projectUpdates: {
-    title: "Project Updates",
-    description: "Updates about projects you're a member of",
+    title: "Cập nhật dự án",
+    description: "Cập nhật về các dự án bạn là thành viên",
   },
 };
 
@@ -98,8 +98,8 @@ export function UserSettings() {
     setIsSaving(true);
     await new Promise((resolve) => setTimeout(resolve, 1000));
     setIsSaving(false);
-    toast.success("Settings saved", {
-      description: "Your notification preferences have been updated.",
+    toast.success("Đã lưu cài đặt", {
+      description: "Tùy chọn thông báo của bạn đã được cập nhật.",
     });
   };
 
@@ -188,9 +188,9 @@ export function UserSettings() {
                 <Bell size={20} style={{ color: '#FF8800' }} />
               </div>
               <div>
-                <h3 className="font-semibold text-base">Notification Preferences</h3>
+                <h3 className="font-semibold text-base">Tùy chọn thông báo</h3>
                 <p className="text-sm text-muted-foreground">
-                  Choose how you want to be notified
+                  Chọn cách bạn muốn được thông báo
                 </p>
               </div>
             </div>
@@ -201,7 +201,7 @@ export function UserSettings() {
             <div className="grid grid-cols-12 gap-4 items-center">
               <div className="col-span-6">
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Notification Type
+                  Loại thông báo
                 </span>
               </div>
               <div className="col-span-3 text-center">
@@ -213,7 +213,7 @@ export function UserSettings() {
               <div className="col-span-3 text-center">
                 <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   <MessageSquare size={12} />
-                  In-App
+                  Trong ứng dụng
                 </div>
               </div>
             </div>
@@ -254,7 +254,7 @@ export function UserSettings() {
           <div className="px-6 py-4 bg-gray-50 border-t border-border">
             <div className="flex items-center justify-between">
               <p className="text-xs text-muted-foreground">
-                Preferences are saved locally until backend support is available.
+                Tùy chọn được lưu cục bộ cho đến khi có hỗ trợ từ máy chủ.
               </p>
               <Button
                 onClick={handleSave}
@@ -263,7 +263,7 @@ export function UserSettings() {
                 style={{ backgroundColor: '#FF8800' }}
                 className="text-white hover:opacity-90"
               >
-                {isSaving ? "Saving..." : "Save Changes"}
+                {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
               </Button>
             </div>
           </div>

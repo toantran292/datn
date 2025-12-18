@@ -3,21 +3,32 @@
   "version": "1.0.0",
   "description": "Utility scripts for DATN project",
   "scripts": {
-    "seed": "ts-node seed-demo-data.ts",
+    "seed": "tsx seeds/seed-all.ts",
+    "seed:users": "tsx seeds/seed-all.ts --only users",
+    "seed:orgs": "tsx seeds/seed-all.ts --only orgs",
+    "seed:projects": "tsx seeds/seed-all.ts --only projects",
+    "seed:issues": "tsx seeds/seed-all.ts --only issues",
+    "seed:chat": "tsx seeds/seed-all.ts --only chat",
+    "seed:video": "tsx seeds/seed-all.ts --only video",
+    "seed:files": "tsx seeds/seed-all.ts --only files",
+    "seed:legacy": "ts-node seed-demo-data.ts",
     "seed:reports": "ts-node seed-reports.ts",
-    "seed:all": "npm run seed && npm run seed:reports",
-    "clear": "ts-node clear-demo-data.ts"
+    "clear": "tsx seeds/clear-all.ts",
+    "clear:legacy": "ts-node clear-demo-data.ts"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
     "mongodb": "^6.3.0",
-    "pg": "^8.11.3"
+    "pg": "^8.11.3",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/node": "^20.10.0",
     "@types/pg": "^8.10.9",
+    "@types/uuid": "^9.0.0",
     "ts-node": "^10.9.2",
+    "tsx": "^4.7.0",
     "typescript": "^5.3.0"
   }
 }

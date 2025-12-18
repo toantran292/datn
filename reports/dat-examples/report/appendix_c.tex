@@ -1,0 +1,161 @@
+\begin{landscape}
+\pagestyle{lscape}
+
+\phantomsection
+\setsection{Phụ lục C. TÀI LIỆU KIỂM THỬ}
+\setcounter{section}{7}
+\setcounter{table}{0}
+\renewcommand{\thetable}{7.\arabic{table}}
+
+\subsection*{Các trường hợp kiểm thử chi tiết}
+
+Chi tiết các trường hợp kiểm thử cho hệ thống quản lý dự án như sau:
+
+% UC01: Quản lý Dự án
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng quản lý dự án (UC01)},
+  label = {tab:tc_project}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-PROJ\_\-01 & TS\_\-PROJECT & Kiểm thử tạo project với thông tin hợp lệ & Tên: E-Commerce Platform\newline Key: ECOM\newline Project Lead: Nguyễn Văn A & 1. Click "Create Project"\newline 2. Nhập tên project\newline 3. Nhập key\newline 4. Chọn Project Lead\newline 5. Click Create & Hiển thị thông báo: "Tạo project thành công!" và redirect đến Board view & Hiển thị thông báo: "Tạo project thành công!" và redirect đến Board view & Pass \\
+TC\_\-PROJ\_\-02 & TS\_\-PROJECT & Kiểm thử tạo project với key đã tồn tại & Key: ECOM (đã tồn tại) & 1. Click "Create Project"\newline 2. Nhập key đã tồn tại\newline 3. Click Create & Hiển thị thông báo: "Project key đã được sử dụng!" & Hiển thị thông báo: "Project key đã được sử dụng!" & Pass \\
+TC\_\-PROJ\_\-03 & TS\_\-PROJECT & Kiểm thử cập nhật thông tin project & Tên mới: E-Commerce Pro & 1. Vào Project Settings\newline 2. Sửa tên project\newline 3. Click Save & Hiển thị thông báo: "Cập nhật thành công!" & Hiển thị thông báo: "Cập nhật thành công!" & Pass \\
+TC\_\-PROJ\_\-04 & TS\_\-PROJECT & Kiểm thử xóa project & Project cần xóa & 1. Vào Settings\newline 2. Click "Delete Project"\newline 3. Xác nhận xóa & Project bị xóa, cascade delete sprints, issues & Project bị xóa, cascade delete sprints, issues & Pass \\
+TC\_\-PROJ\_\-05 & TS\_\-PROJECT & Kiểm thử Team Member không có quyền xóa project & User có vai trò Team Member & 1. Đăng nhập Team Member\newline 2. Vào Settings\newline 3. Kiểm tra nút Delete & Không hiển thị nút "Delete Project" & Không hiển thị nút "Delete Project" & Pass \\
+\end{longtblr}
+
+% UC02: Quản lý Sprint
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng quản lý sprint (UC02)},
+  label = {tab:tc_sprint}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-SPR\_\-01 & TS\_\-SPRINT & Kiểm thử tạo sprint mới & Tên: Sprint 1\newline Goal: Implement authentication\newline Duration: 2 weeks & 1. Vào Backlog\newline 2. Click "Create Sprint"\newline 3. Nhập thông tin\newline 4. Click Create & Sprint được tạo với status FUTURE & Sprint được tạo với status FUTURE & Pass \\
+TC\_\-SPR\_\-02 & TS\_\-SPRINT & Kiểm thử bắt đầu sprint & Sprint status: FUTURE & 1. Drag issues vào sprint\newline 2. Click "Start Sprint"\newline 3. Xác nhận & Sprint chuyển sang ACTIVE, Board view hiển thị issues & Sprint chuyển sang ACTIVE, Board view hiển thị issues & Pass \\
+TC\_\-SPR\_\-03 & TS\_\-SPRINT & Kiểm thử không cho phép start 2 sprint đồng thời & Đã có 1 sprint ACTIVE & 1. Tạo sprint mới\newline 2. Click "Start Sprint" & Hiển thị thông báo: "Chỉ có thể có 1 active sprint!" & Hiển thị thông báo: "Chỉ có thể có 1 active sprint!" & Pass \\
+TC\_\-SPR\_\-04 & TS\_\-SPRINT & Kiểm thử complete sprint với AI Summary & Sprint ACTIVE\newline LLM Provider: OpenAI GPT-4 & 1. Click "Complete Sprint"\newline 2. Chọn move incomplete issues to backlog\newline 3. Enable "Generate AI Summary"\newline 4. Chọn provider\newline 5. Click Complete & Sprint chuyển sang CLOSED, AI summary được generate và lưu & Sprint chuyển sang CLOSED, AI summary được generate và lưu & Pass \\
+TC\_\-SPR\_\-05 & TS\_\-SPRINT & Kiểm thử xem sprint summary & Sprint đã CLOSED với summary & 1. Vào Sprints\newline 2. Click vào sprint đã closed\newline 3. Xem Sprint Summary tab & Hiển thị AI-generated summary với sections: Overview, Achievements, Issues Found, Recommendations & Hiển thị AI-generated summary với sections: Overview, Achievements, Issues Found, Recommendations & Pass \\
+\end{longtblr}
+
+% UC03: Quản lý Issue
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng quản lý công việc (UC03)},
+  label = {tab:tc_issue}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-ISS\_\-01 & TS\_\-ISSUE & Kiểm thử tạo issue mới & Title: User Login\newline Type: STORY\newline Priority: HIGH\newline Story Points: 5 & 1. Click "Create Issue"\newline 2. Nhập title\newline 3. Chọn type, priority\newline 4. Nhập story points\newline 5. Click Create & Issue được tạo với key tự động (PROJ-1) & Issue được tạo với key tự động (PROJ-1) & Pass \\
+TC\_\-ISS\_\-02 & TS\_\-ISSUE & Kiểm thử cập nhật issue & Issue: PROJ-1 & 1. Click vào issue\newline 2. Sửa title, description\newline 3. Click Save & Issue được cập nhật, activity log ghi lại changes & Issue được cập nhật, activity log ghi lại changes & Pass \\
+TC\_\-ISS\_\-03 & TS\_\-ISSUE & Kiểm thử assign issue cho thành viên & Assignee: Trần Thị B & 1. Mở issue detail\newline 2. Click assignee dropdown\newline 3. Chọn member\newline 4. Save & Issue được assign, member nhận notification & Issue được assign, member nhận notification & Pass \\
+TC\_\-ISS\_\-04 & TS\_\-ISSUE & Kiểm thử add comment & Comment: "Need clarification on requirements" & 1. Mở issue\newline 2. Nhập comment\newline 3. Click Post & Comment được thêm, activity log ghi lại & Comment được thêm, activity log ghi lại & Pass \\
+TC\_\-ISS\_\-05 & TS\_\-ISSUE & Kiểm thử upload attachment & File: design.png\newline Size: 2MB & 1. Mở issue\newline 2. Click "Attach"\newline 3. Chọn file\newline 4. Upload & File được upload lên MinIO, link hiển thị trong issue & File được upload lên MinIO, link hiển thị trong issue & Pass \\
+TC\_\-ISS\_\-06 & TS\_\-ISSUE & Kiểm thử upload file quá lớn & File: video.mp4\newline Size: 15MB & 1. Chọn file lớn\newline 2. Upload & Hiển thị thông báo: "File không được vượt quá 10MB!" & Hiển thị thông báo: "File không được vượt quá 10MB!" & Pass \\
+TC\_\-ISS\_\-07 & TS\_\-ISSUE & Kiểm thử xóa issue & Issue cần xóa & 1. Mở issue\newline 2. Click "Delete"\newline 3. Xác nhận & Issue bị xóa, comments và activities cascade delete & Issue bị xóa, comments và activities cascade delete & Pass \\
+\end{longtblr}
+
+% UC04: Quản lý trạng thái công việc
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng quản lý trạng thái công việc (UC04)},
+  label = {tab:tc_status}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-STA\_\-01 & TS\_\-STATUS & Kiểm thử tạo trạng thái mới & Name: Code Review\newline Category: IN\_PROGRESS\newline Color: \#FFA500 & 1. Vào Settings > Issue Statuses\newline 2. Click "Add Status"\newline 3. Nhập thông tin\newline 4. Click Save & Status được tạo, hiển thị ở cuối Board view & Status được tạo, hiển thị ở cuối Board view & Pass \\
+TC\_\-STA\_\-02 & TS\_\-STATUS & Kiểm thử reorder status columns & Drag "Done" từ vị trí 4 sang vị trí 5 & 1. Vào Board view\newline 2. Drag status column\newline 3. Drop vào vị trí mới & Status columns được reorder, order lưu vào DB & Status columns được reorder, order lưu vào DB & Pass \\
+TC\_\-STA\_\-03 & TS\_\-STATUS & Kiểm thử cập nhật tên status & Name mới: "In Review" & 1. Vào Settings\newline 2. Click edit status\newline 3. Đổi tên\newline 4. Save & Tên status được cập nhật trên Board view & Tên status được cập nhật trên Board view & Pass \\
+TC\_\-STA\_\-04 & TS\_\-STATUS & Kiểm thử xóa status có issues & Status có 5 issues & 1. Click Delete\newline 2. Dialog hiển thị "Move 5 issues to:"\newline 3. Chọn target status\newline 4. Xác nhận & Status bị xóa, issues được move sang target status & Status bị xóa, issues được move sang target status & Pass \\
+TC\_\-STA\_\-05 & TS\_\-STATUS & Kiểm thử không cho xóa status cuối cùng & Project chỉ có 1 status & 1. Click Delete\newline 2. Xác nhận & Hiển thị thông báo: "Không thể xóa status cuối cùng!" & Hiển thị thông báo: "Không thể xóa status cuối cùng!" & Pass \\
+\end{longtblr}
+
+% UC05: Board & Backlog View
+\begin{longtblr}[
+  caption = {Kiểm tra chức năng Board và Backlog view (UC05)},
+  label = {tab:tc_board}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-BRD\_\-01 & TS\_\-BOARD & Kiểm thử drag-drop issue giữa status columns & Issue: PROJ-1\newline From: To Do\newline To: In Progress & 1. Vào Board view\newline 2. Drag issue card\newline 3. Drop vào column khác & Issue status được cập nhật, WebSocket broadcast đến all users & Issue status được cập nhật, WebSocket broadcast đến all users & Pass \\
+TC\_\-BRD\_\-02 & TS\_\-BOARD & Kiểm thử reorder issues trong cùng column & Issues trong "To Do" column & 1. Drag issue lên/xuống\newline 2. Drop vào vị trí mới & sortOrder được cập nhật, UI reflect changes & sortOrder được cập nhật, UI reflect changes & Pass \\
+TC\_\-BRD\_\-03 & TS\_\-BOARD & Kiểm thử filter issues theo assignee & Filter: Nguyễn Văn A & 1. Click filter button\newline 2. Chọn assignee\newline 3. Apply & Chỉ hiển thị issues của assignee đã chọn & Chỉ hiển thị issues của assignee đã chọn & Pass \\
+TC\_\-BRD\_\-04 & TS\_\-BOARD & Kiểm thử real-time updates khi user khác drag issue & User B drag issue & 1. User A xem Board\newline 2. User B drag issue sang column khác\newline 3. Kiểm tra Board của User A & Board của User A tự động update without refresh & Board của User A tự động update without refresh & Pass \\
+TC\_\-BRD\_\-05 & TS\_\-BACKLOG & Kiểm thử hiển thị Backlog view & Project có backlog issues & 1. Click "Backlog" tab & Hiển thị tất cả issues không assign vào sprint & Hiển thị tất cả issues không assign vào sprint & Pass \\
+TC\_\-BRD\_\-06 & TS\_\-BACKLOG & Kiểm thử drag issue từ backlog vào sprint & Issue trong backlog & 1. Drag issue\newline 2. Drop vào sprint panel & Issue được assign vào sprint, disappear khỏi backlog & Issue được assign vào sprint, disappear khỏi backlog & Pass \\
+\end{longtblr}
+
+% UC06: Tính năng AI
+\begin{longtblr}[
+  caption = {Kiểm tra các tính năng AI (UC06)},
+  label = {tab:tc_ai}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-AI\_\-01 & TS\_\-AI & Kiểm thử AI Sprint Summary & Sprint completed\newline Provider: OpenAI GPT-4 & 1. Complete sprint\newline 2. Enable "Generate AI Summary"\newline 3. Chọn provider\newline 4. Click Complete & AI generate summary với Overview, Achievements, Issues, Recommendations & AI generate summary với Overview, Achievements, Issues, Recommendations & Pass \\
+TC\_\-AI\_\-02 & TS\_\-AI & Kiểm thử AI Refine Description & Issue có description thô & 1. Mở issue editor\newline 2. Click "Refine with AI"\newline 3. Review preview\newline 4. Click Apply & Description được format theo template chuẩn với AC, technical notes & Description được format theo template chuẩn với AC, technical notes & Pass \\
+TC\_\-AI\_\-03 & TS\_\-AI & Kiểm thử AI Refine với original và refined comparison & Issue description & 1. Click "Refine with AI"\newline 2. Xem preview panel & Hiển thị side-by-side comparison với highlighted differences & Hiển thị side-by-side comparison với highlighted differences & Pass \\
+TC\_\-AI\_\-04 & TS\_\-AI & Kiểm thử Regenerate refined description & Preview refined description & 1. Review AI output\newline 2. Click "Regenerate" & AI generate lại với approach khác & AI generate lại với approach khác & Pass \\
+TC\_\-AI\_\-05 & TS\_\-AI & Kiểm thử AI Task Breakdown & Input: "Implement user authentication system" & 1. Click "Auto-generate Tasks"\newline 2. Nhập feature description\newline 3. Click Generate & AI tạo danh sách tasks với name, description, type, priority, story points & AI tạo danh sách tasks với name, description, type, priority, story points & Pass \\
+TC\_\-AI\_\-06 & TS\_\-AI & Kiểm thử edit AI-generated tasks trước khi tạo & AI-generated task list & 1. Review tasks\newline 2. Edit task names/descriptions\newline 3. Uncheck tasks không muốn\newline 4. Click "Create All" & Chỉ tasks được check được tạo vào project & Chỉ tasks được check được tạo vào project & Pass \\
+TC\_\-AI\_\-07 & TS\_\-AI & Kiểm thử switch LLM provider & Provider: Anthropic Claude & 1. Vào AI settings\newline 2. Chọn Anthropic\newline 3. Tạo AI summary & Summary được generate bởi Claude model & Summary được generate bởi Claude model & Pass \\
+TC\_\-AI\_\-08 & TS\_\-AI & Kiểm thử hiển thị tokens consumed & AI Sprint Summary generated & 1. Xem sprint summary footer & Hiển thị provider used, tokens consumed, timestamp & Hiển thị provider used, tokens consumed, timestamp & Pass \\
+\end{longtblr}
+
+% Additional Test Cases
+\begin{longtblr}[
+  caption = {Kiểm tra tính năng real-time WebSocket (UC05.1)},
+  label = {tab:tc_websocket}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-WS\_\-01 & TS\_\-WEB\-SOCKET & Kiểm thử WebSocket connection & 2 users cùng xem Board & 1. User A vào Board\newline 2. User B vào Board\newline 3. Kiểm tra network & Cả 2 users establish WebSocket connection đến PM Service & Cả 2 users establish WebSocket connection đến PM Service & Pass \\
+TC\_\-WS\_\-02 & TS\_\-WEB\-SOCKET & Kiểm thử broadcast issue status change & User A drag issue & 1. User B xem Board\newline 2. User A drag issue\newline 3. Observe User B's view & User B thấy issue di chuyển real-time without refresh & User B thấy issue di chuyển real-time without refresh & Pass \\
+TC\_\-WS\_\-03 & TS\_\-WEB\-SOCKET & Kiểm thử collaborative editing indicators & User A edit issue & 1. User A mở issue detail\newline 2. User B mở cùng issue\newline 3. Kiểm tra indicator & Hiển thị "User A is editing" cho User B & Hiển thị "User A is editing" cho User B & Pass \\
+TC\_\-WS\_\-04 & TS\_\-WEB\-SOCKET & Kiểm thử auto-reconnect khi mất connection & WebSocket disconnect & 1. Disconnect network\newline 2. Reconnect network\newline 3. Kiểm tra connection & WebSocket tự động reconnect và sync state & WebSocket tự động reconnect và sync state & Pass \\
+\end{longtblr}
+
+% Analytics Test Cases
+\begin{longtblr}[
+  caption = {Kiểm tra tính năng Analytics (UC07)},
+  label = {tab:tc_analytics}
+]{
+  width=\linewidth, hlines, vlines,
+  colspec={X[1,c]X[1,c]X[1.5,l]X[1.5,l]X[2,l]X[1.5,l]X[1.5,l]X[0.7,c]},
+  rows={m},
+  row{1}={font=\bfseries, c, bg=gray9}
+}
+Mã TC & Mã kịch bản & Mô tả & Dữ liệu kiểm thử & Các bước thực hiện & Kết quả mong đợi & Kết quả thực tế & Kết quả \\
+TC\_\-ANA\_\-01 & TS\_\-ANALY\-TICS & Kiểm thử hiển thị Created vs Resolved chart & Project có dữ liệu & 1. Vào Analytics tab\newline 2. Xem chart & Hiển thị time-series chart với 2 lines: Created và Resolved & Hiển thị time-series chart với 2 lines: Created và Resolved & Pass \\
+TC\_\-ANA\_\-02 & TS\_\-ANALY\-TICS & Kiểm thử filter analytics theo date range & Last 30 days & 1. Chọn date range filter\newline 2. Apply & Chart hiển thị data cho 30 ngày & Chart hiển thị data cho 30 ngày & Pass \\
+TC\_\-ANA\_\-03 & TS\_\-ANALY\-TICS & Kiểm thử hiển thị sprint velocity & Project có completed sprints & 1. Vào Sprint Reports\newline 2. Xem velocity chart & Hiển thị story points completed per sprint & Hiển thị story points completed per sprint & Pass \\
+\end{longtblr}
+
+\end{landscape}

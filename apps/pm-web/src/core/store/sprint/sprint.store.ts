@@ -19,6 +19,7 @@ export interface ISprintStore {
   getSprintsForProject: (projectId: string) => ISprint[];
   getLoaderForProject: (projectId: string) => TLoader;
   appendIssueToSprint: (sprintId: string, issueId: string) => void;
+  removeIssueFromSprint: (sprintId: string, issueId: string) => void;
   setIssueIdsForSprint: (sprintId: string, issueIds: string[]) => void;
 }
 
@@ -41,6 +42,7 @@ export class SprintStore implements ISprintStore {
       createSprint: action,
       updateSprint: action,
       appendIssueToSprint: action,
+      removeIssueFromSprint: action,
       setIssueIdsForSprint: action,
     });
 
@@ -150,6 +152,18 @@ export class SprintStore implements ISprintStore {
     const updatedSprint: ISprint = {
       ...sprint,
       issueIds: [issueId, ...sprint.issueIds],
+    };
+
+    this.sprintMap = { ...this.sprintMap, [sprintId]: updatedSprint };
+  };
+
+  removeIssueFromSprint = (sprintId: string, issueId: string) => {
+    const sprint = this.sprintMap[sprintId];
+    if (!sprint) return;
+
+    const updatedSprint: ISprint = {
+      ...sprint,
+      issueIds: sprint.issueIds.filter((id) => id !== issueId),
     };
 
     this.sprintMap = { ...this.sprintMap, [sprintId]: updatedSprint };

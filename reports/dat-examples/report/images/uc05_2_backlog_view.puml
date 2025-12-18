@@ -1,0 +1,48 @@
+@startuml
+!theme plain
+skinparam defaultFontSize 11
+skinparam usecaseFontSize 10
+
+left to right direction
+
+actor "Project Lead" as PL
+actor "Team Member" as TM
+actor "Viewer" as V
+
+usecase "Xem Backlog view" as UC_BacklogView
+usecase "Query all\nsprints & issues" as UC_QueryData
+usecase "Group issues\nby sprint sections" as UC_GroupSprints
+usecase "Hiển thị\nBacklog section" as UC_ShowBacklog
+usecase "Expand/collapse\nsections" as UC_ExpandCollapse
+usecase "Create sprint" as UC_CreateSprint
+usecase "Start sprint" as UC_StartSprint
+usecase "Complete sprint" as UC_CompleteSprint
+usecase "Drag-drop issues\ngiữa sprints" as UC_DragDrop
+
+PL --> UC_BacklogView
+TM --> UC_BacklogView
+V --> UC_BacklogView
+
+UC_QueryData .up.> UC_BacklogView : <<include>>
+UC_GroupSprints .up.> UC_BacklogView : <<include>>
+UC_ShowBacklog .up.> UC_BacklogView : <<include>>
+
+UC_ExpandCollapse ..> UC_BacklogView : <<extend>>
+UC_CreateSprint ..> UC_BacklogView : <<extend>>
+UC_StartSprint ..> UC_BacklogView : <<extend>>
+UC_CompleteSprint ..> UC_BacklogView : <<extend>>
+UC_DragDrop ..> UC_BacklogView : <<extend>>
+
+note right of UC_GroupSprints
+  Sort sprints:
+  1. ACTIVE
+  2. FUTURE
+  3. CLOSED (collapsed)
+end note
+
+note bottom of UC_ShowBacklog
+  Backlog = issues với
+  sprintId = NULL
+end note
+
+@enduml

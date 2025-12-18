@@ -8,7 +8,7 @@ import { WEB_SWR_CONFIG } from "@uts/constants";
 import { AppHeaderProvider, Toast } from "@uts/design-system/ui";
 
 import { resolveGeneralTheme } from "@uts/fe-utils";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 
 
 export interface IAppProvider {
@@ -23,10 +23,20 @@ const ToastWithTheme = () => {
 export const AppProvider: FC<IAppProvider> = (props) => {
   const { children } = props;
   const router = useRouter();
+  const params = useParams();
+
+  // Extract workspaceSlug from URL params
+  const workspaceSlug = Array.isArray(params?.workspaceSlug)
+    ? params.workspaceSlug[0]
+    : params?.workspaceSlug;
 
   return (
     <>
-      <AppHeaderProvider currentApp="pm" navigateTo={(path: string) => router.push(path)}>
+      <AppHeaderProvider
+        currentApp="pm"
+        workspaceSlug={workspaceSlug}
+        navigateTo={(path: string) => router.push(path)}
+      >
         <ProgressProvider
           height="4px"
           color="rgb(var(--color-primary-100))"

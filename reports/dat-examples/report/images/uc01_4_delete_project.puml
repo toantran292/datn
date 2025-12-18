@@ -1,0 +1,21 @@
+@startuml
+!theme plain
+skinparam defaultFontSize 11
+skinparam usecaseFontSize 10
+
+left to right direction
+
+actor "Project Lead" as PL
+
+usecase "Xóa dự án" as UC_Delete
+usecase "Xác nhận\nbằng identifier" as UC_Confirm
+usecase "Kiểm tra\nquyền" as UC_CheckPerm
+usecase "Cascade delete\ntất cả dữ liệu" as UC_Cascade
+
+PL --> UC_Delete
+
+UC_Confirm .up.> UC_Delete : <<include>>
+UC_CheckPerm .up.> UC_Delete : <<include>>
+UC_Cascade .up.> UC_Delete : <<include>>
+
+@enduml

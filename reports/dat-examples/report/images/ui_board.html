@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Board View</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #1976d2;
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        .nav {
+            background: #fafafa;
+            padding: 12px 24px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            gap: 24px;
+        }
+        .nav-item {
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .nav-item.active {
+            color: #1976d2;
+            border-bottom: 2px solid #1976d2;
+            padding-bottom: 2px;
+        }
+        .sprint-info {
+            padding: 12px 24px;
+            background: #fff3cd;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .sprint-info span {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .btn-complete {
+            background: #d32f2f;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .board {
+            display: flex;
+            gap: 16px;
+            padding: 24px;
+            overflow-x: auto;
+        }
+        .column {
+            min-width: 280px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            padding: 12px;
+        }
+        .column-header {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 12px;
+            padding: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .column-header .count {
+            color: #666;
+            font-weight: 400;
+        }
+        .card {
+            background: white;
+            border-radius: 4px;
+            padding: 12px;
+            margin-bottom: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            cursor: pointer;
+        }
+        .card:hover {
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+        .card-key {
+            font-size: 12px;
+            color: #666;
+            font-family: monospace;
+            margin-bottom: 4px;
+        }
+        .card-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #666;
+        }
+        .priority {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+        .priority-high {
+            background: #ffebee;
+            color: #c62828;
+        }
+        .priority-medium {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        .priority-low {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .priority-critical {
+            background: #f44336;
+            color: white;
+        }
+        .points {
+            font-weight: 600;
+            color: #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Project: PROJ - Project Management System</h1>
+        </div>
+        <div class="nav">
+            <a href="#" class="nav-item active">Board</a>
+            <a href="#" class="nav-item">Backlog</a>
+            <a href="#" class="nav-item">Sprints</a>
+            <a href="#" class="nav-item">Settings</a>
+        </div>
+        <div class="sprint-info">
+            <span>Sprint: Sprint 3 (Active)</span>
+            <button class="btn-complete">Complete Sprint</button>
+        </div>
+        <div class="board">
+            <div class="column">
+                <div class="column-header" style="color: #1976d2;">
+                    <span>To Do</span>
+                    <span class="count">3</span>
+                </div>
+                <div class="card">
+                    <div class="card-key">PROJ-45</div>
+                    <div class="card-title">Setup database schema</div>
+                    <div class="card-meta">
+                        <span class="priority priority-high">High</span>
+                        <span>John Doe</span>
+                        <span class="points">3 pts</span>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-key">PROJ-44</div>
+                    <div class="card-title">Design mockups</div>
+                    <div class="card-meta">
+                        <span class="priority priority-medium">Medium</span>
+                        <span>Jane Smith</span>
+                        <span class="points">5 pts</span>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-key">PROJ-43</div>
+                    <div class="card-title">Code refactoring</div>
+                    <div class="card-meta">
+                        <span class="priority priority-low">Low</span>
+                        <span>Mike Johnson</span>
+                        <span class="points">2 pts</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="column">
+                <div class="column-header" style="color: #f57c00;">
+                    <span>In Progress</span>
+                    <span class="count">2</span>
+                </div>
+                <div class="card">
+                    <div class="card-key">PROJ-42</div>
+                    <div class="card-title">REST API endpoints</div>
+                    <div class="card-meta">
+                        <span class="priority priority-medium">Medium</span>
+                        <span>Sarah Lee</span>
+                        <span class="points">5 pts</span>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-key">PROJ-41</div>
+                    <div class="card-title">User acceptance testing</div>
+                    <div class="card-meta">
+                        <span class="priority priority-high">High</span>
+                        <span>John Doe</span>
+                        <span class="points">8 pts</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="column">
+                <div class="column-header" style="color: #388e3c;">
+                    <span>Code Review</span>
+                    <span class="count">1</span>
+                </div>
+                <div class="card">
+                    <div class="card-key">PROJ-40</div>
+                    <div class="card-title">Integration testing</div>
+                    <div class="card-meta">
+                        <span class="priority priority-medium">Medium</span>
+                        <span>Mike Johnson</span>
+                        <span class="points">3 pts</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="column">
+                <div class="column-header" style="color: #2e7d32;">
+                    <span>Done</span>
+                    <span class="count">4</span>
+                </div>
+                <div class="card">
+                    <div class="card-key">PROJ-39</div>
+                    <div class="card-title">Performance optimization</div>
+                    <div class="card-meta">
+                        <span class="priority priority-critical">Critical</span>
+                        <span>Jane Smith</span>
+                        <span class="points">8 pts</span>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-key">PROJ-38</div>
+                    <div class="card-title">Fix authentication bug</div>
+                    <div class="card-meta">
+                        <span class="priority priority-critical">Critical</span>
+                        <span>John Doe</span>
+                        <span class="points">2 pts</span>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-key">PROJ-37</div>
+                    <div class="card-title">Setup CI/CD pipeline</div>
+                    <div class="card-meta">
+                        <span class="priority priority-high">High</span>
+                        <span>Sarah Lee</span>
+                        <span class="points">5 pts</span>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-key">PROJ-36</div>
+                    <div class="card-title">Deploy to staging</div>
+                    <div class="card-meta">
+                        <span class="priority priority-medium">Medium</span>
+                        <span>Mike Johnson</span>
+                        <span class="points">3 pts</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

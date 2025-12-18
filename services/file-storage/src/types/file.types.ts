@@ -11,6 +11,8 @@ export interface FileMetadata {
   subjectId: string;
   uploadedBy?: string;
   orgId?: string;
+  workspaceId?: string;
+  folderId?: string | null;
   tags?: string[];
   metadata?: Record<string, any>;
   uploadStatus: 'pending' | 'completed' | 'failed';
@@ -27,6 +29,8 @@ export interface CreatePresignedUrlRequest {
   subjectId: string;
   uploadedBy?: string;
   orgId?: string;
+  workspaceId?: string;
+  folderId?: string | null;
   tags?: string[];
   metadata?: Record<string, any>;
 }
@@ -58,6 +62,12 @@ export interface FileListQuery {
   subjectId?: string;
   uploadedBy?: string;
   orgId?: string;
+  workspaceId?: string;
+  folderId?: string | null;
+  search?: string;
+  mimeType?: string;
+  sortBy?: 'name' | 'size' | 'createdAt';
+  sortOrder?: 'asc' | 'desc';
   tags?: string[];
   page?: number;
   limit?: number;

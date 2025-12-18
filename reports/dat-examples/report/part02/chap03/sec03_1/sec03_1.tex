@@ -1,0 +1,11 @@
+\subsection{Tổng quan hệ thống}
+
+Trong bối cảnh chuyển đổi số hiện nay, nhu cầu về các nền tảng quản lý dự án và cộng tác trực tuyến ngày càng tăng cao, đặc biệt đối với các doanh nghiệp và tổ chức muốn tối ưu hóa quy trình phát triển sản phẩm. Người dùng không chỉ cần các công cụ quản lý dự án cơ bản mà còn mong muốn có khả năng tích hợp AI để tự động hóa và tạo insights thông minh cho sprint retrospective.
+
+Đáp ứng xu hướng đó, hệ thống "SaaS Platform tích hợp AI cho quản lý dự án" được phát triển nhằm cung cấp một nền tảng toàn diện cho việc quản lý projects, sprints, issues và tạo AI-assisted features. Hệ thống sử dụng nền tảng SaaS (Software as a Service), hỗ trợ đa project, phân quyền linh hoạt theo vai trò (Project Lead, Team Member, Viewer), custom status workflow và tích hợp với các LLM Provider như OpenAI, Anthropic Claude để hỗ trợ Sprint Summary, Issue Description Generation và Task Breakdown.
+
+Điểm nổi bật của hệ thống so với các ứng dụng quản lý dự án khác là khả năng tích hợp AI để tự động tổng hợp sprint data, generate issue descriptions và decompose EPICs thành sub-tasks, giúp teams làm việc hiệu quả hơn. Ngoài ra, hệ thống còn hỗ trợ đầy đủ các chức năng như đăng nhập bằng Google OAuth, Board/Backlog view với drag-and-drop intuitive, sprint management lifecycle (FUTURE-ACTIVE-CLOSED), custom status workflow, real-time collaborative editing.
+
+Về mặt kỹ thuật, hệ thống được xây dựng theo kiến trúc Microservices với Next.js cho frontend, Spring Boot cho Account Service (xác thực), NestJS cho PM Service (quản lý projects, sprints, issues, AI integration), PostgreSQL để lưu trữ dữ liệu, Redis cho caching và session management, MinIO/S3 cho issue attachments.
+
+Việc xây dựng một nền tảng SaaS quản lý dự án yêu cầu một hệ thống được thiết kế chuyên biệt, từ giao diện người dùng với Board/Backlog views, kiến trúc microservices với PM Service, cách tích hợp AI cho sprint analysis và task breakdown, cho đến khả năng mở rộng với real-time collaborative features. Sự chuyên biệt hóa này là yếu tố then chốt tạo nên giá trị cho ứng dụng, đồng thời đáp ứng đúng nhu cầu của nhóm khách hàng doanh nghiệp muốn số hóa và tự động hóa quy trình quản lý dự án Agile.

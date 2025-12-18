@@ -12,10 +12,14 @@ export interface IProjectStore {
 
   projectMap: Record<string, TPartialProject>;
   projectIds: string[];
+  currentProject: any | null;
 
   // actions
   createProject: (workspaceSlug: string, data: Partial<TProject>) => Promise<TProject>;
   fetchPartialProjects: (_workspaceSlug?: string) => Promise<TPartialProject[]>;
+  fetchProjectDetails: (projectId: string) => Promise<void>;
+  updateProject: (projectId: string, data: Partial<TProject>) => Promise<void>;
+  deleteProject: (projectId: string) => Promise<void>;
 
   // getters
   getPartialProjectById: (projectId: string) => TPartialProject | undefined;
@@ -29,6 +33,7 @@ export class ProjectStore implements IProjectStore {
   fetchStatus: TFetchStatus = undefined;
   projectMap: Record<string, TPartialProject> = {};
   projectIds: string[] = [];
+  currentProject: any | null = null;
   // root store
   rootStore: CoreRootStore;
   // service
@@ -42,9 +47,13 @@ export class ProjectStore implements IProjectStore {
       isCreating: observable,
       fetchStatus: observable.ref,
       projectIds: observable.ref,
+      currentProject: observable,
       // actions
       createProject: action,
       fetchPartialProjects: action,
+      fetchProjectDetails: action,
+      updateProject: action,
+      deleteProject: action,
       // computed
       joinedProjectIds: computed,
     });
@@ -131,6 +140,67 @@ export class ProjectStore implements IProjectStore {
       });
 
       console.error("Failed to create project:", error);
+      throw error;
+    }
+  };
+
+  /**
+   * Fetch full project details
+   */
+  fetchProjectDetails = async (projectId: string) => {
+    try {
+      const projectDetails = await this.projectService.getProjectById(projectId);
+      runInAction(() => {
+        this.currentProject = projectDetails;
+      });
+    } catch (error) {
+      console.error("Failed to fetch project details:", error);
+      throw error;
+    }
+  };
+
+  /**
+   * Update project
+   */
+  updateProject = async (projectId: string, data: Partial<TProject>) => {
+    try {
+      const updatedProject = await this.projectService.updateProject(projectId, data);
+      runInAction(() => {
+        this.currentProject = updatedProject;
+        // Also update in projectMap if exists
+        if (this.projectMap[projectId]) {
+          update(this.projectMap, [projectId], (p) => ({
+            ...p,
+            name: updatedProject.name,
+            identifier: updatedProject.identifier,
+            project_lead: updatedProject.projectLead,
+          }));
+        }
+      });
+    } catch (error) {
+      console.error("Failed to update project:", error);
+      throw error;
+    }
+  };
+
+  /**
+   * Delete project
+   */
+  deleteProject = async (projectId: string) => {
+    try {
+      await this.projectService.deleteProject(projectId);
+      runInAction(() => {
+        // Remove from projectMap
+        delete this.projectMap[projectId];
+        // Remove from projectIds
+        this.projectIds = this.projectIds.filter((id) => id !== projectId);
+        // Clear currentProject if it was the deleted project
+        if (this.currentProject?.id === projectId) {
+          this.currentProject = null;
+        }
+      });
+    } catch (error) {
+      console.error("Failed to delete project:", error);
       throw error;
     }
   };

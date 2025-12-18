@@ -1,0 +1,95 @@
+@startuml ui_activity
+!theme plain
+skinparam backgroundColor white
+
+salt
+{+
+  {* Project: PROJ - Activity Feed | [Refresh] }
+  {
+    Filter: [All Activities v] | User: [All Members v] | Date: [Last 7 Days v]
+  }
+  {SI
+    .
+    {
+      <color:#3B82F6>**Today** - December 11, 2025
+      --
+      <b>10:45 AM</b> - John Doe updated <b>PROJ-45</b>
+      • Changed status from "Backlog" to "To Do"
+      • Added assignee Jane Smith
+      [View Issue]
+
+      --
+      <b>09:30 AM</b> - Jane Smith commented on <b>PROJ-42</b>
+      "I've reviewed the API endpoints and they look good..."
+      [View Comment]
+
+      --
+      <b>08:15 AM</b> - Mike Johnson completed <b>PROJ-39</b>
+      • Changed status from "Code Review" to "Done"
+      • Added 8 story points
+      [View Issue]
+
+      ==
+      <color:#10B981>**Yesterday** - December 10, 2025
+      --
+      <b>05:20 PM</b> - Sarah Lee created <b>PROJ-50</b>
+      • Type: Story
+      • Priority: High
+      • Sprint: Sprint 4
+      [View Issue]
+
+      --
+      <b>03:45 PM</b> - John Doe started <b>Sprint 3</b>
+      • Start Date: 2025-12-01
+      • End Date: 2025-12-14
+      • Goal: Implement core database layer
+      [View Sprint]
+
+      --
+      <b>02:10 PM</b> - Jane Smith updated <b>PROJ-41</b>
+      • Changed priority from "Low" to "High"
+      • Set target date to 2025-12-18
+      [View Issue]
+
+      --
+      <b>11:30 AM</b> - Mike Johnson added comment on <b>PROJ-38</b>
+      "Fixed the authentication bug in the latest commit"
+      [View Comment]
+
+      ==
+      <color:#F59E0B>**December 9, 2025**
+      --
+      <b>04:00 PM</b> - Sarah Lee updated project settings
+      • Added custom status "Code Review"
+      • Changed project lead to John Doe
+      [View Settings]
+
+      --
+      <b>01:15 PM</b> - John Doe created <b>PROJ-48</b>
+      • Type: Task
+      • Priority: Medium
+      • Assigned to: John Doe
+      [View Issue]
+
+      ==
+      <color:#6B7280>**December 8, 2025**
+      --
+      <b>03:30 PM</b> - Jane Smith moved <b>PROJ-37</b> to Done
+      • Completed: Setup CI/CD pipeline
+      • Added 5 story points
+      [View Issue]
+
+      --
+      <b>10:00 AM</b> - Team added 3 new members
+      • Alice Brown (Developer)
+      • Tom Wilson (Designer)
+      • Emma Davis (QA)
+      [View Members]
+    }
+    .
+  }
+  {
+    [Load More Activities...]
+  }
+}
+@enduml

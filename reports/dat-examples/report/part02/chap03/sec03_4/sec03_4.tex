@@ -1,0 +1,150 @@
+\subsection{Thiết kế giao diện}
+
+\subsubsection{Cơ sở thiết kế giao diện}
+
+Giao diện người dùng của hệ thống quản lý dự án tích hợp AI được thiết kế hướng đến tính trực quan, thẩm mỹ, hiện đại và dễ sử dụng, đảm bảo UX/UI tốt nhất cho collaborative project management. Thiết kế lấy cảm hứng từ các nền tảng quản lý dự án hiện đại như Linear, Jira, và ClickUp, tập trung vào Board/Backlog views với drag-and-drop intuitive.
+
+Về màu sắc chủ đạo, ứng dụng sử dụng màu xanh dương (Primary Blue - \#3B82F6) làm màu chủ đạo để tạo cảm giác chuyên nghiệp, tin cậy và năng suất. Màu tím nhạt (Secondary Purple - \#8B5CF6) được sử dụng cho các điểm nhấn phụ và AI features. Màu nền chủ yếu là xám rất nhạt (\#F9FAFB) và trắng, kết hợp với chữ màu đen đậm (\#1A1A1A) để tạo sự tương phản rõ ràng. Custom status colors được define bởi project với palette đa dạng cho workflow visualization.
+
+Các thành phần nổi bật như nút hành động (CTA) sử dụng gradient màu xanh để thu hút sự chú ý. Hệ thống sử dụng soft shadows, rounded corners (8-12px), và subtle gradients để tạo chiều sâu. Board columns có subtle background colors matching status category (TODO/IN\_PROGRESS/DONE).
+
+Ở thanh điều hướng (Sidebar), được đặt cố định ở phía trái của trang với màu nền trắng, hiển thị organization logo, project selector dropdown. Sidebar giúp người dùng dễ dàng truy cập các chức năng chính như Board, Backlog, Sprints, Project Settings, và Members.
+
+Về thiết kế các nút chức năng: Nút primary sử dụng màu xanh dương (\#3B82F6) cho hành động chính như "Create Issue", "Start Sprint". Nút secondary sử dụng màu trắng với border cho hành động phụ. Nút danger dùng màu đỏ (\#EF4444) cho các hành động cảnh báo như "Delete Issue", "Complete Sprint". AI action buttons sử dụng gradient tím (\#8B5CF6) để phân biệt với manual actions.
+
+Bố cục tổng thể được chia thành: Sidebar (240px) với project navigation, Top bar với breadcrumbs, quick search, và user info, và Main content area cho Board/Backlog views. Sử dụng font Inter hoặc Geist Sans cho clean typography. Layout width 1440px-1920px optimized cho wide screens để hiển thị nhiều Board columns cùng lúc. Responsive design đảm bảo hiển thị tốt trên các thiết bị với mobile view chuyển sang list format.
+
+\subsubsection{Phác thảo thiết kế giao diện}
+
+\textbf{Giao diện danh sách Projects:}
+
+Giao diện danh sách Projects hiển thị tất cả các projects mà người dùng là thành viên trong organization hiện tại. Mỗi project được hiển thị dưới dạng card bao gồm: project avatar, project key, tên project, mô tả ngắn, số lượng thành viên, active sprint (nếu có), và vai trò của người dùng (Project Lead/Team Member/Viewer).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.55\textwidth]{images/ui_projects.png}
+\caption{Giao diện phác thảo danh sách Projects}
+\label{fig:ui_projects}
+\end{figure}
+
+\textbf{Giao diện Board view:}
+
+Giao diện Board view hiển thị active sprint với issues được tổ chức theo custom status columns (ví dụ: To Do, In Progress, Code Review, Done). Mỗi issue card hiển thị: issue key (PROJ-123), title, assignee avatar, priority icon, story points, và type icon. Users có thể drag-and-drop issues giữa các columns để update status real-time. Top bar hiển thị sprint name, goal, progress bar, và actions: "Complete Sprint", "Add Issue". Filters và quick filters cho phép lọc issues theo assignee, type, priority.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{images/ui_board.png}
+\caption{Giao diện phác thảo Board view với drag-and-drop}
+\label{fig:ui_board}
+\end{figure}
+
+\textbf{Giao diện Backlog view:}
+
+Giao diện Backlog view hiển thị tất cả issues chưa được assign vào sprint, được group theo EPIC hoặc flat list. Users có thể create issues, bulk assign issues vào sprint, reorder issues để prioritize backlog. Top bar có actions: "Create Sprint", "Start Sprint" (cho FUTURE sprints). Panel bên phải hiển thị sprint list với status (FUTURE/ACTIVE/CLOSED).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{images/ui_backlog.png}
+\caption{Giao diện phác thảo Backlog view}
+\label{fig:ui_backlog}
+\end{figure}
+
+\textbf{Giao diện Issue Detail:}
+
+Giao diện Issue Detail hiển thị chi tiết đầy đủ của một issue trong modal hoặc side panel. Bao gồm: issue key và title (editable), type, status dropdown, priority dropdown, assignee selector, sprint selector, description editor (Markdown support với AI Generate button), comments section với mentions support, attachments section, activity timeline, và sub-tasks list (cho EPICs). AI features: "Generate Description" button call LLM để tạo description từ title, "Break Down Task" button cho EPICs để tạo sub-tasks.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{images/ui_issue_detail.png}
+\caption{Giao diện phác thảo Issue Detail với AI features}
+\label{fig:ui_issue_detail}
+\end{figure}
+
+\textbf{Giao diện tự động tạo công việc bằng AI:}
+
+Giao diện tự động tạo công việc bằng AI cho phép người dùng nhập mô tả tổng quan hoặc user story, sau đó hệ thống sử dụng LLM để phân tích và tạo danh sách công việc tự động. Giao diện bao gồm hai bước chính: (1) Dialog input với textarea để nhập mô tả (requirements, user story, hoặc feature description), LLM provider selector, và nút "Tạo tự động", (2) Preview screen hiển thị danh sách công việc được AI generate với các thông tin: name, description, type (STORY/TASK/BUG), priority, story points. Người dùng có thể: edit từng công việc (inline editing), uncheck công việc không muốn tạo, và adjust priority/story points. Action buttons bao gồm "Regenerate" để AI tạo lại với approach khác và "Tạo tất cả" để confirm và tạo các công việc đã chọn vào project.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{images/auto-generated-isssue.png}
+\caption{Giao diện phác thảo tự động tạo công việc bằng AI}
+\label{fig:ui_auto_generate_issue}
+\end{figure}
+
+\textbf{Giao diện AI tinh chỉnh mô tả công việc:}
+
+Giao diện AI tinh chỉnh mô tả công việc cho phép người dùng tự động cải thiện chất lượng mô tả công việc bằng AI. Chức năng này giúp format mô tả theo template chuẩn, bổ sung thông tin thiếu, làm rõ acceptance criteria và thêm technical notes nếu cần. Giao diện bao gồm: (1) Issue detail view với mô tả hiện tại và nút "Refine Description with AI" có icon sparkle gradient tím, (2) Loading state khi AI đang xử lý với progress indicator, (3) Preview panel hiển thị comparison giữa original description (bên trái) và refined description (bên phải) với highlighted differences. Refined description được format theo sections: User Story template (As a... I want... So that...), Acceptance Criteria (bullet points với checkboxes), Technical Notes (nếu có), và Suggested Story Points. Action buttons bao gồm "Apply Changes" để replace mô tả hiện tại, "Reject" để giữ nguyên original, và "Regenerate" để AI tạo lại với approach khác. Footer hiển thị LLM provider used và tokens consumed.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\textwidth]{images/refine_description.png}
+\caption{Giao diện phác thảo AI tinh chỉnh mô tả công việc}
+\label{fig:ui_refine_description}
+\end{figure}
+
+\textbf{Giao diện project summary:}
+
+Giao diện project summary hiển thị tổng quan về project: số lượng issues, số lượng sprints, số lượng thành viên, số lượng comments, số lượng attachments, và số lượng activities.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{images/ui_project_summary.png}
+\caption{Giao diện phác thảo project summary}
+\label{fig:ui_project_summary}
+\end{figure}
+
+\textbf{Giao diện Sprint Summary:}
+
+Giao diện Sprint Summary hiển thị AI-generated retrospective khi Project Lead complete sprint. Bao gồm các sections: Overview (tổng quan sprint), Achievements (bullet points các thành tựu chính), Issues Found (các vấn đề phát hiện với title và description), Recommendations (khuyến nghị cho sprints tiếp theo), và Metrics (completed/incomplete issues, velocity, average completion time). Footer hiển thị LLM provider used, tokens consumed, và generated timestamp.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{images/ui_sprint_summary.png}
+\caption{Giao diện phác thảo AI-generated Sprint Summary}
+\label{fig:ui_sprint_summary}
+\end{figure}
+
+\textbf{Giao diện Complete Sprint Dialog:}
+
+Giao diện Complete Sprint Dialog hiển thị khi Project Lead click "Complete Sprint". Dialog xác nhận: sprint name, số incomplete issues với options (move to backlog hoặc move to next sprint), checkbox "Generate AI Summary" (default checked), và LLM provider selector. Action buttons: "Cancel", "Complete Sprint" (trigger sprint completion và AI summary generation).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.5\textwidth]{images/ui_complete_sprint.png}
+\caption{Giao diện phác thảo Complete Sprint Dialog}
+\label{fig:ui_complete_sprint}
+\end{figure}
+
+\textbf{Giao diện Custom Status Management:}
+
+Giao diện Custom Status Management cho phép Project Lead định nghĩa custom workflow cho project. Hiển thị danh sách statuses với drag-to-reorder functionality, mỗi status có: name (editable), category (TODO/IN\_PROGRESS/DONE), color picker, và position. Actions: "Add Status", "Delete Status", "Set as Default". Changes reflect immediately trên Board view columns.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.55\textwidth]{images/ui_custom_statuses.png}
+\caption{Giao diện phác thảo Custom Status Management}
+\label{fig:ui_custom_statuses}
+\end{figure}
+
+\textbf{Giao diện Calendar view:}
+
+Giao diện Calendar view hiển thị tất cả issues theo thời gian trong calendar view. Users có thể view issues theo ngày, tuần, tháng, năm. Users có thể create issues, bulk assign issues vào sprint, reorder issues để prioritize backlog. Top bar có actions: "Create Sprint", "Start Sprint" (cho FUTURE sprints). Panel bên phải hiển thị sprint list với status (FUTURE/ACTIVE/CLOSED).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{images/ui_calendar.png}
+\caption{Giao diện phác thảo Calendar view}
+\label{fig:ui_calendar}
+\end{figure}
+
+\textbf{Giao diện timeline view:}
+
+Giao diện Timeline view hiển thị tất cả issues theo thời gian trong timeline view. Users có thể view issues theo ngày, tuần, tháng, năm. Users có thể create issues, bulk assign issues vào sprint, reorder issues để prioritize backlog. Top bar có actions: "Create Sprint", "Start Sprint" (cho FUTURE sprints). Panel bên phải hiển thị sprint list với status (FUTURE/ACTIVE/CLOSED).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\textwidth]{images/ui_timeline.png}
+\caption{Giao diện phác thảo Timeline view}
+\label{fig:ui_timeline}
+\end{figure}
+

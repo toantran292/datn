@@ -1,0 +1,271 @@
+\paragraph{UC02: Quản lý Sprint}
+\mbox{}
+
+\textbf{UC02.1 - Tạo sprint mới}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/uc02_1_create_sprint.png}
+    \caption{Sơ đồ use case chức năng tạo sprint}
+    \label{fig:uc02_1_create_sprint}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC02.1 - Tạo sprint mới},
+    label = {tab:uc02_1},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Tạo sprint mới} \\\hline
+ID & UC02.1 \\\hline 
+Người sử dụng & Project Lead \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Cao \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{Project Lead:} Người tạo và quản lý sprint. \\
+    + \textbf{PM Service:} Xử lý logic tạo sprint, validate thông tin. \\
+    + \textbf{PostgreSQL Database:} Lưu trữ thông tin sprint.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Cho phép Project Lead tạo sprint mới với tên, mục tiêu (sprint goal), ngày bắt đầu và kết thúc dự kiến. Sprint được tạo với trạng thái FUTURE. \\\hline
+Trigger & User nhấn nút "Create Sprint" trong giao diện Backlog hoặc Sprint management. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User nhấn nút "Create Sprint" hoặc "New Sprint".
+        \item Hệ thống hiển thị modal/form tạo sprint với các trường: Sprint Name (tên sprint, ví dụ: "Sprint 1", "Sprint Planning Q1"), Sprint Goal (mục tiêu sprint, optional), Start Date (ngày bắt đầu, optional), End Date (ngày kết thúc dự kiến, optional).
+        \item User nhập thông tin sprint. Nếu không nhập Start Date/End Date, có thể để trống và cập nhật sau khi bắt đầu sprint.
+        \item User nhấn "Create Sprint".
+        \item Hệ thống validate dữ liệu: Sprint Name không trống, End Date phải sau Start Date (nếu có).
+        \item Backend tạo bản ghi Sprint mới trong database với status = FUTURE, projectId từ context.
+        \item Hệ thống tạo một sprint container rỗng trong backlog view.
+        \item Hệ thống hiển thị thông báo "Sprint created successfully".
+        \item User có thể bắt đầu kéo thả issue từ backlog vào sprint mới này.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- Sprint Name trống: Hiển thị lỗi "Sprint name is required."
+
+    \textbf{\textcolor{red}{E2}} -- End Date trước Start Date: Hiển thị lỗi "End date must be after start date."
+
+    \textbf{\textcolor{red}{E3}} -- Không có quyền tạo sprint: Hiển thị lỗi "Only Project Lead can create sprints."
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Sprint mới được tạo thành công với trạng thái FUTURE, hiển thị trong backlog view như một container rỗng sẵn sàng nhận issue. \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+\textbf{UC02.2 - Bắt đầu sprint}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/uc02_2_start_sprint.png}
+    \caption{Sơ đồ use case chức năng bắt đầu sprint}
+    \label{fig:uc02_2_start_sprint}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC02.2 - Bắt đầu sprint},
+    label = {tab:uc02_2},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Bắt đầu sprint} \\\hline
+ID & UC02.2 \\\hline
+Người sử dụng & Project Lead \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Cao \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{Project Lead:} Người quyết định bắt đầu sprint. \\
+    + \textbf{PM Service:} Xử lý chuyển đổi trạng thái sprint. \\
+    + \textbf{Database:} Cập nhật trạng thái sprint.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Cho phép Project Lead chuyển sprint từ trạng thái FUTURE sang ACTIVE, đánh dấu sprint chính thức bắt đầu. Chỉ có một sprint ACTIVE tại một thời điểm. \\\hline
+Trigger & User nhấn nút "Start Sprint" trong backlog view hoặc sprint detail. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User nhấn nút "Start Sprint" trên một sprint có status = FUTURE.
+        \item Hệ thống hiển thị modal xác nhận với tổng quan: số lượng issue trong sprint, sprint goal, start/end date.
+        \item Nếu Start Date hoặc End Date chưa được set, hệ thống yêu cầu user nhập.
+        \item User xác nhận thông tin và nhấn "Start Sprint".
+        \item Hệ thống kiểm tra không có sprint ACTIVE nào khác trong project.
+        \item Backend cập nhật sprint: status = ACTIVE, startDate = ngày hiện tại (nếu chưa có).
+        \item Hệ thống tạo snapshot về số lượng issue ban đầu trong sprint.
+        \item Sprint được di chuyển lên đầu backlog view với label "ACTIVE".
+        \item Board view được cập nhật để hiển thị các issue của sprint ACTIVE.
+        \item Hệ thống hiển thị thông báo "Sprint started successfully".
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & N/A \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{A1}} -- Sprint không có issue: Hiển thị cảnh báo "This sprint has no issues. Are you sure you want to start it?" User có thể tiếp tục hoặc hủy.
+
+    \textbf{\textcolor{red}{E1}} -- Đã có sprint ACTIVE khác: Hiển thị lỗi "Another sprint is already active. Please complete or close it first."
+
+    \textbf{\textcolor{red}{E2}} -- Start Date/End Date không hợp lệ: Yêu cầu user nhập lại dates hợp lệ.
+
+    \textbf{\textcolor{red}{E3}} -- Không có quyền bắt đầu sprint: Hiển thị lỗi "Only Project Lead can start sprints."
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Sprint được chuyển sang trạng thái ACTIVE, board view hiển thị các issue của sprint này, team bắt đầu làm việc trên sprint. \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+\textbf{UC02.3 - Hoàn thành sprint}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/uc02_3_complete_sprint.png}
+    \caption{Sơ đồ use case chức năng hoàn thành sprint}
+    \label{fig:uc02_3_complete_sprint}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC02.3 - Hoàn thành sprint},
+    label = {tab:uc02_3},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Hoàn thành sprint} \\\hline
+ID & UC02.3 \\\hline
+Người sử dụng & Project Lead \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Cao \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{Project Lead:} Người quyết định hoàn thành sprint. \\
+    + \textbf{PM Service:} Xử lý đóng sprint và di chuyển issue chưa hoàn thành. \\
+    + \textbf{AI Service (optional):} Tạo Sprint Summary report. \\
+    + \textbf{Database:} Cập nhật trạng thái sprint và issue.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Cho phép Project Lead đóng sprint ACTIVE, chuyển sang CLOSED. Hệ thống xử lý các issue chưa hoàn thành (di chuyển về backlog hoặc sang sprint kế tiếp) và tùy chọn tạo Sprint Summary tự động. \\\hline
+Trigger & User nhấn nút "Complete Sprint" trong sprint detail hoặc backlog view. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User nhấn nút "Complete Sprint" trên sprint ACTIVE.
+        \item Hệ thống hiển thị modal với tổng quan sprint: số issue hoàn thành / tổng số issue, danh sách issue chưa hoàn thành.
+        \item Hệ thống hỏi user muốn xử lý issue chưa hoàn thành như thế nào: (a) Di chuyển về Backlog, (b) Di chuyển sang sprint kế tiếp (nếu có), (c) Giữ nguyên trong sprint đã đóng.
+        \item User chọn option và nhấn "Complete Sprint".
+        \item Backend cập nhật sprint: status = CLOSED, endDate = ngày hiện tại (nếu chưa có).
+        \item Backend di chuyển issue chưa hoàn thành theo lựa chọn của user (cập nhật sprintId).
+        \item Backend ghi lại metrics: tổng issue hoàn thành, velocity (story points completed).
+        \item Nếu user chọn tạo AI Sprint Summary, hệ thống gọi AI service để tạo báo cáo tự động.
+        \item Sprint được đánh dấu CLOSED và hiển thị ở cuối backlog view.
+        \item Hệ thống hiển thị thông báo "Sprint completed successfully" và link đến Sprint Summary (nếu có).
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & Include UC06 (AI Sprint Summary) nếu user chọn. \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{A1}} -- Tất cả issue đã hoàn thành: Hiển thị congratulation message, không cần hỏi về issue chưa hoàn thành.
+
+    \textbf{\textcolor{red}{E1}} -- Sprint không phải ACTIVE: Hiển thị lỗi "Only active sprint can be completed."
+
+    \textbf{\textcolor{red}{E2}} -- Không có quyền hoàn thành sprint: Hiển thị lỗi "Only Project Lead can complete sprints."
+
+    \textbf{\textcolor{red}{E3}} -- Lỗi tạo AI Summary: Hiển thị cảnh báo "Failed to generate AI summary, but sprint is completed successfully."
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Sprint được chuyển sang CLOSED, issue chưa hoàn thành được xử lý theo lựa chọn, metrics được ghi lại, Sprint Summary được tạo (optional). \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+\textbf{UC02.4 - Xem danh sách sprint}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/uc02_4_view_sprints.png}
+    \caption{Sơ đồ use case chức năng xem sprint}
+    \label{fig:uc02_4_view_sprints}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC02.4 - Xem danh sách sprint},
+    label = {tab:uc02_4},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Xem danh sách sprint} \\\hline
+ID & UC02.4 \\\hline
+Người sử dụng & Project Lead, Team Member, Viewer \\\hline
+Mức độ cần thiết & Bắt buộc \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{User:} Muốn xem danh sách sprint và chi tiết sprint. \\
+    + \textbf{PM Service:} Cung cấp API lấy danh sách sprint theo project. \\
+    + \textbf{Database:} Truy vấn dữ liệu sprint.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Cho phép user xem danh sách tất cả sprint trong dự án (ACTIVE, FUTURE, CLOSED) và xem chi tiết từng sprint với tổng quan số lượng issue theo trạng thái. \\\hline
+Trigger & User truy cập Backlog View hoặc Sprint List trong project. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User truy cập Backlog View hoặc Sprint management page.
+        \item Hệ thống gọi API GET /api/projects/:projectId/sprints để lấy danh sách sprint.
+        \item Hệ thống hiển thị danh sách sprint được sắp xếp: ACTIVE sprint ở đầu, FUTURE sprints tiếp theo, CLOSED sprints ở cuối.
+        \item Mỗi sprint hiển thị: Sprint Name, Status badge (ACTIVE/FUTURE/CLOSED), Sprint Goal, Start Date - End Date, tổng số issue và số issue hoàn thành (ví dụ: "15/20 issues").
+        \item User có thể expand/collapse từng sprint để xem danh sách issue bên trong.
+        \item User có thể click vào sprint để xem chi tiết: danh sách đầy đủ issue, burndown chart (nếu có), activity log, comments.
+        \item Nếu là ACTIVE sprint, user thấy progress bar thể hiện tiến độ hoàn thành.
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con & Include UC05 (Backlog View). \\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{A1}} -- Không có sprint nào: Hiển thị empty state với nút "Create your first sprint".
+
+    \textbf{\textcolor{red}{A2}} -- Filter sprint theo status: User có thể filter chỉ xem ACTIVE, FUTURE hoặc CLOSED sprints.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & User xem được danh sách đầy đủ sprint với thông tin tổng quan, có thể expand để xem chi tiết issue, theo dõi tiến độ sprint. \\\hline
+\end{longtblr}
