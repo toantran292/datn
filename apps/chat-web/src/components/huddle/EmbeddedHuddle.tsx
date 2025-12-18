@@ -128,12 +128,19 @@ export function EmbeddedHuddle({ meetingUrl, onClose }: EmbeddedHuddleProps) {
     onClose();
   };
 
+  const [isLeaving, setIsLeaving] = useState(false);
+
   const handleLeave = () => {
+    if (isLeaving) return; // Prevent double-click
+    setIsLeaving(true);
+    console.log('[EmbeddedHuddle] handleLeave called, sending leave command to iframe');
     sendCommand('leave');
-    // Delay closing to allow iframe to process leave command and call API
+    // The iframe will send 'huddle:leave' back after completing API call
+    // This fallback timeout ensures we close even if iframe doesn't respond
     setTimeout(() => {
+      console.log('[EmbeddedHuddle] Safety timeout reached, forcing close');
       onClose();
-    }, 500);
+    }, 5000); // 5 second safety timeout
   };
 
   const sendCommand = (action: string) => {
@@ -201,6 +208,14 @@ export function EmbeddedHuddle({ meetingUrl, onClose }: EmbeddedHuddleProps) {
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-2 border-white/20 border-t-emerald-500 mx-auto mb-2" />
               <span className="text-white/60 text-sm">Đang kết nối...</span>
+            </div>
+          </div>
+        )}
+        {isLeaving && (
+          <div className="absolute inset-0 flex items-center justify-center bg-[#1a1a2e]/90 z-20">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-white/20 border-t-red-500 mx-auto mb-2" />
+              <span className="text-white/60 text-sm">Đang rời khỏi...</span>
             </div>
           </div>
         )}

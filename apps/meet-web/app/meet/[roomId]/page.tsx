@@ -129,7 +129,7 @@ function MeetingPageContent() {
   );
 
   // Transcript saver - saves all final captions to database
-  const { saveCaption } = useTranscriptSaver({
+  const { saveCaption, uploadToS3 } = useTranscriptSaver({
     meetingId,
     enabled: true, // Always save transcripts
     translateToLang: translationEnabled ? translationLang : undefined,
@@ -249,14 +249,23 @@ function MeetingPageContent() {
 
   // Handle leave
   const handleLeave = async () => {
-    // Notify parent window in embed mode
-    if (isEmbedMode) {
-      postToParent('huddle:leave');
-    }
+    console.log('[handleLeave] Starting leave process...', { meetingId, userId, isEmbedMode });
+    // Upload transcript to S3 before leaving
+    console.log('[handleLeave] Uploading transcript to S3...');
+    await uploadToS3();
     // Notify meeting service that user is leaving
     if (meetingId && userId) {
-      await leaveMeeting(meetingId, userId);
+      console.log('[handleLeave] Calling leaveMeeting API...');
+      try {
+        await leaveMeeting(meetingId, userId);
+        console.log('[handleLeave] leaveMeeting API call successful');
+      } catch (err) {
+        console.error('[handleLeave] leaveMeeting API call failed:', err);
+      }
+    } else {
+      console.warn('[handleLeave] Missing meetingId or userId:', { meetingId, userId });
     }
+    console.log('[handleLeave] Leaving conference...');
     await leaveConference();
     // Clear stored meeting info
     localStorage.removeItem('jwtToken');
@@ -264,8 +273,15 @@ function MeetingPageContent() {
     localStorage.removeItem('roomId');
     localStorage.removeItem('meetingId');
     localStorage.removeItem('iceServers');
-    // Close the tab (works when opened via window.open from chat-web)
-    if (!isEmbedMode) {
+    console.log('[handleLeave] Cleared localStorage');
+    // Notify parent window in embed mode AFTER all cleanup is done
+    // This allows the parent to close/unmount the iframe safely
+    if (isEmbedMode) {
+      console.log('[handleLeave] Notifying parent window to close huddle');
+      postToParent('huddle:leave');
+    } else {
+      // Close the tab (works when opened via window.open from chat-web)
+      console.log('[handleLeave] Closing window...');
       window.close();
     }
   };

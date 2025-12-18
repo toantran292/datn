@@ -1033,6 +1033,231 @@ class ApiService {
     }
     return response.json();
   }
+
+  // ===== TRANSCRIPT APIs (Meeting Captions) =====
+
+  /**
+   * Get transcript files list for a meeting from S3
+   */
+  async getMeetingTranscriptsFromS3(meetingId: string): Promise<TranscriptFile[]> {
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace('/chat', '') || 'http://localhost:8080';
+    const response = await fetch(`${baseUrl}/transcripts/meeting/${encodeURIComponent(meetingId)}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.transcripts || [];
+  }
+
+  /**
+   * Get transcript content from S3 file
+   */
+  async getTranscriptContentFromS3(fileId: string): Promise<TranscriptContent | null> {
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace('/chat', '') || 'http://localhost:8080';
+    const response = await fetch(`${baseUrl}/transcripts/${encodeURIComponent(fileId)}/content`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
+    if (!response.ok) return null;
+    const data = await response.json();
+    return {
+      meetingId: data.meetingId,
+      roomId: data.roomId,
+      entries: (data.entries || []).map((e: any) => ({
+        speakerId: e.speakerId,
+        speakerName: e.speakerName,
+        text: e.text,
+        translatedText: e.translatedText,
+        translatedLang: e.translatedLang,
+        timestamp: e.timestamp,
+        isFinal: e.isFinal,
+      })),
+    };
+  }
+
+  /**
+   * Get transcript entries for a meeting - tries S3 first, falls back to DB
+   */
+  async getMeetingTranscript(meetingId: string): Promise<TranscriptContent> {
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace('/chat', '') || 'http://localhost:8080';
+
+    // Try S3 first
+    const s3Files = await this.getMeetingTranscriptsFromS3(meetingId);
+    if (s3Files.length > 0) {
+      // Get content from the most recent file
+      const content = await this.getTranscriptContentFromS3(s3Files[0].fileId);
+      if (content && content.entries.length > 0) {
+        return content;
+      }
+    }
+
+    // Fallback to DB
+    const response = await fetch(`${baseUrl}/ai/meetings/${encodeURIComponent(meetingId)}/transcript`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
+    if (!response.ok) throw new Error('Failed to get meeting transcript');
+    const data = await response.json();
+
+    // Transform from DB format to frontend format
+    const entries: TranscriptEntry[] = (data.entries || []).map((entry: any) => ({
+      speakerId: entry.speakerId,
+      speakerName: entry.speakerName,
+      text: entry.originalText,
+      translatedText: entry.translatedText,
+      translatedLang: entry.translatedLang,
+      timestamp: entry.startTime,
+      isFinal: entry.isFinal,
+    }));
+
+    return {
+      meetingId,
+      roomId: '',
+      entries,
+    };
+  }
+
+  /**
+   * Get transcript as plain text
+   */
+  async getMeetingTranscriptText(meetingId: string, lang?: string): Promise<string> {
+    // Try to get from S3 first
+    const content = await this.getMeetingTranscript(meetingId);
+    if (content.entries.length > 0) {
+      // Format entries as text
+      return content.entries
+        .map(e => `[${new Date(e.timestamp).toLocaleTimeString()}] ${e.speakerName || 'Unknown'}: ${e.text}`)
+        .join('\n');
+    }
+
+    // Fallback to DB text format
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace('/chat', '') || 'http://localhost:8080';
+    const params = new URLSearchParams({ format: 'text' });
+    if (lang) params.append('lang', lang);
+
+    const response = await fetch(`${baseUrl}/ai/meetings/${encodeURIComponent(meetingId)}/transcript?${params}`, {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    });
+    if (!response.ok) throw new Error('Failed to get meeting transcript text');
+    const data = await response.json();
+    return data.text || '';
+  }
+
+  // ===== RECORDING APIs (Meeting Recordings) =====
+
+  /**
+   * Get all recordings for a meeting
+   */
+  async getMeetingRecordings(meetingId: string): Promise<MeetingRecording[]> {
+    const meetApiUrl = process.env.NEXT_PUBLIC_MEET_API || 'http://localhost:40600';
+    try {
+      const response = await fetch(`${meetApiUrl}/recordings/meeting/${encodeURIComponent(meetingId)}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+      });
+      if (!response.ok) return [];
+      const data = await response.json();
+      return (data.recordings || []).map((r: any) => ({
+        recordingId: r.recording_id,
+        sessionId: r.session_id,
+        meetingId: r.meeting_id,
+        status: r.status,
+        startedAt: r.started_at,
+        stoppedAt: r.stopped_at,
+        duration: r.duration,
+        fileSize: r.file_size,
+        s3Url: r.s3_url,
+      }));
+    } catch (error) {
+      console.error('[API] Failed to get meeting recordings:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get a single recording by ID
+   */
+  async getRecording(recordingId: string): Promise<MeetingRecording | null> {
+    const meetApiUrl = process.env.NEXT_PUBLIC_MEET_API || 'http://localhost:40600';
+    try {
+      const response = await fetch(`${meetApiUrl}/recordings/${encodeURIComponent(recordingId)}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+      });
+      if (!response.ok) return null;
+      const r = await response.json();
+      return {
+        recordingId: r.recording_id,
+        sessionId: r.session_id,
+        meetingId: r.meeting_id,
+        status: r.status,
+        startedAt: r.started_at,
+        stoppedAt: r.stopped_at,
+        duration: r.duration,
+        fileSize: r.file_size,
+        s3Url: r.s3_url,
+      };
+    } catch (error) {
+      console.error('[API] Failed to get recording:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get AI summary of meeting transcript
+   */
+  async getMeetingSummary(meetingId: string, lang?: string): Promise<string | null> {
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace('/chat', '') || 'http://localhost:8080';
+    const params = new URLSearchParams();
+    if (lang) params.append('lang', lang);
+
+    try {
+      const response = await fetch(`${baseUrl}/ai/meetings/${encodeURIComponent(meetingId)}/summary?${params}`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+      });
+      if (!response.ok) return null;
+      const data = await response.json();
+      return data.summary || null;
+    } catch (error) {
+      console.error('[API] Failed to get meeting summary:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Stream AI summary of meeting transcript
+   * Returns EventSource URL for SSE streaming
+   */
+  getMeetingSummaryStreamUrl(meetingId: string, lang?: string): string {
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace('/chat', '') || 'http://localhost:8080';
+    const params = new URLSearchParams();
+    if (lang) params.append('lang', lang);
+    return `${baseUrl}/ai/meetings/${encodeURIComponent(meetingId)}/summary/stream?${params}`;
+  }
 }
 
 // AI Config types
@@ -1120,6 +1345,47 @@ export interface DocumentSummaryResult {
   summary: string;
   documentName: string;
   documentType: string;
+}
+
+// Transcript types
+export interface TranscriptEntry {
+  speakerId: string;
+  speakerName?: string;
+  text: string;
+  translatedText?: string;
+  translatedLang?: string;
+  timestamp: string;
+  isFinal: boolean;
+}
+
+export interface TranscriptFile {
+  id: string;
+  meetingId: string;
+  fileId: string;
+  fileName: string;
+  entryCount: number;
+  createdAt: string;
+}
+
+export interface TranscriptContent {
+  meetingId: string;
+  roomId: string;
+  entries: TranscriptEntry[];
+}
+
+// Recording types
+export type RecordingStatus = 'PENDING' | 'RECORDING' | 'STOPPED' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+
+export interface MeetingRecording {
+  recordingId: string;
+  sessionId: string;
+  meetingId?: string;
+  status: RecordingStatus;
+  startedAt?: string;
+  stoppedAt?: string;
+  duration?: number;
+  fileSize?: number;
+  s3Url?: string;
 }
 
 export const api = new ApiService();

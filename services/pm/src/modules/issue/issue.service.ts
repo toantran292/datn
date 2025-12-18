@@ -1,13 +1,13 @@
 import { Injectable, NotFoundException, BadRequestException, Logger } from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service";
 import { RagService } from "../rag/rag.service";
+import { RagClient } from "../../common/rag/rag.client";
 import { CreateIssueDto } from "./dto/create-issue.dto";
 import { UpdateIssueDto } from "./dto/update-issue.dto";
 import { ReorderIssueDto, ReorderPosition } from "./dto/reorder-issue.dto";
 import { IssueResponseDto } from "./dto/issue-response.dto";
 import { SearchIssuesDto, SearchIssuesResponseDto, SearchResultDto } from "./dto/search-issues.dto";
 import { Prisma } from "@prisma/client";
-import { RagClient } from "../../common/rag/rag.client";
 
 @Injectable()
 export class IssueService {
@@ -17,6 +17,7 @@ export class IssueService {
 
   constructor(
     private prisma: PrismaService,
+    private ragService: RagService,
     private ragClient: RagClient,
   ) {}
 
@@ -843,7 +844,7 @@ export class IssueService {
     });
 
     // Map similarity scores
-    const similarityMap = new Map(similarIssues.map((si) => [si.id, si.similarity]));
+    const similarityMap = new Map<string, number>(similarIssues.map((si) => [si.id, si.similarity]));
 
     // Build search results with similarity scores
     const results: SearchResultDto[] = issues.map((issue) => ({

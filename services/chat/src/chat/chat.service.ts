@@ -37,6 +37,7 @@ export interface CreateHuddleMessageDto {
   meetingRoomId: string;
   duration?: number;
   participantCount?: number;
+  hasTranscript?: boolean;
 }
 
 export interface CreateMeetingChatMessageDto {
@@ -173,6 +174,7 @@ export class ChatsService {
       meetingRoomId: dto.meetingRoomId,
       duration: dto.duration,
       participantCount: dto.participantCount,
+      hasTranscript: dto.hasTranscript ?? false,
     };
 
     const updated = await this.messagesRepo.updateHuddleMessage(existingMessage.id, {

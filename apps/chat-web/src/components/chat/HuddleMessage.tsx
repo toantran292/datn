@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Headphones, MessageSquare } from 'lucide-react';
 import type { Message } from '../../types';
 import { MessageActions } from './MessageActions';
+import { TranscriptViewer } from '../huddle/TranscriptViewer';
+import { MeetingSummary } from '../huddle/MeetingSummary';
 
 interface HuddleMessageProps {
   message: Message;
@@ -137,6 +139,14 @@ export function HuddleMessage({ message, currentUserId, liveParticipantCount, pa
                 </>
               )}
             </p>
+
+            {/* Transcript and Summary for ended huddles */}
+            {!isStarted && message.metadata?.meetingId && message.metadata?.hasTranscript && (
+              <>
+                <TranscriptViewer meetingId={message.metadata.meetingId} />
+                <MeetingSummary meetingId={message.metadata.meetingId} />
+              </>
+            )}
 
             {/* Thread reply count */}
             {message.replyCount != null && message.replyCount > 0 && onOpenThread && (

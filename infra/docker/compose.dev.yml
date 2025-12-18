@@ -441,6 +441,8 @@ services:
       # RAG Service for AI/LLM
       RAG_SERVICE_URL: http://rag-api:3000
       RAG_ENABLED: "true"
+      # OpenAI for AI Summary
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
     depends_on:
       postgres: { condition: service_healthy }
       rag-api: { condition: service_healthy }
