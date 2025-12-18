@@ -40,6 +40,7 @@ import { formatIssueKey } from "@/core/components/backlog/utils";
 import { CreateStatusModal } from "@/core/components/issue-status";
 import { CompleteSprintModal } from "@/core/components/sprint/complete-sprint-modal";
 import { useIssueStatus } from "@/core/hooks/store/use-issue-status";
+import { useSearch } from "@/core/hooks/store/use-search";
 import { IdentityService } from "@/core/services/identity/identity.service";
 import { ProjectService } from "@/core/services/project/project.service";
 
@@ -303,6 +304,46 @@ export const BoardView = memo(function BoardView({
     [issueStatusStore, projectId]
   );
 
+  const handleDeleteStatus = useCallback(
+    async (statusId: string) => {
+      const status = issueStatuses.find((s) => s.id === statusId);
+      if (!status) return;
+
+      const issuesInStatus = grouped[statusId]?.length || 0;
+
+      if (issuesInStatus > 0) {
+        setToast({
+          type: TOAST_TYPE.ERROR,
+          title: "Không thể xóa",
+          message: `Trạng thái này có ${issuesInStatus} công việc. Vui lòng di chuyển công việc sang trạng thái khác trước khi xóa.`,
+        });
+        return;
+      }
+
+      if (!window.confirm(`Bạn có chắc chắn muốn xóa trạng thái "${status.name}"?`)) {
+        return;
+      }
+
+      try {
+        await issueStatusStore.deleteIssueStatus(statusId);
+        setToast({
+          type: TOAST_TYPE.SUCCESS,
+          title: "Đã xóa",
+          message: "Trạng thái đã được xóa thành công.",
+        });
+      } catch (error: any) {
+        console.error("Failed to delete status:", error);
+        const errorMessage = error?.message || "Không thể xóa trạng thái. Vui lòng thử lại.";
+        setToast({
+          type: TOAST_TYPE.ERROR,
+          title: "Lỗi xóa trạng thái",
+          message: errorMessage,
+        });
+      }
+    },
+    [issueStatusStore, issueStatuses, grouped]
+  );
+
   const handleColumnDrop = useCallback(
     async (targetStatusId: string, position: "before" | "after") => {
       if (!draggedColumnId || draggedColumnId === targetStatusId) {
@@ -423,6 +464,7 @@ export const BoardView = memo(function BoardView({
               onColumnDragOver={(position) => setDropPosition({ statusId: status.id, position })}
               onColumnDrop={handleColumnDrop}
               memberMap={memberMap}
+              onDeleteStatus={handleDeleteStatus}
             />
           ))}
 
@@ -471,18 +513,23 @@ export const BoardView = memo(function BoardView({
 const BoardToolbar: React.FC<{ onCompleteSprint?: () => void; canComplete?: boolean }> = ({
   onCompleteSprint,
   canComplete = false,
-}) => (
-  <div className="flex flex-wrap items-center justify-between gap-3 bg-custom-background-100 rounded-lg p-4 border border-custom-border-200">
-    <div className="flex items-center gap-2">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-custom-text-300" />
-        <Input
-          placeholder="Tìm kiếm công việc..."
-          className="w-72 pl-9 border-custom-border-200 bg-custom-background-90"
-          disabled
-        />
-      </div>
-      <div className="h-6 w-px bg-custom-border-200" />
+}) => {
+  const searchStore = useSearch();
+
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3 bg-custom-background-100 rounded-lg p-4 border border-custom-border-200">
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => searchStore.setModalOpen(true)}
+          className="relative flex items-center gap-2 w-72 px-3 py-2 rounded-md border border-custom-border-200 bg-custom-background-90 hover:bg-custom-background-80 transition-colors text-left"
+        >
+          <Search className="size-4 text-custom-text-300" />
+          <span className="text-sm text-custom-text-300">Tìm kiếm công việc...</span>
+          <kbd className="ml-auto hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-custom-background-100 border border-custom-border-300 rounded text-[10px] font-mono text-custom-text-400">
+            ⌘K
+          </kbd>
+        </button>
+        <div className="h-6 w-px bg-custom-border-200" />
       <Button variant="neutral-primary" size="sm" disabled className="gap-2">
         <Users2 className="size-4" />
         Thành viên
@@ -502,7 +549,8 @@ const BoardToolbar: React.FC<{ onCompleteSprint?: () => void; canComplete?: bool
       </Button>
     </div>
   </div>
-);
+  );
+};
 
 const SprintSummary: React.FC<{ sprint: ISprint; issueCount: number }> = ({ sprint, issueCount }) => {
   const calculateProgress = () => {
@@ -607,6 +655,7 @@ const BoardColumn: React.FC<{
   onColumnDragOver: (position: "before" | "after") => void;
   onColumnDrop: (statusId: string, position: "before" | "after") => void;
   memberMap: Map<string, { id: string; name: string; email?: string }>;
+  onDeleteStatus?: (statusId: string) => void;
 }> = ({
   statusId,
   title,
@@ -632,10 +681,12 @@ const BoardColumn: React.FC<{
   onColumnDragOver,
   onColumnDrop,
   memberMap,
+  onDeleteStatus,
 }) => {
   const [hoveredIssueId, setHoveredIssueId] = useState<string | null>(null);
   const [hoveredPosition, setHoveredPosition] = useState<"top" | "bottom" | null>(null);
   const [showQuickCreate, setShowQuickCreate] = useState(false);
+  const [showDeleteMenu, setShowDeleteMenu] = useState(false);
 
   return (
     <div
@@ -701,13 +752,45 @@ const BoardColumn: React.FC<{
             {issues.length}
           </Badge>
         </div>
-        <button
-          className="p-1 hover:bg-custom-background-80 rounded transition-colors"
-          onClick={() => setShowQuickCreate(!showQuickCreate)}
-          title="Thêm công việc"
-        >
-          <Plus className="size-4 text-custom-text-300" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            className="p-1 hover:bg-custom-background-80 rounded transition-colors"
+            onClick={() => setShowQuickCreate(!showQuickCreate)}
+            title="Thêm công việc"
+          >
+            <Plus className="size-4 text-custom-text-300" />
+          </button>
+          {onDeleteStatus && (
+            <div className="relative">
+              <button
+                className="p-1 hover:bg-custom-background-80 rounded transition-colors"
+                onClick={() => setShowDeleteMenu(!showDeleteMenu)}
+                title="Tùy chọn"
+              >
+                <MoreVertical className="size-4 text-custom-text-300" />
+              </button>
+              {showDeleteMenu && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setShowDeleteMenu(false)}
+                  />
+                  <div className="absolute right-0 top-full mt-1 z-20 w-48 rounded-md border border-custom-border-200 bg-custom-background-100 shadow-lg">
+                    <button
+                      className="w-full px-3 py-2 text-left text-sm text-red-500 hover:bg-custom-background-80 transition-colors flex items-center gap-2"
+                      onClick={() => {
+                        setShowDeleteMenu(false);
+                        onDeleteStatus(statusId);
+                      }}
+                    >
+                      Xóa trạng thái
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Quick Create */}

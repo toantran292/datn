@@ -1,0 +1,46 @@
+@startuml
+!theme plain
+skinparam defaultFontSize 11
+skinparam packageStyle rectangle
+
+title Phân rã chức năng của Team Member
+
+rectangle "Team Member" {
+
+  rectangle "Quản lý\nCông việc" {
+    rectangle "Tạo công việc"
+    rectangle "Cập nhật\ncông việc"
+    rectangle "Xóa công việc"
+    rectangle "Assign công việc"
+    rectangle "Reorder công việc\n(drag-and-drop)"
+  }
+
+  rectangle "Xem thông tin\nDự án" {
+    rectangle "Xem thông tin\nproject"
+    rectangle "Xem thành viên"
+    rectangle "Xem sprints"
+    rectangle "Xem chi tiết\nsprint"
+  }
+
+  rectangle "Collaboration\nvà Tracking" {
+    rectangle "Thêm comment"
+    rectangle "Xem activities"
+    rectangle "Upload file\nđính kèm"
+  }
+
+  rectangle "Views và\nVisualization" {
+    rectangle "Xem Board view"
+    rectangle "Xem Backlog view"
+    rectangle "Xem Calendar view"
+    rectangle "Xem Timeline view"
+  }
+
+  rectangle "Tính năng AI" {
+    rectangle "Tự động tạo\ncông việc từ\nmô tả (AI)"
+    rectangle "AI tinh chỉnh\nmô tả công việc"
+    rectangle "Xem AI Sprint\nSummary"
+  }
+
+}
+
+@enduml

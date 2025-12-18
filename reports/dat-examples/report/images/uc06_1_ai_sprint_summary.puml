@@ -1,0 +1,27 @@
+@startuml
+!theme plain
+skinparam defaultFontSize 11
+skinparam usecaseFontSize 10
+
+left to right direction
+
+actor "Project Lead" as PL
+
+usecase "AI Sprint\nSummary" as UC_Summary
+usecase "Collect sprint\ndata" as UC_CollectData
+usecase "Format prompt\ncho AI" as UC_FormatPrompt
+usecase "Call LLM API" as UC_CallAPI
+usecase "Generate summary\nvới sections" as UC_GenSummary
+usecase "Lưu summary\nvào Sprint" as UC_SaveSummary
+usecase "Hiển thị\nsummary" as UC_ShowSummary
+
+PL --> UC_Summary
+
+UC_CollectData .up.> UC_Summary : <<include>>
+UC_FormatPrompt .up.> UC_Summary : <<include>>
+UC_CallAPI .up.> UC_Summary : <<include>>
+UC_GenSummary .up.> UC_Summary : <<include>>
+UC_SaveSummary .up.> UC_Summary : <<include>>
+UC_ShowSummary .up.> UC_Summary : <<include>>
+
+@enduml

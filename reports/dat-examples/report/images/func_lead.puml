@@ -1,0 +1,42 @@
+@startuml func_lead
+!theme plain
+skinparam backgroundColor white
+skinparam rectangleBorderThickness 2
+skinparam defaultFontSize 9
+
+title Phân rã chức năng của Project Lead
+
+rectangle "Project Lead" as Lead {
+    rectangle "Quản lý\nProject" as ProjectManagement {
+        rectangle "Tạo project" as CreateProject
+        rectangle "Cập nhật project" as UpdateProject
+        rectangle "Cấu hình\ncustom status" as ConfigStatus
+        rectangle "Cấu hình\nthông báo" as ConfigNotification
+    }
+
+    rectangle "Quản lý\nSprint" as SprintManagement {
+        rectangle "Tạo sprint" as CreateSprint
+        rectangle "Cập nhật sprint" as UpdateSprint
+        rectangle "Bắt đầu sprint" as StartSprint
+        rectangle "Hoàn thành\nsprint" as CompleteSprint
+    }
+
+    rectangle "Quản lý\nThành viên" as TeamManagement {
+        rectangle "Mời thành viên" as InviteMember
+        rectangle "Xóa thành viên" as RemoveMember
+        rectangle "Phân quyền" as AssignPermissions
+    }
+
+    rectangle "Tính năng AI" as AIFeatures {
+        rectangle "Hỏi đáp AI\ncho Sprint" as AIChat
+        rectangle "Tổng hợp LLM\nSprint Summary" as SprintSummary
+        rectangle "Task Breakdown\nvới AI" as TaskBreakdown
+    }
+
+    rectangle "Báo cáo &\nPhân tích" as Reporting {
+        rectangle "Xem báo cáo\ntuần" as WeeklyReport
+        rectangle "Thu thập\ndữ liệu analytics" as CollectAnalytics
+    }
+}
+
+@enduml

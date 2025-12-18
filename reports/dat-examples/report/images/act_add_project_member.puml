@@ -1,0 +1,47 @@
+@startuml act_add_project_member
+|Người dùng|
+start
+:Vào tab "Members";
+:Nhấn "Invite Member";
+|Giao diện người dùng|
+:Hiển thị dialog invite:
+- Search users from org
+- Select role;
+|Người dùng|
+:Tìm và chọn user;
+:Chọn role
+(Lead/Member/Viewer);
+:Nhấn "Add";
+|Giao diện người dùng|
+:Gửi request add member;
+|Hệ thống xử lý|
+:Kiểm tra permission
+(chỉ Lead mới add được);
+if (User là Lead?) then (không)
+  |Giao diện người dùng|
+  :Thông báo không có quyền;
+  |Người dùng|
+  stop
+else (có)
+  :Kiểm tra user đã là member;
+  if (Đã là member?) then (có)
+    |Giao diện người dùng|
+    :Thông báo user đã trong project;
+    |Người dùng|
+    stop
+  else (không)
+    :Thêm ProjectMember record:
+    - userId
+    - projectId
+    - role
+    - joinedAt;
+    :Tạo activity log;
+    :Gửi notification cho user;
+    |Giao diện người dùng|
+    :Thông báo thêm thành công;
+    :Cập nhật danh sách members;
+    |Người dùng|
+    stop
+  endif
+endif
+@enduml

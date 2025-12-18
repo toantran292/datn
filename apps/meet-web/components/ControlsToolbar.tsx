@@ -100,7 +100,7 @@ export function ControlsToolbar({
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             className="fixed bottom-8 z-50"
             style={{
-              left: '40%',
+              left: '30%',
               transform: 'translateX(-50%)',
             }}
             onMouseEnter={() => setIsHoveringToolbar(true)}

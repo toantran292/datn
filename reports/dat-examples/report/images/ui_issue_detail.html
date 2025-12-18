@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Issue Detail</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #1976d2;
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        .header-actions button {
+            background: transparent;
+            border: 1px solid white;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            margin-left: 8px;
+        }
+        .fields {
+            padding: 24px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .field {
+            display: flex;
+            flex-direction: column;
+        }
+        .field label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        .field select, .field input {
+            padding: 6px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .content {
+            padding: 24px;
+        }
+        .section {
+            margin-bottom: 24px;
+        }
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #333;
+        }
+        .description {
+            background: #fafafa;
+            padding: 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #444;
+        }
+        .description ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+        .description li {
+            margin-bottom: 4px;
+        }
+        .subtasks {
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+        }
+        .subtask {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+        }
+        .subtask:last-child {
+            border-bottom: none;
+        }
+        .subtask input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+        }
+        .subtask-key {
+            font-family: monospace;
+            color: #1976d2;
+            font-weight: 600;
+        }
+        .subtask-status {
+            margin-left: auto;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+        .status-done { background: #e8f5e9; color: #2e7d32; }
+        .status-progress { background: #fff3e0; color: #ef6c00; }
+        .status-todo { background: #f5f5f5; color: #666; }
+        .activity {
+            border-top: 1px solid #e0e0e0;
+            padding-top: 12px;
+        }
+        .activity-item {
+            padding: 8px 0;
+            font-size: 13px;
+            color: #666;
+        }
+        .comment {
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 12px;
+            margin-bottom: 12px;
+            background: #fafafa;
+        }
+        .comment-header {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+        .comment-time {
+            font-size: 12px;
+            color: #999;
+        }
+        .comment-body {
+            font-size: 13px;
+            margin-top: 8px;
+            color: #444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>PROJ-45: Setup database schema</h1>
+            <div class="header-actions">
+                <button>Edit</button>
+                <button>Delete</button>
+                <button>✕ Close</button>
+            </div>
+        </div>
+
+        <div class="fields">
+            <div class="field-row">
+                <div class="field">
+                    <label>Type</label>
+                    <select>
+                        <option>Story</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Priority</label>
+                    <select>
+                        <option>High</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Status</label>
+                    <select>
+                        <option>To Do</option>
+                    </select>
+                </div>
+            </div>
+            <div class="field-row">
+                <div class="field">
+                    <label>Sprint</label>
+                    <select>
+                        <option>Sprint 3</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Points</label>
+                    <input type="number" value="3">
+                </div>
+                <div class="field">
+                    <label>Assignees</label>
+                    <select>
+                        <option>John Doe, Jane Smith</option>
+                    </select>
+                </div>
+            </div>
+            <div class="field-row">
+                <div class="field">
+                    <label>Start Date</label>
+                    <input type="date" value="2025-12-11">
+                </div>
+                <div class="field">
+                    <label>Target Date</label>
+                    <input type="date" value="2025-12-18">
+                </div>
+                <div class="field"></div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="section">
+                <div class="section-title">Description</div>
+                <div class="description">
+                    We need to design and implement the database schema for the project management system. This includes:
+                    <ul>
+                        <li>Define all entity tables (Project, Sprint, Issue, etc.)</li>
+                        <li>Set up relationships and foreign keys</li>
+                        <li>Create indexes for performance</li>
+                        <li>Add migration scripts</li>
+                    </ul>
+                    <br>
+                    <strong>Acceptance Criteria:</strong>
+                    <ul>
+                        <li>☐ All tables created with proper constraints</li>
+                        <li>☐ Prisma schema file updated</li>
+                        <li>☐ Migration tested on dev environment</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Sub-tasks (2/4 completed)</div>
+                <div class="subtasks">
+                    <div class="subtask">
+                        <input type="checkbox" checked>
+                        <span class="subtask-key">PROJ-46</span>
+                        <span>Design entity relationships</span>
+                        <span class="subtask-status status-done">Done</span>
+                    </div>
+                    <div class="subtask">
+                        <input type="checkbox" checked>
+                        <span class="subtask-key">PROJ-47</span>
+                        <span>Create Prisma schema</span>
+                        <span class="subtask-status status-done">Done</span>
+                    </div>
+                    <div class="subtask">
+                        <input type="checkbox">
+                        <span class="subtask-key">PROJ-48</span>
+                        <span>Write migration scripts</span>
+                        <span class="subtask-status status-progress">In Progress</span>
+                    </div>
+                    <div class="subtask">
+                        <input type="checkbox">
+                        <span class="subtask-key">PROJ-49</span>
+                        <span>Test on staging environment</span>
+                        <span class="subtask-status status-todo">To Do</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Activity</div>
+                <div class="activity">
+                    <div class="activity-item">John Doe updated status from "Backlog" to "To Do" - 2 hours ago</div>
+                    <div class="activity-item">Jane Smith added comment - 3 hours ago</div>
+                    <div class="activity-item">Mike Johnson changed priority from "Medium" to "High" - 1 day ago</div>
+                    <div class="activity-item">John Doe created this issue - 2 days ago</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Comments (2)</div>
+                <div class="comment">
+                    <div class="comment-header">
+                        Jane Smith <span class="comment-time">- 3 hours ago</span>
+                    </div>
+                    <div class="comment-body">
+                        I've reviewed the schema and it looks good. We should add an index on the project_id column for better query performance.
+                    </div>
+                </div>
+                <div class="comment">
+                    <div class="comment-header">
+                        John Doe <span class="comment-time">- 1 day ago</span>
+                    </div>
+                    <div class="comment-body">
+                        Starting work on this. Will have the initial draft ready by EOD.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

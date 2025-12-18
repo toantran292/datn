@@ -1,0 +1,62 @@
+\phantomsection
+\subsection*{4. Đối tượng và Phạm vi nghiên cứu}
+\addcontentsline{toc}{subsection}{4. Đối tượng và Phạm vi nghiên cứu}
+\setcounter{subsection}{4}
+\setcounter{subsubsection}{0}
+\setcounter{figure}{0}
+
+\subsubsection{Đối tượng nghiên cứu}
+
+\begin{itemize}
+    \item Đặc điểm quản lý dự án Agile trong môi trường phát triển phần mềm hiện đại, nhấn mạnh sự cần thiết của việc tích hợp dữ liệu đa nguồn (task, communication, meeting) vào một nền tảng thống nhất.
+
+    \item Yêu cầu kỹ thuật và chức năng của một nền tảng SaaS hỗ trợ Agile: khả năng mở rộng, multi-tenancy (hỗ trợ nhiều workspace độc lập), bảo mật dữ liệu cấp tổ chức và dự án, quản lý người dùng/vai trò/quyền hạn, lưu trữ tệp tập trung, hệ thống thông báo và truyền thông sự kiện.
+
+    \item Cơ chế quản lý tài khoản, workspace, xác thực và phân quyền: nghiên cứu cách thiết kế hệ thống tài khoản đa workspace, vai trò và quyền hạn linh hoạt, cũng như cách tích hợp xác thực (OAuth2, JWT) và phân quyền dựa trên vai trò (RBAC) hoặc dựa trên chính sách (ABAC).
+
+    \item Kiến trúc microservice cho hệ thống quản lý dự án: nghiên cứu cách phân tách các chức năng thành các dịch vụ nhỏ độc lập (edge service với Nginx, account service với Spring Boot, notification/file-storage/tenant-bff/AI service với NestJS), cách chúng giao tiếp qua API RESTful, cách quản lý database riêng biệt cho từng service, cách đồng bộ dữ liệu liên service khi cần thiết; đồng thời nghiên cứu cơ chế bảo mật giao tiếp nội bộ giữa các service thông qua xác thực và ký kết thông tin (HMAC) để đảm bảo tính toàn vẹn và xác thực yêu cầu.
+
+    \item Giao diện quản trị (admin) và trải nghiệm người dùng cuối: nghiên cứu cách thiết kế màn hình admin cho chủ workspace sử dụng Next.js, cho phép quản lý thành viên, cấu hình workspace, xem thống kê và dashboard tổng hợp được cung cấp bởi phân hệ nền tảng; đồng thời tìm hiểu cách tối ưu UX để dễ sử dụng và trực quan.
+
+    \item Tích hợp AI để tổng hợp và phân tích dữ liệu đa nguồn: nghiên cứu cách sử dụng các API/AI model (như OpenAI API, Gemini API hoặc các mô hình nguồn mở) để tóm tắt văn bản, trích xuất thông tin quan trọng từ các cuộc họp, hội thoại, công việc; từ đó xây dựng AI service cung cấp các endpoint để các phân hệ khác gọi khi cần trợ giúp AI trong việc báo cáo, tổng hợp hoặc đề xuất hành động.
+\end{itemize}
+
+\subsubsection{Phạm vi nghiên cứu}
+
+\textbf{Về mặt lý thuyết:}
+
+\begin{itemize}
+    \item Tìm hiểu các mô hình quản lý dự án Agile (Scrum, Kanban), yêu cầu về minh bạch thông tin, cộng tác liên chức năng và vai trò của công cụ tập trung trong việc hỗ trợ các quy trình Agile (sprint planning, daily standup, retrospective, v.v.).
+
+    \item Nghiên cứu kiến trúc microservice: nguyên tắc thiết kế service nhỏ, gọn, độc lập; cách quản lý API Gateway/edge service để định tuyến và bảo mật; cách triển khai service discovery, load balancing, và fault tolerance trong môi trường microservice; nghiên cứu cơ chế bảo mật nội bộ giữa các service thông qua ký kết HMAC để xác minh tính hợp lệ của yêu cầu từ edge service.
+
+    \item Nghiên cứu công nghệ Java Spring Boot cho dịch vụ account: tìm hiểu cách xây dựng RESTful API, tích hợp Spring Security cho xác thực và phân quyền, sử dụng Spring Data JPA để quản lý cơ sở dữ liệu người dùng và workspace.
+
+    \item Tìm hiểu công nghệ NodeJS/NestJS cho các dịch vụ notification, file-storage, tenant-bff và AI: nghiên cứu cách NestJS tổ chức module, controller, service, dependency injection; cách tích hợp với database (PostgreSQL), cách xử lý file upload/download, cách gửi thông báo qua nhiều kênh và cách gọi các API bên ngoài (ví dụ OpenAI API) từ AI service.
+
+    \item Nghiên cứu công nghệ Next.js cho giao diện admin: tìm hiểu cách xây dựng giao diện dashboard và form quản lý phức tạp với React, cách tích hợp authentication và authorization trên frontend, cách tối ưu hiệu năng trang web.
+
+    \item Tìm hiểu về quản lý file trong môi trường phân tán: cách lưu trữ file an toàn (local storage, S3-compatible storage), cách quản lý metadata của file, cách kiểm soát quyền truy cập file theo workspace và project, cách tối ưu việc upload/download file lớn.
+
+    \item Nghiên cứu cơ chế thông báo (notification) theo mô hình publish-subscribe hoặc event-driven, cách lưu trữ và phân phối thông báo đến nhiều người dùng, cách quản lý trạng thái đã đọc/chưa đọc và ưu tiên thông báo, cũng như cách tích hợp với email hoặc các kênh bên ngoài.
+\end{itemize}
+
+\textbf{Về mặt lập trình:}
+
+\begin{itemize}
+    \item Cấu hình và triển khai Nginx làm API Gateway và reverse proxy, định tuyến request đến các service phía sau, cấu hình SSL/TLS, cân bằng tải và bảo mật điểm vào hệ thống; triển khai logic xác thực người dùng tại edge và ký kết thông tin xác thực bằng HMAC trước khi chuyển tiếp yêu cầu đến các service nội bộ.
+
+    \item Xây dựng Account Service bằng Java Spring Boot: thiết kế cơ sở dữ liệu cho User, Workspace, Role, Permission; triển khai API đăng ký, đăng nhập, quản lý workspace, mời thành viên, phân quyền; tích hợp Spring Security và JWT để bảo vệ API; viết unit test và integration test cho các chức năng xác thực và phân quyền.
+
+    \item Phát triển Notification Service bằng NestJS: thiết kế database schema cho notification (người gửi, người nhận, nội dung, trạng thái, loại thông báo); xây dựng API để tạo, lấy danh sách, đánh dấu đã đọc thông báo; tích hợp với message queue (ví dụ RabbitMQ hoặc Redis Pub/Sub) để nhận sự kiện từ các service khác và phát thông báo theo thời gian thực hoặc qua email; triển khai middleware xác minh chữ ký HMAC từ edge service để đảm bảo yêu cầu hợp lệ.
+
+    \item Phát triển File-Storage Service bằng NestJS: thiết kế cơ chế lưu trữ file (local hoặc S3-compatible), quản lý metadata (tên file, kích thước, loại, workspace, project, người upload), triển khai API upload/download file, kiểm soát quyền truy cập file theo workspace và project, tối ưu hiệu năng (streaming, chunked upload) và bảo mật (virus scanning nếu có); áp dụng xác minh HMAC cho các yêu cầu từ edge service.
+
+    \item Phát triển AI Service bằng NestJS: thiết kế các endpoint cho các chức năng AI như tóm tắt nội dung, trích xuất thông tin, phân tích dữ liệu đa nguồn; tích hợp với các API bên ngoài (OpenAI, Gemini, v.v.) hoặc mô hình nguồn mở (nếu có); xử lý dữ liệu đầu vào từ các service khác (project management, communication, meeting) và trả về kết quả dạng JSON cho client hoặc các service khác; triển khai xác minh HMAC để bảo vệ API khỏi các yêu cầu không hợp lệ.
+
+    \item Xây dựng giao diện Admin bằng Next.js: thiết kế các trang quản lý workspace, user, role, permission; hiển thị dashboard tổng hợp số liệu từ các service; tích hợp với API của Account Service và các service khác để lấy dữ liệu; triển khai authentication/authorization trên frontend; tối ưu hiệu năng tải trang và trải nghiệm người dùng.
+
+    \item Thiết kế và triển khai cơ sở dữ liệu PostgreSQL cho từng service: định nghĩa schema, index, constraint, migration script; đảm bảo tính toàn vẹn dữ liệu và hiệu năng truy vấn; xem xét cách đồng bộ dữ liệu liên service khi cần thiết (ví dụ: khi workspace bị xóa, các file và notification liên quan cũng cần xử lý).
+
+    \item Tích hợp và kiểm thử toàn bộ hệ thống: viết integration test cho luồng dữ liệu giữa các service; kiểm thử bảo mật, hiệu năng và khả năng mở rộng; triển khai hệ thống lên môi trường staging hoặc production (sử dụng Docker, Docker Compose hoặc Kubernetes nếu có); viết tài liệu triển khai và hướng dẫn sử dụng cho người quản trị và người phát triển tiếp theo.
+\end{itemize}

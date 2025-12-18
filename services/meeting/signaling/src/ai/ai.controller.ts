@@ -7,9 +7,14 @@ import {
   Query,
   HttpException,
   HttpStatus,
+  Sse,
 } from '@nestjs/common';
 import { RagClient, SUPPORTED_LANGUAGES, type LanguageCode, type MeetingContext } from '../common/rag';
 import { TranscriptService, SaveTranscriptDto } from './transcript.service';
+
+interface SSEMessage {
+  data: string;
+}
 
 interface TranslateRequest {
   text: string;

@@ -1,0 +1,45 @@
+@startuml act_view_activity
+|Người dùng|
+start
+:Vào tab "Activity";
+|Giao diện người dùng|
+:Gửi request lấy activities;
+|Hệ thống xử lý|
+:Query IssueActivity
+WHERE projectId = project
+ORDER BY createdAt DESC
+LIMIT 50;
+:Populate user info
+cho từng activity;
+:Populate entity info
+(issue/sprint);
+:Format timestamps;
+|Giao diện người dùng|
+:Render activity timeline:
+- User avatar
+- Action type
+- Entity affected
+- Changes (before/after)
+- Timestamp;
+:Setup infinite scroll;
+|Người dùng|
+:Xem activities;
+if (Scroll xuống cuối?) then (có)
+  |Giao diện người dùng|
+  :Load more activities
+  (pagination);
+  |Hệ thống xử lý|
+  :Query next page;
+  |Giao diện người dùng|
+  :Append vào timeline;
+endif
+:Apply filters:
+- By user
+- By action type
+- By date range;
+|Giao diện người dùng|
+:Filter activities client-side
+hoặc re-fetch;
+|Người dùng|
+stop
+@enduml

@@ -67,11 +67,11 @@ export class IssueStatusStore implements IIssueStatusStore {
         statuses.forEach((status) => {
           update(this.issueStatusMap, [status.id], () => status);
         });
-        
+
         // Sort by order and store IDs
         const sortedStatuses = statuses.sort((a, b) => a.order - b.order);
         update(this.projectIssueStatusIdsMap, [projectId], () => sortedStatuses.map((s) => s.id));
-        
+
         this.projectFetchStatus[projectId] = "complete";
       });
 
@@ -180,9 +180,7 @@ export class IssueStatusStore implements IIssueStatusStore {
   /**
    * Get a single issue status by ID
    */
-  getIssueStatusById = (statusId: string): IIssueStatus | undefined => {
-    return this.issueStatusMap[statusId];
-  };
+  getIssueStatusById = (statusId: string): IIssueStatus | undefined => this.issueStatusMap[statusId];
 
   /**
    * Get loader state for a project

@@ -61,6 +61,7 @@ export const SidebarProjectsListItem: React.FC<Props> = observer((props) => {
   const [isMenuActive, setIsMenuActive] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [instruction, setInstruction] = useState<TDragInstruction>(undefined);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const project = getProjectById(projectId);
 

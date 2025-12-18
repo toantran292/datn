@@ -1,0 +1,129 @@
+% ==================== NHÓM ISSUE MANAGEMENT ====================
+
+\subsubsection{Chức năng tạo Issue}
+
+\textbf{Mục đích:} Cho phép Team Members tạo issue mới (STORY, TASK, BUG, EPIC) trong project với title, description, priority, assignee và optional AI-generated description.
+
+\textbf{Dữ liệu được dùng:}
+
+\begin{longtblr}[
+  caption = {Bảng dữ liệu được dùng cho chức năng tạo Issue},
+  label = {tab:func_create_issue}
+]{
+  width=\linewidth, rowhead=2, hlines, vlines,
+  colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
+  rows={m},
+  row{1-2}={font=\bfseries, c, bg=gray9}
+}
+\SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
+& & Thêm & Sửa & Xóa & Truy vấn \\
+1 & Issue & X & & & X \\
+2 & Project & & & & X \\
+3 & CustomStatus & & & & X \\
+4 & ProjectMember & & & & X \\
+5 & Activity & X & & & \\
+6 & AuditLog & X & & & \\
+\end{longtblr}
+
+\textbf{Xử lý:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{images/act_create_issue.png}
+\caption{Sơ đồ hoạt động của chức năng tạo Issue}
+\label{fig:act_create_issue}
+\end{figure}
+
+\subsubsection{Chức năng Update Issue Status (Drag-and-drop)}
+
+\textbf{Mục đích:} Cho phép Team Members drag-and-drop issues giữa các custom status columns trên Board view, update status và sortOrder real-time với optimistic UI updates và WebSocket broadcast.
+
+\textbf{Dữ liệu được dùng:}
+
+\begin{longtblr}[
+  caption = {Bảng dữ liệu được dùng cho chức năng Update Issue Status},
+  label = {tab:func_update_issue_status}
+]{
+  width=\linewidth, rowhead=2, hlines, vlines,
+  colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
+  rows={m},
+  row{1-2}={font=\bfseries, c, bg=gray9}
+}
+\SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
+& & Thêm & Sửa & Xóa & Truy vấn \\
+1 & Issue & & X & & X \\
+2 & CustomStatus & & & & X \\
+3 & ProjectMember & & & & X \\
+4 & Activity & X & & & \\
+5 & AuditLog & X & & & \\
+\end{longtblr}
+
+\textbf{Xử lý:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{images/act_drag_drop_issue.png}
+\caption{Sơ đồ hoạt động của chức năng Update Issue Status (Drag-and-drop)}
+\label{fig:act_drag_drop_issue}
+\end{figure}
+
+\subsubsection{Chức năng Generate AI Issue Description}
+
+\textbf{Mục đích:} Cho phép Team Members request AI-generated description từ issue title, LLM Provider analyze title và generate detailed description trong Markdown format với acceptance criteria và technical notes.
+
+\textbf{Dữ liệu được dùng:}
+
+\begin{longtblr}[
+  caption = {Bảng dữ liệu được dùng cho chức năng Generate AI Issue Description},
+  label = {tab:func_generate_issue_description}
+]{
+  width=\linewidth, rowhead=2, hlines, vlines,
+  colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
+  rows={m},
+  row{1-2}={font=\bfseries, c, bg=gray9}
+}
+\SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
+& & Thêm & Sửa & Xóa & Truy vấn \\
+1 & Issue & & X & & X \\
+2 & Project & & & & X \\
+\end{longtblr}
+
+\textbf{Xử lý:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{images/act_generate_issue_description.png}
+\caption{Sơ đồ hoạt động của chức năng Generate AI Issue Description}
+\label{fig:act_generate_issue_description}
+\end{figure}
+
+\subsubsection{Chức năng Break Down EPIC (Task Breakdown)}
+
+\textbf{Mục đích:} Cho phép Project Lead request AI-powered task breakdown cho EPIC issues, LLM analyze EPIC description và generate sub-tasks với titles, descriptions, story points estimates.
+
+\textbf{Dữ liệu được dùng:}
+
+\begin{longtblr}[
+  caption = {Bảng dữ liệu được dùng cho chức năng Break Down EPIC},
+  label = {tab:func_breakdown_epic}
+]{
+  width=\linewidth, rowhead=2, hlines, vlines,
+  colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
+  rows={m},
+  row{1-2}={font=\bfseries, c, bg=gray9}
+}
+\SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
+& & Thêm & Sửa & Xóa & Truy vấn \\
+1 & Issue & X & & & X \\
+2 & Project & & & & X \\
+3 & Activity & X & & & \\
+\end{longtblr}
+
+\textbf{Xử lý:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{images/act_breakdown_epic.png}
+\caption{Sơ đồ hoạt động của chức năng Break Down EPIC}
+\label{fig:act_breakdown_epic}
+\end{figure}

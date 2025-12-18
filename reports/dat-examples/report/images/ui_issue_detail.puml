@@ -1,0 +1,77 @@
+@startuml ui_issue_detail
+!theme plain
+skinparam backgroundColor white
+
+salt
+{+
+  {* PROJ-45: Setup database schema | [Edit] [Delete] [X Close] }
+  {
+    {
+      Type: [Story v] | Priority: [High v] | Status: [To Do v]
+    }
+    --
+    {
+      Sprint: [Sprint 3 v] | Points: [3........] | Assignees: [John Doe, Jane Smith     v]
+    }
+    --
+    {
+      Start Date: [2025-12-11   ] | Target Date: [2025-12-18   ]
+    }
+  }
+  ==
+  {SI
+    .
+    {
+      **Description:**
+      --
+      We need to design and implement the database schema for the project
+      management system. This includes:
+
+      - Define all entity tables (Project, Sprint, Issue, etc.)
+      - Set up relationships and foreign keys
+      - Create indexes for performance
+      - Add migration scripts
+
+      **Acceptance Criteria:**
+      - [ ] All tables created with proper constraints
+      - [ ] Prisma schema file updated
+      - [ ] Migration tested on dev environment
+    }
+    ==
+    {
+      **Sub-tasks** (2/4 completed)
+      {#
+        | [X] | PROJ-46 | Design entity relationships | Done
+        | [X] | PROJ-47 | Create Prisma schema | Done
+        | [ ] | PROJ-48 | Write migration scripts | In Progress
+        | [ ] | PROJ-49 | Test on staging | To Do
+      }
+    }
+    ==
+    {
+      **Activity** (5)
+      --
+      <color:#666>John Doe updated status from "Backlog" to "To Do" - 2 hours ago
+      <color:#666>Jane Smith added comment - 3 hours ago
+      <color:#666>Mike Johnson changed priority from "Medium" to "High" - 1 day ago
+      <color:#666>John Doe added assignee Jane Smith - 1 day ago
+      <color:#666>John Doe created this issue - 2 days ago
+    }
+    ==
+    {
+      **Comments** (2)
+      --
+      **Jane Smith** - 3 hours ago
+      I've reviewed the schema and it looks good. We should add an
+      index on the project_id column for better query performance.
+      --
+      **John Doe** - 1 day ago
+      Starting work on this. Will have the initial draft ready by EOD.
+      --
+      [Add comment.....................................................]
+      [Submit]
+    }
+    .
+  }
+}
+@enduml

@@ -1,0 +1,48 @@
+@startuml act_websocket_broadcast
+|Người dùng A|
+start
+:Thực hiện update
+(vd: drag issue);
+|Giao diện người dùng|
+:Gửi HTTP request;
+|Hệ thống xử lý|
+:Thực hiện update;
+:Tạo activity log;
+:Lấy danh sách
+project members online;
+:Tạo WebSocket event:
+{
+  type: "issue.updated",
+  projectId: "...",
+  issueId: "...",
+  changes: {...},
+  userId: "..."
+};
+:Broadcast qua
+WebSocket server;
+|WebSocket Server|
+:Gửi event đến tất cả
+connections của project;
+fork
+  |Giao diện người dùng (User A)|
+  :Nhận confirmation;
+  :Update UI;
+fork again
+  |Giao diện người dùng (User B)|
+  :Nhận event;
+  :Check event type;
+  :Update UI tương ứng:
+  - Move issue card
+  - Update issue detail
+  - Show notification;
+  |Người dùng B|
+  :Thấy update real-time;
+fork again
+  |Giao diện người dùng (User C)|
+  :Nhận event;
+  :Update UI real-time;
+  |Người dùng C|
+  :Thấy update real-time;
+end fork
+stop
+@enduml

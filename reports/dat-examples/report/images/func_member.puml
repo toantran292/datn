@@ -1,0 +1,42 @@
+@startuml func_member
+!theme plain
+skinparam backgroundColor white
+skinparam rectangleBorderThickness 2
+skinparam defaultFontSize 9
+
+title Phân rã chức năng của Member
+
+rectangle "Member" as Member {
+    rectangle "Quản lý\nTài khoản" as Account {
+        rectangle "Đăng nhập" as Login
+        rectangle "Đăng xuất" as Logout
+        rectangle "Đổi mật khẩu" as ChangePassword
+        rectangle "Cập nhật\nthông tin" as UpdateProfile
+    }
+
+    rectangle "Quản lý\nIssues" as IssueManagement {
+        rectangle "Xem danh sách\nissues" as ViewIssues
+        rectangle "Tạo issue" as CreateIssue
+        rectangle "Cập nhật issue" as UpdateIssue
+        rectangle "Thêm comment" as AddComment
+    }
+
+    rectangle "Làm việc với\nBacklog & Board" as WorkManagement {
+        rectangle "Xem Backlog" as ViewBacklog
+        rectangle "Xem Board\nKanban" as ViewBoard
+        rectangle "Kéo thả issue" as DragDropIssue
+    }
+
+    rectangle "Quản lý\nTệp đính kèm" as FileManagement {
+        rectangle "Upload tệp" as UploadFile
+        rectangle "Download tệp" as DownloadFile
+        rectangle "Xóa tệp" as DeleteFile
+    }
+
+    rectangle "Thông báo" as Notification {
+        rectangle "Xem thông báo" as ViewNotifications
+        rectangle "Nhận thông báo\nreal-time" as ReceiveNotifications
+    }
+}
+
+@enduml

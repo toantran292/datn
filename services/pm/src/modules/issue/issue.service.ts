@@ -1,9 +1,11 @@
 import { Injectable, NotFoundException, BadRequestException, Logger } from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service";
+import { RagService } from "../rag/rag.service";
 import { CreateIssueDto } from "./dto/create-issue.dto";
 import { UpdateIssueDto } from "./dto/update-issue.dto";
 import { ReorderIssueDto, ReorderPosition } from "./dto/reorder-issue.dto";
 import { IssueResponseDto } from "./dto/issue-response.dto";
+import { SearchIssuesDto, SearchIssuesResponseDto, SearchResultDto } from "./dto/search-issues.dto";
 import { Prisma } from "@prisma/client";
 import { RagClient } from "../../common/rag/rag.client";
 
@@ -97,6 +99,10 @@ export class IssueService {
         : IssueService.DEFAULT_SORT_INCREMENT;
     }
 
+    // Default start and target dates to today if not provided
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to start of day
+
     const issue = await this.prisma.issue.create({
       data: {
         projectId: dto.projectId,
@@ -111,8 +117,8 @@ export class IssueService {
         point: dto.point ? new Prisma.Decimal(dto.point) : null,
         sequenceId,
         sortOrder: new Prisma.Decimal(sortOrder),
-        startDate: dto.startDate ? new Date(dto.startDate) : null,
-        targetDate: dto.targetDate ? new Date(dto.targetDate) : null,
+        startDate: dto.startDate ? new Date(dto.startDate) : today,
+        targetDate: dto.targetDate ? new Date(dto.targetDate) : today,
         assigneesJson: dto.assignees || [],
         createdBy: userId,
       },
@@ -760,5 +766,197 @@ export class IssueService {
     }
 
     return parts.join('\n');
+  }
+
+  /**
+   * Search issues with optional AI semantic search
+   */
+  async searchIssues(dto: SearchIssuesDto, orgId: string): Promise<SearchIssuesResponseDto> {
+    const {
+      query,
+      useAI = false,
+      priorities,
+      types,
+      statusIds,
+      sprintIds,
+      noSprint,
+      page = 1,
+      limit = 20,
+    } = dto;
+
+    // If AI search is enabled and query provided
+    if (useAI && query && query.trim()) {
+      return this.aiSemanticSearch(dto, orgId);
+    }
+
+    // Normal text search with filters
+    return this.normalTextSearch(dto, orgId);
+  }
+
+  /**
+   * AI Semantic Search using RAG
+   */
+  private async aiSemanticSearch(dto: SearchIssuesDto, orgId: string): Promise<SearchIssuesResponseDto> {
+    const { query, limit = 20, page = 1, priorities, types, statusIds, sprintIds, noSprint } = dto;
+
+    // Get similar issues using vector search
+    const similarIssues = await this.ragService.findSimilarIssues({
+      query: query!,
+      limit: limit * 2, // Get more results for filtering
+      threshold: 0.65, // Lower threshold for more results
+    });
+
+    // Convert to full issue objects with status
+    let issueIds = similarIssues.map((si) => si.id);
+
+    // Build filter where clause
+    const where: Prisma.IssueWhereInput = {
+      id: { in: issueIds },
+      project: { orgId },
+    };
+
+    // Apply additional filters
+    if (priorities && priorities.length > 0) {
+      where.priority = { in: priorities };
+    }
+    if (types && types.length > 0) {
+      where.type = { in: types };
+    }
+    if (statusIds && statusIds.length > 0) {
+      where.statusId = { in: statusIds };
+    }
+    if (sprintIds && sprintIds.length > 0) {
+      where.sprintId = { in: sprintIds };
+    }
+    if (noSprint) {
+      where.sprintId = null;
+    }
+
+    // Fetch issues with filters
+    const issues = await this.prisma.issue.findMany({
+      where,
+      include: {
+        status: true,
+      },
+      take: limit,
+      skip: (page - 1) * limit,
+    });
+
+    // Map similarity scores
+    const similarityMap = new Map(similarIssues.map((si) => [si.id, si.similarity]));
+
+    // Build search results with similarity scores
+    const results: SearchResultDto[] = issues.map((issue) => ({
+      id: issue.id,
+      name: issue.name,
+      description: issue.description || undefined,
+      type: issue.type,
+      priority: issue.priority,
+      projectId: issue.projectId,
+      status: {
+        id: issue.status.id,
+        name: issue.status.name,
+        color: issue.status.color,
+      },
+      similarity: similarityMap.get(issue.id),
+      createdAt: issue.createdAt,
+      updatedAt: issue.updatedAt,
+    }));
+
+    // Sort by similarity score
+    results.sort((a, b) => (b.similarity || 0) - (a.similarity || 0));
+
+    const total = results.length;
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      results,
+      total,
+      page,
+      limit,
+      totalPages,
+      query: query!,
+      useAI: true,
+    };
+  }
+
+  /**
+   * Normal text search with filters
+   */
+  private async normalTextSearch(dto: SearchIssuesDto, orgId: string): Promise<SearchIssuesResponseDto> {
+    const { query, limit = 20, page = 1, priorities, types, statusIds, sprintIds, noSprint } = dto;
+
+    // Build where clause
+    const where: Prisma.IssueWhereInput = {
+      project: { orgId },
+    };
+
+    // Text search
+    if (query && query.trim()) {
+      where.OR = [
+        { name: { contains: query, mode: "insensitive" } },
+        { description: { contains: query, mode: "insensitive" } },
+      ];
+    }
+
+    // Apply filters
+    if (priorities && priorities.length > 0) {
+      where.priority = { in: priorities };
+    }
+    if (types && types.length > 0) {
+      where.type = { in: types };
+    }
+    if (statusIds && statusIds.length > 0) {
+      where.statusId = { in: statusIds };
+    }
+    if (sprintIds && sprintIds.length > 0) {
+      where.sprintId = { in: sprintIds };
+    }
+    if (noSprint) {
+      where.sprintId = null;
+    }
+
+    // Get total count
+    const total = await this.prisma.issue.count({ where });
+
+    // Fetch issues
+    const issues = await this.prisma.issue.findMany({
+      where,
+      include: {
+        status: true,
+      },
+      orderBy: [{ updatedAt: "desc" }],
+      take: limit,
+      skip: (page - 1) * limit,
+    });
+
+    // Build search results
+    const results: SearchResultDto[] = issues.map((issue) => ({
+      id: issue.id,
+      name: issue.name,
+      description: issue.description || undefined,
+      type: issue.type,
+      priority: issue.priority,
+      projectId: issue.projectId,
+      status: {
+        id: issue.status.id,
+        name: issue.status.name,
+        color: issue.status.color,
+      },
+      createdAt: issue.createdAt,
+      updatedAt: issue.updatedAt,
+    }));
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      results,
+      total,
+      page,
+      limit,
+      totalPages,
+      query: query || "",
+      useAI: false,
+    };
   }
 }

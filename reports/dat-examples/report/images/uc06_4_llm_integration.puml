@@ -1,0 +1,29 @@
+@startuml
+!theme plain
+skinparam defaultFontSize 11
+skinparam usecaseFontSize 10
+
+left to right direction
+
+actor "System" as SYS
+
+usecase "LLM API\nIntegration" as UC_LLM
+usecase "Load LLM\nconfiguration" as UC_LoadConfig
+usecase "Format\nprompt" as UC_FormatPrompt
+usecase "Send HTTP\nrequest" as UC_SendHTTP
+usecase "LLM Provider\nxử lý" as UC_Process
+usecase "Parse và\nvalidate response" as UC_Parse
+usecase "Ghi log" as UC_Log
+usecase "Trả result" as UC_Return
+
+SYS --> UC_LLM
+
+UC_LoadConfig .up.> UC_LLM : <<include>>
+UC_FormatPrompt .up.> UC_LLM : <<include>>
+UC_SendHTTP .up.> UC_LLM : <<include>>
+UC_Process .up.> UC_LLM : <<include>>
+UC_Parse .up.> UC_LLM : <<include>>
+UC_Log .up.> UC_LLM : <<include>>
+UC_Return .up.> UC_LLM : <<include>>
+
+@enduml

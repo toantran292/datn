@@ -1,0 +1,43 @@
+\subsection{Yêu cầu chức năng}
+
+\subsubsection{Sơ đồ trường hợp sử dụng}
+
+Dựa trên mô tả bài toán ở mục 1.1, phân hệ quản lý dự án có 3 tác nhân chính (Project Lead/Manager, Team Member, Viewer/Stakeholder) và các hệ thống bên ngoài tương tác để hỗ trợ quy trình Scrum. Các yêu cầu chức năng được phân loại theo từng tác nhân và được biểu diễn thông qua các sơ đồ trường hợp sử dụng (use case) dưới đây.
+
+\begin{itemize}
+    \item \textbf{Sơ đồ trường hợp sử dụng tổng quan:} Sơ đồ này mô tả toàn bộ các chức năng chính của phân hệ quản lý dự án và mối quan hệ giữa các tác nhân với hệ thống. Phân hệ quản lý dự án cung cấp các nhóm chức năng chính bao gồm: quản lý dự án (project configuration), quản lý sprint (sprint lifecycle), quản lý issue (create, update, delete, reorder issues), quản lý trạng thái tùy chỉnh (custom issue status), bảng Kanban (board view), quản lý backlog (backlog view), bình luận và theo dõi hoạt động (comments \& activity log), phân tích và thống kê (analytics), và tích hợp AI (issue enhancement, story point estimation, sprint summary). Mỗi tác nhân có quyền truy cập vào các chức năng tương ứng với vai trò của mình: Project Lead có toàn quyền, Team Member có quyền thao tác công việc, Viewer chỉ có quyền xem.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{images/usecase_tongquan.png}
+        \caption{Sơ đồ trường hợp sử dụng tổng quan của phân hệ quản lý dự án}
+        \label{fig:usecase_tongquan}
+    \end{figure}
+
+    \item \textbf{Sơ đồ trường hợp sử dụng của Project Lead:} Project Lead hoặc Project Manager là tác nhân có quyền hạn cao nhất trong dự án, chịu trách nhiệm quản lý toàn bộ các khía cạnh của dự án. Các chức năng chính của Project Lead bao gồm: quản lý dự án (tạo dự án mới, cấu hình thông tin dự án như identifier, project lead, default assignee, cập nhật và xóa dự án), quản lý sprint (tạo sprint mới với sprint goal và timeline, bắt đầu sprint chuyển từ FUTURE sang ACTIVE, hoàn thành sprint chuyển sang CLOSED, xem tổng quan sprint với số lượng issue theo trạng thái), quản lý trạng thái tùy chỉnh (tạo, chỉnh sửa, xóa custom issue status, sắp xếp lại thứ tự status trên board bằng drag-and-drop, cấu hình màu sắc cho từng status), quản lý issue với toàn quyền (tạo, xem, cập nhật, xóa bất kỳ issue nào trong dự án, gán assignees, thiết lập parent-child relationships, sắp xếp lại thứ tự issue), quản lý board và backlog (xem board view với các cột status, xem backlog view với danh sách sprint, kéo thả issue giữa các cột và sprint), quản lý comments và activity (thêm, xem, chỉnh sửa, xóa comments, xem đầy đủ activity log của mọi issue), xem analytics và báo cáo (biểu đồ Created vs Resolved, thống kê phân bố issue theo type/priority/status, đánh giá hiệu suất sprint), và sử dụng các tính năng AI (AI Issue Enhancement để cải thiện mô tả issue, Smart Story Point Estimation để ước lượng story points, Sprint Summary để tạo báo cáo tổng kết sprint tự động).
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{images/usecase_project_lead.png}
+        \caption{Sơ đồ trường hợp sử dụng của Project Lead/Manager}
+        \label{fig:usecase_project_lead}
+    \end{figure}
+
+    \item \textbf{Sơ đồ trường hợp sử dụng của Team Member:} Team Member là thành viên tham gia trực tiếp vào việc thực hiện các công việc trong dự án, bao gồm Developer, Tester, Designer và các vai trò kỹ thuật khác. Các chức năng chính của Team Member bao gồm: quản lý issue (tạo issue mới, xem danh sách issue, cập nhật issue do mình tạo hoặc được gán, thay đổi trạng thái issue bằng cách kéo thả trên board hoặc backlog, cập nhật các thuộc tính như mô tả, story points, ngày bắt đầu/mục tiêu, gán assignees, thiết lập parent-child relationships, không có quyền xóa issue của người khác), xem sprint (xem danh sách sprint, xem chi tiết sprint với tổng quan số lượng issue, không có quyền tạo, bắt đầu hoặc hoàn thành sprint), sử dụng board view (xem bảng Kanban với các cột status, kéo thả issue giữa các cột để thay đổi trạng thái, lọc issue theo sprint, sắp xếp lại thứ tự issue trong cột), sử dụng backlog view (xem danh sách sprint và backlog, kéo thả issue giữa các sprint để di chuyển, xem panel chi tiết issue ở bên phải), quản lý comments (thêm comment vào issue, chỉnh sửa và xóa comment của mình, xem comment của người khác), xem activity log (theo dõi lịch sử thay đổi của issue để hiểu rõ quá trình phát triển), xem analytics (xem các biểu đồ và thống kê về dự án, nhưng không có quyền cấu hình hoặc xuất báo cáo), và sử dụng tính năng AI (AI Issue Enhancement để cải thiện mô tả issue khi tạo hoặc chỉnh sửa, Smart Story Point Estimation để nhận gợi ý ước lượng story points cho issue của mình, không có quyền tạo Sprint Summary).
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{images/usecase_team_member.png}
+        \caption{Sơ đồ trường hợp sử dụng của Team Member}
+        \label{fig:usecase_team_member}
+    \end{figure}
+
+    \item \textbf{Sơ đồ trường hợp sử dụng của h:} Viewer hoặc Stakeholder là tác nhân có quyền chỉ đọc (read-only) đối với dự án, thường là khách hàng, nhà đầu tư, quản lý cấp cao hoặc các bên liên quan cần theo dõi tiến độ dự án nhưng không tham gia trực tiếp vào quá trình thực hiện. Các chức năng chính của Viewer/Stakeholder bao gồm: xem tổng quan dự án (xem thông tin cơ bản của dự án như tên, mô tả, project lead, timeline, không có quyền chỉnh sửa cấu hình), xem board view (xem bảng Kanban với các cột status và issue cards, xem trạng thái hiện tại của các công việc, không có quyền kéo thả hoặc thay đổi bất kỳ thông tin nào), xem backlog (xem danh sách sprint và các issue trong backlog, xem phân bổ công việc cho từng sprint, không có quyền di chuyển issue giữa các sprint), xem chi tiết issue (xem đầy đủ thông tin của issue bao gồm type, priority, status, assignees, story points, mô tả, không có quyền tạo, chỉnh sửa hoặc xóa issue), xem sprint (xem danh sách các sprint với trạng thái FUTURE/ACTIVE/CLOSED, xem sprint goal và timeline, xem tổng quan số lượng issue theo trạng thái trong sprint, không có quyền tạo, bắt đầu hoặc hoàn thành sprint), xem comments (xem toàn bộ comments của các issue để hiểu ngữ cảnh và thảo luận, không có quyền thêm, chỉnh sửa hoặc xóa comment), xem activity log (theo dõi lịch sử thay đổi và hoạt động của dự án theo thời gian thực, xem ai đã làm gì và khi nào), xem analytics và báo cáo (xem các biểu đồ thống kê như Created vs Resolved, phân bố issue theo type/priority/status, xem báo cáo sprint summary được tạo bởi AI, không có quyền cấu hình hoặc xuất báo cáo tùy chỉnh), và xem timeline/calendar (xem lịch trình công việc và các milestone của dự án, xem deadline và ngày hoàn thành mục tiêu).
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{images/usecase_viewer.png}
+        \caption{Sơ đồ trường hợp sử dụng của Viewer/Stakeholder}
+        \label{fig:usecase_viewer}
+    \end{figure}
+\end{itemize}

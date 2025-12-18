@@ -180,6 +180,74 @@ export function clearTranslationCache(): void {
   clientCache.clear();
 }
 
+/**
+ * Streaming translation - yields tokens as they arrive from LLM
+ * Much faster perceived response than waiting for full translation
+ */
+export async function translateTextStream(
+  text: string,
+  targetLang: LanguageCode,
+  sourceLang?: LanguageCode,
+  context?: MeetingContext,
+  onToken?: (token: string, accumulated: string) => void
+): Promise<string> {
+  if (!text.trim()) return text;
+
+  // Check client cache first
+  const cacheKey = getCacheKey(text, targetLang, context?.meetingId);
+  const cached = clientCache.get(cacheKey);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    // Yield cached result immediately
+    if (onToken) onToken(cached.translation, cached.translation);
+    return cached.translation;
+  }
+
+  return new Promise((resolve) => {
+    // Build URL with query params
+    const params = new URLSearchParams({
+      text,
+      targetLang,
+    });
+    if (sourceLang) params.set('sourceLang', sourceLang);
+    if (context?.meetingId) params.set('meetingId', context.meetingId);
+
+    const url = `${MEET_API_URL}/ai/translate/stream?${params.toString()}`;
+    const eventSource = new EventSource(url);
+    let accumulated = '';
+
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+
+        if (data.type === 'token') {
+          accumulated += data.token;
+          if (onToken) onToken(data.token, accumulated);
+        } else if (data.type === 'done') {
+          eventSource.close();
+          // Cache the result
+          clientCache.set(cacheKey, {
+            translation: data.translation,
+            timestamp: Date.now(),
+          });
+          resolve(data.translation);
+        } else if (data.type === 'error') {
+          eventSource.close();
+          console.warn('[Translation Stream] Error:', data.error);
+          resolve(text); // Return original on error
+        }
+      } catch (e) {
+        console.warn('[Translation Stream] Parse error:', e);
+      }
+    };
+
+    eventSource.onerror = (error) => {
+      eventSource.close();
+      console.warn('[Translation Stream] Connection error:', error);
+      resolve(text); // Return original on error
+    };
+  });
+}
+
 // ==================== TRANSCRIPT STORAGE ====================
 
 /**
