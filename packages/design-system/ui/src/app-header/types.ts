@@ -6,6 +6,7 @@ export type TAppType = 'pm' | 'chat' | 'tenant-web';
 // App không còn truyền handler vào AppHeader nữa; toàn bộ logic chuyển workspace/project thuộc về lib.
 export interface AppHeaderProps {
   className?: string;
+  searchTrigger?: React.ReactNode;
 }
 
 export interface WorkspaceSelectorProps {
