@@ -1,0 +1,72 @@
+@startuml ui_org_dashboard
+!theme plain
+skinparam backgroundColor white
+
+salt
+{+
+  {* Organization Dashboard: Acme Corp | Projects | Members | Settings }
+  {
+    Filter: [Last 30 Days v] | [Export Report]
+  }
+  {SI
+    .
+    {
+      **Overview Statistics**
+      {#
+        | <color:#3B82F6>**Active Projects** | <color:#10B981>**Completed Issues** | <color:#F59E0B>**In Progress** | <color:#8B5CF6>**Team Members**
+        | 4 | 156 | 28 | 12
+        | +1 this month | +24 this week | -3 from last week | +2 this month
+      }
+    }
+    ==
+    {
+      **Project Status**
+
+      {#
+        | **Project** | **Active Sprint** | **Issues** | **Progress** | **Team** | **Status**
+        | PROJ - PM System | Sprint 3 | 15 issues | [====.....] 40% | 6 members | <color:#22C55E>On Track
+        | DEMO - Demo App | Sprint 1 | 8 issues | [==.......] 25% | 3 members | <color:#F59E0B>At Risk
+        | WEB - Website | Sprint 2 | 12 issues | [======...] 67% | 4 members | <color:#22C55E>On Track
+        | API - Gateway | No Sprint | 5 issues | - | 2 members | <color:#6B7280>Planning
+      }
+    }
+    ==
+    {
+      **Team Velocity (Last 4 Sprints)**
+
+      Sprint 3 (Current):  [==========.........] 12/30 points
+      Sprint 2:            [==================.] 28/28 points
+      Sprint 1:            [==================.] 20/20 points
+      Sprint 0:            [============.......] 15/22 points
+
+      Average Velocity: 18.75 points/sprint
+      Trend: <color:#22C55E>↗ Improving
+    }
+    ==
+    {
+      **Recent Activity**
+
+      <b>2 hours ago</b> - John Doe completed PROJ-39 in Project Management System
+      <b>3 hours ago</b> - Sprint 1 started in Demo Application
+      <b>5 hours ago</b> - Sarah Lee added 3 new issues to Website Redesign
+      <b>1 day ago</b> - Mike Johnson completed Sprint 2 in Website Redesign (12/12 issues)
+      <b>1 day ago</b> - New member Alice Brown joined API Gateway Service
+
+      [View All Activity]
+    }
+    ==
+    {
+      **Top Contributors (This Month)**
+
+      {#
+        | **Member** | **Issues Completed** | **Story Points** | **Projects**
+        | John Doe | 12 | 28 | PROJ, WEB
+        | Jane Smith | 10 | 24 | PROJ, DEMO
+        | Mike Johnson | 8 | 32 | WEB, API
+        | Sarah Lee | 6 | 15 | PROJ
+      }
+    }
+    .
+  }
+}
+@enduml

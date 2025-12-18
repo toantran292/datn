@@ -23,6 +23,7 @@ export interface IIssueStore {
   createIssue: (payload: ICreateIssuePayload) => Promise<IIssue>;
   reorderIssue: (projectId: string, payload: IReorderIssuePayload) => Promise<void>;
   updateIssue: (issueId: string, data: Partial<IIssue>) => Promise<IIssue>;
+  deleteIssue: (issueId: string) => Promise<void>;
   getIssueById: (issueId: string) => IIssue | undefined;
   getIssuesForProject: (projectId: string) => IIssue[];
   getLoaderForProject: (projectId: string) => TLoader;
@@ -55,6 +56,7 @@ export class IssueStore implements IIssueStore {
       createIssue: action,
       reorderIssue: action,
       updateIssue: action,
+      deleteIssue: action,
     });
 
     this._rootStore = rootStore;
@@ -131,6 +133,53 @@ export class IssueStore implements IIssueStore {
       runInAction(() => {
         this.issueMap = { ...this.issueMap, [issueId]: existing };
       });
+      throw error;
+    }
+  };
+
+  deleteIssue = async (issueId: string) => {
+    const existing = this.issueMap[issueId];
+    if (!existing) throw new Error("Issue không tồn tại");
+
+    const projectId = existing.projectId;
+    const sprintId = existing.sprintId;
+
+    // Optimistically remove from store
+    runInAction(() => {
+      const updatedIssueMap = { ...this.issueMap };
+      delete updatedIssueMap[issueId];
+      this.issueMap = updatedIssueMap;
+
+      // Remove from project issue list
+      const projectIssueIds = this.projectIssueIdsMap[projectId] ?? [];
+      this.projectIssueIdsMap = {
+        ...this.projectIssueIdsMap,
+        [projectId]: projectIssueIds.filter((id) => id !== issueId),
+      };
+    });
+
+    // Also remove from sprint if it's in one
+    if (sprintId) {
+      this._rootStore.projectRoot.sprint.removeIssueFromSprint(sprintId, issueId);
+    }
+
+    try {
+      await this.issueService.deleteIssue(issueId);
+    } catch (error) {
+      // Rollback on error
+      runInAction(() => {
+        this.issueMap = { ...this.issueMap, [issueId]: existing };
+        const projectIssueIds = this.projectIssueIdsMap[projectId] ?? [];
+        this.projectIssueIdsMap = {
+          ...this.projectIssueIdsMap,
+          [projectId]: [...projectIssueIds, issueId],
+        };
+      });
+
+      if (sprintId) {
+        this._rootStore.projectRoot.sprint.appendIssueToSprint(sprintId, issueId);
+      }
+
       throw error;
     }
   };
@@ -216,7 +265,7 @@ export class IssueStore implements IIssueStore {
     const updatedIssueMap: TIssueMap = { ...this.issueMap };
     uniqueSectionOrder.forEach((sectionId) => {
       const list = sectionIssueData.map.get(sectionId) ?? [];
-      list.forEach((issueId, index) => {
+      list.forEach((issueId) => {
         const existingIssue = updatedIssueMap[issueId];
         if (!existingIssue) return;
         updatedIssueMap[issueId] = {

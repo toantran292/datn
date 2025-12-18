@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách Projects</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #1976d2;
+            color: white;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 20px;
+            font-weight: 500;
+        }
+        .btn {
+            background: #fff;
+            color: #1976d2;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .btn:hover {
+            background: #f0f0f0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background: #fafafa;
+            padding: 12px 24px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        td {
+            padding: 16px 24px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        tr:hover {
+            background: #fafafa;
+        }
+        .project-key {
+            font-weight: 600;
+            color: #1976d2;
+            font-family: monospace;
+        }
+        .project-name {
+            font-weight: 500;
+            color: #333;
+        }
+        .lead {
+            color: #666;
+            font-size: 14px;
+        }
+        .sprint-status {
+            font-size: 13px;
+        }
+        .sprint-active {
+            color: #2e7d32;
+            font-weight: 500;
+        }
+        .sprint-none {
+            color: #999;
+        }
+        .btn-open {
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .btn-open:hover {
+            background: #1565c0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Danh sách Projects</h1>
+            <button class="btn">+ Create Project</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>KEY</th>
+                    <th>PROJECT NAME</th>
+                    <th>PROJECT LEAD</th>
+                    <th>SPRINT STATUS</th>
+                    <th>ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="project-key">PROJ</td>
+                    <td class="project-name">Project Management System</td>
+                    <td class="lead">John Doe</td>
+                    <td class="sprint-status sprint-active">Sprint 3 Active</td>
+                    <td><button class="btn-open">Open</button></td>
+                </tr>
+                <tr>
+                    <td class="project-key">DEMO</td>
+                    <td class="project-name">Demo Application</td>
+                    <td class="lead">Jane Smith</td>
+                    <td class="sprint-status sprint-none">No Active Sprint</td>
+                    <td><button class="btn-open">Open</button></td>
+                </tr>
+                <tr>
+                    <td class="project-key">WEB</td>
+                    <td class="project-name">Website Redesign</td>
+                    <td class="lead">Mike Johnson</td>
+                    <td class="sprint-status sprint-active">Sprint 1 Active</td>
+                    <td><button class="btn-open">Open</button></td>
+                </tr>
+                <tr>
+                    <td class="project-key">API</td>
+                    <td class="project-name">API Gateway Service</td>
+                    <td class="lead">Sarah Lee</td>
+                    <td class="sprint-status sprint-active">Sprint 2 Active</td>
+                    <td><button class="btn-open">Open</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

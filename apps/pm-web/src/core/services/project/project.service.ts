@@ -70,4 +70,20 @@ export class ProjectService extends APIService {
         throw error?.response?.data || error;
       });
   }
+
+  async updateProject(projectId: string, data: Partial<TProject>): Promise<TProjectDetailResponse> {
+    return this.put(`/api/projects/${projectId}`, data)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data || error;
+      });
+  }
+
+  async deleteProject(projectId: string): Promise<void> {
+    return this.delete(`/api/projects/${projectId}`)
+      .then((response) => response?.data)
+      .catch((error) => {
+        throw error?.response?.data || error;
+      });
+  }
 }

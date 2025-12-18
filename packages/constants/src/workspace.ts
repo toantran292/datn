@@ -283,20 +283,44 @@ export const WORKSPACE_SIDEBAR_DYNAMIC_NAVIGATION_ITEMS_LINKS: IWorkspaceSidebar
 export const WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS: Record<string, IWorkspaceSidebarNavigationItem> = {
   backlog: {
     key: "backlog",
-    labelTranslationKey: "Backlog",
+    labelTranslationKey: "Danh sách công việc",
     href: `/backlog/`,
     access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER, EUserWorkspaceRoles.GUEST],
   },
   board: {
     key: "board",
-    labelTranslationKey: "Board",
+    labelTranslationKey: "Bảng",
     href: `/board/`,
+    access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER, EUserWorkspaceRoles.GUEST],
+  },
+  calendar: {
+    key: "calendar",
+    labelTranslationKey: "Lịch",
+    href: `/calendar/`,
+    access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER, EUserWorkspaceRoles.GUEST],
+  },
+  timeline: {
+    key: "timeline",
+    labelTranslationKey: "Thời gian",
+    href: `/timeline/`,
     access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER, EUserWorkspaceRoles.GUEST],
   },
   summary: {
     key: "summary",
-    labelTranslationKey: "Summary",
+    labelTranslationKey: "Tổng quan",
     href: `/summary/`,
+    access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER, EUserWorkspaceRoles.GUEST],
+  },
+  "auto-create": {
+    key: "auto-create",
+    labelTranslationKey: "Tự động tạo công việc",
+    href: `/auto-create/`,
+    access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER],
+  },
+  settings: {
+    key: "settings",
+    labelTranslationKey: "Cài đặt",
+    href: `/settings/`,
     access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER, EUserWorkspaceRoles.GUEST],
   },
 };
@@ -304,7 +328,11 @@ export const WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS: Record<string, IWorkspac
 export const WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS_LINKS: IWorkspaceSidebarNavigationItem[] = [
   WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["backlog"]!,
   WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["board"]!,
+  WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["calendar"]!,
+  WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["timeline"]!,
   WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["summary"]!,
+  WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["auto-create"]!,
+  WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["settings"]!,
 ];
 
 export const WORKSPACE_SIDEBAR_STATIC_PINNED_NAVIGATION_ITEMS_LINKS: IWorkspaceSidebarNavigationItem[] = [];

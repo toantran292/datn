@@ -10,6 +10,9 @@ import { IssueModule } from "./modules/issue/issue.module";
 import { IssueStatusModule } from "./modules/issue-status/issue-status.module";
 import { IssueCommentModule } from "./modules/issue-comment/issue-comment.module";
 import { AnalyticsModule } from "./modules/analytics/analytics.module";
+import { AIModule } from "./modules/ai/ai.module";
+import { RiskDetectorModule } from "./modules/risk-detector/risk-detector.module";
+import { RagModule } from "./modules/rag/rag.module";
 import { ProjectMemberModule } from "./modules/project-member/project-member.module";
 import { OrgIdGuard } from "./common/guards";
 
@@ -25,6 +28,9 @@ import { OrgIdGuard } from "./common/guards";
     IssueStatusModule,
     IssueCommentModule,
     AnalyticsModule,
+    AIModule,
+    RiskDetectorModule,
+    RagModule,
     ProjectMemberModule,
   ],
   controllers: [AppController],

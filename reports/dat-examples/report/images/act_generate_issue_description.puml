@@ -1,0 +1,46 @@
+@startuml act_generate_issue_description
+|Người dùng|
+start
+:Nhập issue title;
+:Nhấn nút
+"Generate Description" (AI);
+|Giao diện người dùng|
+:Hiển thị loading spinner;
+:Gửi request generate;
+|Hệ thống xử lý|
+:Chuẩn bị context:
+- Issue title
+- Issue type
+- Project context;
+:Tạo prompt cho LLM;
+note right
+  Generate detailed description
+  for this issue: [title]
+  Type: [type]
+  Include acceptance criteria
+end note
+:Gọi LLM API;
+if (LLM success?) then (không)
+  |Giao diện người dùng|
+  :Ẩn loading;
+  :Thông báo lỗi;
+  |Người dùng|
+  stop
+else (có)
+  :Parse LLM response
+  (markdown format);
+  :Render markdown to HTML;
+  |Giao diện người dùng|
+  :Ẩn loading;
+  :Điền description vào editor;
+  :Hiển thị preview;
+  note right
+    User có thể
+    edit thêm
+  end note
+  |Người dùng|
+  :Review và chỉnh sửa nếu cần;
+  :Lưu issue;
+  stop
+endif
+@enduml

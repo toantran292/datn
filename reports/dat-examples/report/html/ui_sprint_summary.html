@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sprint Summary - AI Generated Retrospective</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            custom: {
+              background: {
+                100: '#ffffff',
+                90: '#f7f7f7',
+                80: '#e8e8e8',
+              },
+              text: {
+                100: '#171717',
+                200: '#525252',
+                300: '#737373',
+                400: '#a3a3a3',
+              },
+              border: {
+                200: '#e5e5e5',
+              },
+              primary: {
+                10: '#fff7ed',
+                50: '#ffedd5',
+                100: '#ff991c',
+                200: '#e68a19',
+              },
+              backdrop: 'rgba(0, 0, 0, 0.25)',
+            }
+          },
+          boxShadow: {
+            'custom-shadow-md': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .vertical-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .vertical-scrollbar::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 3px;
+    }
+    .vertical-scrollbar::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 3px;
+    }
+    .vertical-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #a1a1a1;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+  <!-- Backdrop -->
+  <div class="fixed inset-0 bg-custom-backdrop"></div>
+
+  <!-- Modal Container -->
+  <div class="relative z-10 w-full max-w-4xl">
+
+    <!-- Modal Panel -->
+    <div class="bg-custom-background-100 rounded-lg shadow-custom-shadow-md overflow-hidden">
+
+      <!-- Header -->
+      <div class="flex items-center justify-between border-b border-custom-border-200 px-6 py-4">
+        <div class="flex items-center gap-3">
+          <div class="size-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 grid place-items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 8V4H8"/>
+              <rect width="16" height="12" x="4" y="8" rx="2"/>
+              <path d="M2 14h2"/>
+              <path d="M20 14h2"/>
+              <path d="M15 13v2"/>
+              <path d="M9 13v2"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-lg font-semibold text-custom-text-100">AI Sprint Summary</h2>
+            <p class="text-sm text-custom-text-300">Sprint 3 • Dec 1 - Dec 14, 2025</p>
+          </div>
+        </div>
+        <button class="text-custom-text-400 hover:text-custom-text-100 transition-colors p-1 rounded hover:bg-custom-background-90">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Content - Scrollable -->
+      <div class="vertical-scrollbar overflow-y-auto max-h-[calc(100vh-250px)] p-6 space-y-6">
+
+        <!-- Section: Overview -->
+        <div class="space-y-3">
+          <div class="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-custom-primary-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 16v-4"/>
+              <path d="M12 8h.01"/>
+            </svg>
+            <h3 class="text-base font-semibold text-custom-text-100">Overview</h3>
+          </div>
+          <div class="bg-custom-background-90 rounded-lg p-4 border border-custom-border-200">
+            <p class="text-sm text-custom-text-200 leading-relaxed">
+              Sprint 3 tập trung vào việc xây dựng database layer và API endpoints cho hệ thống quản lý issue.
+              Team đã hoàn thành <strong class="text-custom-text-100">6/12 issues</strong> với tổng cộng <strong class="text-custom-text-100">45 story points</strong>.
+              Velocity đạt <strong class="text-custom-text-100">1.2 pts/day</strong>, thấp hơn target 2.1 pts/day do gặp một số technical challenges trong quá trình integration testing.
+              Nhìn chung, sprint có tiến độ ổn định với các deliverables chính được hoàn thành đúng hạn.
+            </p>
+          </div>
+        </div>
+
+        <!-- Section: Achievements -->
+        <div class="space-y-3">
+          <div class="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+              <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+              <path d="M4 22h16"/>
+              <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+              <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+              <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+            </svg>
+            <h3 class="text-base font-semibold text-custom-text-100">Achievements</h3>
+          </div>
+          <div class="bg-custom-background-90 rounded-lg p-4 border border-custom-border-200">
+            <ul class="space-y-2">
+              <li class="flex items-start gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-green-500 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span class="text-sm text-custom-text-200">Hoàn thành CI/CD pipeline với automated testing và deployment</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-green-500 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span class="text-sm text-custom-text-200">Deploy thành công lên staging environment trước deadline 2 ngày</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-green-500 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span class="text-sm text-custom-text-200">Performance optimization giảm 40% response time cho API endpoints</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-green-500 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span class="text-sm text-custom-text-200">Fix được login bug critical ảnh hưởng đến 30% users</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-green-500 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span class="text-sm text-custom-text-200">Documentation coverage tăng từ 60% lên 85%</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Section: Issues Found -->
+        <div class="space-y-3">
+          <div class="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <h3 class="text-base font-semibold text-custom-text-100">Issues Found</h3>
+          </div>
+          <div class="space-y-3">
+            <!-- Issue 1 -->
+            <div class="border border-amber-200 bg-amber-50 rounded-lg p-4">
+              <div class="flex items-start gap-3">
+                <div class="size-8 rounded-full bg-amber-100 grid place-items-center flex-shrink-0">
+                  <span class="text-amber-600 font-semibold text-xs">1</span>
+                </div>
+                <div class="flex-1">
+                  <h4 class="text-sm font-medium text-custom-text-100">Database connection pooling không optimal</h4>
+                  <p class="text-sm text-custom-text-300 mt-1">
+                    Phát hiện connection pool exhaustion khi load testing với 500+ concurrent users.
+                    Cần review lại pool configuration và implement connection retry mechanism.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <!-- Issue 2 -->
+            <div class="border border-amber-200 bg-amber-50 rounded-lg p-4">
+              <div class="flex items-start gap-3">
+                <div class="size-8 rounded-full bg-amber-100 grid place-items-center flex-shrink-0">
+                  <span class="text-amber-600 font-semibold text-xs">2</span>
+                </div>
+                <div class="flex-1">
+                  <h4 class="text-sm font-medium text-custom-text-100">Integration tests flaky trên CI environment</h4>
+                  <p class="text-sm text-custom-text-300 mt-1">
+                    Một số integration tests intermittently fail do race conditions trong test setup.
+                    Cần implement proper test isolation và cleanup procedures.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <!-- Issue 3 -->
+            <div class="border border-amber-200 bg-amber-50 rounded-lg p-4">
+              <div class="flex items-start gap-3">
+                <div class="size-8 rounded-full bg-amber-100 grid place-items-center flex-shrink-0">
+                  <span class="text-amber-600 font-semibold text-xs">3</span>
+                </div>
+                <div class="flex-1">
+                  <h4 class="text-sm font-medium text-custom-text-100">Technical debt tích lũy trong legacy modules</h4>
+                  <p class="text-sm text-custom-text-300 mt-1">
+                    Legacy authentication module có code coverage thấp (45%) và thiếu type safety.
+                    Recommend refactoring trong sprint tiếp theo.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Recommendations -->
+        <div class="space-y-3">
+          <div class="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <h3 class="text-base font-semibold text-custom-text-100">Recommendations</h3>
+          </div>
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <ul class="space-y-3">
+              <li class="flex items-start gap-3">
+                <span class="size-6 rounded-full bg-blue-100 text-blue-600 grid place-items-center flex-shrink-0 text-xs font-medium">1</span>
+                <div>
+                  <p class="text-sm text-custom-text-200">
+                    <strong class="text-custom-text-100">Tăng capacity cho database layer:</strong>
+                    Xem xét implement read replicas và caching layer (Redis) để giảm load cho primary database.
+                  </p>
+                </div>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="size-6 rounded-full bg-blue-100 text-blue-600 grid place-items-center flex-shrink-0 text-xs font-medium">2</span>
+                <div>
+                  <p class="text-sm text-custom-text-200">
+                    <strong class="text-custom-text-100">Allocate time cho technical debt:</strong>
+                    Dành 20% sprint capacity cho refactoring legacy modules, ưu tiên authentication và authorization.
+                  </p>
+                </div>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="size-6 rounded-full bg-blue-100 text-blue-600 grid place-items-center flex-shrink-0 text-xs font-medium">3</span>
+                <div>
+                  <p class="text-sm text-custom-text-200">
+                    <strong class="text-custom-text-100">Improve estimation accuracy:</strong>
+                    Các tasks liên quan đến integration thường bị underestimate. Recommend adding 30% buffer cho integration tasks.
+                  </p>
+                </div>
+              </li>
+              <li class="flex items-start gap-3">
+                <span class="size-6 rounded-full bg-blue-100 text-blue-600 grid place-items-center flex-shrink-0 text-xs font-medium">4</span>
+                <div>
+                  <p class="text-sm text-custom-text-200">
+                    <strong class="text-custom-text-100">Daily standup effectiveness:</strong>
+                    Blockers được identify muộn trong sprint. Recommend implement async standup check-ins để detect blockers sớm hơn.
+                  </p>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Section: Metrics -->
+        <div class="space-y-3">
+          <div class="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-purple-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="20" x2="12" y2="10"/>
+              <line x1="18" y1="20" x2="18" y2="4"/>
+              <line x1="6" y1="20" x2="6" y2="16"/>
+            </svg>
+            <h3 class="text-base font-semibold text-custom-text-100">Metrics</h3>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <!-- Completed Issues -->
+            <div class="border border-custom-border-200 rounded-lg p-4 bg-custom-background-100">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="size-8 rounded-lg bg-green-100 grid place-items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+              </div>
+              <p class="text-2xl font-semibold text-green-600">6</p>
+              <p class="text-xs text-custom-text-400">Issues Completed</p>
+            </div>
+            <!-- Incomplete Issues -->
+            <div class="border border-custom-border-200 rounded-lg p-4 bg-custom-background-100">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="size-8 rounded-lg bg-amber-100 grid place-items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                </div>
+              </div>
+              <p class="text-2xl font-semibold text-amber-600">6</p>
+              <p class="text-xs text-custom-text-400">Issues Incomplete</p>
+            </div>
+            <!-- Velocity -->
+            <div class="border border-custom-border-200 rounded-lg p-4 bg-custom-background-100">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="size-8 rounded-lg bg-blue-100 grid place-items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                  </svg>
+                </div>
+              </div>
+              <p class="text-2xl font-semibold text-blue-600">1.2</p>
+              <p class="text-xs text-custom-text-400">pts/day Velocity</p>
+            </div>
+            <!-- Avg Completion Time -->
+            <div class="border border-custom-border-200 rounded-lg p-4 bg-custom-background-100">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="size-8 rounded-lg bg-purple-100 grid place-items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="size-4 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                </div>
+              </div>
+              <p class="text-2xl font-semibold text-purple-600">2.3</p>
+              <p class="text-xs text-custom-text-400">days Avg Time</p>
+            </div>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="border border-custom-border-200 rounded-lg p-4 bg-custom-background-100">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-sm font-medium text-custom-text-200">Sprint Progress</span>
+              <span class="text-sm font-semibold text-custom-text-100">50%</span>
+            </div>
+            <div class="w-full bg-custom-background-80 rounded-full h-2">
+              <div class="bg-gradient-to-r from-green-500 to-green-400 h-2 rounded-full" style="width: 50%"></div>
+            </div>
+            <div class="flex items-center justify-between mt-2 text-xs text-custom-text-400">
+              <span>6 completed</span>
+              <span>12 total issues</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="border-t border-custom-border-200 px-6 py-4 bg-custom-background-90">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <!-- AI Info -->
+          <div class="flex flex-wrap items-center gap-4 text-xs text-custom-text-400">
+            <div class="flex items-center gap-1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 8V4H8"/>
+                <rect width="16" height="12" x="4" y="8" rx="2"/>
+                <path d="M2 14h2"/>
+                <path d="M20 14h2"/>
+                <path d="M15 13v2"/>
+                <path d="M9 13v2"/>
+              </svg>
+              <span>Claude 3.5 Sonnet</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="8" cy="8" r="6"/>
+                <path d="M18.09 10.37A6 6 0 1 1 10.34 18"/>
+                <path d="M7 6h1v4"/>
+                <path d="m16.71 13.88.7.71-2.82 2.82"/>
+              </svg>
+              <span>1,247 tokens</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              <span>Dec 14, 2025 at 15:32</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center gap-2">
+            <button class="px-3 py-1.5 text-xs font-medium text-custom-text-200 bg-custom-background-100 border border-custom-border-200 rounded-md hover:bg-custom-background-90 transition-colors">
+              Export PDF
+            </button>
+            <button class="px-3 py-1.5 text-xs font-medium text-white bg-custom-primary-100 rounded-md hover:bg-custom-primary-200 transition-colors">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>

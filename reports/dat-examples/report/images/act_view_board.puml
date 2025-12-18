@@ -1,0 +1,32 @@
+@startuml act_view_board
+|Người dùng|
+start
+:Chọn tab "Board";
+|Giao diện người dùng|
+:Gửi request lấy dữ liệu Board;
+|Hệ thống xử lý|
+:Lấy active sprint;
+if (Có active sprint?) then (không)
+  |Giao diện người dùng|
+  :Hiển thị thông báo
+  "No active sprint";
+  |Người dùng|
+  stop
+else (có)
+  :Lấy danh sách custom statuses;
+  :Lấy issues trong sprint
+  theo status;
+  :Thiết lập WebSocket connection;
+  |Giao diện người dùng|
+  :Render Board với columns;
+  :Hiển thị issues trong columns;
+  :Lắng nghe WebSocket events;
+  |Người dùng|
+  :Xem Board;
+  note right
+    Real-time updates
+    qua WebSocket
+  end note
+  stop
+endif
+@enduml

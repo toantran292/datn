@@ -1,0 +1,253 @@
+\paragraph{UC06: Tính năng AI}
+\mbox{}
+
+\textbf{UC06.1 - AI Sprint Summary}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc06_1_ai_sprint_summary.png}
+    \caption{Sơ đồ use case chức năng AI Sprint Summary}
+    \label{fig:uc06_1_ai_sprint_summary}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC06.1 - AI Sprint Summary},
+    label = {tab:uc06_1},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{AI Sprint Summary} \\\hline
+ID & UC06.1 \\\hline
+Người sử dụng & Project Lead \\\hline
+Mức độ cần thiết & Tùy chọn \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{Project Lead:} Muốn có summary tự động của sprint vừa hoàn thành. \\
+    + \textbf{LLM Provider:} Phân tích dữ liệu sprint và tạo summary.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Khi complete sprint (UC02.3), Project Lead có option để AI tự động tạo sprint summary dựa trên issues completed, comments, activities. \\\hline
+Trigger & Project Lead chọn "Generate AI Summary" khi complete sprint (UC02.3). \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item Project Lead complete sprint và check "Generate AI Summary"
+        \item Backend collect sprint data:
+        \begin{itemize}
+            \item Tất cả issues của sprint (completed \& incomplete)
+            \item Sprint goal, start date, end date
+            \item Issue comments, activities
+            \item Velocity, story points completed
+        \end{itemize}
+        \item Backend format data thành prompt cho AI
+        \item Backend gọi LLM API (UC06.4)
+        \item AI analyze và generate summary với sections:
+        \begin{itemize}
+            \item Overview: Sprint goal achievement
+            \item Completed: Danh sách issues hoàn thành
+            \item Incomplete: Issues chưa hoàn thành và lý do
+            \item Insights: Patterns, blockers, recommendations
+            \item Velocity: So sánh với sprint trước
+        \end{itemize}
+        \item Backend lưu summary vào Sprint record
+        \item Hiển thị summary trong sprint detail page
+        \item Team members có thể xem và export summary
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + Include UC06.4 (LLM API Integration).
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- LLM API unavailable: Hiển thị lỗi "AI service temporarily unavailable, try again later".
+
+    \textbf{\textcolor{red}{A1}} -- Edit summary: Project Lead có thể edit summary sau khi AI generate.
+
+    \textbf{\textcolor{red}{A2}} -- Regenerate: Project Lead có thể regenerate summary nếu không hài lòng.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Sprint summary được tạo tự động, giúp team review sprint hiệu quả hơn. \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+\textbf{UC06.2 - AI tự động tinh chỉnh mô tả công việc}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc06_2_ai_description.png}
+    \caption{Sơ đồ use case chức năng AI tự động tinh chỉnh mô tả công việc}
+    \label{fig:uc06_2_ai_description}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC06.2 - AI tự động tinh chỉnh mô tả công việc},
+    label = {tab:uc06_2},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{AI tự động tinh chỉnh mô tả công việc} \\\hline
+ID & UC06.2 \\\hline
+Người sử dụng & Project Lead, Team Member \\\hline
+Mức độ cần thiết & Tùy chọn \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{User:} Muốn AI giúp refine và format lại issue description cho đẹp và đầy đủ hơn. \\
+    + \textbf{LLM Provider:} Phân tích description hiện tại và refine theo best practices.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & AI tự động phát hiện và tinh chỉnh mô tả công việc để format đẹp hơn, bổ sung thông tin thiếu, làm rõ acceptance criteria và thêm technical notes nếu cần. \\\hline
+Trigger & User nhấn "Refine Description with AI" button trong issue detail hoặc issue edit form. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User mở issue có description chưa đầy đủ hoặc chưa format tốt
+        \item User nhấn "Refine Description with AI"
+        \item Backend detect mô tả cần cải thiện (thiếu sections, format không chuẩn)
+        \item Backend tạo prompt với:
+        \begin{itemize}
+            \item Description hiện tại
+            \item Issue type (STORY, TASK, BUG, EPIC)
+            \item Project context, related issues
+        \end{itemize}
+        \item Backend gọi LLM API (UC06.4)
+        \item AI refine description theo best practices:
+        \begin{itemize}
+            \item Format theo template chuẩn (User Story/Acceptance Criteria/Technical Notes)
+            \item Bổ sung thông tin thiếu (edge cases, error handling)
+            \item Làm rõ acceptance criteria thành bullet points cụ thể
+            \item Thêm technical notes về implementation approach
+        \end{itemize}
+        \item Frontend hiển thị side-by-side comparison (current vs refined)
+        \item User review changes, có thể accept/reject từng section
+        \item User apply changes hoặc edit thêm trước khi save
+        \item Backend log AI refinement activity
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + Include UC06.4 (LLM API Integration).
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- Description already good: AI suggest "Description looks good, no refinement needed".
+
+    \textbf{\textcolor{red}{A1}} -- Regenerate: User có thể nhấn "Regenerate" để AI refine lại với approach khác.
+
+    \textbf{\textcolor{red}{A2}} -- Partial accept: User có thể chọn apply chỉ một số sections (ví dụ: chỉ lấy acceptance criteria).
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Issue description được tinh chỉnh tự động với format đẹp, đầy đủ thông tin, giúp team hiểu rõ requirements. \\\hline
+\end{longtblr}
+
+
+\textbf{UC06.4 - LLM API Integration}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\textwidth]{images/uc06_4_llm_integration.png}
+    \caption{Sơ đồ use case chức năng LLM API Integration}
+    \label{fig:uc06_4_llm_integration}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC06.4 - LLM API Integration},
+    label = {tab:uc06_4},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{LLM API Integration} \\\hline
+ID & UC06.4 \\\hline
+Người sử dụng & System \\\hline
+Mức độ cần thiết & Bắt buộc (cho AI features) \\\hline
+Phân loại & Cao \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{System:} Cần gọi LLM API để xử lý AI requests. \\
+    + \textbf{LLM Provider:} Xử lý prompts và trả về responses.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Backend service tích hợp với LLM providers (OpenAI, Anthropic, etc.) để xử lý các AI features. \\\hline
+Trigger & Được gọi từ UC06.1, UC06.2, UC03.6 khi cần AI processing. \\\hline
+Kiểu sự kiện & Internal. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item Backend nhận AI request từ UC gọi
+        \item Backend load LLM configuration:
+        \begin{itemize}
+            \item API key từ environment variables
+            \item Model selection (gpt-4, claude-3, etc.)
+            \item Max tokens, temperature settings
+        \end{itemize}
+        \item Backend format prompt với:
+        \begin{itemize}
+            \item System prompt (role definition)
+            \item User prompt (actual request)
+            \item Context data (project info, issue details)
+        \end{itemize}
+        \item Backend gửi HTTP request đến LLM API
+        \item LLM Provider xử lý request
+        \item Backend nhận response (stream hoặc complete)
+        \item Backend parse và validate response
+        \item Backend ghi log request/response cho debugging
+        \item Backend trả parsed result về UC gọi
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + Include bởi UC06.1, UC06.2, UC03.6.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- API timeout: Retry với exponential backoff (max 3 lần).
+
+    \textbf{\textcolor{red}{E2}} -- Rate limit exceeded: Queue request và retry sau.
+
+    \textbf{\textcolor{red}{E3}} -- Invalid API key: Log error và notify admin.
+
+    \textbf{\textcolor{red}{E4}} -- Malformed response: Fallback to default message.
+
+    \textbf{\textcolor{red}{A1}} -- Streaming response: Stream từng token về frontend real-time.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & LLM response được xử lý thành công và trả về cho feature sử dụng. \\\hline
+\end{longtblr}

@@ -1,0 +1,70 @@
+@startuml ui_complete_sprint
+!theme plain
+skinparam backgroundColor white
+
+salt
+{+
+  {* Complete Sprint 3 | [X Close] }
+  {
+    **Sprint:** Sprint 3
+    **Duration:** 2025-12-01 - 2025-12-14
+    **Project:** PROJ - Project Management System
+  }
+  ==
+  {SI
+    .
+    {
+      **Sprint Summary**
+
+      <color:#22C55E>Completed: 6 issues (12 points)
+      <color:#F59E0B>Incomplete: 9 issues (18 points)
+
+      --
+
+      **What happens to incomplete issues?**
+
+      () Move to Backlog
+      (X) Move to Sprint 4
+      () Create new sprint
+
+      --
+
+      The following 9 incomplete issues will be moved to Sprint 4:
+
+      {#
+        | **Key** | **Summary** | **Status** | **Points**
+        | PROJ-40 | Integration tests | Code Review | 3
+        | PROJ-41 | User testing | In Progress | 8
+        | PROJ-42 | API endpoints | In Progress | 5
+        | PROJ-43 | Code refactor | To Do | 2
+        | PROJ-44 | Design mockups | To Do | 5
+        | PROJ-45 | Setup database | To Do | 3
+        | PROJ-46 | Entity design | To Do | 0
+        | PROJ-47 | Prisma schema | To Do | 0
+        | PROJ-48 | Migration scripts | To Do | 0
+      }
+    }
+    .
+  }
+  ==
+  {
+    **Sprint Retrospective (Optional)**
+
+    What went well?
+    [.............................................................]
+    [.............................................................]
+
+    What could be improved?
+    [.............................................................]
+    [.............................................................]
+
+    Action items for next sprint:
+    [.............................................................]
+    [.............................................................]
+  }
+  ==
+  {
+    [Cancel] | [Complete Sprint]
+  }
+}
+@enduml

@@ -1,0 +1,60 @@
+@startuml ui_custom_statuses
+!theme plain
+skinparam backgroundColor white
+
+salt
+{+
+  {* Project Settings: Custom Statuses | [Save Changes] [Cancel] }
+  {
+    Customize workflow statuses for your project. Drag to reorder.
+  }
+  ==
+  {
+    [Add Status +]
+  }
+  {SI
+    .
+    {#
+      | **Order** | **Status Name** | **Color** | **Description** | **Issues** | **Actions**
+      | [≡] 1 | To Do | <color:#3B82F6>█ #3B82F6 | New issues ready to be worked on | 15 | [Edit] [Delete]
+      | [≡] 2 | In Progress | <color:#F59E0B>█ #F59E0B | Issues currently being worked on | 8 | [Edit] [Delete]
+      | [≡] 3 | Code Review | <color:#10B981>█ #10B981 | Code completed, awaiting review | 3 | [Edit] [Delete]
+      | [≡] 4 | Testing | <color:#8B5CF6>█ #8B5CF6 | In QA testing phase | 2 | [Edit] [Delete]
+      | [≡] 5 | Done | <color:#22C55E>█ #22C55E | Completed and deployed | 42 | [Edit] [Delete]
+      | [≡] 6 | Blocked | <color:#EF4444>█ #EF4444 | Waiting on external dependency | 1 | [Edit] [Delete]
+    }
+    .
+  }
+  ==
+  {
+    **Edit Status: Code Review**
+
+    Status Name: [Code Review.................]
+
+    Description: [Code completed, awaiting peer review and approval........]
+               [...............................................]
+
+    Color: <color:#10B981>█ [#10B981] [Pick Color]
+
+    --
+
+    **Status Transitions (optional)**
+
+    [X] Can transition from: In Progress, Testing
+    [X] Can transition to: Testing, Done, In Progress
+    [ ] Mark as final status (issues cannot move from this status)
+
+    --
+
+    [Update Status] [Cancel]
+  }
+  ==
+  {
+    **Tips:**
+    • Drag statuses to reorder columns on your Board
+    • Each project can have up to 15 custom statuses
+    • Default statuses (To Do, Done) cannot be deleted
+    • Deleting a status will move all issues to "To Do"
+  }
+}
+@enduml

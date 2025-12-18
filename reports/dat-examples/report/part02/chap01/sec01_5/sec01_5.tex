@@ -1,0 +1,27 @@
+\subsection{Các ràng buộc thực thi và thiết kế}
+
+\subsubsection{Các ràng buộc thực thi}
+\begin{itemize}
+    \item Ngôn ngữ: Tiếng Việt (điều chỉnh sang tiếng Anh qua i18n).
+    \item Giao thức: HTTPS (Hypertext Transfer Protocol Secure) cho mọi kết nối.
+    \item Frontend: TypeScript với React và Next.js.
+    \item Backend:
+    \begin{itemize}
+        \item Account Service: Java với Spring Boot framework.
+        \item Các services khác: TypeScript với NestJS framework.
+    \end{itemize}
+    \item Web server và Reverse Proxy: Nginx.
+    \item Object Storage: MinIO (development), AWS S3 (production).
+    \item Kết nối Internet ổn định để tích hợp dịch vụ bên ngoài.
+    \item API tuân thủ RESTful với documentation đầy đủ (OpenAPI/Swagger).
+\end{itemize}
+
+\subsubsection{Các ràng buộc thiết kế}
+\begin{itemize}
+    \item Giao diện hiện đại, dễ sử dụng, phù hợp người dùng doanh nghiệp.
+    \item Đáp ứng chức năng thiết yếu của nền tảng quản lý workspace tích hợp AI.
+    \item Responsive Design tối ưu trên nhiều kích thước màn hình và thiết bị.
+    \item CSDL đủ lớn để lưu trữ thông tin, hỗ trợ horizontal scaling.
+    \item Kiến trúc tuân theo Microservices hoặc Modular Monolith để mở rộng và bảo trì.
+    \item UI/UX tuân theo Material Design hoặc design system nhất quán.
+\end{itemize}

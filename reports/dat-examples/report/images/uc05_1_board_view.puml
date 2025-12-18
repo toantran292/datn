@@ -1,0 +1,45 @@
+@startuml
+!theme plain
+skinparam defaultFontSize 11
+skinparam usecaseFontSize 10
+
+left to right direction
+
+actor "Project Lead" as PL
+actor "Team Member" as TM
+actor "Viewer" as V
+
+usecase "Xem Board view" as UC_BoardView
+usecase "Query ACTIVE\nsprint & issues" as UC_QueryData
+usecase "Group issues\nby status columns" as UC_GroupColumns
+usecase "Hiển thị\nissue cards" as UC_ShowCards
+usecase "Drag-and-drop\nissues" as UC_DragDrop
+usecase "Xem chi tiết\nissue" as UC_ViewIssue
+usecase "Complete\nsprint" as UC_CompleteSprint
+usecase "Filter issues" as UC_Filter
+
+PL --> UC_BoardView
+TM --> UC_BoardView
+V --> UC_BoardView
+
+UC_QueryData .up.> UC_BoardView : <<include>>
+UC_GroupColumns .up.> UC_BoardView : <<include>>
+UC_ShowCards .up.> UC_BoardView : <<include>>
+
+UC_DragDrop ..> UC_BoardView : <<extend>>
+UC_ViewIssue ..> UC_BoardView : <<extend>>
+UC_CompleteSprint ..> UC_BoardView : <<extend>>
+UC_Filter ..> UC_BoardView : <<extend>>
+
+note right of UC_GroupColumns
+  Mỗi status = 1 column
+  (TO DO, IN PROGRESS, DONE...)
+  sorted by status.order
+end note
+
+note bottom of UC_BoardView
+  Chỉ hiển thị issues
+  của ACTIVE sprint
+end note
+
+@enduml

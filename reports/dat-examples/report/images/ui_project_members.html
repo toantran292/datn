@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Members</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: #1976d2;
+            color: white;
+            padding: 16px 24px;
+        }
+        .header h1 {
+            font-size: 18px;
+            font-weight: 500;
+        }
+        .nav {
+            background: #fafafa;
+            padding: 12px 24px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            gap: 24px;
+        }
+        .nav-item {
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .nav-item.active {
+            color: #1976d2;
+            border-bottom: 2px solid #1976d2;
+            padding-bottom: 2px;
+        }
+        .toolbar {
+            padding: 16px 24px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .btn {
+            background: #1976d2;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background: #fafafa;
+            padding: 12px 24px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        td {
+            padding: 16px 24px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        tr:hover {
+            background: #fafafa;
+        }
+        .member-info {
+            font-weight: 500;
+            color: #333;
+        }
+        .email {
+            color: #666;
+            font-size: 13px;
+        }
+        .role {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .role-lead {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        .role-dev {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .role-qa {
+            background: #fff3e0;
+            color: #ef6c00;
+        }
+        .role-design {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+        .date {
+            color: #666;
+            font-size: 13px;
+        }
+        .action-btn {
+            background: transparent;
+            border: 1px solid #1976d2;
+            color: #1976d2;
+            padding: 4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 4px;
+        }
+        .info-box {
+            margin: 24px;
+            padding: 16px;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+        .info-box h3 {
+            font-size: 14px;
+            margin-bottom: 12px;
+            color: #333;
+        }
+        .info-box ul {
+            list-style: none;
+        }
+        .info-box li {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 8px;
+            padding-left: 8px;
+        }
+        .info-box li strong {
+            color: #333;
+        }
+        .footer {
+            padding: 16px 24px;
+            background: #fafafa;
+            border-top: 1px solid #e0e0e0;
+            font-size: 13px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Project: PROJ - Project Management System</h1>
+        </div>
+        <div class="nav">
+            <a href="#" class="nav-item">Board</a>
+            <a href="#" class="nav-item">Backlog</a>
+            <a href="#" class="nav-item active">Members</a>
+            <a href="#" class="nav-item">Settings</a>
+        </div>
+        <div class="toolbar">
+            <button class="btn">+ Invite Member</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>MEMBER</th>
+                    <th>EMAIL</th>
+                    <th>ROLE</th>
+                    <th>JOINED</th>
+                    <th>ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="member-info">John Doe</td>
+                    <td class="email">john.doe@example.com</td>
+                    <td><span class="role role-lead">Project Lead</span></td>
+                    <td class="date">2025-11-01</td>
+                    <td>
+                        <button class="action-btn">Edit</button>
+                        <button class="action-btn">Remove</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="member-info">Jane Smith</td>
+                    <td class="email">jane.smith@example.com</td>
+                    <td><span class="role role-dev">Developer</span></td>
+                    <td class="date">2025-11-05</td>
+                    <td>
+                        <button class="action-btn">Edit</button>
+                        <button class="action-btn">Remove</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="member-info">Mike Johnson</td>
+                    <td class="email">mike.johnson@example.com</td>
+                    <td><span class="role role-dev">Developer</span></td>
+                    <td class="date">2025-11-10</td>
+                    <td>
+                        <button class="action-btn">Edit</button>
+                        <button class="action-btn">Remove</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="member-info">Sarah Lee</td>
+                    <td class="email">sarah.lee@example.com</td>
+                    <td><span class="role role-qa">QA Engineer</span></td>
+                    <td class="date">2025-11-15</td>
+                    <td>
+                        <button class="action-btn">Edit</button>
+                        <button class="action-btn">Remove</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="member-info">Tom Wilson</td>
+                    <td class="email">tom.wilson@example.com</td>
+                    <td><span class="role role-design">Designer</span></td>
+                    <td class="date">2025-11-20</td>
+                    <td>
+                        <button class="action-btn">Edit</button>
+                        <button class="action-btn">Remove</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="member-info">Alice Brown</td>
+                    <td class="email">alice.brown@example.com</td>
+                    <td><span class="role role-dev">Developer</span></td>
+                    <td class="date">2025-11-25</td>
+                    <td>
+                        <button class="action-btn">Edit</button>
+                        <button class="action-btn">Remove</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="info-box">
+            <h3>Project Roles:</h3>
+            <ul>
+                <li><strong>Project Lead</strong> - Full access to project settings, can manage members</li>
+                <li><strong>Developer</strong> - Can create and edit issues, manage sprints</li>
+                <li><strong>QA Engineer</strong> - Can create and edit bugs, add comments</li>
+                <li><strong>Designer</strong> - Can view issues, add comments and attachments</li>
+                <li><strong>Viewer</strong> - Read-only access to project</li>
+            </ul>
+        </div>
+        <div class="footer">
+            Total Members: 6 | Active: 6 | Pending Invites: 0
+        </div>
+    </div>
+</body>
+</html>

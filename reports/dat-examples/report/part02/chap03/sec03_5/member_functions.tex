@@ -1,0 +1,96 @@
+% ==================== NHÓM PROJECT MEMBERS ====================
+
+\subsubsection{Chức năng thêm Project Member}
+
+\textbf{Mục đích:} Cho phép Project Lead thêm organization members vào project với vai trò cụ thể (PROJECT\_LEAD, TEAM\_MEMBER, VIEWER) để phân quyền access control.
+
+\textbf{Dữ liệu được dùng:}
+
+\begin{longtblr}[
+  caption = {Bảng dữ liệu được dùng cho chức năng thêm Project Member},
+  label = {tab:func_add_project_member}
+]{
+  width=\linewidth, rowhead=2, hlines, vlines,
+  colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
+  rows={m},
+  row{1-2}={font=\bfseries, c, bg=gray9}
+}
+\SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
+& & Thêm & Sửa & Xóa & Truy vấn \\
+1 & ProjectMember & X & & & X \\
+2 & Project & & & & X \\
+3 & User & & & & X \\
+4 & Activity & X & & & \\
+5 & AuditLog & X & & & \\
+\end{longtblr}
+
+\textbf{Xử lý:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{images/act_add_project_member.png}
+\caption{Sơ đồ hoạt động của chức năng thêm Project Member}
+\label{fig:act_add_project_member}
+\end{figure}
+
+\subsubsection{Chức năng thay đổi Project Member Role}
+
+\textbf{Mục đích:} Cho phép Project Lead thay đổi vai trò của project member (ví dụ: TEAM\_MEMBER → PROJECT\_LEAD) với permissions update và audit logging.
+
+\textbf{Dữ liệu được dùng:}
+
+\begin{longtblr}[
+  caption = {Bảng dữ liệu được dùng cho chức năng thay đổi Project Member Role},
+  label = {tab:func_change_project_role}
+]{
+  width=\linewidth, rowhead=2, hlines, vlines,
+  colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
+  rows={m},
+  row{1-2}={font=\bfseries, c, bg=gray9}
+}
+\SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
+& & Thêm & Sửa & Xóa & Truy vấn \\
+1 & ProjectMember & & X & & X \\
+2 & Activity & X & & & \\
+3 & AuditLog & X & & & \\
+\end{longtblr}
+
+\textbf{Xử lý:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{images/act_change_project_role.png}
+\caption{Sơ đồ hoạt động của chức năng thay đổi Project Member Role}
+\label{fig:act_change_project_role}
+\end{figure}
+
+\subsubsection{Chức năng kiểm tra Project Member Permission}
+
+\textbf{Mục đích:} Hệ thống kiểm tra quyền của user trước khi cho phép thực hiện actions trong project như manage sprints, create issues, delete issues dựa trên role và custom permissions.
+
+\textbf{Dữ liệu được dùng:}
+
+\begin{longtblr}[
+  caption = {Bảng dữ liệu được dùng cho chức năng kiểm tra Permission},
+  label = {tab:func_check_project_permission}
+]{
+  width=\linewidth, rowhead=2, hlines, vlines,
+  colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
+  rows={m},
+  row{1-2}={font=\bfseries, c, bg=gray9}
+}
+\SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
+& & Thêm & Sửa & Xóa & Truy vấn \\
+1 & ProjectMember & & & & X \\
+2 & Project & & & & X \\
+3 & AuditLog & X & & & \\
+\end{longtblr}
+
+\textbf{Xử lý:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.55\textwidth]{images/act_check_project_permission.png}
+\caption{Sơ đồ hoạt động của chức năng kiểm tra Project Member Permission}
+\label{fig:act_check_project_permission}
+\end{figure}

@@ -1,0 +1,47 @@
+@startuml usecase_viewer
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Viewer/Stakeholder" as viewer
+
+rectangle "Phân hệ Quản lý Dự án" {
+  usecase "Xem tổng quan dự án" as UC1
+  usecase "Xem board view" as UC2
+  usecase "Xem backlog" as UC3
+  usecase "Xem chi tiết issue" as UC4
+  usecase "Xem sprint" as UC5
+  usecase "Xem comments" as UC6
+  usecase "Xem activity log" as UC7
+  usecase "Xem analytics" as UC8
+  usecase "Xem timeline/calendar" as UC9
+}
+
+viewer --> UC1
+viewer --> UC2
+viewer --> UC3
+viewer --> UC4
+viewer --> UC5
+viewer --> UC6
+viewer --> UC7
+viewer --> UC8
+viewer --> UC9
+
+note right of UC1
+  Xem thông tin dự án,
+  project lead, timeline
+  (read-only)
+end note
+
+note right of UC2
+  Xem bảng Kanban,
+  không có quyền
+  kéo thả
+end note
+
+note right of UC8
+  Xem biểu đồ,
+  sprint summary,
+  không xuất báo cáo
+end note
+
+@enduml

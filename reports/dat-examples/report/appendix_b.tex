@@ -1,0 +1,433 @@
+% Biến kiểm soát
+\newif\iflandscapepage
+\landscapepagefalse
+
+\setlength{\TPHorizModule}{1cm}
+\setlength{\TPVertModule}{1cm}
+
+\fancypagestyle{lscape}{%
+    \fancyhf{}
+    \renewcommand{\headrulewidth}{0pt}
+    \renewcommand{\footrulewidth}{0pt}
+    \fancyhead[C]{%
+        % Header bên trái trang (trên của landscape) - xoay 90 độ
+        \begin{textblock}{1}(1,1)
+            \rotatebox{90}{%
+                \parbox{27.5cm}{%
+                    \fontsize{10pt}{12pt}\selectfont\itshape
+                    Xây dựng Nền tảng SaaS tích hợp AI nhằm Thống nhất Quản lý Dự án Agile - Phân hệ quản lý dự án
+                    \vspace{2pt}
+                    \hrule
+                }%
+            }
+        \end{textblock}
+        % Footer bên phải trang (dưới của landscape) - xoay 90 độ  
+        \begin{textblock}{1}(20,1)
+            \rotatebox{90}{%
+                \parbox{27.5cm}{%
+                    \hrule
+                    \vspace{2pt}
+                    Nguyễn Tuấn Đạt - B2203499 \hfill Trang \thepage
+                }%
+            }
+        \end{textblock}
+    }
+}
+
+\begin{landscape}
+\pagestyle{lscape}
+
+\phantomsection
+\setsection{Phụ lục B: Từ điển dữ liệu}
+
+Phần này trình bày chi tiết mô tả dữ liệu cho các bảng của sơ đồ lớp của phân hệ quản lý dự án được trình bày ở Phần II - Chương III - Thiết kế cơ sở dữ liệu - Từ điển dữ liệu.
+
+\textbf{Bảng projects: Lưu trữ thông tin dự án trong hệ thống}
+
+\renewcommand{\arraystretch}{1.5}
+\begin{longtable}{|p{3cm}|p{2.5cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{3cm}|p{5cm}|}
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endfirsthead
+
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+project\_id & UUID & X & & X & X & & Mã định danh dự án. \\
+\hline
+org\_id & UUID & & X & & X & organizations & Tổ chức sở hữu dự án. \\
+\hline
+identifier & String & & & & X & & Mã định danh ngắn gọn (e.g. PROJ). \\
+\hline
+name & String & & & & X & & Tên dự án. \\
+\hline
+description & Text & & & & & & Mô tả chi tiết dự án. \\
+\hline
+project\_lead\_id & UUID & & X & & & users & User ID của người dẫn dự án. \\
+\hline
+default\_assignee\_id & UUID & & X & & & users & User ID mặc định được gán issue. \\
+\hline
+created\_by & UUID & & X & & X & users & User tạo dự án. \\
+\hline
+created\_at & Timestamp & & & & X & & Thời điểm tạo dự án. \\
+\hline
+updated\_at & Timestamp & & & & X & & Thời điểm cập nhật gần nhất. \\
+\hline
+\end{longtable}
+
+\textbf{Bảng sprints: Lưu trữ thông tin sprint của dự án}
+
+\renewcommand{\arraystretch}{1.5}
+\begin{longtable}{|p{3cm}|p{2.5cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{3cm}|p{5cm}|}
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endfirsthead
+
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+sprint\_id & UUID & X & & X & X & & Mã định danh sprint. \\
+\hline
+project\_id & UUID & & X & & X & projects & Dự án chứa sprint. \\
+\hline
+name & String & & & & X & & Tên sprint. \\
+\hline
+goal & Text & & & & & & Mục tiêu của sprint. \\
+\hline
+start\_date & Date & & & & & & Ngày bắt đầu sprint. \\
+\hline
+end\_date & Date & & & & & & Ngày kết thúc sprint. \\
+\hline
+status & Enum & & & & X & & Trạng thái (FUTURE, ACTIVE, CLOSED). \\
+\hline
+created\_by & UUID & & X & & X & users & User tạo sprint. \\
+\hline
+created\_at & Timestamp & & & & X & & Thời điểm tạo sprint. \\
+\hline
+updated\_at & Timestamp & & & & X & & Thời điểm cập nhật gần nhất. \\
+\hline
+\end{longtable}
+
+\textbf{Bảng issues: Lưu trữ thông tin công việc/nhiệm vụ trong dự án}
+
+\renewcommand{\arraystretch}{1.5}
+\begin{longtable}{|p{3cm}|p{2.5cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{3cm}|p{5cm}|}
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endfirsthead
+
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+issue\_id & UUID & X & & X & X & & Mã định danh issue. \\
+\hline
+project\_id & UUID & & X & & X & projects & Dự án chứa issue. \\
+\hline
+sprint\_id & UUID & & X & & & sprints & Sprint chứa issue (nullable). \\
+\hline
+parent\_id & UUID & & X & & & issues & Issue cha (cho sub-task). \\
+\hline
+seq\_id & Integer & & & & X & & ID tự tăng trong project. \\
+\hline
+title & String & & & & X & & Tiêu đề issue. \\
+\hline
+description & Text & & & & & & Mô tả chi tiết (HTML). \\
+\hline
+type & Enum & & & & X & & Loại (STORY, TASK, BUG, EPIC). \\
+\hline
+status\_id & UUID & & X & & X & issue\_statuses & Trạng thái hiện tại. \\
+\hline
+priority & Enum & & & & X & & Độ ưu tiên (LOW, MEDIUM, HIGH, CRITICAL). \\
+\hline
+story\_points & Decimal & & & & & & Điểm ước tính công việc. \\
+\hline
+start\_date & Date & & & & & & Ngày bắt đầu. \\
+\hline
+target\_date & Date & & & & & & Ngày mục tiêu hoàn thành. \\
+\hline
+sort\_order & Decimal & & & & X & & Thứ tự sắp xếp (fractional). \\
+\hline
+created\_by & UUID & & X & & X & users & User tạo issue. \\
+\hline
+created\_at & Timestamp & & & & X & & Thời điểm tạo. \\
+\hline
+updated\_at & Timestamp & & & & X & & Thời điểm cập nhật gần nhất. \\
+\hline
+\end{longtable}
+
+\textbf{Bảng issue\_statuses: Lưu trữ các trạng thái tùy chỉnh của issue}
+
+\renewcommand{\arraystretch}{1.5}
+\begin{longtable}{|p{3cm}|p{2.5cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{3cm}|p{5cm}|}
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endfirsthead
+
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+status\_id & UUID & X & & X & X & & Mã định danh trạng thái. \\
+\hline
+project\_id & UUID & & X & & X & projects & Dự án chứa trạng thái. \\
+\hline
+name & String & & & & X & & Tên trạng thái. \\
+\hline
+description & Text & & & & & & Mô tả trạng thái. \\
+\hline
+color & String & & & & X & & Mã màu hex cho UI. \\
+\hline
+order & Integer & & & & X & & Thứ tự hiển thị. \\
+\hline
+created\_at & Timestamp & & & & X & & Thời điểm tạo. \\
+\hline
+updated\_at & Timestamp & & & & X & & Thời điểm cập nhật gần nhất. \\
+\hline
+\end{longtable}
+
+\textbf{Bảng issue\_assignees: Lưu trữ quan hệ gán issue cho thành viên}
+
+\renewcommand{\arraystretch}{1.5}
+\begin{longtable}{|p{3cm}|p{2.5cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{3cm}|p{5cm}|}
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endfirsthead
+
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+issue\_id & UUID & X & X & & X & issues & Issue được gán. \\
+\hline
+user\_id & UUID & X & X & & X & users & User được gán. \\
+\hline
+created\_at & Timestamp & & & & X & & Thời điểm gán. \\
+\hline
+\end{longtable}
+
+\textbf{Bảng issue\_comments: Lưu trữ bình luận trên issue}
+
+\renewcommand{\arraystretch}{1.5}
+\begin{longtable}{|p{3cm}|p{2.5cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{3cm}|p{5cm}|}
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endfirsthead
+
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+comment\_id & UUID & X & & X & X & & Mã định danh comment. \\
+\hline
+issue\_id & UUID & & X & & X & issues & Issue chứa comment. \\
+\hline
+user\_id & UUID & & X & & X & users & User tạo comment. \\
+\hline
+content & Text & & & & X & & Nội dung comment (HTML). \\
+\hline
+created\_at & Timestamp & & & & X & & Thời điểm tạo. \\
+\hline
+updated\_at & Timestamp & & & & X & & Thời điểm cập nhật gần nhất. \\
+\hline
+\end{longtable}
+
+\textbf{Bảng issue\_activities: Lưu trữ lịch sử thay đổi của issue}
+
+\renewcommand{\arraystretch}{1.5}
+\begin{longtable}{|p{3cm}|p{2.5cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{3cm}|p{5cm}|}
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endfirsthead
+
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+activity\_id & UUID & X & & X & X & & Mã định danh hoạt động. \\
+\hline
+issue\_id & UUID & & X & & X & issues & Issue bị thay đổi. \\
+\hline
+user\_id & UUID & & X & & X & users & User thực hiện thay đổi. \\
+\hline
+field\_name & String & & & & X & & Tên trường bị thay đổi. \\
+\hline
+old\_value & Text & & & & & & Giá trị cũ. \\
+\hline
+new\_value & Text & & & & & & Giá trị mới. \\
+\hline
+created\_at & Timestamp & & & & X & & Thời điểm thay đổi. \\
+\hline
+\end{longtable}
+
+\textbf{Bảng project\_analytics: Lưu trữ số liệu thống kê dự án}
+
+\renewcommand{\arraystretch}{1.5}
+\begin{longtable}{|p{3cm}|p{2.5cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{1.8cm}|p{3cm}|p{5cm}|}
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endfirsthead
+
+\hline
+\rowcolor{gray!20}
+\textbf{Tên trường} & \textbf{Kiểu dữ liệu} & \textbf{Khóa chính} & \textbf{Khóa ngoại} & \textbf{Duy nhất} & \textbf{Bắt buộc} & \textbf{Bảng tham chiếu} & \textbf{Mô tả} \\
+\hline
+\endhead
+
+\hline
+\endfoot
+analytics\_id & UUID & X & & X & X & & Mã định danh analytics. \\
+\hline
+project\_id & UUID & & X & & X & projects & Dự án được phân tích. \\
+\hline
+date & Date & & & & X & & Ngày thu thập số liệu. \\
+\hline
+issues\_created & Integer & & & & X & & Số issue tạo mới. \\
+\hline
+issues\_resolved & Integer & & & & X & & Số issue đã hoàn thành. \\
+\hline
+issues\_in\_\allowbreak progress & Integer & & & & X & & Số issue đang thực hiện. \\
+\hline
+created\_at & Timestamp & & & & X & & Thời điểm tạo record. \\
+\hline
+\end{longtable}
+
+\end{landscape}
+\pagestyle{fancy}
+
+\phantomsection
+\subsection*{Các yêu cầu ràng buộc cần thiết khi xử lý dữ liệu}
+
+Phần này mô tả các ràng buộc dữ liệu cần được đảm bảo khi xử lý và lưu trữ thông tin trong phân hệ quản lý dự án.
+
+\subsubsection*{Ràng buộc dữ liệu dự án (Projects)}
+
+\begin{itemize}
+    \item Thuộc tính \texttt{identifier} phải khác rỗng, duy nhất trong organization, có độ dài từ 2 đến 10 ký tự viết hoa.
+    \item Thuộc tính \texttt{name} phải khác rỗng và có độ dài tối thiểu 3 ký tự, tối đa 100 ký tự.
+    \item Thuộc tính \texttt{org\_id} phải là UUID hợp lệ và tham chiếu đến một organization tồn tại trong hệ thống.
+    \item Thuộc tính \texttt{project\_lead\_id} và \texttt{default\_assignee\_id} phải là UUID hợp lệ tham chiếu đến users.
+    \item Cặp (\texttt{org\_id}, \texttt{identifier}) phải duy nhất để tránh trùng lặp mã dự án trong organization.
+\end{itemize}
+
+\subsubsection*{Ràng buộc dữ liệu sprint (Sprints)}
+
+\begin{itemize}
+    \item Thuộc tính \texttt{name} phải khác rỗng và có độ dài tối thiểu 3 ký tự, tối đa 100 ký tự.
+    \item Thuộc tính \texttt{project\_id} phải là UUID hợp lệ và tham chiếu đến một project tồn tại trong hệ thống.
+    \item Thuộc tính \texttt{status} phải có một trong các giá trị: FUTURE, ACTIVE, CLOSED.
+    \item Thuộc tính \texttt{start\_date} và \texttt{end\_date} phải là ngày hợp lệ, với \texttt{end\_date} sau \texttt{start\_date}.
+    \item Chỉ được phép có tối đa một sprint với status ACTIVE trong mỗi project tại một thời điểm.
+    \item Thuộc tính \texttt{goal} có thể null, nhưng khuyến khích điền để rõ mục tiêu sprint.
+\end{itemize}
+
+\subsubsection*{Ràng buộc dữ liệu issue (Issues)}
+
+\begin{itemize}
+    \item Thuộc tính \texttt{title} phải khác rỗng và có độ dài tối thiểu 3 ký tự, tối đa 255 ký tự.
+    \item Thuộc tính \texttt{project\_id} phải là UUID hợp lệ và tham chiếu đến một project tồn tại.
+    \item Thuộc tính \texttt{type} phải có một trong các giá trị: STORY, TASK, BUG, EPIC.
+    \item Thuộc tính \texttt{priority} phải có một trong các giá trị: LOW, MEDIUM, HIGH, CRITICAL.
+    \item Thuộc tính \texttt{status\_id} phải tham chiếu đến một status hợp lệ thuộc cùng project.
+    \item Thuộc tính \texttt{seq\_id} phải là số nguyên dương tự tăng duy nhất trong project.
+    \item Thuộc tính \texttt{sprint\_id} có thể null (issue trong backlog) hoặc tham chiếu đến sprint hợp lệ.
+    \item Thuộc tính \texttt{parent\_id} nếu có phải tham chiếu đến issue khác trong cùng project (để tạo sub-task).
+    \item Thuộc tính \texttt{story\_points} nếu có phải là số thập phân dương.
+    \item Thuộc tính \texttt{sort\_order} phải là số thập phân để hỗ trợ fractional ordering.
+\end{itemize}
+
+\subsubsection*{Ràng buộc dữ liệu trạng thái (Issue Statuses)}
+
+\begin{itemize}
+    \item Thuộc tính \texttt{name} phải khác rỗng và có độ dài tối thiểu 1 ký tự, tối đa 50 ký tự.
+    \item Thuộc tính \texttt{project\_id} phải là UUID hợp lệ tham chiếu đến project.
+    \item Cặp (\texttt{project\_id}, \texttt{name}) phải duy nhất để tránh trùng lặp tên status trong project.
+    \item Thuộc tính \texttt{color} phải là mã màu hex hợp lệ (ví dụ: \#FF0000).
+    \item Thuộc tính \texttt{order} phải là số nguyên dương để sắp xếp các status.
+\end{itemize}
+
+\subsubsection*{Ràng buộc dữ liệu bình luận (Issue Comments)}
+
+\begin{itemize}
+    \item Thuộc tính \texttt{content} phải khác rỗng và có độ dài tối thiểu 1 ký tự.
+    \item Thuộc tính \texttt{issue\_id} phải là UUID hợp lệ tham chiếu đến issue.
+    \item Thuộc tính \texttt{user\_id} phải là UUID hợp lệ tham chiếu đến user tạo comment.
+    \item Content có thể chứa HTML để hỗ trợ rich text formatting.
+\end{itemize}
+
+\subsubsection*{Ràng buộc dữ liệu lịch sử (Issue Activities)}
+
+\begin{itemize}
+    \item Thuộc tính \texttt{field\_name} phải khác rỗng và là tên trường hợp lệ của issue (ví dụ: status, assignee, priority).
+    \item Thuộc tính \texttt{issue\_id} phải tham chiếu đến issue bị thay đổi.
+    \item Thuộc tính \texttt{user\_id} phải tham chiếu đến user thực hiện thay đổi.
+    \item Thuộc tính \texttt{old\_value} và \texttt{new\_value} lưu trữ giá trị trước và sau thay đổi dạng text.
+\end{itemize}
+
+\subsubsection*{Ràng buộc dữ liệu phân tích (Project Analytics)}
+
+\begin{itemize}
+    \item Thuộc tính \texttt{project\_id} phải là UUID hợp lệ tham chiếu đến project.
+    \item Thuộc tính \texttt{date} phải là ngày hợp lệ, duy nhất cho mỗi project.
+    \item Các thuộc tính \texttt{issues\_created}, \texttt{issues\_resolved}, \texttt{issues\_in\_progress} phải là số nguyên không âm.
+\end{itemize}
+
+\subsubsection*{Ràng buộc chung cho phân hệ quản lý dự án}
+
+\begin{itemize}
+    \item Mọi bảng phải có primary key là UUID để tránh enumeration attacks và đảm bảo tính duy nhất.
+    \item Mọi bảng phải có \texttt{created\_at} và \texttt{updated\_at} timestamps để tracking thời gian tạo và cập nhật.
+    \item Foreign key constraints phải được enforce với ON DELETE CASCADE cho các quan hệ phụ thuộc (ví dụ: xóa project sẽ xóa toàn bộ issues, sprints).
+    \item Các giá trị enum (type, priority, status) phải được kiểm tra strict để đảm bảo chỉ chứa các giá trị được định nghĩa.
+    \item Tất cả các trường bắt buộc (NOT NULL) phải được validate ở application layer trước khi insert/update.
+    \item Dữ liệu phải được tổ chức theo organization để đảm bảo data isolation giữa các tổ chức.
+    \item Mọi thay đổi quan trọng trên issue phải được ghi lại trong bảng \texttt{issue\_activities} để đảm bảo audit trail đầy đủ.
+    \item Thứ tự sắp xếp (sort\_order) sử dụng fractional indexing để cho phép re-ordering linh hoạt mà không cần update nhiều records.
+    \item Mỗi project chỉ được phép có tối đa một sprint ở trạng thái ACTIVE tại một thời điểm.
+\end{itemize}

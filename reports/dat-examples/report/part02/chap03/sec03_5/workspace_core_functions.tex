@@ -1,0 +1,66 @@
+% ==================== NHÓM PROJECT MANAGEMENT ====================
+
+\subsubsection{Chức năng tạo Project}
+
+\textbf{Mục đích:} Cho phép Organization Owner hoặc Admin tạo một project mới để quản lý sprints, issues và team members với custom workflow.
+
+\textbf{Dữ liệu được dùng:}
+
+\begin{longtblr}[
+  caption = {Bảng dữ liệu được dùng cho chức năng tạo Project},
+  label = {tab:func_create_project}
+]{
+  width=\linewidth, rowhead=2, hlines, vlines,
+  colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
+  rows={m},
+  row{1-2}={font=\bfseries, c, bg=gray9}
+}
+\SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
+& & Thêm & Sửa & Xóa & Truy vấn \\
+1 & Project & X & & & X \\
+2 & CustomStatus & X & & & \\
+3 & ProjectMember & X & & & \\
+4 & AuditLog & X & & & \\
+\end{longtblr}
+
+\textbf{Xử lý:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{images/act_create_project.png}
+\caption{Sơ đồ hoạt động của chức năng tạo Project}
+\label{fig:act_create_project}
+\end{figure}
+
+\subsubsection{Chức năng xem Board view}
+
+\textbf{Mục đích:} Cho phép Project Members xem active sprint issues được tổ chức theo custom status columns với real-time updates qua WebSocket.
+
+\textbf{Dữ liệu được dùng:}
+
+\begin{longtblr}[
+  caption = {Bảng dữ liệu được dùng cho chức năng xem Board view},
+  label = {tab:func_view_board}
+]{
+  width=\linewidth, rowhead=2, hlines, vlines,
+  colspec={X[0.5,c]X[2,l]X[1,c]X[1,c]X[1,c]X[1,c]},
+  rows={m},
+  row{1-2}={font=\bfseries, c, bg=gray9}
+}
+\SetCell[r=2]{} STT & \SetCell[r=2]{} Tên bảng & \SetCell[c=4]{} Phương thức & & & \\
+& & Thêm & Sửa & Xóa & Truy vấn \\
+1 & Project & & & & X \\
+2 & Sprint & & & & X \\
+3 & Issue & & & & X \\
+4 & CustomStatus & & & & X \\
+5 & ProjectMember & & & & X \\
+\end{longtblr}
+
+\textbf{Xử lý:}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.65\textwidth]{images/act_view_board.png}
+\caption{Sơ đồ hoạt động của chức năng xem Board view}
+\label{fig:act_view_board}
+\end{figure}
