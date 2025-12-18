@@ -66,8 +66,9 @@ export class ConversationMessageDto {
   @IsString()
   content: string;
 
-  @ApiProperty({ example: '2024-01-15T10:30:00Z' })
-  createdAt: Date;
+  @ApiPropertyOptional({ example: '2024-01-15T10:30:00Z' })
+  @IsOptional()
+  createdAt?: Date | string;
 }
 
 export class SummarizeConversationRequestDto {

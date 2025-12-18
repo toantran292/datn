@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 
 export type FileMetadataDocument = FileMetadata & Document & {
   createdAt: Date;
@@ -42,6 +42,13 @@ export class FileMetadata {
   @Prop({ index: true })
   orgId?: string;
 
+  // Workspace and folder support (UC14)
+  @Prop({ index: true })
+  workspaceId?: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'Folder', default: null, index: true })
+  folderId?: Types.ObjectId | null;
+
   @Prop({ type: [String], default: [] })
   tags?: string[];
 
@@ -65,3 +72,6 @@ FileMetadataSchema.index({ uploadedBy: 1, createdAt: -1 });
 FileMetadataSchema.index({ tags: 1 });
 FileMetadataSchema.index({ orgId: 1, createdAt: -1 });
 FileMetadataSchema.index({ orgId: 1, uploadStatus: 1 });
+// Workspace and folder indexes (UC14)
+FileMetadataSchema.index({ workspaceId: 1, folderId: 1, createdAt: -1 });
+FileMetadataSchema.index({ workspaceId: 1, originalName: 'text' });
