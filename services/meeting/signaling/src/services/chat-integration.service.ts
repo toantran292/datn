@@ -164,4 +164,35 @@ export class ChatIntegrationService {
       return { success: false };
     }
   }
+
+  /**
+   * Get meeting chat messages from the chat service
+   */
+  async getMeetingChatMessages(dto: {
+    chatId: string;
+    meetingId: string;
+  }): Promise<any[]> {
+    try {
+      const url = `${CHAT_SERVICE_URL}/internal/rooms/${dto.chatId}/meeting-chat/${dto.meetingId}`;
+
+      this.logger.log(`Getting meeting chat messages from chat service: ${dto.chatId}`);
+
+      const response = await firstValueFrom(
+        this.httpService.get(url)
+      );
+
+      if (response.data.success) {
+        this.logger.log(`Successfully got ${response.data.messages?.length || 0} meeting chat messages`);
+        return response.data.messages || [];
+      } else {
+        this.logger.warn(`Failed to get meeting chat messages: ${response.data.error}`);
+        return [];
+      }
+    } catch (error: unknown) {
+      this.logger.warn(
+        `Failed to get meeting chat messages: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+      return [];
+    }
+  }
 }

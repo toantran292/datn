@@ -249,6 +249,35 @@ export class ChatsService {
     };
   }
 
+  /**
+   * Get meeting chat messages for a specific meeting
+   * Returns all thread replies under the huddle message
+   */
+  async getMeetingChatMessages(roomId: string, meetingId: string): Promise<CreatedMessage[]> {
+    // Find the huddle message for this meeting
+    const huddleMessage = await this.messagesRepo.findHuddleMessageByMeetingId(roomId, meetingId);
+
+    if (!huddleMessage) {
+      this.logger.warn(`No huddle message found for meeting ${meetingId} in room ${roomId}`);
+      return [];
+    }
+
+    // Get all thread replies (meeting chat messages)
+    const rs = await this.messagesRepo.listByThread(roomId, huddleMessage.id, { pageSize: 100 });
+
+    return rs.items.map(m => ({
+      id: m.id,
+      roomId: m.roomId,
+      userId: m.userId,
+      orgId: m.orgId,
+      threadId: m.threadId ?? null,
+      type: m.type,
+      content: m.content,
+      metadata: m.metadata,
+      sentAt: m.createdAt.toISOString(),
+    }));
+  }
+
   async listMessages(roomId: string, paging?: { pageSize?: number; pageState?: string }) {
     const rs = await this.messagesRepo.listByRoom(roomId, paging);
 

@@ -41,6 +41,20 @@ export class InternalController {
   ) {}
 
   /**
+   * Get meeting chat messages for a specific meeting
+   * Returns thread replies under the huddle message
+   */
+  @SkipContext()
+  @Get('rooms/:roomId/meeting-chat/:meetingId')
+  async getMeetingChatMessages(
+    @Param('roomId') roomId: string,
+    @Param('meetingId') meetingId: string,
+  ) {
+    const messages = await this.chatsService.getMeetingChatMessages(roomId, meetingId);
+    return { success: true, messages };
+  }
+
+  /**
    * List users in the organization
    * orgId is taken from context (X-Org-ID header set by Edge)
    */

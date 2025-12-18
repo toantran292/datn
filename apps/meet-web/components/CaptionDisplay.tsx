@@ -381,27 +381,35 @@ export function CaptionDisplay({ captions, isEnabled, maxSpeakers = 2, showTrans
         <div style={{ borderColor: 'var(--ts-widget-border)' }}>
           {activeCaptions.length > 0 ? (
             activeCaptions.map((caption) => {
-              // Determine which text to display
-              const displayText = showTranslation && caption.translatedText
-                ? caption.translatedText
-                : caption.text;
               const isTranslating = showTranslation && caption.isTranslating;
+              const hasTranslation = showTranslation && caption.translatedText && caption.translatedText !== caption.text;
 
               return (
                 <div key={caption.participantId} className="px-3 py-2" style={{ borderBottom: '1px solid var(--ts-widget-border)' }}>
                   <span className="text-ts-orange font-medium text-xs mr-2">
                     {caption.participantName}:
                   </span>
+                  {/* Always show original text immediately */}
                   <span className="text-sm" style={{ color: 'var(--ts-text-primary)' }}>
-                    {displayText}
-                    {(!caption.isFinal || isTranslating) && (
+                    {caption.text}
+                    {!caption.isFinal && (
                       <span className="inline-block w-0.5 h-3 ml-0.5 animate-pulse align-middle" style={{ background: 'var(--ts-text-secondary)' }} />
                     )}
                   </span>
-                  {/* Show original text in smaller font when showing translation */}
-                  {showTranslation && caption.translatedText && caption.translatedText !== caption.text && (
-                    <div className="text-xs mt-1 opacity-60" style={{ color: 'var(--ts-text-secondary)' }}>
-                      {caption.text}
+                  {/* Show translation below when enabled and available */}
+                  {showTranslation && (
+                    <div className="text-xs mt-1 flex items-center gap-1" style={{ color: 'var(--ts-teal)' }}>
+                      {isTranslating ? (
+                        <>
+                          <span className="inline-block w-2.5 h-2.5 border border-current border-t-transparent rounded-full animate-spin" />
+                          <span className="opacity-60">Translating...</span>
+                        </>
+                      ) : hasTranslation ? (
+                        <>
+                          <span className="opacity-60">→</span>
+                          <span>{caption.translatedText}</span>
+                        </>
+                      ) : null}
                     </div>
                   )}
                 </div>

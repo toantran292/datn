@@ -16,6 +16,7 @@ import { TurnService } from '../turn.service';
 import { JwtService } from '../token.service';
 import { AuthorizationService } from '../services/authorization.service';
 import { MeetingService } from '../services/meeting.service';
+import { ChatIntegrationService } from '../services/chat-integration.service';
 
 type Subject = 'chat' | 'project';
 
@@ -26,6 +27,7 @@ export class RoomsController {
     private readonly jwt: JwtService,
     private readonly authService: AuthorizationService,
     private readonly meetingService: MeetingService,
+    private readonly chatService: ChatIntegrationService,
   ) {}
 
   /**
@@ -298,6 +300,73 @@ export class RoomsController {
     }
 
     return { meeting };
+  }
+
+  /**
+   * Send chat message in meeting
+   */
+  @Post('meet/:meetingId/chat')
+  async sendMeetingChatMessage(
+    @Param('meetingId') meetingId: string,
+    @Body() body: { content: string; userId: string; userName?: string },
+  ) {
+    const { content, userId, userName } = body;
+
+    if (!content || !userId) {
+      throw new BadRequestException('content and userId required');
+    }
+
+    // Get meeting to find chatId
+    const meeting = await this.meetingService.getMeeting(meetingId);
+    if (!meeting) {
+      throw new NotFoundException('Meeting not found');
+    }
+
+    // Only support chat subject type for now
+    if (meeting.subjectType !== 'chat') {
+      throw new BadRequestException('Chat is only available for chat meetings');
+    }
+
+    // Send message via chat integration service
+    const result = await this.chatService.sendMeetingChatMessage({
+      chatId: meeting.subjectId,
+      userId,
+      orgId: meeting.orgId || '',
+      meetingId,
+      content,
+      senderName: userName,
+    });
+
+    if (!result.success) {
+      throw new BadRequestException('Failed to send message');
+    }
+
+    return { success: true, id: result.messageId };
+  }
+
+  /**
+   * Get chat messages in meeting
+   */
+  @Get('meet/:meetingId/chat')
+  async getMeetingChatMessages(@Param('meetingId') meetingId: string) {
+    // Get meeting to find chatId
+    const meeting = await this.meetingService.getMeeting(meetingId);
+    if (!meeting) {
+      throw new NotFoundException('Meeting not found');
+    }
+
+    // Only support chat subject type for now
+    if (meeting.subjectType !== 'chat') {
+      throw new BadRequestException('Chat is only available for chat meetings');
+    }
+
+    // Get messages via chat integration service
+    const result = await this.chatService.getMeetingChatMessages({
+      chatId: meeting.subjectId,
+      meetingId,
+    });
+
+    return { success: true, messages: result };
   }
 
   /**
