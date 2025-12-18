@@ -304,6 +304,46 @@ export const BoardView = memo(function BoardView({
     [issueStatusStore, projectId]
   );
 
+  const handleDeleteStatus = useCallback(
+    async (statusId: string) => {
+      const status = issueStatuses.find((s) => s.id === statusId);
+      if (!status) return;
+
+      const issuesInStatus = grouped[statusId]?.length || 0;
+
+      if (issuesInStatus > 0) {
+        setToast({
+          type: TOAST_TYPE.ERROR,
+          title: "Không thể xóa",
+          message: `Trạng thái này có ${issuesInStatus} công việc. Vui lòng di chuyển công việc sang trạng thái khác trước khi xóa.`,
+        });
+        return;
+      }
+
+      if (!window.confirm(`Bạn có chắc chắn muốn xóa trạng thái "${status.name}"?`)) {
+        return;
+      }
+
+      try {
+        await issueStatusStore.deleteIssueStatus(statusId);
+        setToast({
+          type: TOAST_TYPE.SUCCESS,
+          title: "Đã xóa",
+          message: "Trạng thái đã được xóa thành công.",
+        });
+      } catch (error: any) {
+        console.error("Failed to delete status:", error);
+        const errorMessage = error?.message || "Không thể xóa trạng thái. Vui lòng thử lại.";
+        setToast({
+          type: TOAST_TYPE.ERROR,
+          title: "Lỗi xóa trạng thái",
+          message: errorMessage,
+        });
+      }
+    },
+    [issueStatusStore, issueStatuses, grouped]
+  );
+
   const handleColumnDrop = useCallback(
     async (targetStatusId: string, position: "before" | "after") => {
       if (!draggedColumnId || draggedColumnId === targetStatusId) {
@@ -424,6 +464,7 @@ export const BoardView = memo(function BoardView({
               onColumnDragOver={(position) => setDropPosition({ statusId: status.id, position })}
               onColumnDrop={handleColumnDrop}
               memberMap={memberMap}
+              onDeleteStatus={handleDeleteStatus}
             />
           ))}
 
@@ -614,6 +655,7 @@ const BoardColumn: React.FC<{
   onColumnDragOver: (position: "before" | "after") => void;
   onColumnDrop: (statusId: string, position: "before" | "after") => void;
   memberMap: Map<string, { id: string; name: string; email?: string }>;
+  onDeleteStatus?: (statusId: string) => void;
 }> = ({
   statusId,
   title,
@@ -639,10 +681,12 @@ const BoardColumn: React.FC<{
   onColumnDragOver,
   onColumnDrop,
   memberMap,
+  onDeleteStatus,
 }) => {
   const [hoveredIssueId, setHoveredIssueId] = useState<string | null>(null);
   const [hoveredPosition, setHoveredPosition] = useState<"top" | "bottom" | null>(null);
   const [showQuickCreate, setShowQuickCreate] = useState(false);
+  const [showDeleteMenu, setShowDeleteMenu] = useState(false);
 
   return (
     <div
@@ -708,13 +752,45 @@ const BoardColumn: React.FC<{
             {issues.length}
           </Badge>
         </div>
-        <button
-          className="p-1 hover:bg-custom-background-80 rounded transition-colors"
-          onClick={() => setShowQuickCreate(!showQuickCreate)}
-          title="Thêm công việc"
-        >
-          <Plus className="size-4 text-custom-text-300" />
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            className="p-1 hover:bg-custom-background-80 rounded transition-colors"
+            onClick={() => setShowQuickCreate(!showQuickCreate)}
+            title="Thêm công việc"
+          >
+            <Plus className="size-4 text-custom-text-300" />
+          </button>
+          {onDeleteStatus && (
+            <div className="relative">
+              <button
+                className="p-1 hover:bg-custom-background-80 rounded transition-colors"
+                onClick={() => setShowDeleteMenu(!showDeleteMenu)}
+                title="Tùy chọn"
+              >
+                <MoreVertical className="size-4 text-custom-text-300" />
+              </button>
+              {showDeleteMenu && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setShowDeleteMenu(false)}
+                  />
+                  <div className="absolute right-0 top-full mt-1 z-20 w-48 rounded-md border border-custom-border-200 bg-custom-background-100 shadow-lg">
+                    <button
+                      className="w-full px-3 py-2 text-left text-sm text-red-500 hover:bg-custom-background-80 transition-colors flex items-center gap-2"
+                      onClick={() => {
+                        setShowDeleteMenu(false);
+                        onDeleteStatus(statusId);
+                      }}
+                    >
+                      Xóa trạng thái
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Quick Create */}

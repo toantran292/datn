@@ -323,12 +323,35 @@ export const IssueDetailPanel: React.FC<IssueDetailPanelProps> = (props) => {
     setTranslatedData(null);
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm(`Bạn có chắc chắn muốn xóa công việc "${issue.name}"?`)) {
+      return;
+    }
+
+    try {
+      await issueStore.deleteIssue(issue.id);
+      setToast({
+        type: TOAST_TYPE.SUCCESS,
+        title: "Đã xóa",
+        message: "Công việc đã được xóa thành công.",
+      });
+      onClose();
+    } catch (error) {
+      console.error("Failed to delete issue:", error);
+      setToast({
+        type: TOAST_TYPE.ERROR,
+        title: "Lỗi xóa công việc",
+        message: "Không thể xóa công việc. Vui lòng thử lại.",
+      });
+    }
+  };
+
   // Check if issue is eligible for breakdown
   const canBreakdown = issue.type === "EPIC" || (issue.point !== null && issue.point >= 13);
 
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-custom-background-100">
-      <IssueDetailHeader issueKey={issueKey} onClose={onClose} onCopyLink={handleCopyLink} />
+      <IssueDetailHeader issueKey={issueKey} onClose={onClose} onCopyLink={handleCopyLink} onDelete={!disabled ? handleDelete : undefined} />
       <div className="vertical-scrollbar flex h-full w-full overflow-auto">
         <div className="relative h-full w-full space-y-6 overflow-auto p-4 py-5">
           <div className="space-y-3">
