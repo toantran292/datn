@@ -67,9 +67,9 @@ export function BrowseChannelsModal({
                 <Hash size={20} className="text-custom-primary-100" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-custom-text-100">Browse Channels</h2>
+                <h2 className="text-lg font-semibold text-custom-text-100">Duyệt kênh</h2>
                 <p className="text-sm text-custom-text-400">
-                  Find and join public channels
+                  Tìm và tham gia các kênh công khai
                 </p>
               </div>
             </div>
@@ -86,7 +86,7 @@ export function BrowseChannelsModal({
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-custom-text-400" />
             <Input
               type="text"
-              placeholder="Search channels..."
+              placeholder="Tìm kiếm kênh..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10"
@@ -95,7 +95,7 @@ export function BrowseChannelsModal({
           </div>
 
           <p className="mt-3 text-sm text-custom-text-400">
-            {filteredRooms.length} public {filteredRooms.length === 1 ? 'channel' : 'channels'} available
+            {filteredRooms.length} kênh công khai có sẵn
           </p>
         </div>
 
@@ -104,7 +104,7 @@ export function BrowseChannelsModal({
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12">
               <div className="w-8 h-8 mb-3 border-2 border-custom-primary-100/20 border-t-custom-primary-100 rounded-full animate-spin" />
-              <p className="text-sm text-custom-text-400">Loading channels...</p>
+              <p className="text-sm text-custom-text-400">Đang tải kênh...</p>
             </div>
           ) : filteredRooms.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -112,12 +112,12 @@ export function BrowseChannelsModal({
                 <Search size={24} className="text-custom-text-300" />
               </div>
               <p className="text-sm font-medium text-custom-text-200 mb-1">
-                {searchQuery ? 'No channels found' : 'No public channels yet'}
+                {searchQuery ? 'Không tìm thấy kênh' : 'Chưa có kênh công khai'}
               </p>
               <p className="text-xs text-custom-text-400">
                 {searchQuery
-                  ? 'Try adjusting your search terms'
-                  : 'Public channels will appear here'}
+                  ? 'Thử điều chỉnh từ khóa tìm kiếm'
+                  : 'Các kênh công khai sẽ xuất hiện ở đây'}
               </p>
             </div>
           ) : (
@@ -141,10 +141,10 @@ export function BrowseChannelsModal({
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-medium text-custom-text-100 truncate">
-                          {room.name || 'Unnamed Channel'}
+                          {room.name || 'Kênh chưa đặt tên'}
                         </h3>
                         <p className="text-xs text-custom-text-400 truncate">
-                          Public channel
+                          Kênh công khai
                         </p>
                       </div>
                     </div>
@@ -152,7 +152,7 @@ export function BrowseChannelsModal({
                     {isJoined ? (
                       <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-green-500/10 text-green-600 text-sm font-medium">
                         <Check size={14} />
-                        <span>Joined</span>
+                        <span>Đã tham gia</span>
                       </div>
                     ) : (
                       <Button
@@ -160,7 +160,7 @@ export function BrowseChannelsModal({
                         size="sm"
                         onClick={() => onJoinRoom(room.id)}
                       >
-                        Join
+                        Tham gia
                       </Button>
                     )}
                   </div>

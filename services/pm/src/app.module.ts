@@ -12,7 +12,8 @@ import { IssueCommentModule } from "./modules/issue-comment/issue-comment.module
 import { AnalyticsModule } from "./modules/analytics/analytics.module";
 import { AIModule } from "./modules/ai/ai.module";
 import { RiskDetectorModule } from "./modules/risk-detector/risk-detector.module";
-import { RagModule } from "./modules/rag/rag.module";
+import { RagModule as LocalRagModule } from "./modules/rag/rag.module";
+import { RagModule } from "./common/rag/rag.module";
 import { ProjectMemberModule } from "./modules/project-member/project-member.module";
 import { MeetingsModule } from "./modules/meetings/meetings.module";
 import { OrgIdGuard } from "./common/guards";
@@ -23,6 +24,8 @@ import { OrgIdGuard } from "./common/guards";
       isGlobal: true,
     }),
     PrismaModule,
+    RagModule,
+    LocalRagModule,
     ProjectModule,
     SprintModule,
     IssueModule,
@@ -31,7 +34,6 @@ import { OrgIdGuard } from "./common/guards";
     AnalyticsModule,
     AIModule,
     RiskDetectorModule,
-    RagModule,
     ProjectMemberModule,
     MeetingsModule,
   ],

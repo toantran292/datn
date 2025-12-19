@@ -59,7 +59,7 @@ export interface RichTextEditorProps {
 }
 
 const RichTextEditorInnerComponent = forwardRef<RichTextEditorRef, RichTextEditorProps>(({
-  placeholder = "Write a message...",
+  placeholder = "Viết tin nhắn...",
   disabled = false,
   members,
   currentUserId,
@@ -154,7 +154,7 @@ const RichTextEditorInnerComponent = forwardRef<RichTextEditorRef, RichTextEdito
               return {
                 id: member.userId,
                 title: member.displayName || `User ${member.userId.slice(0, 8)}`,
-                subTitle: isCurrentUser ? "(you)" : undefined,
+                subTitle: isCurrentUser ? "(bạn)" : undefined,
                 entity_identifier: member.userId,
                 entity_name: "user_mention" as const,
                 isOnline: member.isOnline,

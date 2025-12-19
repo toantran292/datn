@@ -114,10 +114,14 @@ export class IdentityService {
    * Get members of an organization from Identity service
    * Uses internal endpoint that doesn't require authentication
    */
-  async getOrgMembers(orgId: string, page = 0, size = 100): Promise<PagedMembers | null> {
+  async getOrgMembers(orgId: string, page = 0, size = 100, search?: string): Promise<PagedMembers | null> {
     try {
       // Use internal endpoint for service-to-service communication (no auth required)
-      const url = `${this.identityUrl}/internal/orgs/${orgId}/members?page=${page}&size=${size}`;
+      const params = new URLSearchParams({ page: page.toString(), size: size.toString() });
+      if (search) {
+        params.append('search', search);
+      }
+      const url = `${this.identityUrl}/internal/orgs/${orgId}/members?${params.toString()}`;
 
       const response = await fetch(url, {
         method: 'GET',

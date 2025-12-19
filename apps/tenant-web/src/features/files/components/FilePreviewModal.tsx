@@ -58,14 +58,14 @@ export function FilePreviewModal({ file, open, onOpenChange, onDownload, onDelet
                     </svg>
                   </div>
                   <h4 className="text-white font-medium mb-2">{file.name}</h4>
-                  <p className="text-white/70 text-sm mb-6">PDF Document • {file.size}</p>
+                  <p className="text-white/70 text-sm mb-6">Tài liệu PDF • {file.size}</p>
                   <Button
                     className="rounded-xl"
                     style={{ backgroundColor: "#00C4AB" }}
                     onClick={() => onDownload(file)}
                   >
                     <Download size={16} className="mr-2" />
-                    Download to View
+                    Tải xuống để xem
                   </Button>
                 </div>
               ) : (
@@ -77,14 +77,14 @@ export function FilePreviewModal({ file, open, onOpenChange, onDownload, onDelet
                     </svg>
                   </div>
                   <h4 className="text-white font-medium mb-2">{file.name}</h4>
-                  <p className="text-white/70 text-sm mb-6">Document • {file.size}</p>
+                  <p className="text-white/70 text-sm mb-6">Tài liệu • {file.size}</p>
                   <Button
                     className="rounded-xl"
                     style={{ backgroundColor: "#00C4AB" }}
                     onClick={() => onDownload(file)}
                   >
                     <Download size={16} className="mr-2" />
-                    Download File
+                    Tải xuống tệp
                   </Button>
                 </div>
               )}
@@ -99,7 +99,7 @@ export function FilePreviewModal({ file, open, onOpenChange, onDownload, onDelet
               onClick={() => onDownload(file)}
             >
               <Download size={16} className="mr-2" />
-              Download
+              Tải xuống
             </Button>
             {isImage && (
               <Button
@@ -107,7 +107,7 @@ export function FilePreviewModal({ file, open, onOpenChange, onDownload, onDelet
                 className="text-white hover:bg-white/20 rounded-xl"
               >
                 <ExternalLink size={16} className="mr-2" />
-                Open Original
+                Mở bản gốc
               </Button>
             )}
             <Button
@@ -119,7 +119,7 @@ export function FilePreviewModal({ file, open, onOpenChange, onDownload, onDelet
               }}
             >
               <Trash2 size={16} className="mr-2" />
-              Delete
+              Xóa
             </Button>
           </div>
         </div>

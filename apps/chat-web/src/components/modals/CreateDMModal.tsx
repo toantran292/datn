@@ -62,7 +62,7 @@ export function CreateDMModal({ isOpen, onClose, onCreate, currentUserId }: Crea
       );
       setUsers(filteredUsers);
     } catch (err) {
-      setError('Failed to load users');
+      setError('Không thể tải danh sách người dùng');
     } finally {
       setIsLoading(false);
     }
@@ -81,7 +81,7 @@ export function CreateDMModal({ isOpen, onClose, onCreate, currentUserId }: Crea
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedUserIds.size === 0) {
-      setError('Please select at least one person');
+      setError('Vui lòng chọn ít nhất một người');
       return;
     }
 
@@ -92,7 +92,7 @@ export function CreateDMModal({ isOpen, onClose, onCreate, currentUserId }: Crea
       await onCreate(Array.from(selectedUserIds));
       handleClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create conversation');
+      setError(err instanceof Error ? err.message : 'Không thể tạo cuộc trò chuyện');
     } finally {
       setIsCreating(false);
     }
@@ -130,9 +130,9 @@ export function CreateDMModal({ isOpen, onClose, onCreate, currentUserId }: Crea
               <MessageSquare size={20} className="text-custom-primary-100" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-custom-text-100">New Message</h2>
+              <h2 className="text-lg font-semibold text-custom-text-100">Tin nhắn mới</h2>
               <p className="text-sm text-custom-text-400">
-                Start a conversation with team members
+                Bắt đầu cuộc trò chuyện với thành viên
               </p>
             </div>
           </div>
@@ -165,7 +165,7 @@ export function CreateDMModal({ isOpen, onClose, onCreate, currentUserId }: Crea
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search people..."
+              placeholder="Tìm kiếm..."
               className="w-full pl-10"
               disabled={isCreating || isLoading}
               autoFocus
@@ -178,16 +178,16 @@ export function CreateDMModal({ isOpen, onClose, onCreate, currentUserId }: Crea
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-12">
               <div className="w-8 h-8 mb-3 border-2 border-custom-primary-100/20 border-t-custom-primary-100 rounded-full animate-spin" />
-              <p className="text-sm text-custom-text-400">Loading users...</p>
+              <p className="text-sm text-custom-text-400">Đang tải...</p>
             </div>
           ) : filteredUsers.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <div className="w-12 h-12 mb-3 rounded-xl bg-custom-background-80 flex items-center justify-center">
                 <Search size={24} className="text-custom-text-300" />
               </div>
-              <p className="text-sm font-medium text-custom-text-200 mb-1">No users found</p>
+              <p className="text-sm font-medium text-custom-text-200 mb-1">Không tìm thấy người dùng</p>
               <p className="text-xs text-custom-text-400">
-                Try adjusting your search terms
+                Thử điều chỉnh từ khóa tìm kiếm
               </p>
             </div>
           ) : (
@@ -248,7 +248,7 @@ export function CreateDMModal({ isOpen, onClose, onCreate, currentUserId }: Crea
               onClick={handleClose}
               disabled={isCreating}
             >
-              Cancel
+              Hủy
             </Button>
             <Button
               variant="primary"
@@ -257,7 +257,7 @@ export function CreateDMModal({ isOpen, onClose, onCreate, currentUserId }: Crea
               loading={isCreating}
               disabled={selectedUserIds.size === 0}
             >
-              {isCreating ? 'Creating...' : 'Start Conversation'}
+              {isCreating ? 'Đang tạo...' : 'Bắt đầu trò chuyện'}
             </Button>
           </div>
         </div>

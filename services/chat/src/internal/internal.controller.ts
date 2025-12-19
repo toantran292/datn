@@ -15,6 +15,7 @@ interface CreateHuddleMessageBody {
   meetingRoomId: string;
   duration?: number;
   participantCount?: number;
+  hasTranscript?: boolean;
 }
 
 interface UpdateHuddleParticipantsBody {
@@ -63,10 +64,11 @@ export class InternalController {
     @Ctx() ctx: RequestContext,
     @Query('page') page?: number,
     @Query('size') size?: number,
+    @Query('search') search?: string,
   ) {
     // Get all users/members from the organization via Identity service
     // orgId comes from context (set by Edge from JWT)
-    const members = await this.identityService.getOrgMembers(ctx.orgId, page || 0, size || 100);
+    const members = await this.identityService.getOrgMembers(ctx.orgId, page || 0, size || 100, search);
 
     if (!members) {
       return [];
@@ -109,6 +111,7 @@ export class InternalController {
         meetingRoomId: body.meetingRoomId,
         duration: body.duration,
         participantCount: body.participantCount,
+        hasTranscript: body.hasTranscript,
       });
 
       if (updatedMessage) {

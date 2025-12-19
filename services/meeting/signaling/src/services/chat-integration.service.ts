@@ -95,6 +95,7 @@ export class ChatIntegrationService {
     meetingRoomId: string;
     duration: number;
     participantCount: number;
+    hasTranscript?: boolean;
   }): Promise<void> {
     try {
       const url = `${CHAT_SERVICE_URL}/internal/rooms/${dto.chatId}/huddle`;
@@ -110,6 +111,7 @@ export class ChatIntegrationService {
           meetingRoomId: dto.meetingRoomId,
           duration: dto.duration,
           participantCount: dto.participantCount,
+          hasTranscript: dto.hasTranscript,
         })
       );
 

@@ -137,13 +137,15 @@ export class ProjectController {
     };
   }
 
-  private toLiteDto(project: Project): ProjectLiteResponseDto {
+  private toLiteDto(project: Project & { issueCount?: number; sprintCount?: number }): ProjectLiteResponseDto {
     return {
       id: project.id,
       identifier: project.identifier,
       name: project.name,
       orgId: project.orgId,
       projectLead: project.projectLead,
+      issueCount: project.issueCount ?? 0,
+      sprintCount: project.sprintCount ?? 0,
     };
   }
 }

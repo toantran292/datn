@@ -1,10 +1,13 @@
+'use client';
+
 import { useMemo, useState } from 'react';
-import { Users } from 'lucide-react';
+import { Users, X, MessageSquare } from 'lucide-react';
 import { useAppHeaderContext } from '@uts/design-system/ui';
 import type { Room } from '../../types';
 import { SidebarCategory, MenuItem } from './SidebarCategory';
 import { ChannelItem } from './ChannelItem';
 import { DMItem } from './DMItem';
+import { useResponsive } from '../../hooks/useResponsive';
 
 export interface SidebarProps {
   rooms: Room[];
@@ -54,6 +57,7 @@ export function Sidebar({
   onLeftRoom,
 }: SidebarProps) {
   const { currentProject } = useAppHeaderContext();
+  const { isMobile, closeSidebar } = useResponsive();
   const [projectMenuOpen, setProjectMenuOpen] = useState(false);
   const [orgMenuOpen, setOrgMenuOpen] = useState(false);
 
@@ -62,8 +66,35 @@ export function Sidebar({
   const projectChannels = useMemo(() => projectRooms.filter(r => r.type === 'channel'), [projectRooms]);
   const dms = useMemo(() => rooms.filter(r => r.type === 'dm'), [rooms]);
 
+  // Handle room selection - close sidebar on mobile
+  const handleSelectRoom = (roomId: string) => {
+    onSelectRoom(roomId);
+    if (isMobile) {
+      closeSidebar();
+    }
+  };
+
   return (
-    <div className="w-[260px] border-r border-custom-border-200 flex flex-col h-full bg-custom-background-100">
+    <div className={`
+      border-r border-custom-border-200 flex flex-col h-full bg-custom-background-100
+      ${isMobile ? 'w-[85vw] max-w-[300px]' : 'w-[260px]'}
+    `}>
+      {/* Mobile header with close button */}
+      {isMobile && (
+        <div className="flex items-center justify-between px-4 py-3 border-b border-custom-border-200 bg-custom-background-100 flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <MessageSquare size={20} className="text-custom-primary-100" />
+            <span className="font-semibold text-custom-text-100">Tin nhắn</span>
+          </div>
+          <button
+            onClick={closeSidebar}
+            className="p-2 -mr-2 rounded-lg text-custom-text-300 hover:text-custom-text-100 hover:bg-custom-background-80 transition-colors"
+          >
+            <X size={20} />
+          </button>
+        </div>
+      )}
+
       {/* Scrollable content */}
       <div className="flex-1 overflow-y-auto py-3 vertical-scrollbar scrollbar-sm">
         {/* Project Channels - Only show when in project context */}
@@ -81,26 +112,26 @@ export function Sidebar({
                   onCreateProjectChannel();
                   setProjectMenuOpen(false);
                 }}>
-                  Create channel
+                  Tạo kênh
                 </MenuItem>
                 <MenuItem onClick={() => {
                   onBrowseProjectChannels();
                   setProjectMenuOpen(false);
                 }}>
-                  Browse channels
+                  Duyệt kênh
                 </MenuItem>
               </>
             }
             isEmpty={projectChannels.length === 0}
-            emptyMessage="No project channels"
+            emptyMessage="Chưa có kênh dự án"
           >
             {projectChannels.map((room) => (
               <ChannelItem
                 key={room.id}
                 room={room}
                 selected={selectedRoomId === room.id}
-                onClick={() => onSelectRoom(room.id)}
-                displayName={room.name || 'Unnamed Channel'}
+                onClick={() => handleSelectRoom(room.id)}
+                displayName={room.name || 'Kênh chưa đặt tên'}
                 unreadCount={getUnreadCount?.(room.id)}
                 isOwner={room.createdBy === currentUserId || isOrgOwner}
                 onRoomUpdated={onRoomUpdated}
@@ -126,25 +157,25 @@ export function Sidebar({
                 onCreateOrgChannel();
                 setOrgMenuOpen(false);
               }}>
-                Create channel
+                Tạo kênh
               </MenuItem>
               <MenuItem onClick={() => {
                 onBrowseOrgChannels();
                 setOrgMenuOpen(false);
               }}>
-                Browse channels
+                Duyệt kênh
               </MenuItem>
             </>
           }
           isEmpty={orgChannels.length === 0}
-          emptyMessage="No workspace channels"
+          emptyMessage="Chưa có kênh"
         >
           {orgChannels.map((room) => (
             <ChannelItem
               key={room.id}
               room={room}
               selected={selectedRoomId === room.id}
-              onClick={() => onSelectRoom(room.id)}
+              onClick={() => handleSelectRoom(room.id)}
               displayName={room.name || 'Unnamed Channel'}
               unreadCount={getUnreadCount?.(room.id)}
               isOwner={room.createdBy === currentUserId || isOrgOwner}
@@ -158,12 +189,12 @@ export function Sidebar({
 
         {/* Direct Messages */}
         <SidebarCategory
-          title="Direct Messages"
+          title="Tin nhắn riêng"
           icon={<Users size={14} />}
           defaultExpanded={true}
           onAddClick={onStartComposeDM || onCreateDM}
           isEmpty={dms.length === 0}
-          emptyMessage="No conversations yet"
+          emptyMessage="Chưa có cuộc trò chuyện"
         >
           {/* Show "New Message" item when composing */}
           {isComposingDM && (
@@ -172,7 +203,7 @@ export function Sidebar({
                 <div className="w-5 h-5 rounded bg-custom-primary-100/20 flex items-center justify-center">
                   <span className="text-custom-primary-100 text-xs">+</span>
                 </div>
-                <span className="text-sm font-medium text-custom-primary-100">New Message</span>
+                <span className="text-sm font-medium text-custom-primary-100">Tin nhắn mới</span>
               </div>
             </div>
           )}
@@ -181,7 +212,7 @@ export function Sidebar({
               key={room.id}
               room={room}
               selected={!isComposingDM && selectedRoomId === room.id}
-              onClick={() => onSelectRoom(room.id)}
+              onClick={() => handleSelectRoom(room.id)}
               displayName={getDMName(room)}
               unreadCount={getUnreadCount?.(room.id)}
             />

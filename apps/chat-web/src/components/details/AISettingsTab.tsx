@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Bot, Sparkles, FileText, ListTodo, MessageSquare, AlertCircle, Shield, Loader2, Copy, Check, Settings, ExternalLink, StopCircle } from 'lucide-react';
 import { api, type AIConfig, type AIFeature, type SummaryResult, type QAResult } from '../../services/api';
 import { MarkdownContent } from '../common';
+import { useResponsive } from '../../hooks/useResponsive';
 
 // Helper to strip HTML and truncate text for source preview
 function getSourcePreview(html: string, maxLength: number = 80): string {
@@ -24,31 +25,32 @@ type ViewMode = 'assistant' | 'settings';
 const AI_FEATURES: { key: AIFeature; label: string; description: string; icon: React.ReactNode }[] = [
   {
     key: 'summary',
-    label: 'Conversation Summary',
-    description: 'Summarize recent messages in the channel',
+    label: 'Tóm tắt hội thoại',
+    description: 'Tóm tắt các tin nhắn gần đây trong kênh',
     icon: <Sparkles size={16} />,
   },
   {
     key: 'action_items',
-    label: 'Action Items',
-    description: 'Extract tasks and action items from conversations',
+    label: 'Công việc cần làm',
+    description: 'Trích xuất công việc từ các cuộc hội thoại',
     icon: <ListTodo size={16} />,
   },
   {
     key: 'qa',
-    label: 'Q&A Assistant',
-    description: 'Ask questions about channel content',
+    label: 'Trợ lý hỏi đáp',
+    description: 'Đặt câu hỏi về nội dung kênh',
     icon: <MessageSquare size={16} />,
   },
   {
     key: 'document_summary',
-    label: 'Document Summary',
-    description: 'Summarize attached documents',
+    label: 'Tóm tắt tài liệu',
+    description: 'Tóm tắt các tài liệu đính kèm',
     icon: <FileText size={16} />,
   },
 ];
 
 export function AISettingsTab({ roomId, canConfigure, threadId, onNavigateToMessage }: AISettingsTabProps) {
+  const { isMobile } = useResponsive();
   const [viewMode, setViewMode] = useState<ViewMode>('assistant');
   const [config, setConfig] = useState<AIConfig | null>(null);
   const [loading, setLoading] = useState(true);
@@ -300,7 +302,7 @@ export function AISettingsTab({ roomId, canConfigure, threadId, onNavigateToMess
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 mx-auto mb-2 border-2 border-custom-primary-100/20 border-t-custom-primary-100 rounded-full animate-spin" />
-          <p className="text-sm text-custom-text-400">Loading AI...</p>
+          <p className="text-sm text-custom-text-400">Đang tải AI...</p>
         </div>
       </div>
     );
@@ -313,7 +315,7 @@ export function AISettingsTab({ roomId, canConfigure, threadId, onNavigateToMess
           <AlertCircle size={32} className="mx-auto mb-2 text-red-500" />
           <p className="text-sm text-red-500">{error}</p>
           <button onClick={loadConfig} className="mt-3 text-sm text-custom-primary-100 hover:underline">
-            Try again
+            Thử lại
           </button>
         </div>
       </div>
@@ -328,18 +330,18 @@ export function AISettingsTab({ roomId, canConfigure, threadId, onNavigateToMess
           <div className="w-16 h-16 mb-4 rounded-2xl bg-custom-background-80 flex items-center justify-center">
             <Bot size={32} className="text-custom-text-300" />
           </div>
-          <p className="text-sm font-medium text-custom-text-200 mb-1">AI Assistant Disabled</p>
+          <p className="text-sm font-medium text-custom-text-200 mb-1">Trợ lý AI đã tắt</p>
           <p className="text-xs text-custom-text-400 text-center max-w-xs">
             {canConfigure
-              ? 'Enable AI in Settings to use intelligent features.'
-              : 'Contact a workspace admin to enable AI features.'}
+              ? 'Bật AI trong Cài đặt để sử dụng các tính năng thông minh.'
+              : 'Liên hệ quản trị viên để bật tính năng AI.'}
           </p>
           {canConfigure && (
             <button
               onClick={() => setViewMode('settings')}
               className="mt-3 text-sm text-custom-primary-100 hover:underline"
             >
-              Go to Settings
+              Đi đến Cài đặt
             </button>
           )}
         </div>
@@ -347,59 +349,59 @@ export function AISettingsTab({ roomId, canConfigure, threadId, onNavigateToMess
     }
 
     return (
-      <div className="p-4 space-y-4">
-        {/* Action Buttons */}
-        <div className="grid grid-cols-2 gap-2">
+      <div className="p-3 space-y-3">
+        {/* Action Buttons - Horizontal on mobile */}
+        <div className="flex gap-2">
           <button
             onClick={handleSummarize}
             disabled={!isFeatureEnabled('summary') || aiLoading}
-            className={`flex flex-col items-center gap-2 p-3 rounded-lg border transition-colors ${
+            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border transition-colors ${
               isFeatureEnabled('summary')
                 ? 'border-custom-border-200 hover:bg-custom-background-80 hover:border-amber-500/50'
                 : 'border-custom-border-100 opacity-50 cursor-not-allowed'
             }`}
           >
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+            <div className={`w-7 h-7 rounded-md flex items-center justify-center ${
               isFeatureEnabled('summary') ? 'bg-amber-500/10' : 'bg-custom-background-80'
             }`}>
-              <Sparkles size={16} className={isFeatureEnabled('summary') ? 'text-amber-500' : 'text-custom-text-400'} />
+              <Sparkles size={14} className={isFeatureEnabled('summary') ? 'text-amber-500' : 'text-custom-text-400'} />
             </div>
-            <span className="text-xs font-medium text-custom-text-100">Summarize</span>
+            <span className="text-xs font-medium text-custom-text-100">Tóm tắt</span>
           </button>
 
           <button
             onClick={handleExtractActionItems}
             disabled={!isFeatureEnabled('action_items') || aiLoading}
-            className={`flex flex-col items-center gap-2 p-3 rounded-lg border transition-colors ${
+            className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border transition-colors ${
               isFeatureEnabled('action_items')
                 ? 'border-custom-border-200 hover:bg-custom-background-80 hover:border-blue-500/50'
                 : 'border-custom-border-100 opacity-50 cursor-not-allowed'
             }`}
           >
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+            <div className={`w-7 h-7 rounded-md flex items-center justify-center ${
               isFeatureEnabled('action_items') ? 'bg-blue-500/10' : 'bg-custom-background-80'
             }`}>
-              <ListTodo size={16} className={isFeatureEnabled('action_items') ? 'text-blue-500' : 'text-custom-text-400'} />
+              <ListTodo size={14} className={isFeatureEnabled('action_items') ? 'text-blue-500' : 'text-custom-text-400'} />
             </div>
-            <span className="text-xs font-medium text-custom-text-100">Action Items</span>
+            <span className="text-xs font-medium text-custom-text-100">Công việc</span>
           </button>
         </div>
 
-        {/* Q&A Section */}
+        {/* Q&A Section - Compact */}
         {isFeatureEnabled('qa') && (
-          <div className="p-3 rounded-lg border border-custom-border-200 bg-custom-background-90">
-            <div className="flex items-center gap-2 mb-2">
-              <MessageSquare size={14} className="text-green-500" />
-              <span className="text-xs font-medium text-custom-text-100">Ask a Question</span>
+          <div className="p-2.5 rounded-lg border border-custom-border-200 bg-custom-background-90">
+            <div className="flex items-center gap-1.5 mb-2">
+              <MessageSquare size={12} className="text-green-500" />
+              <span className="text-xs font-medium text-custom-text-100">Đặt câu hỏi</span>
             </div>
             <div className="flex gap-2">
               <input
                 type="text"
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
-                placeholder="Ask about the conversation..."
+                placeholder="Hỏi về cuộc hội thoại..."
                 disabled={aiLoading}
-                className="flex-1 px-2 py-1.5 rounded-md bg-custom-background-100 border border-custom-border-200 text-xs text-custom-text-100 placeholder:text-custom-text-400 focus:outline-none focus:border-custom-primary-100 disabled:opacity-50"
+                className="flex-1 min-w-0 px-2.5 py-2 rounded-md bg-custom-background-100 border border-custom-border-200 text-sm text-custom-text-100 placeholder:text-custom-text-400 focus:outline-none focus:border-custom-primary-100 disabled:opacity-50"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
                     e.preventDefault();
@@ -410,9 +412,9 @@ export function AISettingsTab({ roomId, canConfigure, threadId, onNavigateToMess
               <button
                 onClick={handleAskQuestion}
                 disabled={!question.trim() || aiLoading}
-                className="px-3 py-1.5 rounded-md bg-custom-primary-100 text-white text-xs font-medium hover:bg-custom-primary-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="px-4 py-2 rounded-md bg-custom-primary-100 text-white text-sm font-medium hover:bg-custom-primary-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0"
               >
-                Ask
+                Hỏi
               </button>
             </div>
           </div>
@@ -425,7 +427,7 @@ export function AISettingsTab({ roomId, canConfigure, threadId, onNavigateToMess
               <div className="flex items-center gap-2">
                 <Loader2 size={14} className="text-custom-primary-100 animate-spin" />
                 <span className="text-xs font-medium text-custom-text-100">
-                  {streamingType === 'qa' ? 'Answering...' : 'Generating...'}
+                  {streamingType === 'qa' ? 'Đang trả lời...' : 'Đang tạo...'}
                 </span>
               </div>
               <button
@@ -433,29 +435,29 @@ export function AISettingsTab({ roomId, canConfigure, threadId, onNavigateToMess
                 className="flex items-center gap-1 px-2 py-1 rounded text-xs text-red-500 hover:bg-red-500/10 transition-colors"
               >
                 <StopCircle size={12} />
-                Stop
+                Dừng
               </button>
             </div>
             {/* Show question for Q&A streaming */}
             {streamingType === 'qa' && askedQuestion && (
               <div className="mb-3 pb-2 border-b border-custom-border-200">
-                <p className="text-xs font-medium text-custom-text-400 mb-1">Question:</p>
+                <p className="text-xs font-medium text-custom-text-400 mb-1">Câu hỏi:</p>
                 <p className="text-sm text-custom-text-100 italic">&ldquo;{askedQuestion}&rdquo;</p>
               </div>
             )}
-            {streamingType === 'qa' && <p className="text-xs font-medium text-custom-text-400 mb-1">Answer:</p>}
+            {streamingType === 'qa' && <p className="text-xs font-medium text-custom-text-400 mb-1">Câu trả lời:</p>}
             <MarkdownContent content={streamingText} />
             {/* Show sources while streaming Q&A */}
             {streamingSources && streamingSources.length > 0 && (
               <div className="mt-2 pt-2 border-t border-custom-border-200">
-                <p className="text-xs font-medium text-custom-text-400 mb-1">Sources:</p>
+                <p className="text-xs font-medium text-custom-text-400 mb-1">Nguồn:</p>
                 <div className="space-y-1">
                   {streamingSources.slice(0, 3).map((source, index) => (
                     <button
                       key={index}
                       onClick={() => onNavigateToMessage?.(source.messageId)}
                       className="w-full text-left text-xs text-custom-text-300 bg-custom-background-90 px-2 py-1.5 rounded hover:bg-custom-background-80 hover:text-custom-text-100 transition-colors group flex items-start gap-2"
-                      title="Click to go to message"
+                      title="Nhấn để đến tin nhắn"
                     >
                       <span className="flex-1 line-clamp-2">{getSourcePreview(source.content)}</span>
                       <ExternalLink size={12} className="flex-shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -471,7 +473,7 @@ export function AISettingsTab({ roomId, canConfigure, threadId, onNavigateToMess
         {aiLoading && !isStreaming && (
           <div className="flex flex-col items-center justify-center py-6">
             <Loader2 size={24} className="text-custom-primary-100 animate-spin mb-2" />
-            <p className="text-xs text-custom-text-400">Processing...</p>
+            <p className="text-xs text-custom-text-400">Đang xử lý...</p>
           </div>
         )}
 
@@ -479,13 +481,13 @@ export function AISettingsTab({ roomId, canConfigure, threadId, onNavigateToMess
         {isStreaming && streamingType !== 'action_items' && !streamingText && streamingSources?.length === 0 && (
           <div className="flex flex-col items-center justify-center py-6">
             <Loader2 size={24} className="text-custom-primary-100 animate-spin mb-2" />
-            <p className="text-xs text-custom-text-400">Starting stream...</p>
+            <p className="text-xs text-custom-text-400">Đang bắt đầu...</p>
             <button
               onClick={handleStopStreaming}
               className="mt-2 flex items-center gap-1 px-2 py-1 rounded text-xs text-red-500 hover:bg-red-500/10 transition-colors"
             >
               <StopCircle size={12} />
-              Cancel
+              Hủy
             </button>
           </div>
         )}
@@ -506,7 +508,7 @@ export function AISettingsTab({ roomId, canConfigure, threadId, onNavigateToMess
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <Sparkles size={14} className="text-amber-500" />
-                <span className="text-xs font-medium text-custom-text-100">Summary</span>
+                <span className="text-xs font-medium text-custom-text-100">Tóm tắt</span>
               </div>
               <button
                 onClick={() => handleCopy(summaryResult.summary)}
@@ -517,7 +519,7 @@ export function AISettingsTab({ roomId, canConfigure, threadId, onNavigateToMess
             </div>
             <MarkdownContent content={summaryResult.summary} />
             <p className="text-xs text-custom-text-400 mt-2 pt-2 border-t border-custom-border-200">
-              Based on {summaryResult.messageCount} messages
+              Dựa trên {summaryResult.messageCount} tin nhắn
             </p>
           </div>
         )}
@@ -533,7 +535,7 @@ export function AISettingsTab({ roomId, canConfigure, threadId, onNavigateToMess
                   <ListTodo size={14} className="text-blue-500" />
                 )}
                 <span className="text-xs font-medium text-custom-text-100">
-                  {isStreaming ? 'Extracting Action Items...' : 'Action Items'}
+                  {isStreaming ? 'Đang trích xuất công việc...' : 'Công việc cần làm'}
                 </span>
               </div>
               <div className="flex items-center gap-1">
@@ -543,7 +545,7 @@ export function AISettingsTab({ roomId, canConfigure, threadId, onNavigateToMess
                     className="flex items-center gap-1 px-2 py-1 rounded text-xs text-red-500 hover:bg-red-500/10 transition-colors"
                   >
                     <StopCircle size={12} />
-                    Stop
+                    Dừng
                   </button>
                 )}
                 {!isStreaming && streamingActionItemsText && (
@@ -561,7 +563,7 @@ export function AISettingsTab({ roomId, canConfigure, threadId, onNavigateToMess
                 <MarkdownContent content={streamingActionItemsText} />
                 {!isStreaming && actionItemsMessageCount > 0 && (
                   <p className="text-xs text-custom-text-400 mt-2 pt-2 border-t border-custom-border-200">
-                    Based on {actionItemsMessageCount} messages
+                    Dựa trên {actionItemsMessageCount} tin nhắn
                   </p>
                 )}
               </>
@@ -579,7 +581,7 @@ export function AISettingsTab({ roomId, canConfigure, threadId, onNavigateToMess
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
                 <MessageSquare size={14} className="text-green-500" />
-                <span className="text-xs font-medium text-custom-text-100">Q&A</span>
+                <span className="text-xs font-medium text-custom-text-100">Hỏi đáp</span>
               </div>
               <button
                 onClick={() => handleCopy(qaResult.answer)}
@@ -591,22 +593,22 @@ export function AISettingsTab({ roomId, canConfigure, threadId, onNavigateToMess
             {/* Show the question */}
             {askedQuestion && (
               <div className="mb-3 pb-2 border-b border-custom-border-200">
-                <p className="text-xs font-medium text-custom-text-400 mb-1">Question:</p>
+                <p className="text-xs font-medium text-custom-text-400 mb-1">Câu hỏi:</p>
                 <p className="text-sm text-custom-text-100 italic">&ldquo;{askedQuestion}&rdquo;</p>
               </div>
             )}
-            <p className="text-xs font-medium text-custom-text-400 mb-1">Answer:</p>
+            <p className="text-xs font-medium text-custom-text-400 mb-1">Câu trả lời:</p>
             <MarkdownContent content={qaResult.answer} />
             {qaResult.sources && qaResult.sources.length > 0 && (
               <div className="mt-2 pt-2 border-t border-custom-border-200">
-                <p className="text-xs font-medium text-custom-text-400 mb-1">Sources:</p>
+                <p className="text-xs font-medium text-custom-text-400 mb-1">Nguồn:</p>
                 <div className="space-y-1">
                   {qaResult.sources.slice(0, 3).map((source, index) => (
                     <button
                       key={index}
                       onClick={() => onNavigateToMessage?.(source.messageId)}
                       className="w-full text-left text-xs text-custom-text-300 bg-custom-background-90 px-2 py-1.5 rounded hover:bg-custom-background-80 hover:text-custom-text-100 transition-colors group flex items-start gap-2"
-                      title="Click to go to message"
+                      title="Nhấn để đến tin nhắn"
                     >
                       <span className="flex-1 line-clamp-2">{getSourcePreview(source.content)}</span>
                       <ExternalLink size={12} className="flex-shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -652,9 +654,9 @@ export function AISettingsTab({ roomId, canConfigure, threadId, onNavigateToMess
             <Bot size={16} className={config?.aiEnabled ? 'text-custom-primary-100' : 'text-custom-text-400'} />
           </div>
           <div>
-            <div className="font-medium text-xs text-custom-text-100">AI Assistant</div>
+            <div className="font-medium text-xs text-custom-text-100">Trợ lý AI</div>
             <div className="text-xs text-custom-text-400">
-              {config?.aiEnabled ? 'Enabled' : 'Disabled'}
+              {config?.aiEnabled ? 'Đã bật' : 'Đã tắt'}
             </div>
           </div>
         </div>
@@ -674,7 +676,7 @@ export function AISettingsTab({ roomId, canConfigure, threadId, onNavigateToMess
       {/* Feature Toggles */}
       {config?.aiEnabled && (
         <div className="space-y-2">
-          <h3 className="text-xs font-medium text-custom-text-300 uppercase tracking-wider px-1">Features</h3>
+          <h3 className="text-xs font-medium text-custom-text-300 uppercase tracking-wider px-1">Tính năng</h3>
           {AI_FEATURES.map((feature) => {
             const isEnabled = config?.enabledFeatures?.includes(feature.key);
             return (
@@ -720,37 +722,49 @@ export function AISettingsTab({ roomId, canConfigure, threadId, onNavigateToMess
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header with sub-tabs */}
-      <div className="px-4 py-2 border-b border-custom-border-200 bg-custom-background-90">
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setViewMode('assistant')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-              viewMode === 'assistant'
-                ? 'bg-custom-primary-100/10 text-custom-primary-100'
-                : 'text-custom-text-400 hover:text-custom-text-100 hover:bg-custom-background-80'
-            }`}
-          >
-            <Sparkles size={12} />
-            Assistant
-          </button>
-          <button
-            onClick={() => setViewMode('settings')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-              viewMode === 'settings'
-                ? 'bg-custom-primary-100/10 text-custom-primary-100'
-                : 'text-custom-text-400 hover:text-custom-text-100 hover:bg-custom-background-80'
-            }`}
-          >
-            <Settings size={12} />
-            Settings
-          </button>
+      {/* Header with sub-tabs - Only show Settings tab if user can configure */}
+      {canConfigure ? (
+        <div className="px-3 py-1.5 border-b border-custom-border-200 bg-custom-background-90 flex-shrink-0">
+          <div className="flex items-center gap-0.5">
+            <button
+              onClick={() => setViewMode('assistant')}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                viewMode === 'assistant'
+                  ? 'bg-custom-primary-100/10 text-custom-primary-100'
+                  : 'text-custom-text-400 hover:text-custom-text-100 hover:bg-custom-background-80'
+              }`}
+            >
+              <Sparkles size={12} />
+              <span>Trợ lý</span>
+            </button>
+            <button
+              onClick={() => setViewMode('settings')}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                viewMode === 'settings'
+                  ? 'bg-custom-primary-100/10 text-custom-primary-100'
+                  : 'text-custom-text-400 hover:text-custom-text-100 hover:bg-custom-background-80'
+              }`}
+            >
+              <Settings size={12} />
+              <span>Cài đặt</span>
+            </button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="px-3 py-2 border-b border-custom-border-200 bg-custom-background-90 flex-shrink-0">
+          <div className="flex items-center gap-1.5 text-custom-text-300">
+            <Sparkles size={14} />
+            <span className="text-sm font-medium">Trợ lý AI</span>
+          </div>
+        </div>
+      )}
 
-      {/* Content */}
+      {/* Content - Only show assistant view if user is not admin */}
       <div className="flex-1 overflow-y-auto vertical-scrollbar scrollbar-sm">
-        {viewMode === 'assistant' ? renderAssistantView() : renderSettingsView()}
+        {canConfigure
+          ? (viewMode === 'assistant' ? renderAssistantView() : renderSettingsView())
+          : renderAssistantView()
+        }
       </div>
     </div>
   );

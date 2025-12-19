@@ -43,7 +43,7 @@ export function ProjectCard({ project, onEdit, onDelete, showActions = true }: P
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => onEdit?.(project)}>
                 <Settings className="mr-2 h-4 w-4" />
-                Settings
+                Cài đặt
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -51,7 +51,7 @@ export function ProjectCard({ project, onEdit, onDelete, showActions = true }: P
                 onClick={() => onDelete?.(project)}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
-                Delete
+                Xóa
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -68,11 +68,11 @@ export function ProjectCard({ project, onEdit, onDelete, showActions = true }: P
         <div className="flex items-center gap-6 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <ListTodo className="h-4 w-4" />
-            <span>{project.issueCount ?? 0} issues</span>
+            <span>{project.issueCount ?? 0} issue</span>
           </div>
           <div className="flex items-center gap-2">
             <Layers className="h-4 w-4" />
-            <span>{project.sprintCount ?? 0} sprints</span>
+            <span>{project.sprintCount ?? 0} sprint</span>
           </div>
         </div>
       </div>

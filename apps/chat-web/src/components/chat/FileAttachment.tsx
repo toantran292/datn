@@ -134,14 +134,14 @@ function PdfPreviewModal({
               target="_blank"
               rel="noopener noreferrer"
               className="p-2 rounded hover:bg-custom-background-80 text-custom-text-300 hover:text-custom-text-100 transition-colors"
-              title="Open in new tab"
+              title="Mở trong tab mới"
             >
               <Download size={18} />
             </a>
             <button
               onClick={onClose}
               className="p-2 rounded hover:bg-custom-background-80 text-custom-text-300 hover:text-custom-text-100 transition-colors"
-              title="Close (Esc)"
+              title="Đóng (Esc)"
             >
               <X size={18} />
             </button>
@@ -300,7 +300,7 @@ function AudioPlayer({
             <button
               onClick={onSummarize}
               className="p-1.5 rounded hover:bg-custom-background-80 text-custom-text-400 hover:text-custom-primary-100 transition-colors flex-shrink-0"
-              title="Transcribe with AI"
+              title="Chuyển văn bản với AI"
             >
               <Sparkles size={14} />
             </button>
@@ -309,7 +309,7 @@ function AudioPlayer({
             href={src}
             download={fileName}
             className="p-1.5 rounded hover:bg-custom-background-80 text-custom-text-400 hover:text-custom-text-100 transition-colors flex-shrink-0"
-            title="Download"
+            title="Tải xuống"
             onClick={(e) => e.stopPropagation()}
           >
             <Download size={14} />
@@ -503,7 +503,7 @@ function VideoPlayer({
             <button
               onClick={toggleFullscreen}
               className="p-1 rounded hover:bg-white/20 text-white transition-colors"
-              title="Fullscreen"
+              title="Toàn màn hình"
             >
               <Maximize2 size={14} />
             </button>
@@ -525,7 +525,7 @@ function VideoPlayer({
             <button
               onClick={onSummarize}
               className="p-1 rounded hover:bg-custom-background-80 text-custom-text-400 hover:text-custom-primary-100 transition-colors flex-shrink-0"
-              title="Transcribe with AI"
+              title="Chuyển văn bản với AI"
             >
               <Sparkles size={14} />
             </button>
@@ -534,7 +534,7 @@ function VideoPlayer({
             href={src}
             download={fileName}
             className="p-1 rounded hover:bg-custom-background-80 text-custom-text-400 hover:text-custom-text-100 transition-colors flex-shrink-0"
-            title="Download"
+            title="Tải xuống"
             onClick={(e) => e.stopPropagation()}
           >
             <Download size={14} />
@@ -641,7 +641,7 @@ export function FileAttachment({ attachment, compact, roomId }: FileAttachmentPr
                 download={attachment.fileName}
                 className="text-[11px] text-custom-text-400 hover:text-custom-primary-100 flex-shrink-0"
                 onClick={(e) => e.stopPropagation()}
-                title="Download"
+                title="Tải xuống"
               >
                 <Download size={12} />
               </a>
@@ -693,7 +693,7 @@ export function FileAttachment({ attachment, compact, roomId }: FileAttachmentPr
                 <button
                   onClick={() => setShowSummaryModal(true)}
                   className="p-1 rounded hover:bg-custom-background-80 text-custom-text-400 hover:text-custom-primary-100 transition-colors flex-shrink-0"
-                  title="Summarize with AI"
+                  title="Tóm tắt với AI"
                 >
                   <Sparkles size={14} />
                 </button>
@@ -703,7 +703,7 @@ export function FileAttachment({ attachment, compact, roomId }: FileAttachmentPr
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-1 rounded hover:bg-custom-background-80 text-custom-text-400 hover:text-custom-text-100 transition-colors flex-shrink-0"
-                title="Download"
+                title="Tải xuống"
               >
                 <Download size={14} />
               </a>
@@ -745,7 +745,7 @@ export function FileAttachment({ attachment, compact, roomId }: FileAttachmentPr
           <button
             onClick={() => setShowSummaryModal(true)}
             className="p-1.5 rounded hover:bg-custom-background-80 text-custom-text-300 hover:text-custom-primary-100 transition-colors flex-shrink-0"
-            title="Summarize with AI"
+            title="Tóm tắt với AI"
           >
             <Sparkles size={14} />
           </button>
@@ -756,7 +756,7 @@ export function FileAttachment({ attachment, compact, roomId }: FileAttachmentPr
             target="_blank"
             rel="noopener noreferrer"
             className="p-1.5 rounded hover:bg-custom-background-80 text-custom-text-300 hover:text-custom-text-100 transition-colors flex-shrink-0"
-            title="Download"
+            title="Tải xuống"
           >
             <Download size={14} />
           </a>

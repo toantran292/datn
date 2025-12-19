@@ -9,6 +9,9 @@ export function useChatMessages() {
   const {
     messages,
     handleLoadMessages,
+    handleLoadMoreMessages,
+    hasMoreMessages,
+    isLoadingMoreMessages,
     handleSendMessage,
     handleEditMessage,
     handleDeleteMessage,
@@ -23,11 +26,16 @@ export function useChatMessages() {
     handleFileRemove,
     // Huddle
     huddleParticipantCounts,
+    // Unread divider
+    lastSeenMessageId,
   } = useChatContext();
 
   return {
     messages,
     loadMessages: handleLoadMessages,
+    loadMoreMessages: handleLoadMoreMessages,
+    hasMoreMessages,
+    isLoadingMoreMessages,
     sendMessage: handleSendMessage,
     editMessage: handleEditMessage,
     deleteMessage: handleDeleteMessage,
@@ -42,5 +50,7 @@ export function useChatMessages() {
     removeFile: handleFileRemove,
     // Huddle
     huddleParticipantCounts,
+    // Unread divider
+    lastSeenMessageId,
   };
 }

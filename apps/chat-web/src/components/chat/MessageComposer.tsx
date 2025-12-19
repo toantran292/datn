@@ -132,9 +132,8 @@ export function MessageComposer({
 
   const computedPlaceholder = useMemo(() => {
     if (placeholder) return placeholder;
-    if (!room) return "Write a message...";
-    return `Message ${room.type === "channel" ? "#" + (room.name || "channel") : room.name || "conversation"}`;
-  }, [placeholder, room]);
+    return "Tin nhắn";
+  }, [placeholder]);
 
   const isUploading = pendingFiles.some((f) => f.status === "uploading");
   const canSend = hasContent || pendingFiles.length > 0;
@@ -145,7 +144,7 @@ export function MessageComposer({
   }, []);
 
   return (
-    <div className="px-5 pb-5 pt-2">
+    <div className="px-3 md:px-5 pb-3 md:pb-5 pt-2">
       {/* File preview - completely isolated */}
       <FilePreviewSection files={pendingFiles} onRemove={onFileRemove} />
 
@@ -183,18 +182,18 @@ export function MessageComposer({
         )}
       </div>
 
-      {/* Keyboard shortcut hint */}
-      <div className="flex justify-center mt-1.5">
+      {/* Keyboard shortcut hint - hide on mobile */}
+      <div className="hidden sm:flex justify-center mt-1.5">
         <span className="text-xs text-custom-text-400">
           <kbd className="px-1 py-0.5 bg-custom-background-80 rounded text-[10px]">
             Enter
           </kbd>{" "}
-          to send{" "}
+          để gửi{" "}
           <span className="mx-1 text-custom-text-300">•</span>{" "}
           <kbd className="px-1 py-0.5 bg-custom-background-80 rounded text-[10px]">
             Shift+Enter
           </kbd>{" "}
-          for new line
+          để xuống dòng
         </span>
       </div>
     </div>

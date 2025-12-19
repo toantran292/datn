@@ -10,7 +10,7 @@ import {
   Sse,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { LLMService, SUPPORTED_LANGUAGES, type LanguageCode, type MeetingContext } from './llm.service';
+import { RagClient, SUPPORTED_LANGUAGES, type LanguageCode, type MeetingContext } from '../common/rag';
 import { TranscriptService, SaveTranscriptDto } from './transcript.service';
 
 interface SSEMessage {
@@ -43,7 +43,7 @@ interface SaveCaptionsBatchRequest {
 @Controller('ai')
 export class AIController {
   constructor(
-    private readonly llmService: LLMService,
+    private readonly ragClient: RagClient,
     private readonly transcriptService: TranscriptService,
   ) {}
 
@@ -69,16 +69,8 @@ export class AIController {
       );
     }
 
-    // Check if OpenAI API key is configured
-    if (!process.env.OPENAI_API_KEY) {
-      throw new HttpException(
-        'Translation service not configured',
-        HttpStatus.SERVICE_UNAVAILABLE,
-      );
-    }
-
     try {
-      const result = await this.llmService.translate(text, targetLang, sourceLang, context);
+      const result = await this.ragClient.translate(text, targetLang, sourceLang, context);
       return result;
     } catch (error) {
       throw new HttpException(
@@ -89,60 +81,33 @@ export class AIController {
   }
 
   /**
-   * Get supported languages
-   */
-  @Get('languages')
-  getLanguages() {
-    return {
-      languages: this.llmService.getSupportedLanguages(),
-    };
-  }
-
-  /**
-   * Stream translate text to target language (SSE)
-   * Streams tokens as they arrive from LLM for faster perceived response
+   * Stream translation (SSE) - for real-time caption translation
    */
   @Sse('translate/stream')
-  translateStream(
+  streamTranslate(
     @Query('text') text: string,
     @Query('targetLang') targetLang: LanguageCode,
     @Query('sourceLang') sourceLang?: LanguageCode,
     @Query('meetingId') meetingId?: string,
   ): Observable<SSEMessage> {
-    // Validate input
-    if (!text || !targetLang) {
-      return new Observable(subscriber => {
-        subscriber.next({ data: JSON.stringify({ type: 'error', error: 'Missing required fields: text and targetLang' }) });
-        subscriber.complete();
-      });
-    }
-
-    if (!SUPPORTED_LANGUAGES[targetLang]) {
-      return new Observable(subscriber => {
-        subscriber.next({ data: JSON.stringify({ type: 'error', error: `Unsupported target language: ${targetLang}` }) });
-        subscriber.complete();
-      });
-    }
-
-    if (!process.env.OPENAI_API_KEY) {
-      return new Observable(subscriber => {
-        subscriber.next({ data: JSON.stringify({ type: 'error', error: 'Translation service not configured' }) });
-        subscriber.complete();
-      });
-    }
-
     return new Observable(subscriber => {
-      const context: MeetingContext | undefined = meetingId ? { meetingId } : undefined;
-      const generator = this.llmService.translateStream(text, targetLang, sourceLang, context);
-
       (async () => {
         try {
-          let fullTranslation = '';
-          for await (const token of generator) {
-            fullTranslation += token;
-            subscriber.next({ data: JSON.stringify({ type: 'token', token }) });
+          if (!text || !targetLang) {
+            subscriber.next({ data: JSON.stringify({ type: 'error', error: 'Missing required fields: text and targetLang' }) });
+            subscriber.complete();
+            return;
           }
-          subscriber.next({ data: JSON.stringify({ type: 'done', translation: fullTranslation }) });
+
+          if (!SUPPORTED_LANGUAGES[targetLang]) {
+            subscriber.next({ data: JSON.stringify({ type: 'error', error: `Unsupported target language: ${targetLang}` }) });
+            subscriber.complete();
+            return;
+          }
+
+          const result = await this.ragClient.translate(text, targetLang, sourceLang, { meetingId });
+          // Return 'done' type to match frontend expectation
+          subscriber.next({ data: JSON.stringify({ type: 'done', translation: result.translation, cached: result.cached }) });
           subscriber.complete();
         } catch (error) {
           subscriber.next({
@@ -155,6 +120,16 @@ export class AIController {
         }
       })();
     });
+  }
+
+  /**
+   * Get supported languages
+   */
+  @Get('languages')
+  getLanguages() {
+    return {
+      languages: this.ragClient.getSupportedLanguages(),
+    };
   }
 
   // ==================== TRANSCRIPT ENDPOINTS ====================
@@ -270,5 +245,102 @@ export class AIController {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  // ==================== SUMMARY ENDPOINTS ====================
+
+  /**
+   * Get AI summary of meeting transcript
+   */
+  @Get('meetings/:meetingId/summary')
+  async getMeetingSummary(
+    @Param('meetingId') meetingId: string,
+    @Query('lang') lang?: LanguageCode,
+  ) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new HttpException(
+        'AI service not configured',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
+    }
+
+    try {
+      // Get transcript text first
+      const transcript = await this.transcriptService.getTranscriptText(meetingId);
+
+      if (!transcript || transcript.trim() === '') {
+        throw new HttpException(
+          'No transcript available for this meeting',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      // Generate summary
+      const summary = await this.ragClient.summarizeMeeting(transcript, {
+        language: lang,
+        includeActionItems: true,
+      });
+
+      return { summary, meetingId };
+    } catch (error: any) {
+      if (error instanceof HttpException) throw error;
+      throw new HttpException(
+        error.message || 'Failed to generate summary',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  /**
+   * Stream AI summary of meeting transcript (SSE)
+   */
+  @Sse('meetings/:meetingId/summary/stream')
+  streamMeetingSummary(
+    @Param('meetingId') meetingId: string,
+    @Query('lang') lang?: LanguageCode,
+  ): Observable<SSEMessage> {
+    if (!process.env.OPENAI_API_KEY) {
+      return new Observable(subscriber => {
+        subscriber.next({ data: JSON.stringify({ type: 'error', error: 'AI service not configured' }) });
+        subscriber.complete();
+      });
+    }
+
+    return new Observable(subscriber => {
+      (async () => {
+        try {
+          // Get transcript text first
+          const transcript = await this.transcriptService.getTranscriptText(meetingId);
+
+          if (!transcript || transcript.trim() === '') {
+            subscriber.next({ data: JSON.stringify({ type: 'error', error: 'No transcript available for this meeting' }) });
+            subscriber.complete();
+            return;
+          }
+
+          // Stream summary
+          const generator = this.ragClient.summarizeMeetingStream(transcript, {
+            language: lang,
+            includeActionItems: true,
+          });
+
+          let fullSummary = '';
+          for await (const token of generator) {
+            fullSummary += token;
+            subscriber.next({ data: JSON.stringify({ type: 'token', token }) });
+          }
+          subscriber.next({ data: JSON.stringify({ type: 'done', summary: fullSummary }) });
+          subscriber.complete();
+        } catch (error) {
+          subscriber.next({
+            data: JSON.stringify({
+              type: 'error',
+              error: error instanceof Error ? error.message : 'Failed to generate summary',
+            }),
+          });
+          subscriber.complete();
+        }
+      })();
+    });
   }
 }

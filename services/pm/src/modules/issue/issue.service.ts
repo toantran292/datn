@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException, BadRequestException } from "@nestjs/common";
+import { Injectable, NotFoundException, BadRequestException, Logger } from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service";
 import { RagService } from "../rag/rag.service";
+import { RagClient } from "../../common/rag/rag.client";
 import { CreateIssueDto } from "./dto/create-issue.dto";
 import { UpdateIssueDto } from "./dto/update-issue.dto";
 import { ReorderIssueDto, ReorderPosition } from "./dto/reorder-issue.dto";
@@ -12,10 +13,12 @@ import { Prisma } from "@prisma/client";
 export class IssueService {
   private static readonly DEFAULT_SORT_INCREMENT = 1000;
   private static readonly MIN_SORT_GAP = 0.000001;
+  private readonly logger = new Logger(IssueService.name);
 
   constructor(
     private prisma: PrismaService,
-    private ragService: RagService
+    private ragService: RagService,
+    private ragClient: RagClient,
   ) {}
 
   async create(dto: CreateIssueDto, orgId: string, userId: string): Promise<IssueResponseDto> {
@@ -123,6 +126,11 @@ export class IssueService {
       include: {
         status: true,
       },
+    });
+
+    // Index issue to RAG for semantic search (non-blocking)
+    this.indexIssueToRAG(issue, project, orgId).catch((err: Error) => {
+      this.logger.error(`Failed to index issue ${issue.id} to RAG: ${err.message}`);
     });
 
     return this.mapToResponse(issue);
@@ -270,8 +278,16 @@ export class IssueService {
       },
       include: {
         status: true,
+        project: true,
       },
     });
+
+    // Re-index issue to RAG if name or description changed (non-blocking)
+    if (dto.name !== undefined || dto.description !== undefined) {
+      this.indexIssueToRAG(updated, updated.project, orgId).catch((err: Error) => {
+        this.logger.error(`Failed to re-index issue ${updated.id} to RAG: ${err.message}`);
+      });
+    }
 
     return this.mapToResponse(updated);
   }
@@ -343,6 +359,11 @@ export class IssueService {
     }
     await this.prisma.issue.delete({
       where: { id },
+    });
+
+    // Delete embedding from RAG (non-blocking)
+    this.ragClient.deleteBySource('document', `issue:${id}`).catch((err: Error) => {
+      this.logger.error(`Failed to delete issue ${id} from RAG: ${err.message}`);
     });
   }
 
@@ -604,6 +625,151 @@ export class IssueService {
   }
 
   /**
+   * Batch index all issues for an organization to RAG (offline indexing)
+   */
+  async indexAllIssuesToRAG(orgId: string): Promise<{ indexed: number; failed: number }> {
+    const issues = await this.prisma.issue.findMany({
+      where: {
+        project: { orgId },
+      },
+      include: {
+        status: true,
+        project: {
+          select: {
+            id: true,
+            name: true,
+            identifier: true,
+          },
+        },
+      },
+    });
+
+    let indexed = 0;
+    let failed = 0;
+
+    for (const issue of issues) {
+      try {
+        await this.indexIssueToRAG(issue, issue.project, orgId);
+        indexed++;
+      } catch (err) {
+        this.logger.error(`Failed to index issue ${issue.id}: ${err}`);
+        failed++;
+      }
+    }
+
+    this.logger.log(`Batch indexed ${indexed} issues, ${failed} failed for org ${orgId}`);
+    return { indexed, failed };
+  }
+
+  /**
+   * Batch index issues for a specific project to RAG
+   */
+  async indexProjectIssuesToRAG(projectId: string, orgId: string): Promise<{ indexed: number; failed: number }> {
+    const project = await this.prisma.project.findFirst({
+      where: { id: projectId, orgId },
+      select: { id: true, name: true, identifier: true },
+    });
+
+    if (!project) {
+      throw new NotFoundException(`Project not found: ${projectId}`);
+    }
+
+    const issues = await this.prisma.issue.findMany({
+      where: { projectId },
+      include: { status: true },
+    });
+
+    let indexed = 0;
+    let failed = 0;
+
+    for (const issue of issues) {
+      try {
+        await this.indexIssueToRAG(issue, project, orgId);
+        indexed++;
+      } catch (err) {
+        this.logger.error(`Failed to index issue ${issue.id}: ${err}`);
+        failed++;
+      }
+    }
+
+    this.logger.log(`Batch indexed ${indexed} issues for project ${projectId}, ${failed} failed`);
+    return { indexed, failed };
+  }
+
+  /**
+   * Index an issue to RAG for semantic search
+   */
+  private async indexIssueToRAG(
+    issue: any,
+    project: { id: string; name: string; identifier: string },
+    orgId: string,
+  ): Promise<void> {
+    // Build searchable content from issue
+    const content = this.buildIssueContent(issue, project);
+
+    await this.ragClient.indexShortText({
+      namespaceId: project.id,
+      namespaceType: 'project',
+      orgId,
+      sourceType: 'document',
+      sourceId: `issue:${issue.id}`,
+      content,
+      metadata: {
+        type: 'issue',
+        issueId: issue.id,
+        issueName: issue.name,
+        issueType: issue.type,
+        priority: issue.priority,
+        status: issue.status?.name,
+        projectId: project.id,
+        projectName: project.name,
+        projectIdentifier: project.identifier,
+        sequenceId: issue.sequenceId,
+      },
+    });
+
+    this.logger.debug(`Indexed issue ${issue.id} to RAG`);
+  }
+
+  /**
+   * Build searchable content from issue
+   */
+  private buildIssueContent(
+    issue: any,
+    project: { name: string; identifier: string },
+  ): string {
+    const parts: string[] = [];
+
+    // Title with project context
+    parts.push(`Issue: ${issue.name}`);
+    parts.push(`Project: ${project.name} (${project.identifier})`);
+
+    // Type and priority
+    parts.push(`Type: ${issue.type}`);
+    parts.push(`Priority: ${issue.priority}`);
+
+    // Status
+    if (issue.status?.name) {
+      parts.push(`Status: ${issue.status.name}`);
+    }
+
+    // Description
+    if (issue.description) {
+      parts.push(`Description: ${issue.description}`);
+    }
+
+    // Dates
+    if (issue.startDate) {
+      parts.push(`Start Date: ${issue.startDate}`);
+    }
+    if (issue.targetDate) {
+      parts.push(`Target Date: ${issue.targetDate}`);
+    }
+
+    return parts.join('\n');
+  }
+
+  /**
    * Search issues with optional AI semantic search
    */
   async searchIssues(dto: SearchIssuesDto, orgId: string): Promise<SearchIssuesResponseDto> {
@@ -678,7 +844,7 @@ export class IssueService {
     });
 
     // Map similarity scores
-    const similarityMap = new Map(similarIssues.map((si) => [si.id, si.similarity]));
+    const similarityMap = new Map<string, number>(similarIssues.map((si) => [si.id, si.similarity]));
 
     // Build search results with similarity scores
     const results: SearchResultDto[] = issues.map((issue) => ({

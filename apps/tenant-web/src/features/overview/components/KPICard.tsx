@@ -75,7 +75,7 @@ export function KPICard({
           >
             {change}
           </span>
-          <span className="text-xs text-muted-foreground">vs last month</span>
+          <span className="text-xs text-muted-foreground">so với tháng trước</span>
         </div>
       )}
     </Card>

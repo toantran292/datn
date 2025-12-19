@@ -20,23 +20,23 @@ const actionConfig: Record<ChannelActionType, {
   variant: 'danger' | 'primary';
 }> = {
   delete: {
-    title: 'Delete Channel',
-    description: 'Are you sure you want to delete this channel? This action cannot be undone. All messages and files in this channel will be permanently deleted.',
-    confirmText: 'Delete Channel',
+    title: 'Xóa kênh',
+    description: 'Bạn có chắc muốn xóa kênh này? Hành động này không thể hoàn tác. Tất cả tin nhắn và tệp trong kênh này sẽ bị xóa vĩnh viễn.',
+    confirmText: 'Xóa kênh',
     icon: <Trash2 size={20} className="text-red-500" />,
     variant: 'danger',
   },
   archive: {
-    title: 'Archive Channel',
-    description: 'Archiving this channel will hide it from the channel list. Members can still view message history, but no new messages can be sent.',
-    confirmText: 'Archive Channel',
+    title: 'Lưu trữ kênh',
+    description: 'Lưu trữ kênh này sẽ ẩn nó khỏi danh sách kênh. Thành viên vẫn có thể xem lịch sử tin nhắn, nhưng không thể gửi tin nhắn mới.',
+    confirmText: 'Lưu trữ kênh',
     icon: <Archive size={20} className="text-amber-500" />,
     variant: 'primary',
   },
   leave: {
-    title: 'Leave Channel',
-    description: 'Are you sure you want to leave this channel? You can rejoin later if it\'s a public channel, or be invited back if it\'s private.',
-    confirmText: 'Leave Channel',
+    title: 'Rời kênh',
+    description: 'Bạn có chắc muốn rời kênh này? Bạn có thể tham gia lại sau nếu đây là kênh công khai, hoặc được mời lại nếu là kênh riêng tư.',
+    confirmText: 'Rời kênh',
     icon: <LogOut size={20} className="text-custom-text-300" />,
     variant: 'danger',
   },
@@ -110,7 +110,7 @@ export function ConfirmChannelActionModal({
             onClick={onClose}
             disabled={isLoading}
           >
-            Cancel
+            Hủy
           </Button>
           <Button
             variant={config.variant}
@@ -118,7 +118,7 @@ export function ConfirmChannelActionModal({
             onClick={handleConfirm}
             loading={isLoading}
           >
-            {isLoading ? 'Processing...' : config.confirmText}
+            {isLoading ? 'Đang xử lý...' : config.confirmText}
           </Button>
         </div>
       </div>

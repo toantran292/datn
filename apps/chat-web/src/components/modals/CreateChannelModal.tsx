@@ -17,7 +17,7 @@ export function CreateChannelModal({ isOpen, onClose, onCreate }: CreateChannelM
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      setError('Channel name is required');
+      setError('Tên kênh là bắt buộc');
       return;
     }
 
@@ -28,7 +28,7 @@ export function CreateChannelModal({ isOpen, onClose, onCreate }: CreateChannelM
       await onCreate(name.trim(), isPrivate);
       handleClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create channel');
+      setError(err instanceof Error ? err.message : 'Không thể tạo kênh');
     } finally {
       setIsCreating(false);
     }
@@ -61,9 +61,9 @@ export function CreateChannelModal({ isOpen, onClose, onCreate }: CreateChannelM
             )}
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-custom-text-100">Create a Channel</h2>
+            <h2 className="text-lg font-semibold text-custom-text-100">Tạo kênh mới</h2>
             <p className="text-sm text-custom-text-400">
-              Channels are where your team communicates
+              Kênh là nơi nhóm của bạn giao tiếp
             </p>
           </div>
         </div>
@@ -72,13 +72,13 @@ export function CreateChannelModal({ isOpen, onClose, onCreate }: CreateChannelM
           {/* Channel Name */}
           <div className="mb-4">
             <label className="block text-sm font-medium text-custom-text-200 mb-2">
-              Channel Name
+              Tên kênh
             </label>
             <Input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. marketing"
+              placeholder="vd: marketing"
               className="w-full"
               disabled={isCreating}
               autoFocus
@@ -98,13 +98,13 @@ export function CreateChannelModal({ isOpen, onClose, onCreate }: CreateChannelM
               />
               <div className="flex items-center gap-2">
                 <Lock size={16} className="text-custom-text-300" />
-                <span className="text-sm font-medium text-custom-text-200">Make private</span>
+                <span className="text-sm font-medium text-custom-text-200">Đặt riêng tư</span>
               </div>
             </label>
             <p className="text-xs text-custom-text-400 mt-2 ml-7">
               {isPrivate
-                ? 'Only invited members can access this channel'
-                : 'Anyone in the organization can find and join this channel'}
+                ? 'Chỉ các thành viên được mời mới có thể truy cập kênh này'
+                : 'Bất kỳ ai trong tổ chức đều có thể tìm và tham gia kênh này'}
             </p>
           </div>
 
@@ -123,7 +123,7 @@ export function CreateChannelModal({ isOpen, onClose, onCreate }: CreateChannelM
               onClick={handleClose}
               disabled={isCreating}
             >
-              Cancel
+              Hủy
             </Button>
             <Button
               variant="primary"
@@ -132,7 +132,7 @@ export function CreateChannelModal({ isOpen, onClose, onCreate }: CreateChannelM
               loading={isCreating}
               disabled={!name.trim()}
             >
-              {isCreating ? 'Creating...' : 'Create Channel'}
+              {isCreating ? 'Đang tạo...' : 'Tạo kênh'}
             </Button>
           </div>
         </form>

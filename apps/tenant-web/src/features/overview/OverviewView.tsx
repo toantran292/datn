@@ -70,8 +70,8 @@ export function OverviewView() {
   const handleCreateProjectSubmit = async (data: { name: string; identifier?: string; description?: string }) => {
     const project = await createProject(data);
     if (project) {
-      toast.success("Project created", {
-        description: `"${project.name}" has been created successfully.`,
+      toast.success("Đã tạo dự án", {
+        description: `"${project.name}" đã được tạo thành công.`,
       });
       refetchDashboard();
       // Navigate to project page
@@ -80,26 +80,26 @@ export function OverviewView() {
   };
 
   const handleInviteMember = (data: { email: string; role: string }) => {
-    toast.success(`Invitation sent to ${data.email}`, {
-      description: `They will receive an email to join the organization.`
+    toast.success(`Đã gửi lời mời đến ${data.email}`, {
+      description: `Họ sẽ nhận được email để tham gia tổ chức.`
     });
   };
 
   const handleViewAllActivity = () => {
-    toast.info("View all activity", {
-      description: "Activity page coming soon"
+    toast.info("Xem tất cả hoạt động", {
+      description: "Trang hoạt động sắp ra mắt"
     });
   };
 
   const handleViewAllFiles = () => {
-    toast.info("View all files", {
-      description: "Redirecting to files page"
+    toast.info("Xem tất cả tệp", {
+      description: "Đang chuyển đến trang tệp"
     });
   };
 
   const handleUploadFile = () => {
-    toast.info("Upload file", {
-      description: "File upload feature coming soon"
+    toast.info("Tải lên tệp", {
+      description: "Tính năng tải lên tệp sắp ra mắt"
     });
   };
 
@@ -137,10 +137,10 @@ export function OverviewView() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="mb-2" style={{ fontWeight: 600 }}>
-            My Workspace
+            Workspace của tôi
           </h1>
           <p className="text-muted-foreground">
-            Your tasks and recent activity
+            Các công việc và hoạt động gần đây của bạn
           </p>
         </div>
 
@@ -189,10 +189,10 @@ export function OverviewView() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="mb-2" style={{ fontWeight: 600 }}>
-            Workspace Dashboard
+            Bảng điều khiển Workspace
           </h1>
           <p className="text-muted-foreground">
-            Cross-project overview and insights for your workspace
+            Tổng quan và thông tin chi tiết xuyên dự án cho workspace của bạn
           </p>
         </div>
 
@@ -221,7 +221,7 @@ export function OverviewView() {
               ) : (
                 <>
                   <KPICard
-                    title="Members"
+                    title="Thành viên"
                     value={memberCount.toString()}
                     changeType="positive"
                     icon={Users}
@@ -230,7 +230,7 @@ export function OverviewView() {
                     sparklineData={membersSparkline}
                   />
                   <KPICard
-                    title="Projects"
+                    title="Dự án"
                     value={projectCount.toString()}
                     changeType="positive"
                     icon={FolderKanban}
@@ -239,7 +239,7 @@ export function OverviewView() {
                     sparklineData={projectsSparkline}
                   />
                   <KPICard
-                    title="Storage"
+                    title="Lưu trữ"
                     value={`${storagePercent}%`}
                     changeType="neutral"
                     icon={HardDrive}

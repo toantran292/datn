@@ -117,9 +117,9 @@ export function LogoUpload({
           <ImageIcon size={20} className="text-[#8B5CF6]" />
         </div>
         <div>
-          <h3 className="font-semibold text-custom-text-100">Organization Logo</h3>
+          <h3 className="font-semibold text-custom-text-100">Logo tổ chức</h3>
           <p className="text-sm text-custom-text-300">
-            Upload a logo to represent your organization
+            Tải lên logo đại diện cho tổ chức của bạn
           </p>
         </div>
       </div>
@@ -186,10 +186,10 @@ export function LogoUpload({
           >
             <Upload size={24} className="mx-auto mb-2 text-custom-text-400" />
             <p className="text-sm text-custom-text-200 font-medium">
-              {isDragging ? "Drop your image here" : "Click or drag to upload"}
+              {isDragging ? "Thả hình ảnh của bạn tại đây" : "Nhấp hoặc kéo để tải lên"}
             </p>
             <p className="text-xs text-custom-text-400 mt-1">
-              PNG, JPG, GIF up to 2MB
+              PNG, JPG, GIF tối đa 2MB
             </p>
           </div>
 
@@ -206,7 +206,7 @@ export function LogoUpload({
                 onClick={handleUpload}
                 className="bg-[#00C4AB] hover:bg-[#00B09A]"
               >
-                Upload
+                Tải lên
               </Button>
               <Button
                 type="button"
@@ -215,7 +215,7 @@ export function LogoUpload({
                 onClick={handleCancelPreview}
                 disabled={isSaving}
               >
-                Cancel
+                Hủy
               </Button>
             </div>
           )}

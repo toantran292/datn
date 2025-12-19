@@ -32,6 +32,7 @@ export class FilesService {
 
     try {
       const params: Record<string, any> = {
+        orgId, // Pass orgId as query param to filter files by organization
         page: options.page,
         limit: options.limit,
       };
@@ -41,7 +42,7 @@ export class FilesService {
       }
 
       if (options.type && options.type !== 'all') {
-        params.mimeTypePrefix = this.getMimeTypePrefix(options.type);
+        params.mimeType = this.getMimeTypePrefix(options.type);
       }
 
       const res = await firstValueFrom(
@@ -57,8 +58,9 @@ export class FilesService {
       const data = res.data?.data || {};
 
       // Transform to frontend format
+      // File-storage returns 'files', not 'items'
       return {
-        items: (data.items || []).map((file: any) => this.transformFile(file)),
+        items: (data.files || []).map((file: any) => this.transformFile(file)),
         total: data.total || 0,
         page: data.page || options.page,
         limit: data.limit || options.limit,

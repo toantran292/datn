@@ -756,13 +756,24 @@ export function useJitsiConference(
 
               setCaptions(prev => {
                 if (!captionData.isFinal) {
-                  // Remove previous interim captions from this participant
+                  // For interim: remove old interim from this participant, add new interim
                   const filtered = prev.filter(c =>
                     !(c.participantId === pid && !c.isFinal)
                   );
                   return [...filtered, captionEvent];
                 }
-                return [...prev.slice(-10), captionEvent];
+                // For final: find matching interim and replace it
+                const interimIndex = prev.findIndex(c =>
+                  c.participantId === pid && !c.isFinal
+                );
+                if (interimIndex !== -1) {
+                  // Replace interim with final (same position)
+                  const newCaptions = [...prev];
+                  newCaptions[interimIndex] = captionEvent;
+                  return newCaptions.slice(-20);
+                }
+                // No interim found, just add final
+                return [...prev.slice(-20), captionEvent];
               });
 
               // Notify callback for final captions (for transcript saving)
