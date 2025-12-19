@@ -15,6 +15,7 @@ import { RiskDetectorModule } from "./modules/risk-detector/risk-detector.module
 import { RagModule as LocalRagModule } from "./modules/rag/rag.module";
 import { RagModule } from "./common/rag/rag.module";
 import { ProjectMemberModule } from "./modules/project-member/project-member.module";
+import { MeetingsModule } from "./modules/meetings/meetings.module";
 import { OrgIdGuard } from "./common/guards";
 
 @Module({
@@ -34,6 +35,7 @@ import { OrgIdGuard } from "./common/guards";
     AIModule,
     RiskDetectorModule,
     ProjectMemberModule,
+    MeetingsModule,
   ],
   controllers: [AppController],
   providers: [

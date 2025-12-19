@@ -317,6 +317,12 @@ export const WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS: Record<string, IWorkspac
     href: `/auto-create/`,
     access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER],
   },
+  "meeting-to-tasks": {
+    key: "meeting-to-tasks",
+    labelTranslationKey: "Meeting to Tasks",
+    href: `/meeting-to-tasks/`,
+    access: [EUserWorkspaceRoles.ADMIN, EUserWorkspaceRoles.MEMBER],
+  },
   settings: {
     key: "settings",
     labelTranslationKey: "Cài đặt",
@@ -332,6 +338,7 @@ export const WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS_LINKS: IWorkspaceSidebarN
   WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["timeline"]!,
   WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["summary"]!,
   WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["auto-create"]!,
+  WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["meeting-to-tasks"]!,
   WORKSPACE_SIDEBAR_STATIC_NAVIGATION_ITEMS["settings"]!,
 ];
 

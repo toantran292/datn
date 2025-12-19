@@ -28,12 +28,13 @@ model Project {
   updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz
 
   // Relations
-  sprints       Sprint[]
-  issues        Issue[]
-  issueStatuses IssueStatus[]
-  comments      IssueComment[]
-  activities    IssueActivity[]
-  members       ProjectMember[]
+  sprints            Sprint[]
+  issues             Issue[]
+  issueStatuses      IssueStatus[]
+  comments           IssueComment[]
+  activities         IssueActivity[]
+  members            ProjectMember[]
+  meetingTranscripts MeetingTranscript[]
 
   @@unique([orgId, identifier], name: "unique_org_identifier")
   @@index([orgId])
@@ -127,20 +128,27 @@ model Issue {
   embedding          String?   @db.Text // JSON string of vector(1536)
   embeddingUpdatedAt DateTime? @map("embedding_updated_at") @db.Timestamptz
 
+  // Meeting-related fields
+  meetingTranscriptId String?  @map("meeting_transcript_id") @db.Uuid
+  meetingOrder        Int?     @map("meeting_order")
+  meetingContext      String?  @map("meeting_context") @db.Text
+
   // Relations
-  project      Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  sprint       Sprint?        @relation(fields: [sprintId], references: [id], onDelete: SetNull)
-  status       IssueStatus    @relation(fields: [statusId], references: [id], onDelete: Restrict)
-  parent       Issue?         @relation("IssueHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
-  subIssues    Issue[]        @relation("IssueHierarchy")
-  comments     IssueComment[]
-  activities   IssueActivity[]
+  project           Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sprint            Sprint?             @relation(fields: [sprintId], references: [id], onDelete: SetNull)
+  status            IssueStatus         @relation(fields: [statusId], references: [id], onDelete: Restrict)
+  parent            Issue?              @relation("IssueHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  subIssues         Issue[]             @relation("IssueHierarchy")
+  comments          IssueComment[]
+  activities        IssueActivity[]
+  meetingTranscript MeetingTranscript?  @relation(fields: [meetingTranscriptId], references: [id], onDelete: SetNull)
 
   @@index([projectId])
   @@index([sprintId])
   @@index([statusId])
   @@index([parentId])
   @@index([createdBy])
+  @@index([meetingTranscriptId])
   @@unique([projectId, sequenceId], name: "unique_project_sequence_id")
   @@map("issue")
 }
@@ -333,4 +341,27 @@ model SprintHealthSnapshot {
   @@unique([sprintId, snapshotDate], name: "unique_sprint_snapshot")
   @@index([sprintId, snapshotDate])
   @@map("sprint_health_snapshot")
+}
+
+// Meeting Transcripts for Task Generation
+model MeetingTranscript {
+  id         String   @id @default(uuid()) @db.Uuid
+  orgId      String   @map("org_id") @db.VarChar(255)
+  projectId  String   @map("project_id") @db.Uuid
+  title      String?  @db.VarChar(255)
+  transcript String   @db.Text
+  sourceType String   @map("source_type") @db.VarChar(20) // 'video', 'audio', 'text'
+  sourceUrl  String?  @map("source_url") @db.VarChar(500) // S3 URL for video/audio
+  createdBy  String   @map("created_by") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  issues  Issue[]
+
+  @@index([projectId])
+  @@index([orgId])
+  @@index([createdBy])
+  @@map("meeting_transcript")
 }
