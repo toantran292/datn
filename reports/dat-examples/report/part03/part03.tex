@@ -16,42 +16,147 @@
 \subsubsection*{1.1. Về lý thuyết}
 
 \begin{itemize}
-    \item Rèn luyện được kỹ năng giải quyết vấn đề, đọc hiểu tài liệu và tra cứu thông tin kỹ thuật trong lĩnh vực quản lý dự án Agile.
-    \item Nâng cao được khả năng tư duy, phân tích và thiết kế cơ sở dữ liệu quan hệ cho hệ thống quản lý dự án phức tạp với nhiều mối quan hệ giữa projects, sprints, issues và custom statuses.
-    \item Học hỏi thêm kiến thức về các công nghệ hiện đại như NestJS với Prisma ORM, Next.js 14 với App Router, Spring Boot cho authentication service, PostgreSQL với composite indexes, Redis cho caching và WebSocket support, MobX cho client state management, DnD Kit cho drag-and-drop functionality, và các dịch vụ cloud như MinIO/S3 cho issue attachments.
-    \item Hiểu được quy trình phát triển ứng dụng web theo mô hình SaaS (Software as a Service) với kiến trúc microservices và multi-tenant isolation ở organization-level với project-level access control.
-    \item Tìm hiểu và áp dụng được các API của các nhà cung cấp LLM như OpenAI GPT-4, Anthropic Claude, và Google Gemini thông qua LangChain.js vào việc tạo AI Sprint Summary khi complete sprint, Issue Description Generation từ title, và Task Breakdown cho EPIC issues thành sub-tasks.
-    \item Nghiên cứu và hiểu rõ hơn về các phương pháp xác thực và phân quyền trong hệ thống web, bao gồm JWT, Google OAuth 2.0 và project-level RBAC với các roles: Project Lead, Team Member, Viewer và custom permissions override.
-    \item Nắm vững kiến trúc real-time collaborative editing với WebSocket rooms theo project, optimistic UI updates cho drag-and-drop operations, và broadcast mechanisms cho Board view synchronization giữa multiple users.
+    \item Nắm vững được kiến thức nền tảng về phương pháp Agile/Scrum trong quản lý dự án phần mềm, bao gồm các khái niệm cốt lõi như Sprint, Backlog, User Story, Epic, Story Points, và quy trình làm việc theo vòng lặp Sprint với các giai đoạn Planning, Development, Review và Retrospective.
+
+    \item Rèn luyện được kỹ năng thiết kế và triển khai hệ thống theo kiến trúc microservice, hiểu rõ các nguyên tắc về tách biệt dịch vụ (service isolation), giao tiếp qua API RESTful, quản lý state phân tán và các thách thức về đồng bộ dữ liệu giữa các services trong môi trường phân tán.
+
+    \item Học hỏi và áp dụng thành thạo stack công nghệ hiện đại cho phát triển web: NestJS framework với dependency injection và modular architecture, TypeScript cho type safety, Prisma ORM cho database access layer với migration management, PostgreSQL với các kỹ thuật tối ưu query (composite indexes, partial indexes), và Next.js 14 với App Router cho server-side rendering và client-side navigation.
+
+    \item Nâng cao kỹ năng thiết kế cơ sở dữ liệu quan hệ phức tạp với nhiều mối quan hệ: one-to-many giữa Project và Issue, many-to-many giữa Issue và User thông qua IssueAssignment, self-referencing relationship cho parent-child issues, và các ràng buộc toàn vẹn dữ liệu (foreign keys, unique constraints) để đảm bảo tính nhất quán.
+
+    \item Tìm hiểu sâu về MobX cho state management ở client với reactive programming paradigm, observable state, computed values và reactions, giúp xây dựng ứng dụng có khả năng phản ứng tức thì với thay đổi dữ liệu mà không cần quản lý state thủ công phức tạp.
+
+    \item Nghiên cứu và tích hợp các Large Language Models API (OpenAI GPT-4, Anthropic Claude, Google Gemini) vào ứng dụng thực tế, hiểu về cách sử dụng prompt engineering để tối ưu kết quả, quản lý token limits, xử lý streaming responses, và các chiến lược fallback khi AI service gặp lỗi.
+
+    \item Nắm vững kỹ thuật drag-and-drop phức tạp với thư viện Pragmatic Drag and Drop của Atlassian, bao gồm xử lý multiple drop zones, reordering logic, optimistic updates, collision detection và animations để tạo trải nghiệm người dùng mượt mà tương tự các nền tảng chuyên nghiệp như Jira, Linear.
+
+    \item Tìm hiểu về các kỹ thuật tối ưu hiệu năng ứng dụng web: code splitting, lazy loading components, memoization với React.memo và useMemo, debouncing/throttling cho search và auto-save, virtualization cho danh sách dài, và caching strategies với React Query.
 \end{itemize}
 
 \subsubsection*{1.2. Về chương trình}
 
 \begin{itemize}
-    \item Phát triển thành công một nền tảng SaaS quản lý dự án Agile hoàn chỉnh với kiến trúc microservices trên nền tảng công nghệ Spring Boot (Account Service), NestJS (PM Service) và Next.js 14, đáp ứng đầy đủ nhu cầu quản lý projects, sprints, issues với Board/Backlog views intuitive, custom status workflow, và AI-assisted features. Giao diện được thiết kế trực quan lấy cảm hứng từ các nền tảng quản lý dự án hiện đại như Linear, Jira, ClickUp, tối ưu cho collaborative project management với drag-and-drop, mang lại trải nghiệm mượt mà cho người dùng.
-    \item Về phía người dùng, hệ thống cho phép thực hiện các thao tác từ đăng ký, đăng nhập qua Google OAuth đến tạo và quản lý projects với custom workflow. Team Members có thể tạo issues (STORY, TASK, BUG, EPIC), drag-and-drop issues giữa các custom status columns trên Board view, assign issues, add comments với mentions, upload attachments (screenshots, documents, logs), và track progress qua sprint velocity. Project Leads có thể tạo sprints với lifecycle management (FUTURE, ACTIVE, CLOSED), start và complete sprints, configure custom statuses cho project, manage project members với roles, và request AI-generated Sprint Summary khi complete sprint. Đặc biệt, người dùng có thể tận dụng sức mạnh của các mô hình ngôn ngữ lớn (LLM) để tự động generate issue descriptions từ title, break down EPIC thành sub-tasks, và tổng hợp sprint retrospective với insights và recommendations.
-    \item Về phía quản trị, Project Leads có đầy đủ quyền quản lý project settings, custom status configuration, member roles (PROJECT\_LEAD, TEAM\_MEMBER, VIEWER), và AI settings (preferred LLM provider, custom prompts). Organization Owners có thể quản lý multiple projects, organization members, storage usage, và view analytics dashboard với sprint velocity trends, issue completion rates across projects. Hệ thống ghi lại đầy đủ audit log và activity feed cho mọi actions như issue\_created, status\_changed, sprint\_started, comment\_added để track project progress và compliance.
-    \item Hệ thống được tích hợp lưu trữ issue attachments qua MinIO (development) và S3 (production) với path format org-id/project-id/issue-id/filename, giúp quản lý và phân phối files an toàn và hiệu quả. Một điểm nổi bật đặc biệt là ba tính năng AI: (1) AI Sprint Summary tự động generate retrospective khi Project Lead complete sprint với structured format (overview, achievements, issues found, recommendations, metrics), (2) AI Issue Description Generation cho phép users request LLM tạo detailed description từ issue title, và (3) AI Task Breakdown decompose EPIC issues thành sub-tasks với story points estimates. Users có thể chọn LLM Provider (OpenAI GPT-4, Anthropic Claude, Google Gemini) và customize prompts theo nhu cầu. Nhìn chung, ứng dụng không chỉ đáp ứng đầy đủ các chức năng quản lý dự án Agile cốt lõi mà còn mang lại những trải nghiệm hiện đại với real-time collaboration, AI assistance, và custom workflow flexibility, tạo sự khác biệt so với các nền tảng quản lý dự án truyền thống.
+    \item Xây dựng thành công phân hệ quản lý dự án hoàn chỉnh bao gồm backend service (services/pm) sử dụng NestJS và frontend web application (apps/pm-web) sử dụng Next.js 14, triển khai theo kiến trúc microservice có khả năng mở rộng và tích hợp với các phân hệ khác trong nền tảng SaaS.
+
+    \item Phát triển module quản lý dự án (Project Management) với đầy đủ chức năng: tạo project với identifier duy nhất (ví dụ: PROJ-123), cấu hình project settings, quản lý project members với các vai trò (Project Lead, Team Member, Viewer), và thiết lập default assignee cho các issue mới được tạo trong project.
+
+    \item Xây dựng module quản lý sprint với vòng đời đầy đủ: tạo sprint với tên, mục tiêu và khoảng thời gian (start date, end date), chuyển trạng thái từ FUTURE sang ACTIVE khi bắt đầu sprint, và CLOSED khi hoàn thành; hiển thị thống kê sprint với số lượng issues theo trạng thái và story points đã hoàn thành so với kế hoạch.
+
+    \item Phát triển module quản lý issue đa dạng hỗ trợ bốn loại công việc (STORY cho features, TASK cho công việc kỹ thuật, BUG cho lỗi cần sửa, EPIC cho nhóm công việc lớn), với các thuộc tính đầy đủ: priority (Low/Medium/High/Critical), story points, assignees, parent-child relationship, due date, labels, và rich text description hỗ trợ markdown formatting.
+
+    \item Thiết kế và triển khai hệ thống Custom Issue Status cho phép mỗi project định nghĩa workflow riêng với các trạng thái tùy chỉnh (tên, màu sắc, thứ tự hiển thị), hỗ trợ drag-and-drop để sắp xếp lại và áp dụng linh hoạt cho nhiều quy trình khác nhau (Kanban, Scrum, custom process).
+
+    \item Xây dựng module bình luận (Comments) với chức năng @mention users, rich text editor, edit/delete comments, và module Activity Log ghi lại đầy đủ lịch sử thay đổi của issue với format "field changed from X to Y by User at timestamp", tạo audit trail chi tiết cho việc truy vết.
+
+    \item Phát triển module Analytics cung cấp các biểu đồ thống kê: Created vs Resolved chart theo dõi số lượng issues được tạo và hoàn thành theo thời gian, Issue Distribution charts phân bố theo type/priority/status, và Sprint Velocity tracking để đánh giá hiệu suất team qua các sprint.
+
+    \item Xây dựng giao diện Board View (Kanban board) với drag-and-drop issues giữa các cột custom status, hiển thị issue cards với đầy đủ thông tin (type icon, priority badge, assignee avatar, story points), filter theo assignee/type/priority, và real-time updates khi có thay đổi từ các users khác.
+
+    \item Phát triển giao diện Backlog View hiển thị danh sách sprints và backlog, hỗ trợ drag-and-drop issues giữa sprints, tạo sprint mới, start/complete sprint, và panel chi tiết issue bên phải để xem và chỉnh sửa thông tin mà không cần chuyển trang.
+
+    \item Tích hợp module AI với ba tính năng chính: (1) AI Refine Description cải thiện mô tả issue tự động, đề xuất acceptance criteria và technical considerations; (2) AI Estimate Story Points phân tích complexity và đề xuất story points dựa trên historical data; (3) AI Breakdown Issue decompose EPIC thành sub-tasks với descriptions và story points estimates.
+
+    \item Phát triển tính năng AI Sprint Summary tự động tạo báo cáo retrospective khi hoàn thành sprint với cấu trúc: Overview, Key Achievements, Issues \& Challenges, Metrics (velocity, completion rate), Recommendations for Next Sprint, giúp Project Leads tiết kiệm thời gian viết báo cáo thủ công.
+
+    \item Xây dựng module Risk Detector phân tích sprint risks theo thời gian thực với các rule-based detectors (Overcommitment, Blocked Issues, Unestimated Work) và AI Risk Analyzer tổng hợp insights, đề xuất actions, và dự báo sprint success probability dựa trên historical patterns.
+
+    \item Tích hợp module RAG (Retrieval-Augmented Generation) với embedding service sử dụng pgvector extension, tự động index issues và comments vào vector database, hỗ trợ semantic search và context-aware Q\&A về project data thông qua natural language interface.
+
+    \item Phát triển tính năng Meeting to Tasks cho phép upload meeting recordings, tự động transcribe bằng speech-to-text API, sử dụng AI extract action items từ transcript, và tạo issues tự động với descriptions, assignees và due dates từ meeting content.
+
+    \item Xây dựng module Search với full-text search hỗ trợ tìm kiếm issues theo keyword, filter theo project/sprint/assignee/status, highlight matched terms, và keyboard shortcuts (Cmd+K) cho quick access, mang lại trải nghiệm tương tự Spotlight trên macOS.
+
+    \item Phát triển giao diện Timeline View và Calendar View để visualize issues theo thời gian, hỗ trợ drag-to-adjust dates, quick add issues vào specific dates, và overview sprint timeline để track milestones và deadlines.
 \end{itemize}
 
 \subsubsection*{1.3. Về vận dụng thực tế}
 
 \begin{itemize}
-    \item Kết quả của quá trình kiểm thử và đánh giá cũng cho thấy, ứng dụng web có khả năng hoạt động một cách ổn định và hiệu quả với real-time collaboration qua WebSocket, drag-and-drop smoothness, và optimistic UI updates mang lại responsive experience. Nhìn chung, "Xây dựng Nền tảng SaaS tích hợp AI nhằm Thống nhất Quản lý Dự án Agile" đã được xây dựng thành công và đáp ứng đầy đủ các chức năng cốt lõi của một hệ thống quản lý dự án Agile, bao gồm quản lý projects với custom workflow, sprint lifecycle management (FUTURE-ACTIVE-CLOSED), Board/Backlog views với drag-and-drop, issue tracking (STORY/TASK/BUG/EPIC), project-level access control, và ba tính năng AI (Sprint Summary, Issue Description Generation, Task Breakdown). Bên cạnh đó, giao diện được thiết kế hiện đại, trực quan theo phong cách Linear/Jira với Board columns cho custom statuses, giúp teams dễ dàng visualize workflow và manage sprints hiệu quả.
-    \item Điểm nổi bật của ứng dụng là tính năng tích hợp AI để tự động hóa các tác vụ time-consuming: AI Sprint Summary cho phép Project Leads nhanh chóng có được sprint retrospective với insights, achievements, issues found và recommendations mà không cần tốn nhiều thời gian tổng hợp thủ công; AI Issue Description Generation giúp teams tạo detailed descriptions với acceptance criteria từ issue title; AI Task Breakdown decomposes EPICs thành actionable sub-tasks với story points estimates. Ngoài ra, ứng dụng còn được tích hợp các tính năng nâng cao trải nghiệm collaborative editing như WebSocket real-time updates broadcast changes đến tất cả project members ngay lập tức, activity feed để track project timeline với before/after changes, và phân quyền linh hoạt theo vai trò project-level (Project Lead, Team Member, Viewer) với custom permissions override.
-    \item Với những ưu điểm này, hệ thống hoàn toàn có thể triển khai trong thực tế để phục vụ các software development teams, product teams, startup, doanh nghiệp vừa và nhỏ áp dụng phương pháp Agile/Scrum trong việc quản lý sprints, track issues, và collaborate real-time. Board view với drag-and-drop giúp teams visualize workflow progress, Backlog view giúp prioritize issues, và AI features giúp automate retrospective analysis và task planning. Hệ thống với custom status workflow có thể adapt với different team processes (Kanban-style, Scrum-style, custom workflows), và với multi-tenant architecture có thể serve multiple organizations với data isolation hoàn toàn, tạo ra trải nghiệm chuyên nghiệp và scalable cho users.
+    \item Hệ thống đã được kiểm thử và vận hành ổn định với các tính năng cốt lõi của quản lý dự án Agile: project management, sprint planning, issue tracking, custom workflow, và AI-assisted features. Giao diện được thiết kế hiện đại và trực quan, lấy cảm hứng từ các nền tảng chuyên nghiệp như Linear và Jira, mang lại trải nghiệm người dùng mượt mà với drag-and-drop smoothness và optimistic UI updates.
+
+    \item Đối với Team Members, hệ thống cung cấp đầy đủ công cụ để làm việc hiệu quả: tạo và quản lý issues với rich text editor, drag-and-drop issues trên Board để cập nhật status nhanh chóng, thêm comments với @mentions để communicate với teammates, upload attachments (screenshots, documents) trực tiếp vào issues, và theo dõi progress qua Activity feed với real-time notifications.
+
+    \item Đối với Project Leads, hệ thống hỗ trợ các công việc quản lý: lập kế hoạch sprint với sprint goals và capacity planning, start/complete sprints với AI-generated retrospective reports, configure custom status workflow phù hợp với team process, manage project members và roles, monitor sprint progress qua Dashboard với velocity charts và completion rates, và identify risks sớm qua Risk Detector module.
+
+    \item Các tính năng AI tích hợp mang lại giá trị thực tiễn cao: AI Refine Description giúp cải thiện chất lượng issue descriptions, đặc biệt hữu ích cho junior members chưa thành thạo việc viết requirements; AI Story Points Estimation giảm thời gian planning meetings bằng cách đề xuất estimates dựa trên similar past issues; AI Sprint Summary tự động hóa việc viết retrospective reports, giúp Project Leads tập trung vào analysis thay vì documentation.
+
+    \item Module Risk Detector giúp teams proactively identify và address các vấn đề tiềm ẩn: phát hiện overcommitment sớm để re-prioritize work, cảnh báo blocked issues để teams có thể intervene kịp thời, highlight unestimated work để đảm bảo sprint planning accuracy, và AI-powered insights đề xuất concrete actions để mitigate risks.
+
+    \item Tính năng Meeting to Tasks đặc biệt hữu ích cho remote teams và distributed teams: tự động chuyển đổi meeting discussions thành actionable tasks, đảm bảo không bỏ sót action items được mention trong meetings, và maintain traceability giữa decisions (in meeting recordings) và implementation (in issues).
+
+    \item Hệ thống với kiến trúc microservice và multi-tenant isolation hoàn toàn có thể triển khai production để phục vụ multiple organizations với data security đảm bảo. Custom status workflow cho phép adapt với different team processes (pure Scrum, Kanban, hoặc hybrid approaches), và extensible architecture sẵn sàng tích hợp với các phân hệ khác trong nền tảng (Communication, Meeting, Platform).
+
+    \item Về khả năng mở rộng, hệ thống được thiết kế để scale: database với proper indexing strategy có thể handle hàng triệu issues, API pagination và filtering giúp maintain performance với large datasets, và caching strategies (React Query, MobX computed values) đảm bảo UI responsive ngay cả khi xử lý nhiều data.
+
+    \item Với những tính năng và ưu điểm trên, phân hệ quản lý dự án hoàn toàn phù hợp để triển khai thực tế cho các software development teams, product teams, agile teams tại startups và doanh nghiệp vừa và nhỏ đang tìm kiếm một giải pháp quản lý dự án hiện đại, linh hoạt và tích hợp AI để nâng cao năng suất làm việc.
 \end{itemize}
 
 \phantomsection
-\addcontentsline{toc}{subsection}{2. Hướng phát triển}
-\subsection*{2. Hướng phát triển}
+\addcontentsline{toc}{subsection}{2. Hạn chế}
+\subsection*{2. Hạn chế}
 
 \begin{itemize}
-    \item Mở rộng tính năng AI với thêm các capabilities như AI Code Review Integration để analyze code changes trong issues, AI Risk Prediction dự đoán sprint risks dựa trên historical data và velocity trends, AI Story Points Estimation tự động suggest story points cho issues dựa trên similar past issues, và AI Sprint Planning Assistant recommend optimal issue allocation cho upcoming sprints. Tích hợp chatbot AI vào platform để users có thể query project data, ask questions về sprint progress, và get recommendations thông qua natural language interface.
-    \item Phát triển advanced Board customization với multiple Board views per project (Kanban board không giới hạn WIP, Sprint board với swimlanes theo assignee/priority, Roadmap view với timeline visualization), saved filters và quick filters cho power users, Board templates cho common workflows, và Board sharing với external stakeholders qua public links với read-only access.
-    \item Tích hợp Git repository connections (GitHub, GitLab, Bitbucket) để link commits và pull requests với issues, auto-update issue status khi PR merged, track code changes related đến issues, và display deployment status trên Board view. Trong tương lai, có thể tích hợp các công cụ CI/CD như Jenkins, CircleCI, GitHub Actions để auto-create issues khi build fails và track deployment pipeline status.
-    \item Xây dựng ứng dụng mobile native cho iOS và Android sử dụng React Native hoặc Flutter để users có thể view Board, update issue status, add comments, upload attachments, và receive push notifications cho issue assignments và mentions mọi lúc mọi nơi. Mobile app sẽ sync real-time với web app qua WebSocket.
-    \item Tích hợp với các công cụ communication phổ biến như Slack (post sprint summaries, issue updates), Microsoft Teams (notifications cho mentions), Discord (webhooks cho project activities) để keep teams informed without switching apps. Tích hợp với time tracking tools như Toggl, Harvest để track actual time spent on issues và compare với story points estimates.
-    \item Phát triển comprehensive Analytics dashboard với advanced metrics: burndown charts cho sprints, velocity trends across sprints, cycle time analysis (average time từ To Do đến Done), cumulative flow diagrams cho workflow bottlenecks, sprint retrospective analytics comparing planned vs actual completion, issue type distribution, assignee workload balance, và custom metrics định nghĩa bởi Project Leads. Export analytics reports dưới dạng PDF hoặc CSV cho stakeholder presentations.
-    \item Implement advanced collaboration features như real-time co-editing cho issue descriptions sử dụng operational transformation hoặc CRDTs, video/voice calls integration trực tiếp trong issue detail panels, whiteboard functionality cho sprint planning sessions, và @mentions notifications với in-app và email delivery options.
+    \item \textbf{Thiếu real-time collaboration đồng thời:} Mặc dù hệ thống hỗ trợ optimistic UI updates và real-time notifications, nhưng chưa implement operational transformation hoặc CRDT cho việc đồng chỉnh sửa issue description cùng lúc bởi nhiều users, có thể dẫn đến conflicts khi nhiều người edit cùng một issue đồng thời.
+
+    \item \textbf{Phụ thuộc vào LLM API bên ngoài:} Các tính năng AI (Refine Description, Story Points Estimation, Sprint Summary, Risk Analysis) phụ thuộc hoàn toàn vào API của OpenAI, Anthropic hoặc Google, dẫn đến chi phí vận hành tăng theo usage, latency phụ thuộc vào external services, và potential downtime khi AI providers gặp sự cố.
+
+    \item \textbf{Chi phí AI có thể tốn kém:} Việc sử dụng LLM API cho mỗi request (refine description, estimate points, generate summary) tiêu tốn tokens đáng kể, đặc biệt với các issue có description dài hoặc sprints với nhiều issues. Chi phí có thể tăng nhanh khi teams sử dụng AI features thường xuyên, chưa có cơ chế rate limiting, usage quotas, hoặc cost monitoring để control spending, gây khó khăn cho việc budget planning đối với các organization nhỏ.
+
+    \item \textbf{Chất lượng AI output không nhất quán:} Kết quả từ AI features có thể vary về quality tùy thuộc vào input context, domain complexity, và model version được sử dụng. AI có thể generate descriptions quá generic hoặc không phù hợp với technical context, story points estimation có thể inaccurate do thiếu domain knowledge, và sprint summaries có thể miss important details hoặc hallucinate information không tồn tại.
+
+    \item \textbf{Thiếu AI usage analytics và cost tracking:} Hệ thống chưa cung cấp dashboard để track AI usage metrics (số lượng requests, tokens consumed, cost per feature, cost per project/user), khiến organizations khó monitor và optimize AI spending. Chưa có alerts khi usage vượt threshold hoặc reports để analyze ROI của AI features.
+
+    \item \textbf{Giới hạn khả năng tùy chỉnh AI prompts:} Hiện tại hệ thống sử dụng pre-defined prompt templates cho các tính năng AI, chưa cho phép users hoặc organization admins customize prompts theo domain-specific requirements hoặc company terminology, giảm tính linh hoạt trong việc fine-tune AI outputs cho different industries (fintech, healthcare, e-commerce).
+
+    \item \textbf{Thiếu offline support:} Ứng dụng web hiện tại yêu cầu internet connection liên tục, chưa hỗ trợ Service Workers hoặc IndexedDB để cache data và cho phép users làm việc offline, đặc biệt bất tiện cho teams làm việc ở nơi có internet không ổn định.
+
+    \item \textbf{Chưa có mobile app native:} Mặc dù responsive web design hoạt động tốt trên mobile browsers, nhưng thiếu ứng dụng mobile native (iOS/Android) với features như push notifications, offline support, camera integration cho quick screenshot uploads, và better performance so với web app.
+
+    \item \textbf{Analytics metrics còn hạn chế:} Module Analytics hiện tại chỉ cung cấp basic metrics như Created vs Resolved và Issue Distribution, chưa có advanced charts như Burndown/Burnup, Cumulative Flow Diagram, Cycle Time distribution, Lead Time analysis, và Velocity trends chi tiết, làm giảm khả năng data-driven decision making.
+
+    \item \textbf{Thiếu integration với external tools:} Hệ thống chưa tích hợp với các công cụ phổ biến như GitHub/GitLab (link commits với issues), CI/CD pipelines (Jenkins, GitHub Actions), communication tools (Slack, Microsoft Teams), và time tracking tools (Toggl, Harvest), yêu cầu users phải switch giữa nhiều platforms.
+
+    \item \textbf{Meeting to Tasks còn manual:} Tính năng Meeting to Tasks yêu cầu users phải manually upload recording files, chưa tích hợp trực tiếp với video conferencing platforms (Zoom, Google Meet, Microsoft Teams) để auto-capture recordings và auto-generate tasks ngay sau meeting kết thúc.
+
+    \item \textbf{Risk Detector rules còn đơn giản:} Module Risk Detector hiện tại chỉ implement basic rule-based detection (Overcommitment, Blocked Issues, Unestimated Work), chưa có sophisticated ML models để predict risks dựa trên complex patterns trong historical data hoặc external factors (team member leave, holidays, dependencies).
+
+    \item \textbf{Thiếu automation workflows:} Hệ thống chưa hỗ trợ custom automation rules cho repetitive tasks như auto-assign issues dựa trên labels/type, auto-transition status khi conditions met, scheduled reminders, hoặc if-then workflows, đòi hỏi users phải thực hiện nhiều thao tác thủ công.
+
+    \item \textbf{Search chưa đủ mạnh:} Module Search hiện tại chỉ support basic keyword search với filters, chưa implement advanced features như fuzzy search cho typo tolerance, saved search queries, search suggestions, hoặc semantic search nâng cao để tìm issues dựa trên meaning thay vì exact keywords.
+
+    \item \textbf{Performance với large datasets:} Mặc dù database được optimize với proper indexes, nhưng UI performance có thể degraded khi render Board view với hàng trăm issues hoặc Backlog view với nhiều sprints, chưa implement virtualization hoặc pagination hiệu quả cho các danh sách dài.
+
+    \item \textbf{Thiếu permission granularity:} Hệ thống hiện có project-level roles (Project Lead, Team Member, Viewer) nhưng chưa support fine-grained permissions như restrict edit description, restrict delete issues, restrict change priority, hoặc custom permission sets cho different team structures.
+
+    \item \textbf{Limited file attachment handling:} Tính năng upload attachments chưa hỗ trợ version control cho files, preview cho nhiều file formats (videos, CAD files, code files với syntax highlighting), hoặc integration với cloud storage providers (Google Drive, Dropbox) để link files instead of uploading.
+
+    \item \textbf{Thiếu comprehensive audit trail:} Activity Log ghi lại changes nhưng chưa có advanced filtering, export capabilities, retention policies, hoặc compliance features (GDPR, SOC2) cần thiết cho enterprise customers với strict audit requirements.
+\end{itemize}
+
+\phantomsection
+\addcontentsline{toc}{subsection}{3. Hướng phát triển}
+\subsection*{3. Hướng phát triển}
+
+\begin{itemize}
+    \item \textbf{Nâng cao tính năng AI:} Mở rộng AI capabilities với AI Code Review Integration phân tích code changes được link với issues, AI Sprint Planning Assistant tự động đề xuất optimal issue allocation cho upcoming sprints dựa trên team capacity và velocity trends, và AI-powered Chatbot cho phép users query project data bằng natural language ("How many bugs were fixed last sprint?", "Which epics are behind schedule?").
+
+    \item \textbf{Advanced Analytics:} Phát triển comprehensive analytics dashboard với các metrics chuyên sâu: Burndown/Burnup charts cho sprint tracking, Cumulative Flow Diagram để phát hiện workflow bottlenecks, Cycle Time analysis (average time từ To Do đến Done) để measure process efficiency, Lead Time distribution, Team Velocity trends qua multiple sprints, và Custom Metrics cho phép Project Leads định nghĩa KPIs riêng. Hỗ trợ export reports dưới dạng PDF hoặc CSV cho presentations và stakeholder communications.
+
+    \item \textbf{Tích hợp Git repositories:} Kết nối với GitHub, GitLab, Bitbucket để link commits và pull requests với issues, tự động update issue status khi PR được merged, hiển thị code changes và deployment status trực tiếp trên issue detail panel, và tạo automatic release notes từ issues đã complete trong sprint.
+
+    \item \textbf{Tích hợp CI/CD pipelines:} Connect với Jenkins, CircleCI, GitHub Actions để track build status, tự động tạo issues khi tests fail, link deployment status với sprints, và hiển thị pipeline progress trên Board view để teams có end-to-end visibility từ code đến production.
+
+    \item \textbf{Mobile applications:} Xây dựng ứng dụng mobile native cho iOS và Android sử dụng React Native hoặc Flutter, cho phép users view Board, update issue status, add comments, receive push notifications cho assignments và mentions, và work offline với sync khi reconnected, mang lại flexibility cho teams làm việc remote hoặc on-the-go.
+
+    \item \textbf{Advanced Board customization:} Hỗ trợ multiple Board views per project (Kanban board với WIP limits, Sprint board với swimlanes theo assignee/priority/epic, Roadmap view với Gantt-style timeline), saved filters và quick filters cho power users, Board templates cho common workflows, và Board sharing với external stakeholders qua public links với read-only access.
+
+    \item \textbf{Tích hợp communication tools:} Connect với Slack để post sprint summaries và issue updates vào channels, Microsoft Teams integration cho notifications và bot commands, Discord webhooks cho project activities, và in-app notifications với email digest options để keep teams informed across platforms.
+
+    \item \textbf{Time tracking và resource management:} Tích hợp với Toggl, Harvest để track actual time spent on issues, compare với story points estimates, analyze team utilization, identify overload situations, và optimize resource allocation cho future sprints dựa trên historical data.
+
+    \item \textbf{Advanced collaboration:} Implement real-time co-editing cho issue descriptions sử dụng operational transformation hoặc CRDTs, video/voice calls integration trực tiếp trong issue panels cho quick discussions, digital whiteboard cho sprint planning sessions, và enhanced @mentions với notification preferences (in-app, email, push).
+
+    \item \textbf{Automation và workflows:} Xây dựng automation rules cho repetitive tasks: auto-assign issues based on rules, auto-transition status khi conditions met, scheduled reminders cho due dates, và custom workflows với if-then logic để reduce manual work và ensure process consistency.
+
+    \item \textbf{API và integrations ecosystem:} Phát triển comprehensive REST API documentation với OpenAPI/Swagger, webhooks để external systems có thể listen to events, Zapier integration cho no-code automations, và SDK cho developers muốn build custom integrations hoặc extensions.
 \end{itemize}
