@@ -9,13 +9,13 @@ actor "Project Lead" as PL
 actor "Team Member" as TM
 
 usecase "Cập nhật issue" as UC_Update
-usecase "Validate\nthay đổi" as UC_Validate
+usecase "Kiểm tra\nthay đổi" as UC_Validate
 usecase "Cập nhật\nthuộc tính" as UC_UpdateProps
 usecase "Ghi log\nactivity" as UC_LogActivity
 usecase "Gửi\nnotification" as UC_Notify
 usecase "Kéo thả\ntrong board" as UC_DragDrop
-usecase "Move to sprint" as UC_MoveToSprint
-usecase "Reorder issue" as UC_Reorder
+usecase "Chuyển vào sprint" as UC_MoveToSprint
+usecase "Sắp xếp lại công việc" as UC_Reorder
 
 PL --> UC_Update
 TM --> UC_Update
@@ -29,17 +29,6 @@ UC_DragDrop ..> UC_Update : <<extend>>
 UC_MoveToSprint ..> UC_Update : <<extend>>
 UC_Reorder ..> UC_Update : <<extend>>
 
-note right of UC_LogActivity
-  Ghi log từng field thay đổi:
-  • Field name
-  • Old value
-  • New value
-end note
 
-note bottom of UC_DragDrop
-  Kéo issue sang column khác
-  để thay đổi status
-  và cập nhật sortOrder
-end note
 
 @enduml

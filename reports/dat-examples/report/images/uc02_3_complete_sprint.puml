@@ -23,24 +23,7 @@ UC_Metrics .up.> UC_Complete : <<include>>
 
 UC_AISummary ..> UC_Complete : <<extend>>
 
-note right of UC_HandleIssues
-  Hỏi user xử lý:
-  a) Về Backlog
-  b) Sang sprint tiếp
-  c) Giữ nguyên
-end note
 
-note bottom of UC_Metrics
-  Ghi metrics:
-  • Velocity
-  • Story points completed
-  • Completion rate
-end note
 
-note left of UC_AISummary
-  Optional: Gọi
-  AI service tạo
-  Sprint Summary
-end note
 
 @enduml

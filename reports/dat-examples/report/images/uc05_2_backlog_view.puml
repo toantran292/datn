@@ -10,14 +10,14 @@ actor "Team Member" as TM
 actor "Viewer" as V
 
 usecase "Xem Backlog view" as UC_BacklogView
-usecase "Query all\nsprints & issues" as UC_QueryData
-usecase "Group issues\nby sprint sections" as UC_GroupSprints
+usecase "Truy vấn tất cả\nsprint "Query all\nsprints & issues" công việc" as UC_QueryData
+usecase "Nhóm công việc\ntheo các phần sprint" as UC_GroupSprints
 usecase "Hiển thị\nBacklog section" as UC_ShowBacklog
-usecase "Expand/collapse\nsections" as UC_ExpandCollapse
-usecase "Create sprint" as UC_CreateSprint
-usecase "Start sprint" as UC_StartSprint
-usecase "Complete sprint" as UC_CompleteSprint
-usecase "Drag-drop issues\ngiữa sprints" as UC_DragDrop
+usecase "Mở rộng/thu gọn\ncác phần" as UC_ExpandCollapse
+usecase "Tạo sprint" as UC_CreateSprint
+usecase "Bắt đầu sprint" as UC_StartSprint
+usecase "Hoàn thành sprint" as UC_CompleteSprint
+usecase "Kéo thả công việc\ngiữa các sprint" as UC_DragDrop
 
 PL --> UC_BacklogView
 TM --> UC_BacklogView
@@ -33,16 +33,6 @@ UC_StartSprint ..> UC_BacklogView : <<extend>>
 UC_CompleteSprint ..> UC_BacklogView : <<extend>>
 UC_DragDrop ..> UC_BacklogView : <<extend>>
 
-note right of UC_GroupSprints
-  Sort sprints:
-  1. ACTIVE
-  2. FUTURE
-  3. CLOSED (collapsed)
-end note
 
-note bottom of UC_ShowBacklog
-  Backlog = issues với
-  sprintId = NULL
-end note
 
 @enduml

@@ -9,13 +9,13 @@ actor "Project Lead" as PL
 actor "Team Member" as TM
 
 usecase "AI tự động\ntinh chỉnh mô tả\ncông việc" as UC_RefineDesc
-usecase "Detect mô tả\ncần cải thiện" as UC_DetectDesc
-usecase "Format prompt\nvới context" as UC_FormatPrompt
-usecase "Call LLM API" as UC_CallAPI
-usecase "Refine và\nformat mô tả" as UC_Refine
-usecase "Preview refined\ndescription" as UC_Preview
-usecase "Apply hoặc\nreject changes" as UC_ApplyChanges
-usecase "Log AI\nrefinement" as UC_LogAI
+usecase "Phát hiện mô tả\ncần cải thiện" as UC_DetectDesc
+usecase "Định dạng prompt\nvới ngữ cảnh" as UC_FormatPrompt
+usecase "Gọi LLM API" as UC_CallAPI
+usecase "Tinh chỉnh và\nđịnh dạng mô tả" as UC_Refine
+usecase "Xem trước mô tả\nđã tinh chỉnh" as UC_Preview
+usecase "Áp dụng hoặc\ntừ chối thay đổi" as UC_ApplyChanges
+usecase "Ghi log\ntinh chỉnh AI" as UC_LogAI
 
 PL --> UC_RefineDesc
 TM --> UC_RefineDesc
@@ -28,20 +28,6 @@ UC_Preview .up.> UC_RefineDesc : <<include>>
 UC_ApplyChanges .up.> UC_RefineDesc : <<include>>
 UC_LogAI .up.> UC_RefineDesc : <<include>>
 
-note right of UC_Refine
-  AI sẽ:
-  - Format theo template chuẩn
-  - Bổ sung thông tin thiếu
-  - Làm rõ acceptance criteria
-  - Thêm technical notes nếu cần
-end note
 
-note bottom of UC_Preview
-  Users có thể:
-  - Review changes side-by-side
-  - Accept/reject từng section
-  - Edit thủ công
-  - Regenerate nếu cần
-end note
 
 @enduml

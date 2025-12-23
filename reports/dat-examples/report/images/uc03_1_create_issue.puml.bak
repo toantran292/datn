@@ -1,0 +1,44 @@
+@startuml
+!theme plain
+skinparam defaultFontSize 11
+skinparam usecaseFontSize 10
+
+left to right direction
+
+actor "Project Lead" as PL
+actor "Team Member" as TM
+
+usecase "Tạo issue mới" as UC_Create
+usecase "Validate\nthông tin" as UC_Validate
+usecase "Tạo sequenceId\nvà identifier" as UC_GenID
+usecase "Gán default\nstatus" as UC_DefaultStatus
+usecase "Tính sortOrder" as UC_SortOrder
+usecase "Ghi log activity" as UC_LogActivity
+
+PL --> UC_Create
+TM --> UC_Create
+
+UC_Validate .up.> UC_Create : <<include>>
+UC_GenID .up.> UC_Create : <<include>>
+UC_DefaultStatus .up.> UC_Create : <<include>>
+UC_SortOrder .up.> UC_Create : <<include>>
+UC_LogActivity .up.> UC_Create : <<include>>
+
+note right of UC_GenID
+  Auto-generate sequenceId
+  Identifier = ProjectID-N
+  (ví dụ: PM-1, PM-2)
+end note
+
+note bottom of UC_DefaultStatus
+  Nếu không chọn status,
+  gán status đầu tiên
+  (thường là TODO)
+end note
+
+note left of UC_Create
+  Có thể tạo sub-issue
+  bằng cách chọn parentId
+end note
+
+@enduml

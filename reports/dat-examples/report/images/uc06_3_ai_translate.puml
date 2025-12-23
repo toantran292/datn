@@ -1,0 +1,32 @@
+@startuml
+!theme plain
+skinparam defaultFontSize 11
+skinparam usecaseFontSize 10
+
+left to right direction
+
+actor "Project Lead" as PL
+actor "Team Member" as TM
+
+usecase "Dịch mô tả\ncông việc" as UC_Translate
+usecase "Chọn ngôn ngữ\nđích" as UC_SelectLang
+usecase "Tạo prompt\ndịch thuật" as UC_CreatePrompt
+usecase "Gọi LLM API" as UC_CallLLM
+usecase "Stream\ntranslated text" as UC_Stream
+usecase "Apply hoặc\ncopy translation" as UC_ApplyTranslation
+usecase "Ghi log\ntranslation" as UC_LogTranslation
+
+PL --> UC_Translate
+TM --> UC_Translate
+
+UC_SelectLang .up.> UC_Translate : <<include>>
+UC_CreatePrompt .up.> UC_Translate : <<include>>
+UC_CallLLM .up.> UC_Translate : <<include>>
+UC_Stream .up.> UC_Translate : <<include>>
+
+UC_ApplyTranslation ..> UC_Translate : <<extend>>
+UC_LogTranslation ..> UC_Translate : <<extend>>
+
+
+
+@enduml

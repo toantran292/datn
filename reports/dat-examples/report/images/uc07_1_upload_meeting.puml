@@ -1,0 +1,34 @@
+@startuml
+!theme plain
+skinparam defaultFontSize 11
+skinparam usecaseFontSize 10
+
+left to right direction
+
+actor "Project Lead" as PL
+actor "Team Member" as TM
+
+usecase "Upload và phân tích\nmeeting" as UC_UploadMeeting
+usecase "Upload recording\nhoặc paste transcript" as UC_Upload
+usecase "Transcribe audio/video\nvới Whisper" as UC_Transcribe
+usecase "Lưu MeetingTranscript\nrecord" as UC_SaveTranscript
+usecase "Analyze transcript\nvới AI" as UC_Analyze
+usecase "Extract action items\nthành tasks" as UC_ExtractTasks
+usecase "Classify và estimate\ntasks" as UC_ClassifyTasks
+usecase "Hiển thị results\nvà statistics" as UC_ShowResults
+
+PL --> UC_UploadMeeting
+TM --> UC_UploadMeeting
+
+UC_Upload .up.> UC_UploadMeeting : <<include>>
+UC_SaveTranscript .up.> UC_UploadMeeting : <<include>>
+UC_Analyze .up.> UC_UploadMeeting : <<include>>
+UC_ExtractTasks .up.> UC_UploadMeeting : <<include>>
+UC_ClassifyTasks .up.> UC_UploadMeeting : <<include>>
+UC_ShowResults .up.> UC_UploadMeeting : <<include>>
+
+UC_Transcribe ..> UC_UploadMeeting : <<extend>>
+
+
+
+@enduml

@@ -8,7 +8,7 @@ left to right direction
 actor "Project Lead" as PL
 
 usecase "Tạo sprint mới" as UC_Create
-usecase "Validate\nthông tin" as UC_Validate
+usecase "Kiểm tra\nthông tin" as UC_Validate
 usecase "Set trạng thái\nFUTURE" as UC_SetStatus
 usecase "Tạo sprint\ncontainer" as UC_Container
 
@@ -18,15 +18,6 @@ UC_Validate .up.> UC_Create : <<include>>
 UC_SetStatus .up.> UC_Create : <<include>>
 UC_Container .up.> UC_Create : <<include>>
 
-note right of UC_Validate
-  Validate:
-  - Sprint name không trống
-  - End Date sau Start Date
-end note
 
-note bottom of UC_SetStatus
-  Sprint được tạo với
-  status = FUTURE
-end note
 
 @enduml

@@ -10,10 +10,10 @@ actor "Team Member" as TM
 actor "Viewer/Stakeholder" as VS
 
 usecase "Xem Calendar\nview" as UC_Calendar
-usecase "Load issues\ntheo tháng" as UC_LoadMonth
+usecase "Tải công việc\ntheo tháng" as UC_LoadMonth
 usecase "Hiển thị issue\ntheo ngày" as UC_DisplayDay
-usecase "Filter theo\nfilter criteria" as UC_FilterCalendar
-usecase "Navigate\ngiữa các tháng" as UC_Navigate
+usecase "Lọc theo\ntiêu chí lọc" as UC_FilterCalendar
+usecase "Điều hướng\ngiữa các tháng" as UC_Navigate
 
 PL --> UC_Calendar
 TM --> UC_Calendar
@@ -24,19 +24,6 @@ UC_DisplayDay .up.> UC_Calendar : <<include>>
 UC_FilterCalendar .up.> UC_Calendar : <<extend>>
 UC_Navigate .up.> UC_Calendar : <<include>>
 
-note right of UC_DisplayDay
-  Issues hiển thị dưới dạng
-  calendar events với:
-  - Issue key và title
-  - Due date hoặc created date
-  - Color coding theo type/priority
-end note
 
-note bottom of UC_Navigate
-  Users có thể:
-  - Navigate prev/next month
-  - Jump to specific month
-  - Today button quay về tháng hiện tại
-end note
 
 @enduml

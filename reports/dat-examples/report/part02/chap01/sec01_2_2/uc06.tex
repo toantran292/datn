@@ -5,7 +5,7 @@
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\textwidth]{images/uc06_1_ai_sprint_summary.png}
+    \includegraphics[width=1\textwidth]{images/uc06_1_ai_sprint_summary.png}
     \caption{Sơ đồ use case chức năng AI Sprint Summary}
     \label{fig:uc06_1_ai_sprint_summary}
 \end{figure}
@@ -89,7 +89,7 @@ Kết quả & Sprint summary được tạo tự động, giúp team review spri
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\textwidth]{images/uc06_2_ai_description.png}
+    \includegraphics[width=1\textwidth]{images/uc06_2_ai_description.png}
     \caption{Sơ đồ use case chức năng AI tự động tinh chỉnh mô tả công việc}
     \label{fig:uc06_2_ai_description}
 \end{figure}
@@ -168,11 +168,103 @@ Kết quả & Issue description được tinh chỉnh tự động với format 
 \end{longtblr}
 
 
+\vspace{1em}
+
+\textbf{UC06.3 - AI dịch mô tả công việc}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/uc06_3_ai_translate.png}
+    \caption{Sơ đồ use case chức năng AI dịch mô tả công việc}
+    \label{fig:uc06_3_ai_translate}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC06.3 - AI dịch mô tả công việc},
+    label = {tab:uc06_3},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{AI dịch mô tả công việc} \\\hline
+ID & UC06.3 \\\hline
+Người sử dụng & Project Lead, Team Member \\\hline
+Mức độ cần thiết & Tùy chọn \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{User:} Muốn dịch mô tả công việc sang ngôn ngữ khác. \\
+    + \textbf{LLM Provider:} Dịch văn bản với context-aware translation.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & AI tự động dịch mô tả công việc sang ngôn ngữ đích (English, Korean, Japanese, Chinese, Vietnamese) với streaming real-time, giúp team đa quốc gia làm việc hiệu quả. \\\hline
+Trigger & User nhấn "Translate" button và chọn ngôn ngữ đích trong issue detail. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User mở issue và nhấn "Translate" button
+        \item Hệ thống hiển thị language picker với các options:
+        \begin{itemize}
+            \item \textbf{English} (en)
+            \item \textbf{Korean} (ko)
+            \item \textbf{Japanese} (ja)
+            \item \textbf{Chinese} (zh)
+            \item \textbf{Vietnamese} (vi)
+        \end{itemize}
+        \item User chọn ngôn ngữ đích
+        \item Backend tạo prompt với:
+        \begin{itemize}
+            \item Issue description hiện tại
+            \item Issue type và context
+            \item Target language
+        \end{itemize}
+        \item Backend gọi LLM API với translate-description-stream endpoint (UC06.4)
+        \item AI dịch văn bản với context-aware translation:
+        \begin{itemize}
+            \item Giữ nguyên technical terms (variable names, code snippets)
+            \item Dịch user story và acceptance criteria phù hợp văn hóa
+            \item Maintain formatting (markdown, lists, tables)
+        \end{itemize}
+        \item Frontend hiển thị translated text real-time với streaming
+        \item User review và có thể copy translated text
+        \item User có option để apply translated text vào description
+        \item Backend log translation activity
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + Include UC06.4 (LLM API Integration).
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- Same language: Hiển thị warning "Description is already in target language".
+
+    \textbf{\textcolor{red}{A1}} -- Multiple translations: User có thể dịch sang nhiều ngôn ngữ khác nhau.
+
+    \textbf{\textcolor{red}{A2}} -- Copy to clipboard: User có thể copy translated text để paste elsewhere.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Issue description được dịch sang ngôn ngữ đích với context-aware translation, giúp team đa quốc gia làm việc hiệu quả. \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
 \textbf{UC06.4 - LLM API Integration}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.7\textwidth]{images/uc06_4_llm_integration.png}
+    \includegraphics[width=1\textwidth]{images/uc06_4_llm_integration.png}
     \caption{Sơ đồ use case chức năng LLM API Integration}
     \label{fig:uc06_4_llm_integration}
 \end{figure}
@@ -250,4 +342,190 @@ Luồng thay thế/ngoại lệ &
 \end{minipage}
 \\\hline
 Kết quả & LLM response được xử lý thành công và trả về cho feature sử dụng. \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+\textbf{UC06.5 - AI phát hiện rủi ro Sprint}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/uc06_5_ai_risk_detector.png}
+    \caption{Sơ đồ use case chức năng AI phát hiện rủi ro Sprint}
+    \label{fig:uc06_5_ai_risk_detector}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC06.5 - AI phát hiện rủi ro Sprint},
+    label = {tab:uc06_5},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{AI phát hiện rủi ro Sprint} \\\hline
+ID & UC06.5 \\\hline
+Người sử dụng & Project Lead \\\hline
+Mức độ cần thiết & Tùy chọn \\\hline
+Phân loại & Cao \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{Project Lead:} Muốn phát hiện sớm các rủi ro trong sprint. \\
+    + \textbf{Risk Detector Service:} Phát hiện risks với rule-based detection. \\
+    + \textbf{AI Risk Analyzer:} Phân tích risks và đưa ra recommendations.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Hệ thống tự động phát hiện rủi ro trong sprint (overcommitment, blocked issues, unestimated work) và sử dụng AI để phân tích nguyên nhân, đưa ra recommendations và hành động tự động. \\\hline
+Trigger & Project Lead nhấn "Detect Risks" hoặc hệ thống tự động chạy định kỳ mỗi ngày. \\\hline
+Kiểu sự kiện & External hoặc Internal (scheduled). \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item Hệ thống hoặc Project Lead trigger risk detection cho sprint ACTIVE
+        \item Risk Detector Service phân tích sprint với rule-based detection:
+        \begin{itemize}
+            \item \textbf{Overcommitment:} Story points vượt quá team velocity
+            \item \textbf{Blocked Issues:} Issues bị blocked quá lâu (> 3 days)
+            \item \textbf{Unestimated Work:} Issues chưa có story points
+        \end{itemize}
+        \item Với mỗi risk detected, hệ thống tạo RiskAlert record với:
+        \begin{itemize}
+            \item Risk type, severity (LOW, MEDIUM, HIGH, CRITICAL)
+            \item Affected issues, impact analysis
+            \item Detection time, status (OPEN, ACKNOWLEDGED, RESOLVED, DISMISSED)
+        \end{itemize}
+        \item AI Risk Analyzer Service phân tích risks detected:
+        \begin{itemize}
+            \item Tạo prompt với sprint data, issues data, risk details
+            \item Gọi LLM API (UC06.4) để analyze root causes
+            \item AI đưa ra detailed analysis, recommendations, priority order
+        \end{itemize}
+        \item Hệ thống lưu AI analysis vào RiskAlert.aiAnalysis
+        \item Hệ thống tạo actionable recommendations:
+        \begin{itemize}
+            \item Move issues to next sprint
+            \item Re-estimate story points
+            \item Assign blocked issues to different team members
+        \end{itemize}
+        \item Frontend hiển thị Risk Dashboard với:
+        \begin{itemize}
+            \item Risk summary (count by severity)
+            \item Risk alerts list với AI analysis
+            \item Recommended actions với quick apply buttons
+        \end{itemize}
+        \item Project Lead review risks, có thể:
+        \begin{itemize}
+            \item Acknowledge risk với note
+            \item Resolve risk với resolution note
+            \item Dismiss risk (false positive)
+            \item Apply recommended action (auto-execute)
+        \end{itemize}
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + Include UC06.4 (LLM API Integration).
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{A1}} -- No risks detected: Hiển thị "No risks detected, sprint is on track".
+
+    \textbf{\textcolor{red}{A2}} -- Auto-apply recommendation: Project Lead có thể apply recommendation với one click (e.g., move issues to next sprint automatically).
+
+    \textbf{\textcolor{red}{E1}} -- AI analysis failed: Hiển thị basic risk info without AI insights.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Risks được phát hiện sớm với AI analysis và recommendations, giúp Project Lead xử lý proactive và đảm bảo sprint success. \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+\textbf{UC06.6 - AI tìm kiếm thông minh (Semantic Search)}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/uc06_6_ai_semantic_search.png}
+    \caption{Sơ đồ use case chức năng AI tìm kiếm thông minh}
+    \label{fig:uc06_6_ai_semantic_search}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC06.6 - AI tìm kiếm thông minh (Semantic Search)},
+    label = {tab:uc06_6},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{AI tìm kiếm thông minh (Semantic Search)} \\\hline
+ID & UC06.6 \\\hline
+Người sử dụng & Project Lead, Team Member, Viewer \\\hline
+Mức độ cần thiết & Tùy chọn \\\hline
+Phân loại & Trung bình \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{User:} Muốn tìm issues theo ý nghĩa thay vì exact keywords. \\
+    + \textbf{RAG Service:} Tạo embeddings và thực hiện vector search. \\
+    + \textbf{Embedding Provider:} Generate embeddings từ text (OpenAI, sentence-transformers).
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Hệ thống sử dụng AI embeddings và vector search để tìm kiếm issues dựa trên ý nghĩa ngữ nghĩa (semantic meaning) thay vì chỉ exact keyword matching, giúp tìm được issues liên quan ngay cả khi từ khóa khác nhau. \\\hline
+Trigger & User nhập search query và toggle "Use AI Search" trong search modal. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User mở Search Modal (Cmd+K hoặc Ctrl+K)
+        \item User nhập query (ví dụ: "login issues", "payment bugs")
+        \item User toggle "Use AI Search" ON
+        \item Frontend gửi search request với useAI=true
+        \item Backend RAG Service:
+        \begin{itemize}
+            \item Generate embedding vector cho search query
+            \item Thực hiện vector similarity search trong database
+            \item Tìm top N issues có embedding gần nhất (cosine similarity)
+        \end{itemize}
+        \item Backend trả về results với similarity score
+        \item Frontend hiển thị results sorted by relevance:
+        \begin{itemize}
+            \item Similarity score (0-100\%) cho mỗi result
+            \item Highlight relevant sections trong description
+            \item Show why this issue matches (AI explanation)
+        \end{itemize}
+        \item User click vào issue để xem detail
+        \item User có thể refine search hoặc toggle AI search OFF để dùng basic search
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + Background process: Hệ thống tự động generate embeddings cho mọi issues khi created/updated (cron job chạy mỗi 5 phút).
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{A1}} -- Fallback to basic search: Nếu AI search fail, tự động fallback về basic keyword search.
+
+    \textbf{\textcolor{red}{A2}} -- Filter + AI search: User có thể combine AI search với filters (priority, type, status).
+
+    \textbf{\textcolor{red}{E1}} -- Embeddings not ready: Hiển thị "AI search not available yet, indexing in progress".
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & User tìm được issues relevant dựa trên semantic meaning thay vì exact keywords, cải thiện search accuracy đáng kể. \\\hline
 \end{longtblr}

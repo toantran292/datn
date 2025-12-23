@@ -10,7 +10,7 @@ actor "Team Member" as TM
 actor "Viewer" as V
 
 usecase "Xem chi tiết\nissue" as UC_View
-usecase "Query issue\ndata" as UC_Query
+usecase "Truy vấn dữ liệu\ncông việc" as UC_Query
 usecase "Hiển thị\nproperties" as UC_ShowProps
 usecase "Hiển thị\nactivity log" as UC_ShowActivity
 usecase "Hiển thị\ncomments" as UC_ShowComments
@@ -29,17 +29,6 @@ UC_ShowComments .up.> UC_View : <<include>>
 UC_AddComment ..> UC_View : <<extend>>
 UC_ViewSubIssues ..> UC_View : <<extend>>
 
-note right of UC_ShowProps
-  Type, Priority, Status
-  Sprint, Assignees
-  Story Points, Dates
-  Description (markdown)
-end note
 
-note bottom of UC_AddComment
-  Chỉ Project Lead
-  và Team Member
-  có thể thêm comment
-end note
 
 @enduml

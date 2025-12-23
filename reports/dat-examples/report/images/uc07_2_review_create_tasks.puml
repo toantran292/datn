@@ -1,0 +1,38 @@
+@startuml
+!theme plain
+skinparam defaultFontSize 11
+skinparam usecaseFontSize 10
+
+left to right direction
+
+actor "Project Lead" as PL
+actor "Team Member" as TM
+
+usecase "Review và tạo\ntasks" as UC_ReviewCreate
+usecase "Hiển thị tasks\npreview list" as UC_ShowPreview
+usecase "Edit task\nproperties" as UC_EditTask
+usecase "Delete task" as UC_DeleteTask
+usecase "Reorder tasks" as UC_ReorderTask
+usecase "Assign và set\nsprint" as UC_AssignSprint
+usecase "Confirm và\nbulk create" as UC_Confirm
+usecase "Create issues\nsequentially" as UC_CreateIssues
+usecase "Track progress\nreal-time" as UC_TrackProgress
+usecase "Hiển thị creation\nresults" as UC_ShowCreationResults
+
+PL --> UC_ReviewCreate
+TM --> UC_ReviewCreate
+
+UC_ShowPreview .up.> UC_ReviewCreate : <<include>>
+UC_Confirm .up.> UC_ReviewCreate : <<include>>
+UC_CreateIssues .up.> UC_ReviewCreate : <<include>>
+UC_TrackProgress .up.> UC_ReviewCreate : <<include>>
+UC_ShowCreationResults .up.> UC_ReviewCreate : <<include>>
+
+UC_EditTask ..> UC_ReviewCreate : <<extend>>
+UC_DeleteTask ..> UC_ReviewCreate : <<extend>>
+UC_ReorderTask ..> UC_ReviewCreate : <<extend>>
+UC_AssignSprint ..> UC_ReviewCreate : <<extend>>
+
+
+
+@enduml

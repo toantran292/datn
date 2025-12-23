@@ -1,0 +1,23 @@
+@startuml
+!theme plain
+skinparam defaultFontSize 11
+skinparam usecaseFontSize 10
+
+left to right direction
+
+actor "Project Lead" as PL
+
+usecase "Cấu hình\ndự án" as UC_Configure
+usecase "Cập nhật\nProject Name" as UC_UpdateName
+usecase "Thay đổi\nProject Lead" as UC_ChangeLead
+usecase "Thay đổi\nDefault Assignee" as UC_ChangeAssignee
+usecase "Ghi log\nactivity" as UC_LogActivity
+
+PL --> UC_Configure
+
+UC_UpdateName .up.> UC_Configure : <<include>>
+UC_ChangeLead .up.> UC_Configure : <<include>>
+UC_ChangeAssignee .up.> UC_Configure : <<include>>
+UC_LogActivity .up.> UC_Configure : <<include>>
+
+@enduml

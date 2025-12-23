@@ -1,0 +1,38 @@
+@startuml
+!theme plain
+skinparam defaultFontSize 11
+skinparam usecaseFontSize 10
+
+left to right direction
+
+actor "Project Lead" as PL
+actor "System (Cron)" as SYS
+
+usecase "Phát hiện rủi ro\nSprint" as UC_DetectRisk
+usecase "Phân tích Sprint\nvới rules" as UC_AnalyzeRules
+usecase "Tạo RiskAlert\nrecords" as UC_CreateAlert
+usecase "Gọi AI Risk\nAnalyzer" as UC_AIAnalyze
+usecase "Tạo\nrecommendations" as UC_CreateRecommend
+usecase "Hiển thị Risk\nDashboard" as UC_ShowDashboard
+usecase "Acknowledge risk" as UC_Acknowledge
+usecase "Resolve risk" as UC_Resolve
+usecase "Dismiss risk" as UC_Dismiss
+usecase "Apply\nrecommendation" as UC_ApplyRecommend
+
+PL --> UC_DetectRisk
+SYS --> UC_DetectRisk
+
+UC_AnalyzeRules .up.> UC_DetectRisk : <<include>>
+UC_CreateAlert .up.> UC_DetectRisk : <<include>>
+UC_AIAnalyze .up.> UC_DetectRisk : <<include>>
+UC_CreateRecommend .up.> UC_DetectRisk : <<include>>
+UC_ShowDashboard .up.> UC_DetectRisk : <<include>>
+
+UC_Acknowledge ..> UC_DetectRisk : <<extend>>
+UC_Resolve ..> UC_DetectRisk : <<extend>>
+UC_Dismiss ..> UC_DetectRisk : <<extend>>
+UC_ApplyRecommend ..> UC_DetectRisk : <<extend>>
+
+
+
+@enduml

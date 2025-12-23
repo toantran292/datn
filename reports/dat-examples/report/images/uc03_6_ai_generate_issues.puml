@@ -10,12 +10,12 @@ actor "Team Member" as TM
 
 usecase "Tự động tạo\ncông việc từ\nmô tả" as UC_AutoGen
 usecase "Nhập mô tả\ntổng quan" as UC_InputDesc
-usecase "Format prompt\ncho AI" as UC_FormatPrompt
-usecase "Call LLM API" as UC_CallAPI
-usecase "Generate danh\nsách công việc" as UC_GenIssues
-usecase "Preview công\nviệc (review/edit)" as UC_Preview
+usecase "Định dạng prompt\ncho AI" as UC_FormatPrompt
+usecase "Gọi LLM API" as UC_CallAPI
+usecase "Tạo danh sách\ncông việc" as UC_GenIssues
+usecase "Xem trước công việc\n(xem lại/chỉnh sửa)" as UC_Preview
 usecase "Tạo công việc\nvào project" as UC_CreateIssues
-usecase "Log AI\ngeneration" as UC_LogAI
+usecase "Ghi log\ntạo bằng AI" as UC_LogAI
 
 PL --> UC_AutoGen
 TM --> UC_AutoGen
@@ -28,19 +28,6 @@ UC_Preview .up.> UC_AutoGen : <<include>>
 UC_CreateIssues .up.> UC_AutoGen : <<include>>
 UC_LogAI .up.> UC_AutoGen : <<include>>
 
-note right of UC_GenIssues
-  AI tạo danh sách với:
-  - name, description
-  - type (STORY/TASK/BUG)
-  - priority, story points
-end note
 
-note bottom of UC_Preview
-  Users có thể:
-  - Edit từng công việc
-  - Uncheck công việc
-  - Adjust priority/points
-  - Regenerate nếu cần
-end note
 
 @enduml

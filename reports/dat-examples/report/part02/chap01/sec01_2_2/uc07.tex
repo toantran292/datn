@@ -1,0 +1,156 @@
+\paragraph{UC07: Meeting to Tasks}
+\mbox{}
+
+\textbf{UC07.1 - Upload và phân tích meeting recording}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/uc07_1_upload_meeting.png}
+    \caption{Sơ đồ use case chức năng upload và phân tích meeting}
+    \label{fig:uc07_1_upload_meeting}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC07.1 - Upload và phân tích meeting recording},
+    label = {tab:uc07_1},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Upload và phân tích meeting recording} \\\hline
+ID & UC07.1 \\\hline
+Người sử dụng & Project Lead, Team Member \\\hline
+Mức độ cần thiết & Tùy chọn \\\hline
+Phân loại & Cao \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{User:} Upload meeting recording hoặc transcript để tạo tasks. \\
+    + \textbf{Meeting Analysis Service:} Phân tích transcript và extract action items. \\
+    + \textbf{OpenAI Whisper:} Transcribe audio/video thành text. \\
+    + \textbf{LLM Provider:} Analyze transcript và identify tasks.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & User upload meeting recording (video/audio) hoặc paste transcript, hệ thống tự động transcribe (nếu cần), phân tích nội dung và extract action items thành danh sách tasks với title, description, type, priority, story points estimates. \\\hline
+Trigger & User truy cập Meeting to Tasks page và upload file hoặc paste transcript. \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item User truy cập Meeting to Tasks page
+        \item User upload recording (MP4/MP3/WAV/M4A) hoặc paste transcript
+        \item User nhập title (optional) và nhấn "Analyze Meeting"
+        \item Nếu upload file: backend validate, gọi Whisper API transcribe, hiển thị progress
+        \item Backend lưu MeetingTranscript record
+        \item Meeting Analysis Service phân tích qua 6 phases: Preprocessing, Context extraction, Action detection, Task structuring, Validation, Statistics
+        \item \textbf{Độ phức tạp:} Xử lý NLP không structured, phân biệt discussions vs tasks
+        \item Backend trả về response (meetingId, transcript, tasks[], stats)
+        \item Frontend hiển thị results (transcript, tasks preview, statistics)
+        \item User proceed UC07.2 để review và create
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + Include UC06.4 (LLM API Integration) cho transcript analysis.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{E1}} -- Invalid file format: Hiển thị lỗi "Only video and audio files are supported (MP4, MP3, WAV, M4A)".
+
+    \textbf{\textcolor{red}{E2}} -- File too large: Hiển thị lỗi "File size must be less than 100MB".
+
+    \textbf{\textcolor{red}{E3}} -- Transcription failed: Hiển thị lỗi và cho phép user retry hoặc paste transcript manually.
+
+    \textbf{\textcolor{red}{E4}} -- No action items found: Hiển thị warning "No action items detected in meeting. Please review transcript and add tasks manually".
+
+    \textbf{\textcolor{red}{A1}} -- Edit transcript: User có thể edit transcript trước khi analyze để fix errors.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Meeting được transcribe và analyzed thành công, action items được extracted thành danh sách tasks sẵn sàng để review. \\\hline
+\end{longtblr}
+
+\vspace{1em}
+
+\textbf{UC07.2 - Review và tạo tasks từ meeting}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/uc07_2_review_create_tasks.png}
+    \caption{Sơ đồ use case chức năng review và tạo tasks}
+    \label{fig:uc07_2_review_create_tasks}
+\end{figure}
+
+\begin{longtblr}[
+    caption = {Đặc tả use case UC07.2 - Review và tạo tasks từ meeting},
+    label = {tab:uc07_2},
+]{
+    colspec={|l|p{.7\linewidth}|}
+}
+\hline
+\textbf{Tên chức năng} & \textbf{Review và tạo tasks từ meeting} \\\hline
+ID & UC07.2 \\\hline
+Người sử dụng & Project Lead, Team Member \\\hline
+Mức độ cần thiết & Bắt buộc (sau UC07.1) \\\hline
+Phân loại & Cao \\\hline
+Các thành phần tham gia &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + \textbf{User:} Review extracted tasks và adjust trước khi create. \\
+    + \textbf{Meetings Service:} Bulk create issues từ tasks. \\
+    + \textbf{Issue Service:} Tạo issue records trong database.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Mô tả tóm tắt & Sau khi AI extract tasks từ meeting, user review danh sách tasks, edit/delete/reorder tasks, adjust properties (type, priority, assignee, sprint), sau đó bulk create tất cả tasks thành issues trong project. \\\hline
+Trigger & User nhấn "Next" sau khi meeting analysis hoàn tất (UC07.1). \\\hline
+Kiểu sự kiện & External. \\\hline
+Luồng xử lý bình thường &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \begin{enumerate}
+        \item Frontend hiển thị Tasks Preview screen (Step 2/3)
+        \item User có thể edit/delete/reorder tasks, assign members, set sprint
+        \item User manually add tasks nếu AI miss
+        \item User nhấn "Create All Tasks" và confirm
+        \item Frontend gọi API create-tasks endpoint
+        \item Backend bulk create sequentially với complexity handling
+        \item \textbf{Độ phức tạp:} Sequential processing, handle conflicts và partial failures
+        \item Frontend hiển thị progress real-time
+        \item Backend trả về response (created, failed, stats)
+        \item Frontend hiển thị Creation Result screen
+        \item User view issues trong Backlog
+    \end{enumerate}
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Các luồng sự kiện con &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    + Include UC03.1 (Tạo issue) cho mỗi task trong bulk creation.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Luồng thay thế/ngoại lệ &
+\begin{minipage}{\linewidth}
+    \vskip 4pt
+    \textbf{\textcolor{red}{A1}} -- Partial success: Một số tasks create thành công, một số fail. Hiển thị both success và failed lists với clear separation.
+
+    \textbf{\textcolor{red}{A2}} -- Back to edit: User có thể nhấn "Back" để quay lại edit tasks trước khi create.
+
+    \textbf{\textcolor{red}{E1}} -- All tasks failed: Hiển thị error "Failed to create tasks. Please try again or contact support".
+
+    \textbf{\textcolor{red}{E2}} -- Duplicate tasks: Hệ thống detect và warning nếu có tasks trùng lặp với existing issues.
+    \vskip 1pt
+\end{minipage}
+\\\hline
+Kết quả & Tasks được bulk create thành issues trong project, link với meeting source, ready để team bắt đầu làm việc. \\\hline
+\end{longtblr}

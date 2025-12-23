@@ -1,0 +1,47 @@
+@startuml
+!theme plain
+skinparam defaultFontSize 11
+skinparam usecaseFontSize 10
+
+left to right direction
+
+actor "Project Lead" as PL
+actor "Team Member" as TM
+actor "Viewer" as V
+
+usecase "Filter và search\nissues" as UC_Filter
+usecase "Filter by\nassignee" as UC_FilterAssignee
+usecase "Filter by\npriority" as UC_FilterPriority
+usecase "Filter by\ntype" as UC_FilterType
+usecase "Filter by\nstatus" as UC_FilterStatus
+usecase "Search by\nidentifier/name" as UC_Search
+usecase "Combine\nfilters" as UC_CombineFilters
+usecase "Clear filters" as UC_ClearFilters
+
+PL --> UC_Filter
+TM --> UC_Filter
+V --> UC_Filter
+
+UC_FilterAssignee .up.> UC_Filter : <<include>>
+UC_FilterPriority .up.> UC_Filter : <<include>>
+UC_FilterType .up.> UC_Filter : <<include>>
+UC_FilterStatus .up.> UC_Filter : <<include>>
+UC_Search .up.> UC_Filter : <<include>>
+
+UC_CombineFilters ..> UC_Filter : <<extend>>
+UC_ClearFilters ..> UC_Filter : <<extend>>
+
+note right of UC_CombineFilters
+  Ví dụ:
+  assignee = me AND
+  priority = HIGH AND
+  type = BUG
+end note
+
+note bottom of UC_Search
+  Search by:
+  - Identifier (PM-123)
+  - Issue name
+end note
+
+@enduml

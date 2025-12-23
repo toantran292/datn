@@ -1,0 +1,29 @@
+@startuml
+!theme plain
+skinparam defaultFontSize 11
+skinparam usecaseFontSize 10
+
+left to right direction
+
+actor "Project Lead" as PL
+actor "Team Member" as TM
+
+usecase "AI Task\nBreakdown" as UC_Breakdown
+usecase "Tạo prompt\nvới issue data" as UC_CreatePrompt
+usecase "Call LLM API" as UC_CallAPI
+usecase "Suggest\nsub-tasks" as UC_SuggestTasks
+usecase "Hiển thị\nsuggested tasks" as UC_ShowSuggestions
+usecase "User select\nvà adjust" as UC_Adjust
+usecase "Create\nsub-issues" as UC_CreateSub
+
+PL --> UC_Breakdown
+TM --> UC_Breakdown
+
+UC_CreatePrompt .up.> UC_Breakdown : <<include>>
+UC_CallAPI .up.> UC_Breakdown : <<include>>
+UC_SuggestTasks .up.> UC_Breakdown : <<include>>
+UC_ShowSuggestions .up.> UC_Breakdown : <<include>>
+UC_Adjust .up.> UC_Breakdown : <<include>>
+UC_CreateSub .up.> UC_Breakdown : <<include>>
+
+@enduml

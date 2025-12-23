@@ -31,15 +31,6 @@ UC_UpdateStatus ..> UC_DragDrop : <<extend>>
 UC_UpdateSprint ..> UC_DragDrop : <<extend>>
 UC_Reorder ..> UC_DragDrop : <<extend>>
 
-note right of UC_CalcSortOrder
-  Tính sortOrder mới
-  dựa trên vị trí drop
-  giữa 2 issues lân cận
-end note
 
-note bottom of UC_DragDrop
-  Board: Drag giữa columns
-  Backlog: Drag giữa sprints
-end note
 
 @enduml

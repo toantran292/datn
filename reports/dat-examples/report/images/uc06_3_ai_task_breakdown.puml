@@ -9,12 +9,12 @@ actor "Project Lead" as PL
 actor "Team Member" as TM
 
 usecase "AI Task\nBreakdown" as UC_Breakdown
-usecase "Tạo prompt\nvới issue data" as UC_CreatePrompt
-usecase "Call LLM API" as UC_CallAPI
-usecase "Suggest\nsub-tasks" as UC_SuggestTasks
-usecase "Hiển thị\nsuggested tasks" as UC_ShowSuggestions
-usecase "User select\nvà adjust" as UC_Adjust
-usecase "Create\nsub-issues" as UC_CreateSub
+usecase "Tạo prompt\nvới dữ liệu công việc" as UC_CreatePrompt
+usecase "Gọi LLM API" as UC_CallAPI
+usecase "Đề xuất\ncông việc con" as UC_SuggestTasks
+usecase "Hiển thị\ncác công việc đề xuất" as UC_ShowSuggestions
+usecase "Người dùng chọn\nvà điều chỉnh" as UC_Adjust
+usecase "Tạo\ncông việc con" as UC_CreateSub
 
 PL --> UC_Breakdown
 TM --> UC_Breakdown

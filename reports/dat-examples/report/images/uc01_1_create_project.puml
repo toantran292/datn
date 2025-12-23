@@ -9,7 +9,7 @@ actor "Project Lead" as PL
 actor "Team Member" as TM
 
 usecase "Tạo dự án mới" as UC_Create
-usecase "Validate\nthông tin" as UC_Validate
+usecase "Kiểm tra\nthông tin" as UC_Validate
 usecase "Kiểm tra\nidentifier\nduy nhất" as UC_CheckID
 usecase "Tạo default\nissue statuses" as UC_CreateStatuses
 

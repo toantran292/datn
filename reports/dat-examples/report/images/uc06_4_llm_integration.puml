@@ -8,13 +8,13 @@ left to right direction
 actor "System" as SYS
 
 usecase "LLM API\nIntegration" as UC_LLM
-usecase "Load LLM\nconfiguration" as UC_LoadConfig
-usecase "Format\nprompt" as UC_FormatPrompt
-usecase "Send HTTP\nrequest" as UC_SendHTTP
-usecase "LLM Provider\nxử lý" as UC_Process
-usecase "Parse và\nvalidate response" as UC_Parse
+usecase "Tải cấu hình\nLLM" as UC_LoadConfig
+usecase "Định dạng\nprompt" as UC_FormatPrompt
+usecase "Gửi HTTP\nrequest" as UC_SendHTTP
+usecase "Nhà cung cấp LLM\nxử lý" as UC_Process
+usecase "Phân tích và\nkiểm tra phản hồi" as UC_Parse
 usecase "Ghi log" as UC_Log
-usecase "Trả result" as UC_Return
+usecase "Trả kết quả" as UC_Return
 
 SYS --> UC_LLM
 

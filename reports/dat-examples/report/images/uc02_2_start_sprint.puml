@@ -8,7 +8,7 @@ left to right direction
 actor "Project Lead" as PL
 
 usecase "Bắt đầu sprint" as UC_Start
-usecase "Validate\ntrạng thái" as UC_ValidateStatus
+usecase "Kiểm tra\ntrạng thái" as UC_ValidateStatus
 usecase "Kiểm tra\nACTIVE sprint" as UC_CheckActive
 usecase "Chuyển status\nFUTURE→ACTIVE" as UC_ChangeStatus
 usecase "Tạo snapshot\nban đầu" as UC_Snapshot
@@ -20,21 +20,7 @@ UC_CheckActive .up.> UC_Start : <<include>>
 UC_ChangeStatus .up.> UC_Start : <<include>>
 UC_Snapshot .up.> UC_Start : <<include>>
 
-note right of UC_CheckActive
-  Chỉ 1 sprint ACTIVE
-  tại một thời điểm.
-  Reject nếu đã có.
-end note
 
-note bottom of UC_Snapshot
-  Ghi lại số lượng
-  issue ban đầu để
-  tính velocity
-end note
 
-note left of UC_ValidateStatus
-  Sprint phải ở
-  trạng thái FUTURE
-end note
 
 @enduml

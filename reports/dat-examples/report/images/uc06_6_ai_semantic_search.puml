@@ -1,0 +1,36 @@
+@startuml
+!theme plain
+skinparam defaultFontSize 11
+skinparam usecaseFontSize 10
+
+left to right direction
+
+actor "Project Lead" as PL
+actor "Team Member" as TM
+actor "Viewer" as V
+
+usecase "Tìm kiếm\nthông minh" as UC_Search
+usecase "Toggle\nAI Search" as UC_ToggleAI
+usecase "Generate query\nembedding" as UC_GenEmbedding
+usecase "Thực hiện vector\nsimilarity search" as UC_VectorSearch
+usecase "Trả về results\nvới similarity score" as UC_ReturnResults
+usecase "Highlight\nrelevant sections" as UC_Highlight
+usecase "Refine search\nquery" as UC_Refine
+usecase "Combine với\nfilters" as UC_CombineFilter
+
+PL --> UC_Search
+TM --> UC_Search
+V --> UC_Search
+
+UC_ToggleAI .up.> UC_Search : <<include>>
+UC_GenEmbedding .up.> UC_Search : <<include>>
+UC_VectorSearch .up.> UC_Search : <<include>>
+UC_ReturnResults .up.> UC_Search : <<include>>
+UC_Highlight .up.> UC_Search : <<include>>
+
+UC_Refine ..> UC_Search : <<extend>>
+UC_CombineFilter ..> UC_Search : <<extend>>
+
+
+
+@enduml

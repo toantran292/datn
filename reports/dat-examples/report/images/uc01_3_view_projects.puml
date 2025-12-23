@@ -11,9 +11,9 @@ actor "Viewer" as V
 
 usecase "Xem danh sách\ndự án" as UC_List
 usecase "Xem chi tiết\ndự án" as UC_Detail
-usecase "Xem Board View" as UC_Board
-usecase "Xem Backlog View" as UC_Backlog
-usecase "Xem Summary" as UC_Summary
+usecase "Xem bảng Board" as UC_Board
+usecase "Xem bảng Backlog" as UC_Backlog
+usecase "Xem tóm tắt" as UC_Summary
 
 PL --> UC_List
 TM --> UC_List

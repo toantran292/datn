@@ -10,10 +10,10 @@ actor "Team Member" as TM
 actor "Viewer/Stakeholder" as VS
 
 usecase "Xem Timeline\nview" as UC_Timeline
-usecase "Load issues\ntheo khoảng thời gian" as UC_LoadRange
+usecase "Tải công việc\ntheo khoảng thời gian" as UC_LoadRange
 usecase "Hiển thị issue\ntrên timeline" as UC_DisplayTimeline
-usecase "Zoom in/out\ntimeline" as UC_Zoom
-usecase "Filter theo\nfilter criteria" as UC_FilterTimeline
+usecase "Phóng to/thu nhỏ\ntrục thời gian" as UC_Zoom
+usecase "Lọc theo\ntiêu chí lọc" as UC_FilterTimeline
 
 PL --> UC_Timeline
 TM --> UC_Timeline
@@ -24,20 +24,6 @@ UC_DisplayTimeline .up.> UC_Timeline : <<include>>
 UC_Zoom .up.> UC_Timeline : <<extend>>
 UC_FilterTimeline .up.> UC_Timeline : <<extend>>
 
-note right of UC_DisplayTimeline
-  Issues hiển thị dưới dạng
-  horizontal bars với:
-  - Issue key và title
-  - Start date và due date
-  - Progress indicator
-  - Dependencies giữa issues
-end note
 
-note bottom of UC_Zoom
-  Users có thể:
-  - Zoom để xem theo ngày/tuần/tháng
-  - Scroll timeline ngang
-  - Drag to pan
-end note
 
 @enduml

@@ -10,10 +10,10 @@ actor "Team Member" as TM
 actor "Viewer" as V
 
 usecase "Xem danh sách\nsprint" as UC_List
-usecase "Filter theo\nproject" as UC_Filter
-usecase "Sort theo\nstatus" as UC_Sort
+usecase "Lọc theo\ndự án" as UC_Filter
+usecase "Sắp xếp theo\ntrạng thái" as UC_Sort
 usecase "Xem chi tiết\nsprint" as UC_Detail
-usecase "Expand/Collapse\nissue list" as UC_Expand
+usecase "Mở rộng/Thu gọn\ndanh sách công việc" as UC_Expand
 
 PL --> UC_List
 TM --> UC_List
@@ -28,20 +28,6 @@ UC_Sort .up.> UC_List : <<include>>
 
 UC_Expand ..> UC_Detail : <<extend>>
 
-note right of UC_Sort
-  Sort order:
-  1. ACTIVE (đầu)
-  2. FUTURE
-  3. CLOSED (cuối)
-end note
 
-note bottom of UC_Detail
-  Hiển thị:
-  • Sprint Name, Goal
-  • Status badge
-  • Start/End Date
-  • Progress bar
-  • Số issue hoàn thành/tổng
-end note
 
 @enduml

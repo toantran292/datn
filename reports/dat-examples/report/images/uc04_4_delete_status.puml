@@ -10,9 +10,9 @@ actor "Project Lead" as PL
 usecase "Xóa custom\nstatus" as UC_Delete
 usecase "Kiểm tra số lượng\nissue" as UC_CheckIssues
 usecase "Chọn target\nstatus" as UC_SelectTarget
-usecase "Move issues\nsang status mới" as UC_MoveIssues
+usecase "Chuyển công việc\nsang trạng thái mới" as UC_MoveIssues
 usecase "Xóa IssueStatus\nrecord" as UC_DeleteRecord
-usecase "Remove column\nkhỏi board" as UC_RemoveColumn
+usecase "Xóa cột\nkhỏi board" as UC_RemoveColumn
 
 PL --> UC_Delete
 
@@ -22,22 +22,7 @@ UC_MoveIssues .up.> UC_Delete : <<include>>
 UC_DeleteRecord .up.> UC_Delete : <<include>>
 UC_RemoveColumn .up.> UC_Delete : <<include>>
 
-note right of UC_CheckIssues
-  Nếu có issues:
-  Hiển thị dialog
-  "Move N issues to:"
-end note
 
-note bottom of UC_MoveIssues
-  Batch update:
-  UPDATE issue
-  SET statusId = newStatusId
-  WHERE statusId = oldStatusId
-end note
 
-note left of UC_Delete
-  Không cho phép xóa
-  nếu chỉ còn 1 status
-end note
 
 @enduml

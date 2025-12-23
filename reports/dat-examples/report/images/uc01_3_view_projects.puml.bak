@@ -1,0 +1,30 @@
+@startuml
+!theme plain
+skinparam defaultFontSize 11
+skinparam usecaseFontSize 10
+
+left to right direction
+
+actor "Project Lead" as PL
+actor "Team Member" as TM
+actor "Viewer" as V
+
+usecase "Xem danh sách\ndự án" as UC_List
+usecase "Xem chi tiết\ndự án" as UC_Detail
+usecase "Xem Board View" as UC_Board
+usecase "Xem Backlog View" as UC_Backlog
+usecase "Xem Summary" as UC_Summary
+
+PL --> UC_List
+TM --> UC_List
+V --> UC_List
+
+PL --> UC_Detail
+TM --> UC_Detail
+V --> UC_Detail
+
+UC_Board ..> UC_Detail : <<extend>>
+UC_Backlog ..> UC_Detail : <<extend>>
+UC_Summary ..> UC_Detail : <<extend>>
+
+@enduml
