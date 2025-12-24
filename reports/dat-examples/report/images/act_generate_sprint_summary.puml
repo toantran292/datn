@@ -1,47 +1,36 @@
 @startuml act_generate_sprint_summary
+skinparam defaultFontSize 13
+skinparam activityFontSize 12
+skinparam activityDiamondFontSize 11
+skinparam activityArrowFontSize 10
+skinparam partitionFontSize 13
+
 |Người dùng|
 start
-:Xem closed sprint;
-:Nhấn "Generate Summary"
-hoặc "Regenerate";
-|Giao diện người dùng|
-:Hiển thị loading indicator;
-:Gửi request generate summary;
-|Hệ thống xử lý|
-:Lấy sprint data:
-- Name, goal, dates
-- Metrics (velocity, points);
-:Lấy completed issues
-với details;
-:Lấy incomplete issues;
-:Lấy team contributions;
-:Chuẩn bị prompt cho LLM:
-"Analyze sprint and provide:
-- Overview
-- Achievements
-- Issues found
-- Recommendations";
-:Gọi LLM API
-(OpenAI/Anthropic/Gemini);
-if (LLM success?) then (không)
-  |Giao diện người dùng|
-  :Thông báo lỗi LLM;
+:Xem sprint;
+:Nhấn Generate;
+
+|Giao diện|
+:Show loading;
+
+|Hệ thống|
+:Lấy sprint data;
+:Lấy issues;
+:Chuẩn bị prompt;
+:Gọi LLM API;
+
+if (Success?) then (không)
+  |Giao diện|
+  :Báo lỗi;
   |Người dùng|
   stop
 else (có)
-  :Parse LLM response;
-  :Lưu summary vào DB:
-  - Content (markdown)
-  - Provider used
-  - Tokens consumed
-  - Generated timestamp;
-  :Tạo audit log;
-  |Giao diện người dùng|
-  :Ẩn loading;
-  :Render summary với
-  markdown formatting;
-  :Hiển thị metadata
-  (provider, tokens, time);
+  |Hệ thống|
+  :Parse response;
+  :Lưu DB;
+  :Ghi log;
+  |Giao diện|
+  :Render summary;
   |Người dùng|
   stop
 endif

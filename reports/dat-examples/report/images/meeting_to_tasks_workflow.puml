@@ -1,0 +1,160 @@
+@startuml
+!theme plain
+scale 1.5
+skinparam defaultFontSize 14
+skinparam activityFontSize 13
+
+title Luồng xử lý Meeting to Tasks
+
+|User|
+start
+:Truy cập Meeting to Tasks page;
+
+:Upload recording hoặc paste transcript;
+note right
+  Hỗ trợ: MP4, MP3, WAV, M4A
+  hoặc plain text transcript
+end note
+
+:Nhập meeting title (optional);
+
+:Nhấn "Analyze Meeting";
+
+|Backend|
+if (Upload file?) then (yes)
+  :Validate file format và size;
+
+  |Whisper API|
+  :Transcribe audio/video thành text;
+  note right
+    OpenAI Whisper API
+    Xử lý real-time streaming
+  end note
+
+  |Backend|
+  :Hiển thị transcription progress;
+else (no - paste transcript)
+endif
+
+:Lưu MeetingTranscript record;
+note right
+  Lưu: title, transcript,
+  sourceType, projectId,
+  orgId, createdBy
+end note
+
+|Meeting Analysis Service|
+:Phase 1: Preprocessing;
+note right
+  - Clean text
+  - Remove filler words
+  - Normalize formatting
+end note
+
+:Phase 2: Context extraction;
+note right
+  - Phân tích participants
+  - Extract topics
+  - Identify meeting type
+end note
+
+:Phase 3: Action item detection;
+note right
+  - Identify tasks từ conversation
+  - Distinguish discussions vs actionable items
+  - Extract ownership hints
+end note
+
+:Phase 4: Task structuring;
+note right
+  - Generate title và description
+  - Classify type (Task/Bug/Story)
+  - Estimate priority
+  - Estimate story points
+end note
+
+:Phase 5: Validation & deduplication;
+note right
+  - Remove duplicate tasks
+  - Validate completeness
+  - Check consistency
+end note
+
+:Phase 6: Statistics calculation;
+note right
+  - Total tasks count
+  - Distribution by type/priority
+  - Average story points
+end note
+
+|Backend|
+:Trả về AnalyzeMeetingResponse;
+note right
+  Response: meetingId, transcript,
+  tasks[] (TaskPreview),
+  stats (summary)
+end note
+
+|Frontend|
+:Hiển thị results screen;
+note right
+  - Original transcript (collapsible)
+  - Extracted tasks preview
+  - Statistics summary
+end note
+
+|User|
+:Review extracted tasks;
+
+:Edit/delete/reorder tasks;
+note right
+  - Edit properties
+  - Assign members
+  - Set sprint
+  - Add missing tasks
+end note
+
+:Nhấn "Create All Tasks" và confirm;
+
+|Frontend|
+:Gọi API create-tasks endpoint;
+
+|Backend|
+:Bulk create tasks sequentially;
+note right
+  Sequential processing để tránh
+  sequence_id conflicts.
+  Handle partial failures.
+end note
+
+repeat
+  :Validate task data;
+  :Get next sequence_id (atomic);
+  :Generate task identifier;
+  :Create Issue record;
+  :Link với meeting/sprint/assignee;
+  :Log activity;
+repeat while (More tasks?) is (yes)
+->no;
+
+:Trả về BulkCreateTasksResponse;
+note right
+  Response: created[],
+  failed[], stats
+end note
+
+|Frontend|
+:Hiển thị Creation Result screen;
+note right
+  - Success summary
+  - Created issues links
+  - Failed tasks (nếu có)
+  - Action buttons
+end note
+
+|User|
+:View issues trong Backlog;
+
+stop
+
+@enduml

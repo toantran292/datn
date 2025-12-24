@@ -1,48 +1,34 @@
 @startuml act_complete_sprint
+skinparam defaultFontSize 13
+skinparam activityFontSize 12
+skinparam activityDiamondFontSize 11
+skinparam activityArrowFontSize 10
+skinparam partitionFontSize 13
+
 |Người dùng|
 start
-:Nhấn "Complete Sprint";
-|Giao diện người dùng|
-:Hiển thị Complete Sprint Dialog;
-:Hiển thị summary:
-- Completed issues
-- Incomplete issues;
+:Nhấn Complete;
+
+|Giao diện|
+:Dialog;
+
 |Người dùng|
-:Chọn xử lý incomplete issues:
-- Move to Backlog
-- Move to next sprint;
-:Chọn "Generate AI Summary"
-(default: checked);
-:Nhấn "Complete Sprint";
-|Giao diện người dùng|
-:Gửi request complete sprint;
-|Hệ thống xử lý|
-:Lấy danh sách incomplete issues;
-if (Move to next sprint?) then (có)
-  :Tìm hoặc tạo sprint tiếp theo;
-  :Move incomplete issues
-  sang sprint mới;
+:Xác nhận;
+
+|Hệ thống|
+if (Next?) then (có)
+  :Move mới;
 else (không)
-  :Move incomplete issues
-  về Backlog;
+  :Move Backlog;
 endif
-:Update sprint.status = CLOSED;
-:Update sprint.endDate = now;
-:Tính metrics
-(velocity, completion rate);
-if (Generate AI Summary?) then (có)
-  :Gọi LLM API với
-  sprint data + issues;
-  :Lưu AI summary;
+:Set CLOSED;
+if (AI?) then (có)
+  :LLM summary;
 endif
-:Tạo audit log;
-:Gửi WebSocket notification;
-|Giao diện người dùng|
-:Thông báo complete thành công;
-if (Có AI Summary?) then (có)
-  :Hiển thị Sprint Summary;
-endif
-:Cập nhật sprint list;
+
+|Giao diện|
+:Báo OK & hiển thị;
+
 |Người dùng|
 stop
 @enduml

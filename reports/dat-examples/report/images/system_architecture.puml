@@ -1,9 +1,13 @@
 @startuml system_architecture
 !theme plain
+scale 2.5
 skinparam backgroundColor white
 skinparam componentStyle rectangle
-skinparam rectangleBorderThickness 2
-skinparam defaultFontSize 10
+skinparam rectangleBorderThickness 3
+skinparam defaultFontSize 20
+skinparam packageFontSize 22
+skinparam componentFontSize 20
+skinparam arrowFontSize 18
 
 ' Client Layer
 package "Client Layer" {

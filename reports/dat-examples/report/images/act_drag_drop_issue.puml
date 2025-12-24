@@ -1,39 +1,37 @@
 @startuml act_drag_drop_issue
+skinparam defaultFontSize 13
+skinparam activityFontSize 12
+skinparam activityDiamondFontSize 11
+skinparam activityArrowFontSize 10
+skinparam partitionFontSize 13
+
 |Người dùng|
 start
-:Drag issue card;
-:Drop vào column khác;
-|Giao diện người dùng|
-:Tính toán:
-- New status
-- New sort_order
-(fractional indexing);
-:Update UI optimistically;
-:Gửi request update;
-|Hệ thống xử lý|
-:Kiểm tra permission;
-if (User có quyền?) then (không)
-  |Giao diện người dùng|
+:Kéo issue;
+:Thả vào column;
+
+|Giao diện|
+:Tính vị trí;
+:Update UI;
+:Gửi request;
+
+|Hệ thống|
+:Check quyền;
+
+if (OK?) then (không)
+  |Giao diện|
   :Revert UI;
-  :Thông báo không có quyền;
+  :Báo lỗi;
   |Người dùng|
   stop
 else (có)
-  :Update issue:
-  - status (new status)
-  - sort_order (new position)
-  - statusChangedAt (now);
-  :Tạo activity log:
-  "Status changed from
-  [old] to [new]";
-  :Gửi WebSocket broadcast;
-  |Giao diện người dùng|
-  :Confirm UI update;
-  note right
-    Các user khác
-    thấy update
-    real-time
-  end note
+  |Hệ thống|
+  :Update status;
+  :Update vị trí;
+  :Ghi log;
+  :Gửi WS;
+  |Giao diện|
+  :Confirm UI;
   |Người dùng|
   stop
 endif

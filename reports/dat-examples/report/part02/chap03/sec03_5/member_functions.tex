@@ -2,7 +2,7 @@
 
 \subsubsection{Chức năng thêm Project Member}
 
-\textbf{Mục đích:} Cho phép Project Lead thêm organization members vào project với vai trò cụ thể (PROJECT\_LEAD, TEAM\_MEMBER, VIEWER) để phân quyền access control.
+\textbf{Mục đích:} Cho phép Project Lead thêm organization members vào project với vai trò cụ thể (PROJECT\_LEAD, TEAM\_MEMBER, VIEWER) để phân quyền access control. Chỉ những users đã là members của organization mới có thể được thêm vào project. Khi thêm member, Project Lead cần chọn vai trò phù hợp: PROJECT\_LEAD có toàn quyền quản lý project bao gồm quản lý sprints, issues, và members; TEAM\_MEMBER có quyền tạo và chỉnh sửa issues, tham gia vào sprints; còn VIEWER chỉ có quyền xem thông tin project mà không thể thực hiện thay đổi. Mỗi member được thêm vào sẽ có bản ghi ProjectMember với các custom permissions có thể được điều chỉnh sau này để fine-tune access control. Hệ thống ghi lại activity log để team members có thể thấy ai vừa được thêm vào project, và audit log để administrators có thể track toàn bộ lịch sử thay đổi về membership cho mục đích compliance và security audit.
 
 \textbf{Dữ liệu được dùng:}
 
@@ -28,14 +28,14 @@
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.65\textwidth]{images/act_add_project_member.png}
+\includegraphics[width=0.6\textwidth]{images/act_add_project_member.png}
 \caption{Sơ đồ hoạt động của chức năng thêm Project Member}
 \label{fig:act_add_project_member}
 \end{figure}
 
 \subsubsection{Chức năng thay đổi Project Member Role}
 
-\textbf{Mục đích:} Cho phép Project Lead thay đổi vai trò của project member (ví dụ: TEAM\_MEMBER → PROJECT\_LEAD) với permissions update và audit logging.
+\textbf{Mục đích:} Cho phép Project Lead thay đổi vai trò của project member (ví dụ: TEAM\_MEMBER → PROJECT\_LEAD) với permissions update và audit logging. Chức năng này đặc biệt quan trọng khi team structure thay đổi hoặc khi cần promote member lên vai trò cao hơn. Khi thay đổi role, hệ thống tự động update toàn bộ permissions tương ứng với role mới: nếu promote lên PROJECT\_LEAD thì member sẽ có quyền quản lý sprints, issues, và members; nếu downgrade xuống VIEWER thì tất cả write permissions sẽ bị revoke. Hệ thống validation đảm bảo project luôn có ít nhất một PROJECT\_LEAD để tránh tình trạng không có ai quản lý project. Activity log ghi lại role change để team members được notify về sự thay đổi trong team structure, và audit log chi tiết ghi nhận who changed whose role from what to what với timestamp để administrators có thể track history và compliance. Trước khi apply changes, hệ thống hiển thị confirmation dialog với summary về permissions sẽ thay đổi để Project Lead review kỹ trước khi confirm.
 
 \textbf{Dữ liệu được dùng:}
 
@@ -59,14 +59,14 @@
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.65\textwidth]{images/act_change_project_role.png}
+\includegraphics[width=0.7\textwidth]{images/act_change_project_role.png}
 \caption{Sơ đồ hoạt động của chức năng thay đổi Project Member Role}
 \label{fig:act_change_project_role}
 \end{figure}
 
 \subsubsection{Chức năng kiểm tra Project Member Permission}
 
-\textbf{Mục đích:} Hệ thống kiểm tra quyền của user trước khi cho phép thực hiện actions trong project như manage sprints, create issues, delete issues dựa trên role và custom permissions.
+\textbf{Mục đích:} Hệ thống kiểm tra quyền của user trước khi cho phép thực hiện actions trong project như manage sprints, create issues, delete issues dựa trên role và custom permissions. Đây là chức năng bảo mật quan trọng được gọi ở mọi API endpoint của project để enforce access control. Khi user thực hiện một action, hệ thống đầu tiên verify user có là member của project không, sau đó check role-based permissions (PROJECT\_LEAD có toàn quyền, TEAM\_MEMBER có quyền hạn chế, VIEWER chỉ đọc), và cuối cùng check custom permissions nếu có override settings. Permission check được implement với hierarchical model: organization-level permissions cascade xuống project-level, và project-level permissions có thể override để fine-tune cho specific members. Hệ thống cache permission data để optimize performance vì permission check được gọi rất thường xuyên, và invalidate cache ngay khi có permission changes. Mỗi lần permission denied, hệ thống ghi audit log với detailed context về who attempted what action để security team có thể monitor suspicious activities và potential security breaches. Error response trả về proper HTTP status code (403 Forbidden) với clear message để user hiểu tại sao action bị reject.
 
 \textbf{Dữ liệu được dùng:}
 
@@ -90,7 +90,7 @@
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.55\textwidth]{images/act_check_project_permission.png}
+\includegraphics[width=0.6\textwidth]{images/act_check_project_permission.png}
 \caption{Sơ đồ hoạt động của chức năng kiểm tra Project Member Permission}
 \label{fig:act_check_project_permission}
 \end{figure}

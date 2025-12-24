@@ -1,0 +1,37 @@
+\begin{tikzpicture}[
+    box/.style={rectangle, draw, thick, text width=3.5cm, align=center, minimum height=1.2cm, font=\normalsize},
+    arrow/.style={->, >=stealth, thick}
+]
+
+% Row 1: Client
+\node[box] (client) at (0,0) {Lớp khách hàng\\Web Browser\\(Next.js)};
+
+% Row 2: Application Layer
+\node[box] (controllers) at (-4,-2.5) {Controllers\\(Điều khiển)};
+\node[box] (services) at (0,-2.5) {Services\\(Dịch vụ)};
+\node[box] (repos) at (4,-2.5) {Repositories\\(Kho dữ liệu)};
+
+% Row 3: Data Layer
+\node[box] (postgres) at (-2,-5) {PostgreSQL\\(Cơ sở dữ liệu)};
+\node[box] (redis) at (2,-5) {Redis\\(Cache)};
+
+% Row 4: Storage
+\node[box] (storage) at (0,-7.5) {MinIO/S3\\(Lưu trữ tệp)};
+
+% External service - moved up and closer to client
+\node[box] (llm) at (6,-0.2) {Dịch vụ AI\\OpenAI\\Anthropic};
+
+% Arrows
+\draw[arrow] (client) -- (controllers);
+\draw[arrow] (client) -- (services);
+\draw[arrow] (client) -- (repos);
+\draw[arrow] (controllers) -- (services);
+\draw[arrow] (services) -- (repos);
+\draw[arrow] (repos) -- (postgres);
+\draw[arrow] (repos) -- (redis);
+\draw[arrow] (services) -- (storage);
+
+% Arrow from services to LLM - direct path
+\draw[arrow] (services) -- (llm);
+
+\end{tikzpicture}

@@ -1,46 +1,38 @@
 @startuml
 !theme plain
-skinparam defaultFontSize 11
+skinparam defaultFontSize 13
 skinparam packageStyle rectangle
+skinparam packageBorderThickness 2
+skinparam rectangleBorderThickness 2
+skinparam backgroundColor white
 
-title Phân rã chức năng của Viewer/Stakeholder
+package "Viewer/Stakeholder" #lightblue {
 
-rectangle "Viewer/Stakeholder" {
-
-  rectangle "Xem thông tin\nDự án" {
-    rectangle "Xem thông tin\nproject"
+  package "Xem thông tin project" #lightyellow {
+    rectangle "Xem thông tin project"
     rectangle "Xem thành viên"
-    rectangle "Xem project\nsettings"
   }
 
-  rectangle "Xem thông tin\nSprint" {
-    rectangle "Xem danh sách\nsprints"
-    rectangle "Xem chi tiết\nsprint"
-    rectangle "Xem sprint\nlifecycle"
+  package "Xem sprint" #lightgreen {
+    rectangle "Xem danh sách sprints"
+    rectangle "Xem chi tiết sprint"
   }
 
-  rectangle "Xem thông tin\nCông việc" {
-    rectangle "Xem danh sách\ncông việc"
-    rectangle "Xem chi tiết\ncông việc"
-    rectangle "Xem assignees"
+  package "Xem công việc" #lavender {
+    rectangle "Xem danh sách công việc"
+    rectangle "Xem chi tiết công việc"
+    rectangle "Xem comments (read-only)"
+    rectangle "Xem activities (read-only)"
   }
 
-  rectangle "Xem Collaboration\nHistory" {
-    rectangle "Xem comments\n(read-only)"
-    rectangle "Xem activities\n(read-only)"
-    rectangle "Xem audit trail\n(read-only)"
+  package "Xem Board & Timeline" #pink {
+    rectangle "Xem Board/Backlog"
+    rectangle "Xem Calendar"
+    rectangle "Xem Timeline"
   }
 
-  rectangle "Views\n(Read-Only)" {
-    rectangle "Xem Board view"
-    rectangle "Xem Backlog view"
-    rectangle "Xem Calendar view"
-    rectangle "Xem Timeline view"
-  }
-
-  rectangle "Xem AI\nContent" {
-    rectangle "Xem AI Sprint\nSummary"
-    rectangle "Xem AI-generated\ncontent"
+  package "AI hỗ trợ" #orange {
+    rectangle "Xem AI Sprint Summary"
   }
 
 }

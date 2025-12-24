@@ -1,8 +1,8 @@
 @startuml class_diagram
 !theme plain
 skinparam backgroundColor white
-skinparam classAttributeFontSize 9
-skinparam classFontSize 10
+skinparam classAttributeFontSize 14
+skinparam classFontSize 16
 skinparam linetype polyline
 skinparam nodesep 80
 skinparam ranksep 100

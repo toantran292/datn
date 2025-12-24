@@ -1,62 +1,38 @@
 @startuml
 !theme plain
-skinparam defaultFontSize 11
+skinparam defaultFontSize 13
 skinparam packageStyle rectangle
+skinparam packageBorderThickness 2
+skinparam rectangleBorderThickness 2
+skinparam backgroundColor white
 
-title Phân rã chức năng của Project Lead
+package "Project Lead" #lightblue {
 
-rectangle "Project Lead" {
-
-  rectangle "Quản lý\nProject" {
-    rectangle "Tạo project"
-    rectangle "Cập nhật\nproject"
-    rectangle "Cấu hình\ncustom status"
-    rectangle "Cấu hình\nthông báo"
+  package "Quản lý project" #lightyellow {
+    rectangle "Tạo/Cập nhật project"
+    rectangle "Cấu hình custom status"
+    rectangle "Quản lý công việc"
   }
 
-  rectangle "Quản lý\nSprint" {
-    rectangle "Tạo sprint"
-    rectangle "Cập nhật\nsprint"
-    rectangle "Bắt đầu\nsprint"
-    rectangle "Hoàn thành\nsprint"
+  package "Quản lý sprint" #lightgreen {
+    rectangle "Tạo/Quản lý sprint"
+    rectangle "Bắt đầu sprint"
+    rectangle "Hoàn thành sprint"
   }
 
-  rectangle "Quản lý\nThành viên" {
-    rectangle "Mời thành viên"
-    rectangle "Xóa thành viên"
+  package "Quản lý thành viên" #lavender {
+    rectangle "Mời/Xóa thành viên"
     rectangle "Phân quyền"
   }
 
-  rectangle "Quản lý\nCông việc" {
-    rectangle "Tạo công việc"
-    rectangle "Cập nhật\ncông việc"
-    rectangle "Xóa công việc"
-    rectangle "Assign công việc"
-    rectangle "Reorder công việc"
+  package "Báo cáo & Analytics" #pink {
+    rectangle "Xem báo cáo tuần"
+    rectangle "Thu thập analytics"
   }
 
-  rectangle "Collaboration\nvà Tracking" {
-    rectangle "Thêm comment"
-    rectangle "Xem activities"
-    rectangle "Upload file\nđính kèm"
-  }
-
-  rectangle "Views và\nVisualization" {
-    rectangle "Xem Board view"
-    rectangle "Xem Backlog view"
-    rectangle "Xem Calendar view"
-    rectangle "Xem Timeline view"
-  }
-
-  rectangle "Báo cáo &\nPhân tích" {
-    rectangle "Xem báo cáo\ntuần"
-    rectangle "Thu thập\ndữ liệu analytics"
-  }
-
-  rectangle "Tính năng AI" {
-    rectangle "AI Sprint\nSummary"
-    rectangle "AI tinh chỉnh\nmô tả công việc"
-    rectangle "Tự động tạo\ncông việc từ\nmô tả (AI)"
+  package "AI hỗ trợ" #orange {
+    rectangle "AI Sprint Summary"
+    rectangle "AI tạo/tinh chỉnh task"
   }
 
 }

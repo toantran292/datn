@@ -5,11 +5,11 @@
 
 Phân hệ quản lý dự án được thiết kế theo kiến trúc phân tầng với sự phân tách rõ ràng giữa frontend, backend service, và infrastructure components. Kiến trúc tổng thể tuân theo các nguyên tắc: Separation of Concerns với PM Service tập trung vào domain logic quản lý dự án Agile, API-First Design sử dụng RESTful APIs và WebSocket cho real-time Board updates, Stateless Services với state được lưu trong PostgreSQL và Redis, và Data Isolation hoàn toàn cho mỗi organization thông qua organization\_id với project-level access control.
 
-Các thành phần chính trong kiến trúc phân hệ quản lý dự án bao gồm: Client Layer với pm-web (Next.js) truy cập qua HTTPS, Application Layer với PM Service (NestJS) expose RESTful APIs và WebSocket endpoints, Data Layer với PostgreSQL (persistent storage) và Redis (caching và session), Storage Layer với MinIO/S3 cho issue attachments, và External Services như LLM Providers (OpenAI, Anthropic) cho Sprint Summary và Task Breakdown features.
+Kiến trúc hệ thống được tổ chức thành các lớp chính như minh họa trong Hình~\ref{fig:system_architecture}. Lớp khách hàng (Client Layer) với Web Browser chạy pm-web (Next.js) giao tiếp với lớp ứng dụng qua REST API và WebSocket. Lớp ứng dụng (Application Layer) bao gồm PM Service (NestJS) được chia thành 3 tầng: Controllers tiếp nhận và xử lý HTTP requests, Services chứa business logic và orchestrate operations, Repositories quản lý truy xuất dữ liệu. Lớp dữ liệu (Data Layer) gồm PostgreSQL cho persistent storage (lưu trữ projects, sprints, issues, statuses, assignees, comments, activities) và Redis cho caching và Pub/Sub real-time updates. Lớp lưu trữ (Storage Layer) sử dụng MinIO/S3 để lưu trữ các tệp đính kèm của issues. Ngoài ra, hệ thống tích hợp với dịch vụ AI bên ngoài (OpenAI, Anthropic) để hỗ trợ các tính năng AI như Sprint Summary và Task Breakdown.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.9\textwidth]{images/system_architecture.png}
+\input{images/system_architecture_tikz.tex}
 \caption{Sơ đồ kiến trúc hệ thống tổng quát}
 \label{fig:system_architecture}
 \end{figure}
@@ -32,7 +32,7 @@ Hệ thống được phân rã theo hai chiều: phân rã theo nhóm người 
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{images/user_groups.png}
+\includegraphics[width=0.4\textwidth]{images/user_groups.png}
 \caption{Sơ đồ nhóm đối tượng người dùng}
 \label{fig:user_groups}
 \end{figure}
@@ -43,7 +43,7 @@ Mỗi nhóm người dùng có các chức năng riêng biệt tương ứng v�
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.8\textwidth]{images/func_team_member.png}
+\includegraphics[width=1\textwidth]{images/func_team_member.png}
 \caption{Sơ đồ phân rã chức năng của Team Member}
 \label{fig:func_team_member}
 \end{figure}
@@ -52,7 +52,7 @@ Mỗi nhóm người dùng có các chức năng riêng biệt tương ứng v�
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{images/func_project_lead.png}
+\includegraphics[width=1\textwidth]{images/func_project_lead.png}
 \caption{Sơ đồ phân rã chức năng của Project Lead}
 \label{fig:func_project_lead}
 \end{figure}
@@ -61,7 +61,7 @@ Mỗi nhóm người dùng có các chức năng riêng biệt tương ứng v�
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{images/func_viewer.png}
+\includegraphics[width=1\textwidth]{images/func_viewer.png}
 \caption{Sơ đồ phân rã chức năng của Viewer/Stakeholder}
 \label{fig:func_viewer}
 \end{figure}

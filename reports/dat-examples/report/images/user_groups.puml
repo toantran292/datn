@@ -1,11 +1,10 @@
 @startuml user_groups
 !theme plain
+scale 1.2
 skinparam backgroundColor white
-skinparam classFontSize 11
-skinparam defaultFontSize 10
+skinparam classFontSize 13
+skinparam defaultFontSize 12
 skinparam rectangleBorderThickness 2
-
-title Sơ đồ nhóm đối tượng người dùng - Phân hệ quản lý dự án
 
 class "Viewer/Stakeholder" as Viewer {
     + Xem thông tin project

@@ -1,0 +1,68 @@
+\subsection{Thiết kế luồng xử lý Meeting to Tasks}
+
+\subsubsection{Tổng quan}
+
+Chức năng Meeting to Tasks là một trong những tính năng phức tạp nhất của hệ thống, kết hợp nhiều công nghệ AI và xử lý dữ liệu để tự động chuyển đổi nội dung cuộc họp thành danh sách công việc có cấu trúc. Khác với các chức năng quản lý dự án truyền thống chỉ thao tác trên dữ liệu có sẵn, Meeting to Tasks phải xử lý dữ liệu phi cấu trúc (unstructured data) từ audio/video recordings hoặc text transcripts, áp dụng Natural Language Processing (NLP) để trích xuất thông tin có ý nghĩa, và tự động sinh ra các task entries với đầy đủ metadata.
+
+Luồng xử lý được chia thành hai giai đoạn chính: (1) Meeting Analysis - phân tích meeting và extract tasks, và (2) Task Creation - review và bulk create issues. Mỗi giai đoạn có những thách thức kỹ thuật riêng đòi hỏi thiết kế cẩn thận để đảm bảo tính chính xác, hiệu suất và khả năng mở rộng.
+
+\subsubsection{Luồng xử lý tổng thể}
+
+Hình~\ref{fig:meeting_to_tasks_workflow} minh họa luồng xử lý chi tiết của chức năng Meeting to Tasks từ khi user upload meeting recording cho đến khi tasks được tạo thành công trong project.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{images/meeting_to_tasks_workflow.png}
+    \caption{Activity diagram: Luồng xử lý Meeting to Tasks}
+    \label{fig:meeting_to_tasks_workflow}
+\end{figure}
+
+Luồng xử lý bắt đầu khi user truy cập Meeting to Tasks page và lựa chọn một trong hai input methods: upload meeting recording (video/audio files với format MP4, MP3, WAV, M4A) hoặc paste meeting transcript trực tiếp vào text area. Nếu user chọn upload file, backend sẽ validate file format và size (giới hạn 100MB), sau đó gửi file đến OpenAI Whisper API để thực hiện transcription. Quá trình transcription được xử lý real-time với progress indicator hiển thị trên frontend, cho phép user theo dõi tiến độ. Kết quả transcription hoặc text transcript được user paste sẽ được lưu vào database dưới dạng MeetingTranscript record với các thông tin: title, transcript, sourceType (video/audio/text), projectId, orgId, và createdBy.
+
+\subsubsection{Meeting Analysis Service - 6 Phases Processing}
+
+Sau khi có transcript, Meeting Analysis Service bắt đầu quá trình phân tích qua 6 phases:
+
+\textbf{Phase 1: Preprocessing.} Phase đầu tiên làm sạch text input bằng cách loại bỏ filler words (ừ, à, uhm, hmm), normalize formatting (chuẩn hóa dấu câu, khoảng trắng, line breaks), và remove irrelevant content (greetings, small talks không liên quan đến action items). Preprocessing đảm bảo transcript đầu vào sạch và dễ phân tích cho các phases tiếp theo.
+
+\textbf{Phase 2: Context extraction.} Phase này sử dụng LLM để phân tích ngữ cảnh của cuộc họp, bao gồm: identify participants từ conversation flow (ai nói gì, vai trò của họ), extract main topics được thảo luận trong meeting, và identify meeting type (planning, retrospective, daily standup, technical discussion). Context này rất quan trọng để hiểu đúng ý nghĩa các action items trong phases sau.
+
+\textbf{Phase 3: Action item detection.} Đây là phase quan trọng nhất và phức tạp nhất, yêu cầu LLM phân biệt giữa discussions (thảo luận chung không có kết quả cụ thể) và actionable items (công việc cần làm với deliverable rõ ràng). LLM phải hiểu conversation flow để detect các câu như "We need to...", "Can you...", "Let's implement...", "The next step is..." và extract ownership hints để xác định ai sẽ làm task đó. Phase này xử lý natural language không structured, đòi hỏi LLM có khả năng contextual understanding cao.
+
+\textbf{Phase 4: Task structuring.} Với mỗi action item detected từ Phase 3, LLM tự động generate task title (ngắn gọn, action-oriented) và detailed description (mô tả đầy đủ context và requirements từ meeting discussion), classify task type (Task, Bug, Story, Epic) dựa trên nature của công việc, estimate priority (Low, Medium, High, Urgent) dựa trên tone và urgency trong conversation, và estimate story points (1, 2, 3, 5, 8, 13) dựa trên complexity và scope được thảo luận. Việc structuring này giúp tasks extracted có format chuẩn và ready để import vào project management system.
+
+\textbf{Phase 5: Validation and deduplication.} Phase này validate tính completeness của mỗi task (đảm bảo có đủ title và description), remove duplicate tasks (có thể cùng một action được nhắc đến nhiều lần trong meeting), và check consistency (đảm bảo priority và story points hợp lý với description). Validation phase giảm thiểu errors và redundancy trong danh sách tasks cuối cùng.
+
+\textbf{Phase 6: Statistics calculation.} Phase cuối cùng tính toán statistics summary bao gồm: total tasks count, distribution by type (bao nhiêu Task/Bug/Story), distribution by priority (bao nhiêu Low/Medium/High/Urgent), và average story points. Statistics này giúp user có overview về workload extracted từ meeting trước khi proceed đến task creation.
+
+\subsubsection{Độ phức tạp và thách thức kỹ thuật}
+
+Meeting Analysis Service đối mặt với nhiều challenges kỹ thuật:
+
+\textbf{Unstructured natural language processing.} Khác với structured data có schema cố định, meeting transcripts là unstructured text với nhiều noise như filler words, incomplete sentences, overlapping conversations, và ambiguous references. LLM phải có khả năng contextual understanding để extract meaningful information từ conversation flow không có cấu trúc rõ ràng.
+
+\textbf{Distinguishing discussions vs actionable tasks.} Trong một cuộc họp, không phải mọi thảo luận đều dẫn đến action items. LLM phải phân biệt được giữa brainstorming discussions (trao đổi ý tưởng không có kết luận cụ thể), informational updates (báo cáo tiến độ không yêu cầu hành động), và actionable decisions (quyết định cần thực hiện với deliverable rõ ràng). Việc phân biệt này đòi hỏi understanding sâu về conversation context và intent.
+
+\textbf{Handling ambiguity.} Meeting transcripts thường chứa nhiều ambiguity về ownership (ai sẽ làm task - "We should do this" vs "John will do this"), deadline (khi nào hoàn thành - "soon", "next week", "before the release"), và scope (làm đến đâu - "improve performance" vs "optimize database queries to reduce latency by 50\%"). LLM phải detect và handle ambiguity này bằng cách extract best guess hoặc flag cho user review.
+
+\subsubsection{Bulk Task Creation - Sequential Processing}
+
+Sau khi user review và adjust extracted tasks, hệ thống thực hiện bulk creation để tạo issues trong project. Quá trình này được thiết kế với sequential processing thay vì parallel để tránh race conditions:
+
+\textbf{Sequential processing architecture.} Mỗi task được process tuần tự theo thứ tự: validate task data (đảm bảo required fields hợp lệ), get next sequence\_id với atomic database operation (sử dụng database lock hoặc atomic increment để đảm bảo uniqueness), generate task identifier theo format PROJECT-ID (ví dụ: PM-123), create Issue record trong database với full metadata, link issue với meeting source (traceability để biết task này từ meeting nào), update sprint assignment nếu user đã chọn sprint, assign members nếu có, và log activity để track history. Sequential processing đảm bảo không có hai tasks nào có cùng sequence\_id hoặc identifier, tránh conflicts và data corruption.
+
+\textbf{Partial failure handling.} Vì bulk creation có thể fail ở bất kỳ task nào (validation error, database constraint violation, permission issues), hệ thống được thiết kế để handle partial failures gracefully. Nếu một task fail, hệ thống sẽ log error message, collect vào failed[] array, và continue processing các tasks còn lại thay vì abort toàn bộ operation. Response cuối cùng trả về both created[] (danh sách tasks tạo thành công với issueId và identifier) và failed[] (danh sách tasks fail với error reasons), cho phép user biết chính xác tasks nào succeeded và tasks nào cần retry hoặc fix manually.
+
+\textbf{Performance và scalability considerations.} Sequential processing có trade-off về performance (chậm hơn parallel processing) nhưng đảm bảo data consistency và dễ debug khi có lỗi. Để tối ưu performance, hệ thống sử dụng database connection pooling để giảm overhead của multiple connections, batch logging để ghi activity logs theo batch thay vì từng record, và real-time progress updates qua WebSocket để user theo dõi tiến độ creation. Với typical meeting có 10-30 tasks, sequential processing vẫn hoàn thành trong vài giây, chấp nhận được cho user experience.
+
+\subsubsection{Vận dụng vào đề tài}
+
+Trong hệ thống quản lý dự án, chức năng Meeting to Tasks được implement với kiến trúc sau:
+
+\textbf{Meetings Service (NestJS).} Service này expose API endpoints: POST /api/meetings/analyze để upload recording hoặc paste transcript và trigger analysis, POST /api/meetings/:id/create-tasks để bulk create tasks từ extracted results, và GET /api/meetings/:id để retrieve meeting details và tasks. Service tích hợp với OpenAI Whisper API cho transcription và LLM providers (OpenAI GPT-4, Anthropic Claude, Google Gemini) cho meeting analysis với configurable provider selection.
+
+\textbf{Database schema.} MeetingTranscript table lưu trữ meeting data với các fields: id, title, transcript (text), sourceType (enum: VIDEO, AUDIO, TEXT), fileUrl (S3 url nếu upload file), projectId, orgId, createdBy, createdAt. ExtractedTask table (temporary) lưu tasks extracted trước khi user review với các fields: id, meetingId, title, description, type, priority, estimatedPoints, order. Sau khi user confirm create, tasks được migrate sang Issue table chính với đầy đủ relationships (sprint, assignees, parent issue).
+
+\textbf{Frontend workflow (Next.js + React).} Frontend implement multi-step wizard với 3 steps: Step 1 - Upload \& Analyze (upload form với file picker hoặc textarea, progress indicator cho transcription và analysis, results preview với transcript và extracted tasks), Step 2 - Review \& Edit (editable task list với drag-drop reordering, inline editing cho title/description/type/priority/points, assign members và set sprint selectors, option to add tasks manually), và Step 3 - Create \& Result (confirmation modal với summary, real-time progress bar cho bulk creation, results screen với created issues list và failed tasks errors). Wizard design giúp user có control đầy đủ trước khi commit changes vào project.
+
+Thiết kế này đảm bảo chức năng Meeting to Tasks hoạt động reliable, scalable, và user-friendly, giúp teams tiết kiệm thời gian chuyển đổi meeting discussions thành actionable tasks trong project management system.

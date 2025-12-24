@@ -1,0 +1,32 @@
+\begin{tikzpicture}[
+  box/.style={rectangle, draw, minimum width=2.5cm, minimum height=0.8cm, align=center, font=\small},
+  groupbox/.style={rectangle, draw, thick, minimum width=3cm, minimum height=1.2cm, align=center, font=\small\bfseries},
+  mainbox/.style={rectangle, draw, very thick, minimum width=15cm, minimum height=8cm, align=center, font=\large\bfseries}
+]
+
+% Main box
+\node[mainbox, fill=blue!10] (main) at (0,0) {Team Member};
+
+% Group 1: Quản lý công việc
+\node[groupbox, fill=yellow!20, below=0.5cm of main.north, xshift=-5cm] (group1) {Quản lý\\công việc};
+\node[box, below=0.3cm of group1] (g1b1) {Tạo công việc};
+\node[box, below=0.1cm of g1b1] (g1b2) {Cập nhật công việc};
+\node[box, below=0.1cm of g1b2] (g1b3) {Xóa công việc};
+\node[box, below=0.1cm of g1b3] (g1b4) {Assign công việc};
+\node[box, below=0.1cm of g1b4] (g1b5) {Reorder công việc};
+\node[box, below=0.1cm of g1b5] (g1b6) {Thêm comment};
+\node[box, below=0.1cm of g1b6] (g1b7) {Upload file đính kèm};
+
+% Group 2: Xem & theo dõi
+\node[groupbox, fill=green!20, below=0.5cm of main.north, xshift=0cm] (group2) {Xem \&\\theo dõi};
+\node[box, below=0.3cm of group2] (g2b1) {Xem Board/Backlog};
+\node[box, below=0.1cm of g2b1] (g2b2) {Xem Calendar};
+\node[box, below=0.1cm of g2b2] (g2b3) {Xem Timeline};
+
+% Group 3: AI hỗ trợ
+\node[groupbox, fill=purple!20, below=0.5cm of main.north, xshift=5cm] (group3) {AI hỗ trợ};
+\node[box, below=0.3cm of group3] (g3b1) {AI tạo công việc};
+\node[box, below=0.1cm of g3b1] (g3b2) {AI tinh chỉnh mô tả};
+\node[box, below=0.1cm of g3b2] (g3b3) {Xem AI Sprint Summary};
+
+\end{tikzpicture}

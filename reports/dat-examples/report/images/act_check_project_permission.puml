@@ -1,43 +1,41 @@
 @startuml act_check_project_permission
+skinparam defaultFontSize 13
+skinparam activityFontSize 12
+skinparam activityDiamondFontSize 11
+skinparam activityArrowFontSize 10
+skinparam partitionFontSize 13
+
 |Người dùng|
 start
-:Thực hiện action
-(vd: edit issue, start sprint);
-|Giao diện người dùng|
+:Thực hiện action;
+
+|Giao diện|
 :Gửi request;
-|Hệ thống xử lý|
-:Lấy projectId từ request;
-:Query ProjectMember
-WHERE userId = current user
-AND projectId = project;
-if (Tìm thấy member?) then (không)
-  |Giao diện người dùng|
-  :HTTP 403 Forbidden;
-  :Thông báo:
-  "You are not a member
-  of this project";
-  |Người dùng|
+
+|Hệ thống|
+:Kiểm tra membership;
+
+if (Là member?) then (không)
+  |Giao diện|
+  :Báo lỗi 403;
   stop
-else (có)
-  :Lấy user role;
-  :Kiểm tra permission matrix:
-  - LEAD: Full access
-  - MEMBER: CRUD issues/sprints
-  - VIEWER: Read only;
-  if (Role có quyền?) then (không)
-    |Giao diện người dùng|
-    :HTTP 403 Forbidden;
-    :Thông báo:
-    "You don't have permission";
-    |Người dùng|
-    stop
-  else (có)
-    :Thực hiện action;
-    :Return response;
-    |Giao diện người dùng|
-    :Cập nhật UI;
-    |Người dùng|
-    stop
-  endif
 endif
+
+|Hệ thống|
+:Kiểm tra quyền hạn;
+
+if (Có quyền?) then (không)
+  |Giao diện|
+  :Báo lỗi 403;
+  stop
+endif
+
+|Hệ thống|
+:Thực hiện action;
+
+|Giao diện|
+:Thông báo thành công;
+
+|Người dùng|
+stop
 @enduml

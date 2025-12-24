@@ -1,39 +1,49 @@
 @startuml act_create_sprint
+skinparam defaultFontSize 13
+skinparam activityFontSize 12
+skinparam activityDiamondFontSize 11
+skinparam activityArrowFontSize 10
+skinparam partitionFontSize 13
+
 |Người dùng|
 start
-:Chọn chức năng tạo Sprint;
-|Giao diện người dùng|
-:Hiển thị form tạo Sprint;
+:Chọn tạo Sprint;
+
+|Giao diện|
+:Hiển thị form;
+
 |Người dùng|
-:Nhập thông tin Sprint
-(tên, goal, start date, end date);
-:Nhấn nút "Create Sprint";
-|Giao diện người dùng|
-:Gửi dữ liệu đến server;
-|Hệ thống xử lý|
-:Kiểm tra dữ liệu hợp lệ;
-if (Dữ liệu hợp lệ?) then (không)
-  |Giao diện người dùng|
-  :Hiển thị thông báo lỗi;
+:Nhập thông tin;
+:Nhấn "Create";
+
+|Giao diện|
+:Gửi request;
+
+|Hệ thống|
+:Validate;
+
+if (Hợp lệ?) then (không)
+  |Giao diện|
+  :Báo lỗi;
   |Người dùng|
-  :Sửa thông tin;
+  :Sửa;
   stop
 else (có)
-  :Kiểm tra ngày hợp lệ
-  (start < end);
-  if (Ngày hợp lệ?) then (không)
-    |Giao diện người dùng|
-    :Thông báo lỗi ngày;
+  |Hệ thống|
+  :Kiểm tra ngày;
+  if (OK?) then (không)
+    |Giao diện|
+    :Báo lỗi ngày;
     |Người dùng|
-    :Sửa thông tin;
+    :Sửa;
     stop
   else (có)
-    :Tạo sprint với
-    status = FUTURE;
-    :Tạo audit log;
-    |Giao diện người dùng|
-    :Thông báo tạo thành công;
-    :Cập nhật danh sách sprints;
+    |Hệ thống|
+    :Tạo sprint;
+    :Ghi log;
+    |Giao diện|
+    :Báo OK;
+    :Cập nhật;
     |Người dùng|
     stop
   endif

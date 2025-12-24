@@ -1,41 +1,51 @@
 @startuml act_start_sprint
+skinparam defaultFontSize 13
+skinparam activityFontSize 12
+skinparam activityDiamondFontSize 11
+skinparam activityArrowFontSize 10
+skinparam partitionFontSize 13
+
 |Người dùng|
 start
 :Chọn sprint FUTURE;
-:Nhấn "Start Sprint";
-|Giao diện người dùng|
-:Hiển thị dialog xác nhận;
+:Nhấn "Start";
+
+|Giao diện|
+:Dialog xác nhận;
+
 |Người dùng|
-:Xác nhận start sprint;
-|Giao diện người dùng|
-:Gửi request start sprint;
-|Hệ thống xử lý|
-:Kiểm tra có sprint
-ACTIVE khác;
-if (Có sprint ACTIVE?) then (có)
-  |Giao diện người dùng|
-  :Thông báo lỗi:
-  "Only 1 active sprint allowed";
+:Xác nhận;
+
+|Giao diện|
+:Gửi request;
+
+|Hệ thống|
+:Kiểm tra ACTIVE;
+
+if (Có ACTIVE?) then (có)
+  |Giao diện|
+  :Báo lỗi;
   |Người dùng|
   stop
 else (không)
-  :Kiểm tra sprint có issues;
-  if (Sprint có issues?) then (không)
-    |Giao diện người dùng|
-    :Cảnh báo sprint trống;
+  |Hệ thống|
+  :Kiểm tra issues;
+  if (Có issues?) then (không)
+    |Giao diện|
+    :Cảnh báo trống;
     |Người dùng|
-    if (Vẫn muốn start?) then (không)
+    if (Vẫn start?) then (không)
       stop
     endif
   endif
-  :Update sprint.status = ACTIVE;
-  :Update sprint.startDate = now;
-  :Tạo audit log;
-  :Gửi WebSocket notification;
-  |Giao diện người dùng|
-  :Thông báo start thành công;
-  :Cập nhật UI;
-  :Chuyển đến Board view;
+  |Hệ thống|
+  :Set ACTIVE;
+  :Set startDate;
+  :Ghi log;
+  :Gửi WebSocket;
+  |Giao diện|
+  :Báo thành công;
+  :Chuyển Board;
   |Người dùng|
   stop
 endif

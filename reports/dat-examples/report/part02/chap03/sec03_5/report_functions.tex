@@ -2,7 +2,7 @@
 
 \subsubsection{Chức năng tạo Sprint}
 
-\textbf{Mục đích:} Cho phép Project Lead tạo sprint mới với status FUTURE để plan và assign issues trước khi start sprint.
+\textbf{Mục đích:} Cho phép Project Lead tạo sprint mới với status FUTURE để plan và assign issues trước khi start sprint. Sprint được tạo với các thông tin cơ bản như tên sprint, mục tiêu (goal), ngày bắt đầu và kết thúc dự kiến. Sau khi tạo, Project Lead có thể assign các issues từ Backlog vào sprint này để chuẩn bị cho iteration tiếp theo. Sprint ở trạng thái FUTURE có thể được chỉnh sửa tự do về thời gian, mục tiêu và danh sách issues cho đến khi được start.
 
 \textbf{Dữ liệu được dùng:}
 
@@ -28,14 +28,14 @@
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.65\textwidth]{images/act_create_sprint.png}
+\includegraphics[width=1\textwidth]{images/act_create_sprint.png}
 \caption{Sơ đồ hoạt động của chức năng tạo Sprint}
 \label{fig:act_create_sprint}
 \end{figure}
 
 \subsubsection{Chức năng Start Sprint}
 
-\textbf{Mục đích:} Cho phép Project Lead start một FUTURE sprint, chuyển status thành ACTIVE với validation chỉ có một ACTIVE sprint trong project.
+\textbf{Mục đích:} Cho phép Project Lead start một FUTURE sprint, chuyển status thành ACTIVE với validation chỉ có một ACTIVE sprint trong project. Khi start sprint, hệ thống sẽ kiểm tra xem có sprint nào đang ACTIVE hay không, nếu có thì yêu cầu complete sprint đó trước. Sprint được start sẽ có startedAt timestamp được ghi nhận và team chính thức bắt đầu làm việc trên các issues đã được assign. Chỉ sprint ở trạng thái ACTIVE mới có thể move issues giữa các status columns trên Board view và track progress hằng ngày. Trước khi start, hệ thống validation các điều kiện: sprint phải ở trạng thái FUTURE, phải có ít nhất một issue được assign, startDate và endDate phải hợp lệ, và không có sprint ACTIVE nào khác đang tồn tại. Nếu có sprint ACTIVE, hệ thống hiển thị warning yêu cầu Project Lead complete sprint đó trước hoặc cancel để không start sprint mới. Khi start thành công, tất cả team members nhận được notification về việc sprint mới bắt đầu, và activity feed ghi lại event này với timestamp. Sprint ACTIVE sẽ hiển thị prominently trên Board view với remaining days indicator và progress tracking bar cho team members theo dõi. Hệ thống cũng ghi audit log để administrators có thể review lịch sử start/complete sprints cho mục đích process improvement và compliance.
 
 \textbf{Dữ liệu được dùng:}
 
@@ -60,14 +60,14 @@
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.65\textwidth]{images/act_start_sprint.png}
+\includegraphics[width=0.9\textwidth]{images/act_start_sprint.png}
 \caption{Sơ đồ hoạt động của chức năng Start Sprint}
 \label{fig:act_start_sprint}
 \end{figure}
 
 \subsubsection{Chức năng Complete Sprint với AI Summary}
 
-\textbf{Mục đích:} Cho phép Project Lead complete ACTIVE sprint, move incomplete issues về Backlog hoặc next sprint, và trigger AI-generated Sprint Summary với LLM Provider.
+\textbf{Mục đích:} Cho phép Project Lead complete ACTIVE sprint, move incomplete issues về Backlog hoặc next sprint, và trigger AI-generated Sprint Summary với LLM Provider. Khi complete sprint, hệ thống hiển thị dialog để Project Lead chọn destination cho các incomplete issues: di chuyển về Backlog hoặc sang sprint tiếp theo (nếu có FUTURE sprint). Sprint được complete sẽ chuyển sang trạng thái CLOSED với completedAt timestamp. Sau khi complete, hệ thống tự động gọi AI để generate Sprint Summary với các thông tin: tổng quan sprint, achievements đạt được, issues gặp phải, recommendations cho sprint sau, và các metrics quan trọng.
 
 \textbf{Dữ liệu được dùng:}
 
@@ -93,14 +93,14 @@
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.8\textwidth]{images/act_complete_sprint.png}
+\includegraphics[width=0.7\textwidth]{images/act_complete_sprint.png}
 \caption{Sơ đồ hoạt động của chức năng Complete Sprint với AI Summary}
 \label{fig:act_complete_sprint}
 \end{figure}
 
 \subsubsection{Chức năng Generate AI Sprint Summary}
 
-\textbf{Mục đích:} Hệ thống kết nối với LLM Provider (OpenAI, Anthropic, Google) để generate sprint retrospective summary với structured format: overview, achievements, issues found, recommendations, và metrics.
+\textbf{Mục đích:} Hệ thống kết nối với LLM Provider (OpenAI, Anthropic, Google) để generate sprint retrospective summary với structured format: overview, achievements, issues found, recommendations, và metrics. Chức năng này thu thập toàn bộ dữ liệu của sprint bao gồm: danh sách issues (completed và incomplete), activities log, comments, thời gian thực tế so với estimate, và các events quan trọng trong sprint. Dữ liệu này được format thành prompt và gửi đến LLM API để nhận về một bản tổng kết chi tiết, giúp team có cái nhìn tổng quan về sprint vừa kết thúc và những điểm cần cải thiện cho sprint tiếp theo. Summary được lưu vào database và hiển thị trên Sprint Summary view.
 
 \textbf{Dữ liệu được dùng:}
 

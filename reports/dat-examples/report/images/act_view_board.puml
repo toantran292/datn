@@ -1,31 +1,39 @@
 @startuml act_view_board
+skinparam defaultFontSize 13
+skinparam activityFontSize 12
+skinparam activityDiamondFontSize 11
+skinparam activityArrowFontSize 10
+skinparam partitionFontSize 13
+
 |Người dùng|
 start
-:Chọn tab "Board";
-|Giao diện người dùng|
-:Gửi request lấy dữ liệu Board;
-|Hệ thống xử lý|
-:Lấy active sprint;
-if (Có active sprint?) then (không)
-  |Giao diện người dùng|
-  :Hiển thị thông báo
-  "No active sprint";
+:Chọn Board;
+
+|Giao diện|
+:Gửi request;
+
+|Hệ thống|
+:Lấy sprint;
+
+if (Có sprint?) then (không)
+  |Giao diện|
+  :Báo "No sprint";
   |Người dùng|
   stop
 else (có)
-  :Lấy danh sách custom statuses;
-  :Lấy issues trong sprint
-  theo status;
-  :Thiết lập WebSocket connection;
-  |Giao diện người dùng|
-  :Render Board với columns;
-  :Hiển thị issues trong columns;
-  :Lắng nghe WebSocket events;
+  |Hệ thống|
+  :Lấy statuses;
+  :Lấy issues;
+  :Setup WebSocket;
+  |Giao diện|
+  :Render Board;
+  :Hiển thị issues;
+  :Lắng nghe WS;
   |Người dùng|
   :Xem Board;
   note right
-    Real-time updates
-    qua WebSocket
+    Real-time
+    updates
   end note
   stop
 endif

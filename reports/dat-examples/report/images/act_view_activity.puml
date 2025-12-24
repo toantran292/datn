@@ -1,45 +1,40 @@
 @startuml act_view_activity
+skinparam defaultFontSize 13
+skinparam activityFontSize 12
+skinparam activityDiamondFontSize 11
+skinparam activityArrowFontSize 10
+skinparam partitionFontSize 13
+
 |Người dùng|
 start
-:Vào tab "Activity";
-|Giao diện người dùng|
-:Gửi request lấy activities;
-|Hệ thống xử lý|
-:Query IssueActivity
-WHERE projectId = project
-ORDER BY createdAt DESC
-LIMIT 50;
-:Populate user info
-cho từng activity;
-:Populate entity info
-(issue/sprint);
-:Format timestamps;
-|Giao diện người dùng|
-:Render activity timeline:
-- User avatar
-- Action type
-- Entity affected
-- Changes (before/after)
-- Timestamp;
-:Setup infinite scroll;
+:Vào tab Activity;
+
+|Giao diện|
+:Request activities;
+
+|Hệ thống|
+:Query & populate data;
+:Format timeline;
+
+|Giao diện|
+:Render activity feed;
+
 |Người dùng|
 :Xem activities;
-if (Scroll xuống cuối?) then (có)
-  |Giao diện người dùng|
-  :Load more activities
-  (pagination);
-  |Hệ thống xử lý|
+
+if (Scroll xuống?) then (có)
+  |Giao diện|
+  :Load more;
+  |Hệ thống|
   :Query next page;
-  |Giao diện người dùng|
-  :Append vào timeline;
 endif
-:Apply filters:
-- By user
-- By action type
-- By date range;
-|Giao diện người dùng|
-:Filter activities client-side
-hoặc re-fetch;
+
+|Người dùng|
+:Apply filters;
+
+|Giao diện|
+:Filter & update view;
+
 |Người dùng|
 stop
 @enduml

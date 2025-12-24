@@ -1,44 +1,33 @@
 @startuml
 !theme plain
-skinparam defaultFontSize 11
+skinparam defaultFontSize 13
 skinparam packageStyle rectangle
+skinparam packageBorderThickness 2
+skinparam rectangleBorderThickness 2
+skinparam backgroundColor white
 
-title Phân rã chức năng của Team Member
+package "Team Member" #lightblue {
 
-rectangle "Team Member" {
-
-  rectangle "Quản lý\nCông việc" {
+  package "Quản lý công việc" #lightyellow {
     rectangle "Tạo công việc"
-    rectangle "Cập nhật\ncông việc"
+    rectangle "Cập nhật công việc"
     rectangle "Xóa công việc"
     rectangle "Assign công việc"
-    rectangle "Reorder công việc\n(drag-and-drop)"
-  }
-
-  rectangle "Xem thông tin\nDự án" {
-    rectangle "Xem thông tin\nproject"
-    rectangle "Xem thành viên"
-    rectangle "Xem sprints"
-    rectangle "Xem chi tiết\nsprint"
-  }
-
-  rectangle "Collaboration\nvà Tracking" {
+    rectangle "Reorder công việc"
     rectangle "Thêm comment"
-    rectangle "Xem activities"
-    rectangle "Upload file\nđính kèm"
+    rectangle "Upload file đính kèm"
   }
 
-  rectangle "Views và\nVisualization" {
-    rectangle "Xem Board view"
-    rectangle "Xem Backlog view"
-    rectangle "Xem Calendar view"
-    rectangle "Xem Timeline view"
+  package "Xem & theo dõi" #lightgreen {
+    rectangle "Xem Board/Backlog"
+    rectangle "Xem Calendar"
+    rectangle "Xem Timeline"
   }
 
-  rectangle "Tính năng AI" {
-    rectangle "Tự động tạo\ncông việc từ\nmô tả (AI)"
-    rectangle "AI tinh chỉnh\nmô tả công việc"
-    rectangle "Xem AI Sprint\nSummary"
+  package "AI hỗ trợ" #lavender {
+    rectangle "AI tạo công việc"
+    rectangle "AI tinh chỉnh mô tả"
+    rectangle "Xem AI Sprint Summary"
   }
 
 }
