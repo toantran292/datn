@@ -1,65 +1,42 @@
 @startuml act_breakdown_epic
+skinparam defaultFontSize 13
+skinparam activityFontSize 12
+skinparam activityDiamondFontSize 11
+skinparam activityArrowFontSize 10
+skinparam partitionFontSize 13
+
 |Người dùng|
 start
-:Mở Epic detail;
-:Nhấn "Break Down Epic" (AI);
-|Giao diện người dùng|
-:Hiển thị dialog config:
-- Number of subtasks (default: 5)
-- Task types (Story/Task);
-:Hiển thị loading;
-|Người dùng|
-:Xác nhận breakdown;
-|Giao diện người dùng|
-:Gửi request breakdown;
-|Hệ thống xử lý|
-:Chuẩn bị context:
-- Epic title
-- Epic description
-- Project context
-- Number of subtasks;
-:Tạo prompt cho LLM;
-note right
-  Break down this epic into
-  [N] actionable subtasks
-  Return JSON array
-end note
+:Mở Epic & Break Down;
+
+|Giao diện|
+:Dialog config & loading;
+
+|Hệ thống|
+:Chuẩn bị context;
 :Gọi LLM API;
-if (LLM success?) then (không)
-  |Giao diện người dùng|
-  :Ẩn loading;
-  :Thông báo lỗi;
-  |Người dùng|
-  stop
-else (có)
-  :Parse JSON response;
-  :Validate subtasks structure;
-  fork
-    :Tạo subtask 1;
-    :Link với parent epic;
-  fork again
-    :Tạo subtask 2;
-    :Link với parent epic;
-  fork again
-    :Tạo subtask N;
-    :Link với parent epic;
-  end fork
-  :Tạo activity log;
-  :Gửi WebSocket notification;
-  |Giao diện người dùng|
-  :Ẩn loading;
-  :Hiển thị preview subtasks;
-  :Show "Edit" và "Confirm";
-  |Người dùng|
-  :Review subtasks;
-  if (Cần chỉnh sửa?) then (có)
-    :Edit subtasks;
-  endif
-  :Confirm tạo subtasks;
-  |Giao diện người dùng|
-  :Cập nhật UI;
-  :Hiển thị subtasks trong Epic;
-  |Người dùng|
+
+if (Success?) then (không)
+  |Giao diện|
+  :Báo lỗi;
   stop
 endif
+
+|Hệ thống|
+:Parse & validate JSON;
+:Tạo subtasks & link;
+:Ghi log & gửi WS;
+
+|Giao diện|
+:Preview subtasks;
+
+|Người dùng|
+:Review & edit;
+:Confirm tạo;
+
+|Giao diện|
+:Cập nhật UI;
+
+|Người dùng|
+stop
 @enduml

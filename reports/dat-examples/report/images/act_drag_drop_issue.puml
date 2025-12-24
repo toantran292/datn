@@ -7,12 +7,10 @@ skinparam partitionFontSize 13
 
 |Người dùng|
 start
-:Kéo issue;
-:Thả vào column;
+:Kéo & thả issue;
 
 |Giao diện|
-:Tính vị trí;
-:Update UI;
+:Update UI optimistic;
 :Gửi request;
 
 |Hệ thống|
@@ -20,19 +18,17 @@ start
 
 if (OK?) then (không)
   |Giao diện|
-  :Revert UI;
-  :Báo lỗi;
-  |Người dùng|
-  stop
-else (có)
-  |Hệ thống|
-  :Update status;
-  :Update vị trí;
-  :Ghi log;
-  :Gửi WS;
-  |Giao diện|
-  :Confirm UI;
-  |Người dùng|
+  :Revert UI & báo lỗi;
   stop
 endif
+
+|Hệ thống|
+:Update status & vị trí;
+:Ghi log & gửi WS;
+
+|Giao diện|
+:Confirm UI;
+
+|Người dùng|
+stop
 @enduml

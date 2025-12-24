@@ -2,7 +2,7 @@
 
 \subsubsection{Chức năng tạo Issue}
 
-\textbf{Mục đích:} Cho phép Team Members tạo issue mới (STORY, TASK, BUG, EPIC) trong project với title, description, priority, assignee và optional AI-generated description.
+\textbf{Mục đích:} Cho phép Team Members tạo issue mới (STORY, TASK, BUG, EPIC) trong project với title, description, priority, assignee và optional AI-generated description. Khi tạo issue, Team Member điền các thông tin bắt buộc như title và type, sau đó có thể chọn thêm các thông tin optional như description (hoặc dùng AI generate), priority level (LOW, MEDIUM, HIGH, CRITICAL), assignee từ danh sách project members, và story points estimate cho planning. Mỗi issue được tự động assign một unique key theo format PROJECT\_KEY-NUMBER (ví dụ: PROJ-123) để dễ dàng reference trong discussions và commits. Issue description hỗ trợ Markdown format với real-time preview, cho phép Team Members format text với headers, lists, code blocks, và links. Sau khi tạo, issue được đặt ở trạng thái mặc định (thường là TODO hoặc BACKLOG tùy theo custom status configuration) và xuất hiện trên Board view hoặc Backlog. Hệ thống tự động ghi activity log để track việc tạo issue mới, và gửi notification cho relevant members nếu có assignee hoặc watchers. Team Members cũng có thể attach files, link related issues, và set due date ngay khi tạo để cung cấp đầy đủ context cho team.
 
 \textbf{Dữ liệu được dùng:}
 
@@ -62,7 +62,7 @@
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.7\textwidth]{images/act_drag_drop_issue.png}
+\includegraphics[width=0.5\textwidth]{images/act_drag_drop_issue.png}
 \caption{Sơ đồ hoạt động của chức năng Update Issue Status (Drag-and-drop)}
 \label{fig:act_drag_drop_issue}
 \end{figure}
@@ -123,7 +123,7 @@
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.7\textwidth]{images/act_breakdown_epic.png}
+\includegraphics[width=0.6\textwidth]{images/act_breakdown_epic.png}
 \caption{Sơ đồ hoạt động của chức năng Break Down EPIC}
 \label{fig:act_breakdown_epic}
 \end{figure}
