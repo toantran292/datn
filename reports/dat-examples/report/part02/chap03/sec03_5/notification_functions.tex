@@ -33,7 +33,7 @@
 
 \subsubsection{Chức năng ghi Activity Log}
 
-\textbf{Mục đích:} Hệ thống tự động ghi lại activities khi có actions xảy ra trong project: issue\_created, status\_changed, sprint\_started, comment\_added, issue\_assigned, sprint\_completed với before/after changes tracking.
+\textbf{Mục đích:} Hệ thống tự động ghi lại activities khi có actions xảy ra trong project với before/after changes tracking.
 
 \textbf{Dữ liệu được dùng:}
 
@@ -50,15 +50,13 @@
 & & Thêm & Sửa & Xóa & Truy vấn \\
 1 & Activity & X & & & \\
 2 & Project & & & & X \\
-3 & Issue & & & & X \\
-4 & Sprint & & & & X \\
 \end{longtblr}
 
 \textbf{Xử lý:}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.8\textwidth]{images/act_log_activity.png}
+\includegraphics[width=0.9\textwidth]{images/act_log_activity.png}
 \caption{Sơ đồ hoạt động của chức năng ghi Activity Log}
 \label{fig:act_log_activity}
 \end{figure}

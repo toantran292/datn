@@ -29,7 +29,7 @@
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.7\textwidth]{images/act_create_issue.png}
+\includegraphics[width=0.75\textwidth]{images/act_create_issue.png}
 \caption{Sơ đồ hoạt động của chức năng tạo Issue}
 \label{fig:act_create_issue}
 \end{figure}
@@ -92,14 +92,14 @@
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.65\textwidth]{images/act_generate_issue_description.png}
+\includegraphics[width=0.7\textwidth]{images/act_generate_issue_description.png}
 \caption{Sơ đồ hoạt động của chức năng Generate AI Issue Description}
 \label{fig:act_generate_issue_description}
 \end{figure}
 
 \subsubsection{Chức năng Break Down EPIC (Task Breakdown)}
 
-\textbf{Mục đích:} Cho phép Project Lead request AI-powered task breakdown cho EPIC issues, LLM analyze EPIC description và generate sub-tasks với titles, descriptions, story points estimates.
+\textbf{Mục đích:} Cho phép Project Lead request AI-powered task breakdown cho EPIC issues, LLM analyze EPIC description và generate sub-tasks với titles, descriptions, story points estimates. Chức năng này đặc biệt hữu ích khi team có một EPIC lớn với scope rộng và cần phân tách thành các sub-tasks nhỏ hơn để dễ quản lý và estimate effort. Khi Project Lead mở EPIC detail view và click "Break Down Epic" button, hệ thống hiển thị configuration dialog cho phép chọn số lượng sub-tasks muốn generate (default: 5) và loại task preferred (STORY hoặc TASK). Sau khi confirm, LLM Provider (OpenAI, Anthropic, hoặc Google) nhận context bao gồm EPIC title, description đầy đủ, và project context để hiểu rõ về domain và requirements. AI analyze EPIC description để identify các components chính, dependencies giữa chúng, và logical grouping, sau đó generate danh sách sub-tasks với detailed titles mô tả rõ ràng scope của từng task, descriptions với acceptance criteria cụ thể, và story points estimates dựa trên complexity assessment. Generated sub-tasks được hiển thị trong preview dialog với editable fields cho phép Project Lead review và adjust trước khi create. Project Lead có thể edit titles, descriptions, hoặc story points, thậm chí add/remove tasks nếu cần thiết. Khi confirm, tất cả sub-tasks được tạo với parent link đến EPIC, và xuất hiện trong Backlog hoặc current sprint tùy configuration. Hệ thống ghi activity log để track breakdown event và notification cho team members về sub-tasks mới được tạo. Chức năng này giúp accelerate planning process và ensure consistent task breakdown quality across team.
 
 \textbf{Dữ liệu được dùng:}
 
@@ -123,7 +123,7 @@
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.55\textwidth]{images/act_breakdown_epic.png}
+\includegraphics[width=0.65\textwidth]{images/act_breakdown_epic.png}
 \caption{Sơ đồ hoạt động của chức năng Break Down EPIC}
 \label{fig:act_breakdown_epic}
 \end{figure}
