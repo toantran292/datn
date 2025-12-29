@@ -2,7 +2,7 @@
 
 \subsubsection{Sơ đồ trường hợp sử dụng}
 
-Dựa trên mô tả bài toán ở mục 1.1, hệ thống có 3 tác nhân chính (Super Admin, Workspace Owner, Member) và các hệ thống bên ngoài tương tác với phân hệ nền tảng và thông tin. Các yêu cầu chức năng được phân loại theo từng tác nhân và được biểu diễn thông qua các sơ đồ trường hợp sử dụng (use case) dưới đây.
+Dựa trên mô tả bài toán ở mục 1.1, hệ thống có 3 tác nhân chính (Quản trị viên hệ thống, Chủ không gian làm việc, Thành viên) và các hệ thống bên ngoài tương tác với phân hệ nền tảng và thông tin. Các yêu cầu chức năng được phân loại theo từng tác nhân và được biểu diễn thông qua các sơ đồ trường hợp sử dụng dưới đây.
 
 \begin{itemize}
     \item \textbf{Sơ đồ trường hợp sử dụng tổng quan:}
@@ -14,30 +14,30 @@ Dựa trên mô tả bài toán ở mục 1.1, hệ thống có 3 tác nhân ch�
         \label{fig:usecase_tongquan}
     \end{figure}
 
-    \item \textbf{Sơ đồ trường hợp sử dụng của Super Admin:}
+    \item \textbf{Sơ đồ trường hợp sử dụng của Quản trị viên hệ thống:}
 
     \begin{figure}[H]
         \centering
         \includegraphics[width=0.7\textwidth]{images/usecase_super_admin.png}
-        \caption{Sơ đồ trường hợp sử dụng của Super Admin}
+        \caption{Sơ đồ trường hợp sử dụng của Quản trị viên hệ thống}
         \label{fig:usecase_super_admin}
     \end{figure}
 
-    \item \textbf{Sơ đồ trường hợp sử dụng của Workspace Admin:}
+    \item \textbf{Sơ đồ trường hợp sử dụng của Quản trị viên không gian làm việc:}
 
     \begin{figure}[H]
         \centering
         \includegraphics[width=0.75\textwidth]{images/usecase_workspace_admin.png}
-        \caption{Sơ đồ trường hợp sử dụng của Workspace Admin}
+        \caption{Sơ đồ trường hợp sử dụng của Quản trị viên không gian làm việc}
         \label{fig:usecase_workspace_admin}
     \end{figure}
 
-    \item \textbf{Sơ đồ trường hợp sử dụng của Workspace Owner:}
+    \item \textbf{Sơ đồ trường hợp sử dụng của Chủ không gian làm việc:}
 
     \begin{figure}[H]
         \centering
         \includegraphics[width=0.7\textwidth]{images/usecase_workspace_owner.png}
-        \caption{Sơ đồ trường hợp sử dụng của Workspace Owner}
+        \caption{Sơ đồ trường hợp sử dụng của Chủ không gian làm việc}
         \label{fig:usecase_workspace_owner}
     \end{figure}
 
@@ -50,5 +50,5 @@ Dựa trên mô tả bài toán ở mục 1.1, hệ thống có 3 tác nhân ch�
         \label{fig:usecase_member}
     \end{figure}
 
-    \item \textbf{Tích hợp với các hệ thống bên ngoài:} Ngoài ba tác nhân chính, phân hệ nền tảng và thông tin còn tương tác với các hệ thống bên ngoài để cung cấp các chức năng mở rộng. Các hệ thống bên ngoài bao gồm: dịch vụ email (gửi thông báo qua email, xác nhận tài khoản, reset mật khẩu), dịch vụ lưu trữ đám mây (lưu trữ file trên S3-compatible storage), dịch vụ AI bên ngoài (OpenAI API, Gemini API để tổng hợp và phân tích dữ liệu), và các phân hệ chức năng khác (project management, communication, meeting) để đồng bộ dữ liệu và cung cấp thông tin tổng hợp. Việc tích hợp với các hệ thống bên ngoài giúp phân hệ nền tảng linh hoạt, dễ mở rộng và có thể tận dụng các dịch vụ sẵn có thay vì phải xây dựng lại từ đầu.
+    \item \textbf{Tích hợp với các hệ thống bên ngoài:} Ngoài ba tác nhân chính, phân hệ nền tảng và thông tin còn tương tác với các hệ thống bên ngoài để cung cấp các chức năng mở rộng. Các hệ thống bên ngoài bao gồm: dịch vụ thư điện tử (gửi thông báo qua thư điện tử, xác nhận tài khoản, đặt lại mật khẩu), dịch vụ lưu trữ đám mây (lưu trữ tập tin trên các nền tảng lưu trữ tương thích), dịch vụ trí tuệ nhân tạo bên ngoài (để tổng hợp và phân tích dữ liệu), và các phân hệ chức năng khác (quản lý dự án, truyền thông, họp trực tuyến) để đồng bộ dữ liệu và cung cấp thông tin tổng hợp. Việc tích hợp với các hệ thống bên ngoài giúp phân hệ nền tảng linh hoạt, dễ mở rộng và có thể tận dụng các dịch vụ sẵn có thay vì phải xây dựng lại từ đầu.
 \end{itemize}

@@ -70,6 +70,7 @@
 \usepackage[absolute]{textpos}
 \usepackage{makecell}
 \usepackage[inkscape = inkscape -z -D, svgpath = fig/]{svg}  % Requires shell-escape
+\usepackage{pdfpages}
 
 \usetikzlibrary{calc}
 %Custom packages
@@ -115,6 +116,8 @@
 \pagestyle{empty}
 \input{coverPage}
 \input{coverPage-2}
+
+\includepdf[pages=-]{xac-nhan.pdf}
 
 \input{thanks}
 \newpage
